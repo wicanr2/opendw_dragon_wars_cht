@@ -3,6 +3,7 @@
 ## 概述
 
 本 Skill 記錄了將 OpenDW（Dragon Wars 開源重製版）中文化的完整經驗與工作流程。
+所有成果已推送至：https://github.com/wicanr2/opendw_dragon_wars_cht
 
 ## 工作流程
 
@@ -145,7 +146,87 @@ CMD ["./src/fe/sdldragon"]
 - 有些 `op_XX` 實際上是跳躍表項，不是真正的 opcode
 - `com_extract()` 從 dragon.com 提取，`resource_load()` 從 DATA1 提取
 
-## 相關連結
+### 7. 文字提取 (Text Extraction)
+
+#### 目標
+從 DATA1 資源檔中提取遊戲文字（對話、物品名稱、選單）
+
+#### 關鍵發現
+1. **文字編碼**：遊戲使用 5-bit 壓縮字母表（見 `compress.c` 的 `alphabet[]`）
+2. **資料位置**：文字在 DATA1 的 Section 0x00（SCRIPT）中
+3. **解壓方式**：使用 `extract_string()` 函式從 script 中提取
+4. **字母表對應**：
+   - `0xa0` = 空格
+   - `0xe1-0xfa` = 小寫字母 a-z 和數字 0-9
+   - `0xb0-0xb9` = 數字 0-9（備用）
+   - `0x41-0x5a` = 大寫字母 A-Z
+   - `0x8d` = 換行符
+   - 其他 = 標點符號（`!`, `'`, `:`, `/`, `(`, `)`, `]`, `-`, `+`, `*`, `,`, `.`）
+
+#### 解壓演算法
+```python
+class BitExtractor:
+    def __init__(self, data, byte_offset=0):
+        self.data = data
+        self.byte_offset = byte_offset
+        self.num_bits = 0
+        self.bit_buffer = 0
+        self.upper_case = 0
+    
+    def extract(self, n):
+        """從資料流中提取 n 個位元"""
+        al = 0
+        for i in range(n):
+            if self.num_bits == 0:
+                self.bit_buffer = self.data[self.byte_offset]
+                self.num_bits = 8
+                self.byte_offset += 1
+            tmp = self.bit_buffer
+            self.bit_buffer = (self.bit_buffer << 1) & 0xFF
+            self.num_bits -= 1
+            carry = 1 if tmp > self.bit_buffer else 0
+            al = (al << 1) | carry
+        return al
+    
+    def extract_letter(self):
+        """提取一個字母（5-bit 編碼）"""
+        while True:
+            ret = self.extract(5)
+            if ret == 0:  # 字串結束
+                return 0
+            if ret == 0x1E:  # 大寫標記
+                self.upper_case = (self.upper_case >> 1) | 0x80
+                continue
+            if ret > 0x1E:  # 擴展字元
+                ret = self.extract(6)
+                ret += 0x1E
+            return alphabet[ret - 1]
+```
+
+#### 提取成果
+- 24+ 個選單文字已提取並翻譯
+- 狀態文字（chained, poisoned, stunned, dead）已提取
+- UI 文字（載入、存檔、錯誤訊息）已提取
+- 物品名稱和對話文字需要進一步提取
+
+#### 注意事項
+- bit_extractor 的 `carry` 計算是關鍵：`carry = 1 if tmp > (tmp << 1) else 0`
+- 文字可能包含控制碼（如快捷鍵標記）
+- 每個選單項目的第一個字通常是快捷鍵（如 'B' = Begin, 'C' = Continue）
+
+### 8. 待辦事項
+
+#### 未完成
+- [ ] 完整提取所有對話文字
+- [ ] 完整提取所有物品名稱
+- [ ] 實作 SDL2 設定系統（config.h/c）
+- [ ] 實作 SDL2 音訊系統（audio.h/c）
+- [ ] 實作 24×24 中文點陣顯示
+- [ ] 實作中文輸入
+- [ ] 實作按鍵映射（keymap.h/c）
+
+#### 參考資源
 - GitHub Repo：https://github.com/wicanr2/opendw_dragon_wars_cht
 - OpenDW 原始：https://github.com/devinSmith/opendw
 - Dragon Wars：https://www.gog.com/game/dragon_wars
+- 5-bit 編碼參考：`src/lib/compress.c` 的 `alphabet[]` 和 `extract_letter()`
