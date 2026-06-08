@@ -62,9 +62,9 @@ extern struct ui_rect draw_rect;
 extern struct ui_point draw_point;
 
 void ui_load();
-void sub_37C8();
+void init_viewport_for_map();
 void update_viewport();
-void sub_CF8(unsigned char *data, struct viewport_data *vp);
+void decode_viewport_data(unsigned char *data, struct viewport_data *vp);
 void draw_viewport();
 void ui_draw();
 void ui_draw_full();
@@ -76,7 +76,7 @@ void ui_header_set_byte(unsigned char byte);
 
 void ui_draw_box_segment(uint8_t chr);
 void ui_draw_chr_piece(uint8_t chr);
-void sub_35A0(uint8_t piece_index);
+void draw_ui_piece_by_index(uint8_t piece_index);
 void draw_pattern(struct ui_rect *rect);
 void ui_set_background(uint16_t val);
 void ui_draw_string(void);
@@ -104,8 +104,8 @@ void ui_set_byte_3236(uint8_t val);
 uint8_t ui_get_byte_3236();
 void init_viewport_memory();
 void viewport_save();
-void sub_4C95(struct resource *r);
-void sub_4DE3(uint16_t input, const struct resource *r);
+void show_random_encounter(struct resource *r);
+void draw_graphic_to_viewport(uint16_t input, const struct resource *r);
 void draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
 unsigned char *ui_get_minimap_viewport();

@@ -32,7 +32,7 @@ extern unsigned char byte_4F10;
 
 void reset_game_state();
 void run_engine();
-void sub_4D82();
+void release_flagged_resource();
 
 uint16_t extract_string(const unsigned char *src_ptr, uint16_t offset, void (*func)(unsigned char));
 

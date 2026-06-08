@@ -46,15 +46,15 @@ static int viewport_width = 0x50;
 
 static unsigned short word_1055 = 0;
 
-static void sub_27CC();
-static void sub_4EF4(uint16_t bx, uint16_t dx, uint16_t ax);
+static void draw_right_pillar();
+static void draw_minimap_cell(uint16_t bx, uint16_t dx, uint16_t ax);
 
 void (*ui_draw_funcs[5])() = {
   draw_right_pillar,
   draw_viewport,
   reset_game_state,
   ui_header_draw,
-  sub_27CC
+  draw_right_pillar
 };
 
 static struct ui_rect data_268F;
@@ -232,7 +232,7 @@ static void process_quadrant(const struct viewport_data *d, unsigned char *data)
 }
 
 // 0xDEB
-static void sub_DEB(const struct viewport_data *d, unsigned char *data)
+static void draw_viewport_word_mode(const struct viewport_data *d, unsigned char *data)
 {
   uint16_t ax, old_ax, newx, cx;
   uint16_t dx = 0;
@@ -311,7 +311,7 @@ static void sub_DEB(const struct viewport_data *d, unsigned char *data)
 }
 
 // 0xEC5
-static void sub_EC5(const struct viewport_data *d, unsigned char *data)
+static void draw_viewport_neg_x_alt(const struct viewport_data *d, unsigned char *data)
 {
   uint16_t ax;
   int bx;
@@ -380,7 +380,7 @@ static void sub_EC5(const struct viewport_data *d, unsigned char *data)
 }
 
 // 0xE6D
-static void sub_E6D(const struct viewport_data *d, unsigned char *data)
+static void draw_viewport_neg_x(const struct viewport_data *d, unsigned char *data)
 {
   uint16_t ax, cx, dx;
   uint8_t al;
@@ -439,7 +439,7 @@ static void sub_E6D(const struct viewport_data *d, unsigned char *data)
   }
 }
 
-static void sub_F3D(const struct viewport_data *d, unsigned char *data)
+static void draw_viewport_flip_y(const struct viewport_data *d, unsigned char *data)
 {
   int cf = 0;
   int ax, bx, dx, word_104A;
@@ -651,7 +651,7 @@ void zero_out_2AAA()
   memset(data_2AAA, 0, sizeof(data_2AAA));
 }
 
-static void sub_27CC()
+static void draw_right_pillar()
 {
   draw_rect.x = 1;
   draw_rect.y = 0x98;
@@ -728,7 +728,7 @@ void draw_right_pillar()
 }
 
 // 0x35A0
-void sub_35A0(uint8_t piece_index)
+void draw_ui_piece_by_index(uint8_t piece_index)
 {
   if (piece_index >= UI_PIECE_COUNT) {
     printf("%s: Piece count is too high! 0x%02X\n", __func__, piece_index);
@@ -1000,7 +1000,7 @@ int ui_adjust_rect(uint8_t input)
 
 // 0xCF8
 // extract and process viewport data.
-void sub_CF8(unsigned char *data, struct viewport_data *vp)
+void decode_viewport_data(unsigned char *data, struct viewport_data *vp)
 {
   int ax;
   uint8_t al;
@@ -1059,16 +1059,16 @@ void sub_CF8(unsigned char *data, struct viewport_data *vp)
     process_quadrant(vp, viewport_memory);
     break;
   case 2:
-    sub_DEB(vp, viewport_memory);
+    draw_viewport_word_mode(vp, viewport_memory);
     break;
   case 4:
-    sub_E6D(vp, viewport_memory);
+    draw_viewport_neg_x(vp, viewport_memory);
     break;
   case 6:
-    sub_EC5(vp, viewport_memory);
+    draw_viewport_neg_x_alt(vp, viewport_memory);
     break;
   case 8:
-    sub_F3D(vp, viewport_memory);
+    draw_viewport_flip_y(vp, viewport_memory);
     break;
   default:
     printf("%s: An unhandled BX (0x%04X) was specified.\n", __func__, bx);
@@ -1113,7 +1113,7 @@ void update_viewport()
 
     // Data already loaded in ui_load.
     //
-    sub_CF8(p->data, p);
+    decode_viewport_data(p->data, p);
 
     vidx--;
   }
@@ -1184,9 +1184,9 @@ void draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 }
 
 // 0x37C8
-void sub_37C8()
+void init_viewport_for_map()
 {
-  sub_4D82();
+  release_flagged_resource();
 
   memset(viewport_memory, 0, viewport_mem_sz);
   byte_4F0F = 0xFF;
@@ -1201,7 +1201,7 @@ void viewport_save()
   memcpy(viewport_mem_save, viewport_memory, viewport_mem_sz);
 }
 
-static void sub_4CB2(unsigned char *es, struct resource *r)
+static void draw_random_encounter_graphic(unsigned char *es, struct resource *r)
 {
   unsigned char *ds = r->bytes;
 
@@ -1244,14 +1244,14 @@ void viewport_restore()
 }
 
 // 0x4D26
-void sub_4D26()
+void clear_viewport_save()
 {
   memset(viewport_mem_save, 0x66, viewport_mem_sz);
 }
 
 // 0x4C95
 // Draw random encounter (graphic in resource r)
-void sub_4C95(struct resource *r)
+void show_random_encounter(struct resource *r)
 {
   // Segment and offset (will be later loaded into ds:si)
   // of resource r.
@@ -1261,17 +1261,17 @@ void sub_4C95(struct resource *r)
   viewport_save();
 
   // 01DD:4CA0  A1114F  mov  ax,[4F11]  ds:[4F11]=0FC4
-  sub_4CB2(viewport_memory, r);
+  draw_random_encounter_graphic(viewport_memory, r);
   draw_viewport();
   viewport_restore();
 
-  sub_4D26();
+  clear_viewport_save();
 
-  sub_4CB2(viewport_mem_save, r);
+  draw_random_encounter_graphic(viewport_mem_save, r);
 }
 
 // 0x4DE3
-void sub_4DE3(uint16_t input, const struct resource *r)
+void draw_graphic_to_viewport(uint16_t input, const struct resource *r)
 {
   uint8_t al;
   uint16_t bx, dx, di, saved_si, si;
@@ -1321,7 +1321,7 @@ void sub_4DE3(uint16_t input, const struct resource *r)
       al = al & get_and_table(si);
       al = al | get_or_table(si);
 
-      sub_4EF4(bx + 8, dx + 8, al);
+      draw_minimap_cell(bx + 8, dx + 8, al);
 
       si = saved_si;
       dx++;
@@ -1341,7 +1341,7 @@ void sub_4DE3(uint16_t input, const struct resource *r)
 // Technically we call 4E57, but that's a function pointer to
 // code that calls different functions based on graphic mode.
 // 0x4EF4
-static void sub_4EF4(uint16_t bx, uint16_t dx, uint16_t ax)
+static void draw_minimap_cell(uint16_t bx, uint16_t dx, uint16_t ax)
 {
   uint16_t di;
   uint8_t *framebuffer = vga_memory();

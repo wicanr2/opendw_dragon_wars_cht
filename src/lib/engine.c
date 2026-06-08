@@ -376,35 +376,35 @@ struct virtual_cpu {
 struct virtual_cpu cpu;
 
 static void run_script(uint8_t script_index, uint16_t src_offset);
-static void sub_CE7(struct viewport_data *vp, uint16_t sprite_offset);
-static void sub_11A0(int set_11C4);
-static void sub_11CE();
+static void draw_sprite_to_viewport(struct viewport_data *vp, uint16_t sprite_offset);
+static void multiply_16bit(int set_11C4);
+static void divide_16bit();
 static uint16_t resource_get_size(int input); // 12B5
 static void handle_byte_callback(unsigned char byte);
 static void set_sb_handler_append_string();
 static void append_string(unsigned char byte);
-static void sub_176A();
-static void sub_19C7(uint8_t val, uint16_t di);
-static void sub_1A10();
-static void sub_1A72();
+static void handle_minimap_input();
+static void plot_minimap_resource(uint8_t val, uint16_t di);
+static void draw_minimap_from_data6820();
+static void draw_player_status_panel();
 static void draw_player_status(uint8_t val);
 static void draw_player_stat(uint8_t color, uint8_t y_adjust, uint16_t player_record_offset);
-static void sub_1C70(unsigned char *src_ptr);
-static void sub_280E();
-static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char *base);
+static void extract_and_draw_string(unsigned char *src_ptr);
+static void flush_ui_header();
+static void wait_for_event(uint16_t flags, unsigned char *src_ptr, const unsigned char *base);
 static void set_ui_header(unsigned char *base_ptr, uint16_t offset);
-static void sub_2CF5();
-static void sub_3F2F();
-static void sub_3F7E();
+static void update_random_seed();
+static void save_gamestate_vars();
+static void divide_and_save_results();
 static void set_sb_handler_ui_draw_chr();
-static void sub_4A79(uint8_t al);
-static void sub_4D37(int al, int index, const struct resource *r);
-static void sub_4D97(uint16_t index);
+static void get_bit_mask_from_table(uint8_t al);
+static void init_monster_animation(int al, int index, const struct resource *r);
+static void update_monster_animation(uint16_t index);
 static void set_sign_flag();
 static void clear_sign_flag();
-static void sub_54D8(int x, int y);
-static void sub_536B(int x, int y);
-static void sub_587E();
+static void get_map_tile_data(int x, int y);
+static void move_player_on_map(int x, int y);
+static void release_flagged_resources();
 static void cache_resources();
 static void mini_map_escape();
 static void mini_map_left();
@@ -413,18 +413,18 @@ static void mini_map_up();
 static void mini_map_down();
 
 #define NUM_FUNCS 11
-static void sub_50B2();
-static void sub_5088();
-static void sub_5080();
-static void sub_5090();
+static void play_sound_effect_B2();
+static void play_sound_effect_88();
+static void play_sound_door_open();
+static void play_sound_wall_bump();
 static void snd_pcm_resource();
 
 // 0x5060 sound effects
 void (*func_5060[NUM_FUNCS])() = {
-  sub_50B2, // 0x5060
-  sub_5088, // 0x5062
-  sub_5080, // 0x5064
-  sub_5090, // 0x5066
+  play_sound_effect_B2, // 0x5060
+  play_sound_effect_88, // 0x5062
+  play_sound_door_open, // 0x5064
+  play_sound_wall_bump, // 0x5066
   snd_pcm_resource, // 0x5068
   snd_pcm_resource, // 0x506A
   snd_pcm_resource, // 0x506C
@@ -495,7 +495,7 @@ static void op_3F();
 static void op_40();
 static void op_41();
 static void op_42();
-static void op_43();
+static void op_43_check_flags();
 static void op_jnz();
 static void op_jz();
 static void op_js();
@@ -504,8 +504,8 @@ static void op_48();
 static void loop(); // 49
 static void op_4A();
 static void op_stc();
-static void op_4C();
-static void op_4D();
+static void op_clc();
+static void op_prng();
 static void op_4E();
 static void op_4F();
 static void op_50();
@@ -513,21 +513,21 @@ static void op_51();
 static void op_52();
 static void op_53();
 static void op_54();
-static void op_55();
-static void op_56();
+static void op_peek_and_pop();
+static void op_push_value();
 static void op_57();
 static void op_58();
-static void op_59();
+static void op_retf();
 static void op_5A();
-static void op_5B();
-static void op_5C();
+static void op_5B_unused();
+static void op_for_call();
 static void get_character_data();
 static void set_character_data();
-static void op_5F();
-static void op_60();
+static void op_or_with_char_data();
+static void op_and_with_char_data();
 static void test_player_property();
-static void op_62();
-static void op_63();
+static void op_scan_for_char();
+static void op_set_char_data();
 static void op_66();
 static void op_69();
 static void op_6A();
@@ -535,7 +535,7 @@ static void op_6C();
 static void op_6D();
 static void op_6F();
 static void op_71();
-static void op_72();
+static void op_72_unused();
 static void op_73();
 static void op_74();
 static void op_75();
@@ -1672,25 +1672,25 @@ static void op_33()
   cpu.ax = word_3AE2;
   word_11C0 = cpu.ax;
 
-  sub_11A0(word_11C4); // 11A6
+  multiply_16bit(word_11C4); // 11A6
   cpu.ax = word_11C8;
 
-  sub_3F2F();
+  save_gamestate_vars();
 }
 
 // 0x3F23
-static void sub_3F23()
+static void compute_division_vars()
 {
   cpu.ax = word_3AE2;
   word_11C0 = cpu.ax;
 
-  sub_11A0(word_11C4);
+  multiply_16bit(word_11C4);
   cpu.ax = word_11C8;
 
-  sub_3F2F();
+  save_gamestate_vars();
 }
 
-static void sub_3F2F()
+static void save_gamestate_vars()
 {
   // 0x3F2F
   // XXX: Fix this endian save
@@ -1726,7 +1726,7 @@ static void op_34()
   al = ah;
   word_11C4 = (ah << 8) | al;
 
-  sub_3F23();
+  compute_division_vars();
 }
 
 // 0x3F66
@@ -1752,19 +1752,19 @@ static void op_35()
   printf("%s: 0x%04X 0x%04X 0x%04X\n", __func__, word_11C6, word_11C8, word_11C0);
 
   // 0x3F7E
-  sub_3F7E();
+  divide_and_save_results();
 }
 
 // 0x3F7E
-static void sub_3F7E()
+static void divide_and_save_results()
 {
-  sub_11CE();
+  divide_16bit();
   cpu.ax = word_11CA;
 
   set_game_state(__func__, 0x3B, cpu.ax & 0xFF);
   set_game_state(__func__, 0x3C, (cpu.ax & 0xFF00) >> 8);
 
-  sub_3F2F();
+  save_gamestate_vars();
 }
 
 // 0x3F8C
@@ -1787,7 +1787,7 @@ static void op_36()
   cpu.ax = (ah << 8) | al;
   word_11C0 = cpu.ax;
 
-  sub_3F7E();
+  divide_and_save_results();
 }
 
 
@@ -2051,7 +2051,7 @@ static void op_42(void)
 }
 
 // 0x408E
-static void op_43()
+static void op_check_flags_jmp()
 {
   uint8_t al;
 
@@ -2200,18 +2200,18 @@ static void op_stc()
 }
 
 // 0x412A
-static void op_4C()
+static void op_clc()
 {
   word_3AE6 &= 0xFFFE;
 }
 
 // 0x4132
 // Pseudo random number generator?
-static void op_4D()
+static void op_prng()
 {
   uint32_t mul_result;
 
-  sub_2CF5();
+  update_random_seed();
 
   mul_result = cpu.ax * word_3AE2;
   word_3AE2 = (mul_result & 0x00FF0000) >> 16;
@@ -2225,7 +2225,7 @@ static void op_4E()
 {
   uint8_t val;
 
-  sub_4A79(word_3AE2);
+  get_bit_mask_from_table(word_3AE2);
   val = game_state.unknown[cpu.bx];
   val |= (cpu.ax & 0xFF);
   set_game_state(__func__, cpu.bx, val);
@@ -2236,7 +2236,7 @@ static void op_4F()
 {
   uint8_t al;
 
-  sub_4A79(word_3AE2);
+  get_bit_mask_from_table(word_3AE2);
   al = cpu.ax & 0xFF;
 
   al = ~al;
@@ -2252,7 +2252,7 @@ static void op_50()
   uint8_t al;
   uint16_t flags;
 
-  sub_4A79(word_3AE2);
+  get_bit_mask_from_table(word_3AE2);
   al = cpu.ax & 0xFF;
 
   // test [bx+3860], al
@@ -2346,7 +2346,7 @@ static void op_54()
 }
 
 // 0x41E5
-static void op_55()
+static void op_peek_and_pop()
 {
   uint8_t ah;
 
@@ -2507,7 +2507,7 @@ static void op_5A(void)
 }
 
 // 0x427A
-static void op_5B()
+static void op_5B_unused()
 {
   uint8_t dl, bl;
 
@@ -2517,7 +2517,7 @@ static void op_5B()
   cpu.dx = (cpu.dx & 0xFF00) | dl;
   cpu.bx = (cpu.bx & 0xFF00) | bl;
 
-  sub_54D8(dl, bl);
+  get_map_tile_data(dl, bl);
 
   data_5521[word_551F + 2] = 0;
 }
@@ -2628,10 +2628,10 @@ static void set_character_data(void)
 }
 
 // 0x4372
-static void op_5F()
+static void op_or_char_data()
 {
   // 0x4A7D
-  sub_4A79(word_3AE2);
+  get_bit_mask_from_table(word_3AE2);
   cpu.cx = game_state.unknown[6];
 
   cpu.di = cpu.cx;
@@ -2650,10 +2650,10 @@ static void op_5F()
 }
 
 // 0x438B
-static void op_60()
+static void op_and_char_data()
 {
   // 0x4A7D
-  sub_4A79(word_3AE2);
+  get_bit_mask_from_table(word_3AE2);
   cpu.cx = game_state.unknown[6]; // Current player.
 
   cpu.di = cpu.cx;
@@ -2696,7 +2696,7 @@ static void set_flags()
 static void test_player_property()
 {
   // 4A7D
-  sub_4A79(word_3AE2);
+  get_bit_mask_from_table(word_3AE2);
   cpu.cx = game_state.unknown[6];
   cpu.di = cpu.cx;
 
@@ -2717,7 +2717,7 @@ static void test_player_property()
 }
 
 // 0x43BF
-static void op_62()
+static void op_scan_for_char()
 {
   uint8_t cl;
 
@@ -2758,7 +2758,7 @@ static void op_62()
 
 
 // 0x43F7
-static void op_63()
+static void op_set_char_data_word()
 {
   uint8_t al, ah;
 
@@ -2952,7 +2952,7 @@ static void op_6C(void)
 
 // 0x194A
 // Returns bx, dx
-static void sub_194A()
+static void calc_minimap_position()
 {
   uint8_t bl, dl;
 
@@ -2976,7 +2976,7 @@ static void sub_194A()
 // 1A13
 // Plots map segment?
 // The only real input here is byte_1962
-static void sub_1A13(int input)
+static void draw_minimap_segment(int input)
 {
   struct viewport_data vp;
   word_104F = cpu.bx;
@@ -2987,15 +2987,15 @@ static void sub_1A13(int input)
   vp.data = ui_get_minimap_viewport();
 
   // CF8
-  sub_CF8(ui_get_minimap_viewport(), &vp);
+  decode_viewport_data(ui_get_minimap_viewport(), &vp);
 }
 
 // 0x1861
-static void sub_1861(uint8_t input)
+static void draw_minimap_row(uint8_t input)
 {
   uint8_t al, bl, dl;
 
-  sub_194A();
+  calc_minimap_position();
   al = 0;
   bl = cpu.bx & 0xFF;
   dl = cpu.dx & 0xFF;
@@ -3005,7 +3005,7 @@ static void sub_1861(uint8_t input)
 
   // 0x1874
   byte_1966 = al;
-  sub_54D8(dl, bl);
+  get_map_tile_data(dl, bl);
 
   // 0x187A: Correct?
   if ((((word_11C6 & 0xFF00) >> 8) & 0x08) != 0) {
@@ -3015,7 +3015,7 @@ static void sub_1861(uint8_t input)
     bl = bl & 0x3;
     al = data_56E5[bl + 4];
     cpu.di = 0;
-    sub_19C7(al, 0);
+    plot_minimap_resource(al, 0);
     bl = word_11C6;
     bl = bl >> 4;
     bl = bl & 0xF;
@@ -3025,7 +3025,7 @@ static void sub_1861(uint8_t input)
       // 0x18AC
       al = data_56C6[bl];
       cpu.di = 6;
-      sub_19C7(al, 6);
+      plot_minimap_resource(al, 6);
     }
     // 0x18B6
     bl = word_11C6;
@@ -3034,11 +3034,11 @@ static void sub_1861(uint8_t input)
       // 0x18C0
       al = data_56C6[bl];
       cpu.di = 0xC;
-      sub_19C7(al, 0xC);
+      plot_minimap_resource(al, 0xC);
     }
     if ((byte_1966 & 0x80) != 0) {
       // 0x1945
-      sub_1A10();
+      draw_minimap_from_data6820();
       return;
     }
 
@@ -3050,22 +3050,22 @@ static void sub_1861(uint8_t input)
     }
     al = data_56E5[bl + 7];
     cpu.di = 0;
-    sub_19C7(al, 0);
+    plot_minimap_resource(al, 0);
     return;
   }
   // 18E4
   cpu.bx = 0x695C;
-  sub_1A13(input);
+  draw_minimap_segment(input);
 
   // 18EA
   al = word_11C6;
   byte_1949 = al;
 
-  sub_194A();
+  calc_minimap_position();
   bl = cpu.bx & 0xFF;
   bl++;
   cpu.bx = (cpu.bx & 0xFF00) | bl;
-  sub_54D8(dl, bl);
+  get_map_tile_data(dl, bl);
 
   // test byte [11C7], 08
   if ((((word_11C6 & 0xFF00) >> 8) & 0x08) != 0) {
@@ -3076,16 +3076,16 @@ static void sub_1861(uint8_t input)
       // 0x1911
       al = data_56C6[bl];
       cpu.di = 0x6;
-      sub_19C7(al, 6);
+      plot_minimap_resource(al, 6);
     }
   }
 
   // 191B
-  sub_194A();
+  calc_minimap_position();
   dl = cpu.dx & 0xFF;
   dl--;
   cpu.dx = (cpu.dx & 0xFF00) | dl;
-  sub_54D8(dl, bl);
+  get_map_tile_data(dl, bl);
 
   // test byte [11C7], 08
   if ((((word_11C6 & 0xFF00) >> 8) & 0x08) != 0) {
@@ -3095,12 +3095,12 @@ static void sub_1861(uint8_t input)
       // 0x1934
       al = data_56C6[bl];
       cpu.di = 0x0C;
-      sub_19C7(al, 0xC);
+      plot_minimap_resource(al, 0xC);
     }
     if ((byte_1966 & 0x80) == 0) {
       return;
     }
-    sub_1A10();
+    draw_minimap_from_data6820();
     return;
   }
 
@@ -3112,10 +3112,10 @@ static void sub_1861(uint8_t input)
   }
   // 0x1945
   // jmp 0x1A10
-  sub_1A10();
+  draw_minimap_from_data6820();
 }
 
-static void sub_1967(uint8_t input)
+static void set_viewport_size(uint8_t input)
 {
   uint16_t new_offset;
 
@@ -3147,7 +3147,7 @@ static void sub_1967(uint8_t input)
 
 // 0x19C7
 // Plot resource onto minimap
-static void sub_19C7(uint8_t val, uint16_t di)
+static void plot_minimap_resource(uint8_t val, uint16_t di)
 {
   struct resource *r;
   struct viewport_data vp;
@@ -3177,11 +3177,11 @@ static void sub_19C7(uint8_t val, uint16_t di)
 
   cpu.bx = data_19FE[di + 2]; // 1A02
 
-  sub_CE7(&vp, cpu.bx);
+  draw_sprite_to_viewport(&vp, cpu.bx);
 }
 
 // 0x1A10
-static void sub_1A10()
+static void draw_minimap_from_data6820()
 {
   printf("%s\n", __func__);
   struct viewport_data vp;
@@ -3196,12 +3196,12 @@ static void sub_1A10()
   vp.ypos = 0x18;
   vp.data = ui_get_data_6820();
 
-  sub_CF8(ui_get_data_6820(), &vp);
+  decode_viewport_data(ui_get_data_6820(), &vp);
 }
 
 // 0x17F7
 // Draw the minimap
-static void sub_17F7()
+static void draw_minimap()
 {
   uint8_t al;
 
@@ -3218,13 +3218,13 @@ static void sub_17F7()
     al = 0;
     do {
       byte_1962 = al;
-      sub_1861(al);
+      draw_minimap_row(al);
 
       al = byte_1962;
       al++;
     } while (al < 9);
 
-    sub_1967(byte_1964);
+    set_viewport_size(byte_1964);
 
     // Check for key in the buffer.
     // if no key (jmp 1837)
@@ -3257,7 +3257,7 @@ static void sub_17F7()
 }
 
 // 0x1750
-static void sub_1750()
+static void process_minimap_commands()
 {
   uint8_t al;
   cpu.bx = 0x17D9;
@@ -3275,7 +3275,7 @@ static void sub_1750()
   cache_resources();
   while (1) {
     // 0x176A
-    sub_176A();
+    handle_minimap_input();
 
     // 0x1775 jmp near bx
     if (cpu.bx == 0x179B) {
@@ -3298,7 +3298,7 @@ static void sub_1750()
 
 // Not a function really, but a lot of code jumps here
 // 0x176A
-static void sub_176A()
+static void handle_minimap_input()
 {
   // data_1777 to 179A
   unsigned char data_1777[] = {
@@ -3318,20 +3318,20 @@ static void sub_176A()
   unsigned char *ptr = data_1777;
 
   // 0x176A
-  sub_17F7();
+  draw_minimap();
 
   // 0x176D
   cpu.bx = 0x1777;
   // cpu.cx = cs
-  sub_28B0(0x8000 | EVENT_FLAG_DISABLE_MOUSE, ptr, data_1777);
+  wait_for_event(0x8000 | EVENT_FLAG_DISABLE_MOUSE, ptr, data_1777);
 }
 
 // 0x179B
 static void mini_map_escape()
 {
   init_offsets(0x50);
-  sub_37C8();
-  sub_587E(); // Redraw header?
+  init_viewport_for_map();
+  release_flagged_resources(); // Redraw header?
   ui_draw_full();
 }
 
@@ -3375,7 +3375,7 @@ static void op_6D()
 {
   unsigned char *base_pc = cpu.base_pc;
 
-  sub_1750();
+  process_minimap_commands();
 }
 
 // 0x4607
@@ -3385,7 +3385,7 @@ static void op_6F(void)
 
   cpu.dx = (cpu.dx & 0xFF00) | game_state.unknown[1];
   cpu.bx = (cpu.bx & 0xFF00) | game_state.unknown[0];
-  sub_536B(cpu.dx, cpu.bx);
+  move_player_on_map(cpu.dx, cpu.bx);
 
   al = *cpu.pc++;
   cpu.ax = al;
@@ -3401,7 +3401,7 @@ static void op_6F(void)
 
 
 // 0x46A1
-static void sub_46A1(uint8_t start_offset)
+static void run_level_script(uint8_t start_offset)
 {
   uint8_t al;
   uint16_t offset = start_offset;
@@ -3435,7 +3435,7 @@ static void op_71(void)
 
     cpu.dx = (cpu.dx & 0xFF00) | dl;
     cpu.bx = (cpu.bx & 0xFF00) | bl;
-    sub_54D8(cpu.dx, cpu.bx);
+    get_map_tile_data(cpu.dx, cpu.bx);
 
     al = word_11C8;
     if (al != game_state.unknown[0x3E]) {
@@ -3451,7 +3451,7 @@ static void op_71(void)
 
         bl = al;
         cpu.bx = (cpu.bx & 0xFF00) | bl;
-        sub_46A1(bl);
+        run_level_script(bl);
 
         al = game_state.unknown[2];
         if (al != game_state.unknown[0x57]) {
@@ -3462,7 +3462,7 @@ static void op_71(void)
     }
     // 0x4698
     cpu.bx = 0;
-    sub_46A1(0);
+    run_level_script(0);
   }
   // 0x469D
   // pop si ?
@@ -3492,7 +3492,7 @@ static void op_72(void)
 
   dl = game_state.unknown[1];
   bl = game_state.unknown[0];
-  sub_54D8(dl, bl);
+  get_map_tile_data(dl, bl);
 
   al = word_11C8;
   byte_4753 = al;
@@ -3683,7 +3683,7 @@ static void advance_cursor(void)
 }
 
 // 0x1DCA
-static void sub_1DCA(uint8_t dl)
+static void convert_number_to_string(uint8_t dl)
 {
   uint8_t al, bl;
   unsigned int tmp;
@@ -3759,7 +3759,7 @@ static void sub_1DCA(uint8_t dl)
 
 // 0x1DBB
 // also called by 0x1DB9 (with high val of 0)
-static void sub_1DBB(uint16_t val)
+static void print_number(uint16_t val)
 {
   uint8_t dl;
 
@@ -3767,20 +3767,20 @@ static void sub_1DBB(uint16_t val)
   dl = 4;
   word_11C8 = 0;
 
-  sub_1DCA(dl);
+  convert_number_to_string(dl);
 }
 
 // 0x1DC8
-static void sub_1DC8()
+static void print_number_9_digits()
 {
-  sub_1DCA(9);
+  convert_number_to_string(9);
 }
 
 // 0x48C5
 static void op_81()
 {
   cpu.ax = word_3AE2;
-  sub_1DBB(cpu.ax);
+  print_number(cpu.ax);
 }
 
 // 0x48D2
@@ -3801,7 +3801,7 @@ static void op_82()
   cpu.ax += game_state.unknown[cpu.bx + 3] << 8;
 
   word_11C8 = cpu.ax;
-  sub_1DC8();
+  print_number_9_digits();
 }
 
 // 0x48EE
@@ -3857,7 +3857,7 @@ static void op_87(void)
 
 // 0x4C07
 // Side effects: can modify cpu.ax, cpu.cf and cpu.zf
-static void sub_4C07(int offset)
+static void check_and_update_direction(int offset)
 {
   uint8_t al;
 
@@ -3881,7 +3881,7 @@ static void sub_4C07(int offset)
 }
 
 // 0x4B60
-static void sub_4B60()
+static void update_directional_indicators()
 {
   uint8_t al;
 
@@ -3891,18 +3891,18 @@ static void sub_4B60()
 
   // Check if we need to change the direction icon
   // 0x4B68
-  sub_4C07(0);
+  check_and_update_direction(0);
   if (cpu.cf == 0 && cpu.zf == 0) {
     // 0x4B71
     // Draw north/east/south/west arrow
     al = cpu.ax & 0xFF;
     al += 9;
     cpu.ax = (cpu.ax & 0xFF00) | al;
-    sub_35A0(cpu.ax & 0xFF);
+    draw_ui_piece_by_index(cpu.ax & 0xFF);
   }
 
   // 0x4B76
-  sub_4C07(1);
+  check_and_update_direction(1);
   if (cpu.cf == 0) {
     if (cpu.zf == 1) {
       // 0x4B80
@@ -3914,14 +3914,14 @@ static void sub_4B60()
     exit(1);
   }
   // 0x4BA7
-  sub_4C07(2);
+  check_and_update_direction(2);
   if (cpu.cf == 0 && cpu.zf == 0) {
     // 0x4BB1
     printf("%s: 0x4BB1 unimplemented\n", __func__);
     exit(1);
   }
   // 0x4BB6
-  sub_4C07(3);
+  check_and_update_direction(3);
   if (cpu.cf == 0) {
     if (cpu.zf == 0) {
       // 0x4BC0
@@ -3940,7 +3940,7 @@ static void sub_4B60()
 }
 
 // 0x4D37
-static void sub_4D37(int al, int index, const struct resource *r)
+static void init_monster_animation(int al, int index, const struct resource *r)
 {
   int cl = al;
   int si = index;
@@ -3964,7 +3964,7 @@ static void sub_4D37(int al, int index, const struct resource *r)
 }
 
 // 0x4D5C
-static void sub_4D5C()
+static void check_random_encounter_timer()
 {
   if (timers.timer2 != 0)
     return;
@@ -3987,12 +3987,12 @@ static void sub_4D5C()
 
   // 0x4D79
   for (int index = 3; index >= 0; index--) {
-    sub_4D97(index);
+    update_monster_animation(index);
   }
 }
 
 // 0x4D97
-static void sub_4D97(uint16_t index)
+static void update_monster_animation(uint16_t index)
 {
   uint8_t al, ah;
   uint16_t start_index;
@@ -4018,14 +4018,14 @@ static void sub_4D97(uint16_t index)
   cpu.bx = word_4F29->bytes[cpu.si];
   cpu.bx += word_4F29->bytes[cpu.si + 1] << 8;
 
-  sub_4DE3(cpu.bx, word_4F29);
+  draw_graphic_to_viewport(cpu.bx, word_4F29);
   vga_update();
   // 0x4DC0
 
   al = word_4F29->bytes[start_index];
   ah = word_4F29->bytes[start_index + 3];
   if (ah == 0xFF) {
-    sub_4D37(al, index, word_4F29);
+    init_monster_animation(al, index, word_4F29);
     // Jump to 4D37
     return;
   }
@@ -4045,11 +4045,11 @@ void reset_game_state()
 {
   memset(game_state.unknown + 0x18, 0, 7);
 
-  sub_1A72();
+  draw_player_status_panel();
 }
 
 // 0x1A72
-static void sub_1A72()
+static void draw_player_status_panel()
 {
   uint8_t al, ah;
   uint8_t val;
@@ -4239,7 +4239,7 @@ static void draw_player_status(uint8_t val)
   append_spaces(al);
 
   unsigned char data_1BAA[] = { 0x54, 0x82, 0x00 }; // "is "
-  sub_1C70(data_1BAA);
+  extract_and_draw_string(data_1BAA);
   // 1BAD
 
   extract_string(str_table_status[si], 0, handle_byte_callback);
@@ -4250,7 +4250,7 @@ static void draw_player_status(uint8_t val)
 
 // 0x2CF5
 // Get timer ticks?
-static void sub_2CF5()
+static void update_random_seed()
 {
   cpu.ax = sys_ticks();
   cpu.ax += random_seed;
@@ -4259,7 +4259,7 @@ static void sub_2CF5()
 
 // 0x2D0B
 // returns keycode in AL, also sets sign flag?
-static uint16_t sub_2D0B()
+static uint16_t get_key_from_buffer()
 {
   cpu.bx = word_2DD9;
   if (cpu.bx < 0x8000) {
@@ -4294,11 +4294,11 @@ static uint16_t sub_2D0B()
 }
 
 // 0x2BD9
-static int sub_2BD9()
+static int check_timer_events()
 {
-  sub_4D5C();
-  sub_4B60();
-  sub_1A72();
+  check_random_encounter_timer();
+  update_directional_indicators();
+  draw_player_status_panel();
   cpu.ax = timers.timer3; // 0x4C38
   uint8_t al = cpu.ax & 0xFF;
   al = al | timers.timer5; // 0x4C3C
@@ -4315,7 +4315,7 @@ static int sub_2BD9()
 }
 
 // 0x2ADC
-static void sub_2ADC()
+static void clear_event_flag()
 {
   if ((word_2AA7 & 0x1) != 0) {
     return;
@@ -4325,7 +4325,7 @@ static void sub_2ADC()
 
 // 0x2A4C
 // Inputs byte_2AA6 ?
-static void sub_2A4C(const unsigned char *base)
+static void handle_key_event(const unsigned char *base)
 {
   uint8_t al;
 
@@ -4340,7 +4340,7 @@ static void sub_2A4C(const unsigned char *base)
   printf("%s: JUMP (BX) - 0x%04X\n", __func__, cpu.bx);
   printf("%s: AX - 0x%04X\n", __func__, cpu.ax);
 
-  sub_2ADC();
+  clear_event_flag();
   al = cpu.ax & 0xFF;
   if (al == 1) {
     // Set selected player
@@ -4365,7 +4365,7 @@ static void sub_2A4C(const unsigned char *base)
 //
 // First two bytes are some sort of flag, 0x8000 indicates that
 // we draw an escape table
-static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char *base)
+static void wait_for_event(uint16_t flags, unsigned char *src_ptr, const unsigned char *base)
 {
   uint8_t al;
   uint8_t ah;
@@ -4448,9 +4448,9 @@ static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char
     }
 
     // 0x2942
-    sub_4D5C();
-    sub_4B60();
-    sub_1A72();
+    check_random_encounter_timer();
+    update_directional_indicators();
+    draw_player_status_panel();
     printf("%s: word_2AA7: 0x%04X\n", __func__, word_2AA7);
   }
   cpu.key_wait_inited = true;
@@ -4460,7 +4460,7 @@ static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char
     if ((word_2AA7 & 0x0080) == 0) {
       mouse_show_cursor();
     }
-    sub_2CF5(); // timer
+    update_random_seed(); // timer
     cpu.ax = 0; // Was in poll mouse (still useful?)
     poll_mouse(); // mouse ?
     sub_2AEE(word_2AA7); // Mouse in bounds?
@@ -4471,7 +4471,7 @@ static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char
     }
 
     // 0x2985
-    al = sub_2D0B(); // key pressed?
+    al = get_key_from_buffer(); // key pressed?
     if (al != 0) {
       // A-Z letters.
       if (al >= 0xE1 && al <= 0xFA) {
@@ -4500,7 +4500,7 @@ static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char
       sys_delay(1000/18);
 
       // 0x29B1
-      if (sub_2BD9() == 0) {
+      if (check_timer_events() == 0) {
         // No event occurred, keep looping.
         continue;
       }
@@ -4511,7 +4511,7 @@ static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char
     // 29B8
     byte_2AA6 = al;
     if ((word_2AA7 & 0x40) != 0) {
-      sub_2ADC();
+      clear_event_flag();
       cpu.bx = word_2AA2;
       cpu.key_wait_inited = false;
       return;
@@ -4532,7 +4532,7 @@ static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char
       al = *(base + cpu.di);
       cpu.ax = (cpu.ax & 0xFF00) | al;
       if (al == 0) {
-        sub_2A4C(base);
+        handle_key_event(base);
         cpu.key_wait_inited = false;
         return;
       }
@@ -4564,7 +4564,7 @@ static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char
             continue;
           }
 
-          sub_2A4C(base);
+          handle_key_event(base);
           cpu.key_wait_inited = false;
           return;
         }
@@ -4598,14 +4598,14 @@ static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char
               // 0x29DD
               continue;
             }
-            sub_2A4C(base);
+            handle_key_event(base);
             cpu.key_wait_inited = false;
             return;
           }
           // Did user press this key??
           if (al == byte_2AA6) {
             // 0x2A4C
-            sub_2A4C(base);
+            handle_key_event(base);
             cpu.key_wait_inited = false;
             return;
           }
@@ -4617,15 +4617,15 @@ static void sub_28B0(uint16_t flags, unsigned char *src_ptr, const unsigned char
 }
 
 #if 0
-static int sub_294B()
+static int check_timer_events()
 {
   uint8_t al;
   uint8_t bl, bh;
 
   if ((word_2AA7 & 0x0080) == 0) {
-    sub_1F10();
+    tandy_cleanup_check();
   }
-  sub_2CF5(); // timer
+  update_random_seed(); // timer
   poll_mouse(); // mouse ?
   sub_2AEE(); // Mouse in bounds?
   uint8_t clicked = mouse_get_clicked();
@@ -4635,7 +4635,7 @@ static int sub_294B()
   }
 
   // 0x2985
-  al = sub_2D0B(); // key pressed?
+  al = get_key_from_buffer(); // key pressed?
   if (al != 0) {
     // A-Z letters.
     if (al >= 0xE1 && al <= 0xFA) {
@@ -4657,7 +4657,7 @@ static int sub_294B()
     }
   } else {
     // 0x29B1
-    if (sub_2BD9() == 0) {
+    if (check_timer_events() == 0) {
       // No event occurred, keep looping.
       return 1;
     }
@@ -4668,7 +4668,7 @@ static int sub_294B()
   // 29B8
   byte_2AA6 = al;
   if ((word_2AA7 & 0x40) != 0) {
-    sub_2ADC();
+    clear_event_flag();
     cpu.bx = word_2AA2;
     return 0;
   }
@@ -4687,7 +4687,7 @@ static int sub_294B()
     al = *(base + cpu.di);
     cpu.ax = (cpu.ax & 0xFF00) | al;
     if (al == 0) {
-      sub_2A4C();
+      handle_key_event();
       return 0;
     }
     if (al == 0xFF) {
@@ -4716,7 +4716,7 @@ static int sub_294B()
         if (cpu.cx != 0)
           continue;
 
-        sub_2A4C();
+        handle_key_event();
         return 0;
       }
     }
@@ -4749,13 +4749,13 @@ static int sub_294B()
             // 0x29DD
             continue;
           }
-          sub_2A4C();
+          handle_key_event();
           return 0;
         }
         // Did user press this key??
         if (al == byte_2AA6) {
           // 0x2A4C
-          sub_2A4C();
+          handle_key_event();
           return 0;
         }
       }
@@ -4766,7 +4766,7 @@ static int sub_294B()
 
 // 0x2C00
 // Takes a pointer?
-static void sub_2C00()
+static void wait_for_escape_key()
 {
   // 0x2C0E
   // Acceptable keys:
@@ -4775,7 +4775,7 @@ static void sub_2C00()
 
   cpu.bx = 0x2C0E; // function pointer.
   unsigned char *ptr = data_2C0E;
-  sub_28B0(0x8204, ptr, data_2C0E);
+  wait_for_event(0x8204, ptr, data_2C0E);
   draw_pattern(&draw_rect);
 }
 
@@ -4783,7 +4783,7 @@ static void sub_2C00()
 // Waits for an escape key before advancing.
 static void op_wait_escape()
 {
-  sub_2C00();
+  wait_for_escape_key();
 }
 
 // 0x4977
@@ -4803,7 +4803,7 @@ static void wait_event(void)
   flags = *cpu.pc++;
   flags += *cpu.pc++ << 8;
 
-  sub_28B0(flags, cpu.pc, cpu.base_pc);
+  wait_for_event(flags, cpu.pc, cpu.base_pc);
 
   // 0x4984 (A good idea to break here, so you can trap keypresses).
   // the key pressed will be in AX (OR'd with 0x80).
@@ -4815,7 +4815,7 @@ static void wait_event(void)
 
 // 0x4C40
 // Random Encounter!
-static void sub_4C40()
+static void trigger_random_encounter()
 {
   uint8_t bl;
   struct resource *r, *r2;
@@ -4827,7 +4827,7 @@ static void sub_4C40()
 
   // 0x4C47 (al contains random encounter id)
   byte_4F0F = (cpu.ax & 0xFF);
-  sub_4D82();
+  release_flagged_resource();
   bl = byte_4F0F;
   if (bl < 0xFE) {
     cpu.bx = bl;
@@ -4844,7 +4844,7 @@ static void sub_4C40()
     printf("Loading Resource: %d\n", cpu.bx);
     r = resource_load(cpu.bx);
     if (r != NULL) {
-      sub_4C95(r);
+      show_random_encounter(r);
       resource_set_flagged(r->index);
 
       uint16_t tag = r->tag;
@@ -4860,25 +4860,25 @@ static void sub_4C40()
       // 4F29 = r2->bytes
       word_4F29 = r2;
       for (int bx = 3; bx >= 0; bx--) {
-        sub_4D37(0, bx, r2);
+        init_monster_animation(0, bx, r2);
       }
       byte_4F2B = 0xFF;
       return;
     }
   }
   // 0x4C92 ?
-  sub_37C8();
+  init_viewport_for_map();
 }
 
 // 0x498E
 static void op_8A()
 {
   cpu.ax = word_3AE2; // Random encounter ?
-  sub_4C40();
+  trigger_random_encounter();
 }
 
 // 0x1EBF
-static void sub_1EBF()
+static void draw_input_box_with_flag()
 {
   int zf = 0;
   uint8_t al;
@@ -4927,34 +4927,34 @@ static void sub_1EBF()
 }
 
 // 0x1EBB
-static void sub_1EBB()
+static void draw_input_box_clear()
 {
   // clc
   cpu.cf = 0;
-  sub_1EBF();
+  draw_input_box_with_flag();
 }
 
 // 0x1EBE
-static void sub_1EBE()
+static void draw_input_box_carry()
 {
   cpu.cf = 1;
-  sub_1EBF();
+  draw_input_box_with_flag();
 }
 
 // 0x1E49
-static void sub_1E49()
+static void read_string_input()
 {
   uint8_t al, bl;
 
   ui_draw_string();
   byte_1F07 = 0;
-  sub_1EBB();
+  draw_input_box_clear();
 
   // 0x1E54
   while (1) {
     cpu.bx = 0x1EB9; // function pointer.
     unsigned char *ptr = data_1EB9;
-    sub_28B0(0x00C0 | EVENT_FLAG_ALLOW_ANY_CASE, ptr, data_1EB9);
+    wait_for_event(0x00C0 | EVENT_FLAG_ALLOW_ANY_CASE, ptr, data_1EB9);
 
     // Checking for keys.
     al = cpu.ax & 0xFF;
@@ -4973,7 +4973,7 @@ static void sub_1E49()
         continue;
       }
       byte_1F07--;
-      sub_1EBB();
+      draw_input_box_clear();
       ui_draw_chr_piece(0xA0);
       continue;
     } else if (al == 0x8D) { // Enter key
@@ -4996,25 +4996,25 @@ static void sub_1E49()
     } else {
       set_game_state(__func__, 0xC6 + cpu.bx, al);
       byte_1F07++;
-      sub_1EBB();
+      draw_input_box_clear();
     }
   }
   // 1E99
   al = 0;
   set_game_state(__func__, 0xC6 + cpu.bx, al);
-  sub_1EBE();
+  draw_input_box_carry();
   al = 0x8D;
   handle_byte_callback(al);
 }
 
-static void sub_1C70(unsigned char *src_ptr)
+static void extract_and_draw_string(unsigned char *src_ptr)
 {
   cpu.bx = extract_string(src_ptr, 0, handle_byte_callback);
   cpu.cf = 0;
 }
 
 // 0x4D82
-void sub_4D82()
+void release_flagged_resource()
 {
   // validate that byte_4F10 is equal to 0xFF (which it is set to on startup)
   // byte_4F10 is some kind of memory/resource index flag, 0xFF means that it
@@ -5034,7 +5034,7 @@ static void advance_data_ptr()
 }
 
 // 0x5868
-static void sub_5868(struct resource *res, int starting_index)
+static void cache_level_components(struct resource *res, int starting_index)
 {
   uint8_t al;
 
@@ -5112,11 +5112,11 @@ static void read_level_metadata()
   // 0x582B
   // cache resources. Types
   cpu.si = 0;
-  sub_5868(r, 0);
+  cache_level_components(r, 0);
   cpu.si = 4; // ground components
-  sub_5868(r, 4);
+  cache_level_components(r, 4);
   cpu.si = 8; // other ?
-  sub_5868(r, 8);
+  cache_level_components(r, 8);
 
   // 0x583C
   // Index of compressed level string (e.g. "Purgatory")
@@ -5144,7 +5144,7 @@ static void read_level_metadata()
 
 // 0x5523
 // Check boundaries
-static void sub_5523()
+static void check_map_boundary_x()
 {
   uint8_t bl;
 
@@ -5173,7 +5173,7 @@ static void sub_5523()
 
 // 0x5559
 // Check boundaries, modifies cpu.dx (dl)
-static void sub_5559(int x)
+static void check_map_boundary_y(int x)
 {
   uint8_t dl;
 
@@ -5203,12 +5203,12 @@ static void sub_5559(int x)
 // 0x54D8
 // Take input parameters DX and BX ?
 // not matching dragon.com
-static void sub_54D8(int x, int y)
+static void get_map_tile_data(int x, int y)
 {
   uint8_t al;
 
-  sub_5523();
-  sub_5559(x);
+  check_map_boundary_x();
+  check_map_boundary_y(x);
 
   // xor dh, dh
   cpu.dx = cpu.dx & 0xFF;
@@ -5243,7 +5243,7 @@ static void sub_54D8(int x, int y)
 }
 
 // 0x504B
-static void sub_504B(unsigned char *dest, unsigned int offset)
+static void set_map_event_flag(unsigned char *dest, unsigned int offset)
 {
   uint8_t al;
 
@@ -5261,12 +5261,12 @@ static void sub_504B(unsigned char *dest, unsigned int offset)
 
 
 // 0x4FD9
-static void sub_4FD9()
+static void init_map_events()
 {
   uint8_t bl, cl;
 
   bl = game_state.unknown[2];
-  word_5038 = sub_504B;
+  word_5038 = set_map_event_flag;
   cpu.bx = bl;
   cpu.bx = cpu.bx << 1;
   if (cpu.bx < 0x50) {
@@ -5295,7 +5295,7 @@ static void sub_4FD9()
         push_word(cpu.si);
 
         // 0x500E
-        sub_54D8(cpu.dx, cpu.bx);
+        get_map_tile_data(cpu.dx, cpu.bx);
         cpu.si = pop_word();
         cpu.cx = pop_word();
 
@@ -5329,13 +5329,13 @@ static void sub_4FD9()
 
 // 0x536B
 // Controls movement?
-static void sub_536B(int x, int y)
+static void move_player_on_map(int x, int y)
 {
   uint8_t al, bl, dl;
 
   push_word(cpu.dx);
   push_word(cpu.bx);
-  sub_54D8(x, y);
+  get_map_tile_data(x, y);
   cpu.bx = pop_word();
   cpu.dx = pop_word();
 
@@ -5349,7 +5349,7 @@ static void sub_536B(int x, int y)
     push_word(cpu.dx);
     push_word(cpu.bx);
     cpu.dx++;
-    sub_54D8(cpu.dx, cpu.bx);
+    get_map_tile_data(cpu.dx, cpu.bx);
     cpu.bx = pop_word();
     cpu.dx = pop_word();
 
@@ -5362,7 +5362,7 @@ static void sub_536B(int x, int y)
     push_word(cpu.dx);
     push_word(cpu.bx);
     cpu.bx--;
-    sub_54D8(cpu.dx, cpu.bx);
+    get_map_tile_data(cpu.dx, cpu.bx);
     cpu.bx = pop_word();
     cpu.dx = pop_word();
 
@@ -5403,7 +5403,7 @@ static void sub_536B(int x, int y)
 }
 
 // 0x5764
-static void sub_5764()
+static void load_level_resources()
 {
   uint8_t al, bl;
 
@@ -5428,7 +5428,7 @@ static void sub_5764()
 
       read_level_metadata();
       // 579E
-      sub_4FD9();
+      init_map_events();
       // 0x57A1
       cpu.cx = 2;
       cpu.di = 0x3919;
@@ -5509,7 +5509,7 @@ static void cache_resources()
 }
 
 // 0xCE7
-static void sub_CE7(struct viewport_data *vp, uint16_t sprite_offset)
+static void draw_sprite_to_viewport(struct viewport_data *vp, uint16_t sprite_offset)
 {
   unsigned char *ds = word_1051->bytes + word_104F + sprite_offset;
 
@@ -5525,7 +5525,7 @@ static void sub_CE7(struct viewport_data *vp, uint16_t sprite_offset)
   // 0xCF8
   ds = word_1051->bytes + word_104F;
   vp->data = ds;
-  sub_CF8(vp->data, vp);
+  decode_viewport_data(vp->data, vp);
 }
 
 // 0x56FC
@@ -5571,7 +5571,7 @@ static void draw_viewport_sky()
     cpu.bx = 4; // sprite offset
 
     // 5732
-    sub_CE7(&vp, cpu.bx);
+    draw_sprite_to_viewport(&vp, cpu.bx);
   } else {
     int dx = 88;
     cpu.bx = 0;
@@ -5595,7 +5595,7 @@ static void draw_viewport_sky()
 }
 
 // 0x587E
-static void sub_587E()
+static void release_flagged_resources()
 {
   uint8_t al;
   int counter = 0xE;
@@ -5622,10 +5622,10 @@ static void refresh_viewport()
   struct viewport_data vp;
   int counter;
 
-  sub_4D82();
+  release_flagged_resource();
 
   // Load level.
-  sub_5764();
+  load_level_resources();
   set_ui_header(data_5866, word_5864);
   cpu.bx = game_state.unknown[3];
 
@@ -5645,7 +5645,7 @@ static void refresh_viewport()
     cpu.bx = bl;
 
     // 0x51E2
-    sub_536B(dl, bl);
+    move_player_on_map(dl, bl);
     cpu.si = pop_word();
     cpu.di = pop_word();
     printf("%s 0x%04X 11CA: 0x%04X\n", __func__, cpu.di, word_11CA);
@@ -5682,7 +5682,7 @@ static void refresh_viewport()
   cpu.dx = (cpu.dx & 0xFF00) | dl;
   bl = game_state.unknown[0];
   cpu.bx = (cpu.bx & 0xFF00) | bl;
-  sub_54D8(cpu.dx, cpu.bx);
+  get_map_tile_data(cpu.dx, cpu.bx);
   if (cpu.cf == 0) {
     // 0x5234
     data_5521[word_551F + 1] |= 0x8;
@@ -5723,7 +5723,7 @@ static void refresh_viewport()
     // sprite index
     cpu.bx = sprite_indices[counter];
 
-    sub_CE7(&vp, cpu.bx);
+    draw_sprite_to_viewport(&vp, cpu.bx);
     counter--;
   } while (counter >= 0);
 
@@ -5768,7 +5768,7 @@ static void refresh_viewport()
         vp.ypos = data_55BF[counter];
 
         cpu.bx = data_561F[counter];
-        sub_CE7(&vp, cpu.bx);
+        draw_sprite_to_viewport(&vp, cpu.bx);
       }
     }
     // 0x52F3
@@ -5777,7 +5777,7 @@ static void refresh_viewport()
   // 0x52F8
   //
   byte_4F0F = 0xFF; // Monster index?
-  sub_587E();
+  release_flagged_resources();
   update_viewport();
 }
 
@@ -5800,10 +5800,10 @@ static void prompt_no_yes()
   // 0x49CA (keys: 0xCE = 'N', 0xD9 = 'Y', unknown about other bytes)
   unsigned char data_49CA[] = { 0xCE, 0x00, 0x00, 0xD9, 0x00, 0x00, 0xFF };
 
-  sub_1C70(data_49AB);
+  extract_and_draw_string(data_49AB);
   cpu.bx = 0x49CA;
   unsigned char *ptr = data_49CA;
-  sub_28B0(0, ptr, data_49CA);
+  wait_for_event(0, ptr, data_49CA);
   uint8_t key = cpu.ax;
 
   draw_pattern(&draw_rect);
@@ -5832,10 +5832,10 @@ static void prompt_no_yes()
 static void op_read_string()
 {
   printf("%s : 0x49D3\n", __func__);
-  sub_1E49();
+  read_string_input();
 }
 
-static void sub_5076(int function_idx)
+static void dispatch_sound_effect(int function_idx)
 {
   // Output sound effect based on function.
   if (function_idx >= NUM_FUNCS) {
@@ -5852,7 +5852,7 @@ static void sub_5076(int function_idx)
   func_5060[function_idx]();
 }
 
-static void sub_5096()
+static void check_and_play_sound()
 {
   // Check sound, output sound.
 
@@ -5860,34 +5860,34 @@ static void sub_5096()
   // }
 }
 
-static void sub_50B2()
+static void play_sound_effect_B2()
 {
   printf("%s: unimplemented\n", __func__);
   exit(1);
 }
 
 // Sound for opening a door?
-static void sub_5080()
+static void play_sound_door_open()
 {
   cpu.dx = 0x28;
   cpu.bx = 0x400;
-  sub_5096();
+  check_and_play_sound();
 }
 
 // Sound for ?
-static void sub_5088()
+static void play_sound_effect_88()
 {
   cpu.dx = 0xF0;
   cpu.bx = 0x200;
-  sub_5096();
+  check_and_play_sound();
 }
 
 // Sound for bumping into a wall?
-static void sub_5090()
+static void play_sound_wall_bump()
 {
   cpu.dx = 0xC8;
   cpu.bx = 0x800;
-  sub_5096();
+  check_and_play_sound();
 }
 
 // Extract and play a PCM sound from resources
@@ -5926,14 +5926,14 @@ static void op_sound_effect(void)
   al = *cpu.pc++;
   cpu.ax = (cpu.ax & 0xFF00) | al;
 //  push_si
-  sub_5076(al);
+  dispatch_sound_effect(al);
   //pop si
 }
 
 // 0x49F3
 static void op_91(void)
 {
-  sub_1A72();
+  draw_player_status_panel();
 }
 
 // 0x49FD
@@ -5941,7 +5941,7 @@ static void op_92(void)
 {
   uint8_t al, dl;
 
-  sub_1A72();
+  draw_player_status_panel();
   ui_draw_string();
   cpu.bx = get_game_state(__func__, 0xDC); // 0x393C
   if (cpu.bx != 0) {
@@ -5956,11 +5956,11 @@ static void op_92(void)
     uint8_t clicked = mouse_get_clicked();
     if (clicked != 0x80) {
       // 0x4A1F
-      al = sub_2D0B();
+      al = get_key_from_buffer();
       if (al < 0x80) {
         // 0x4A24
-        sub_4D5C();
-        sub_4B60();
+        check_random_encounter_timer();
+        update_directional_indicators();
         mouse_show_cursor();
       } else {
         // 4A38
@@ -6160,7 +6160,7 @@ static void op_9A(void)
 // 0x4A79
 // also 0x4A7D (taking 3AE2)
 // Returns cpu.bx, cpu.ax (al)
-static void sub_4A79(uint8_t al)
+static void get_bit_mask_from_table(uint8_t al)
 {
   cpu.ax = al;
 
@@ -6180,7 +6180,7 @@ static void sub_4A79(uint8_t al)
 static void op_9B(void)
 {
   uint8_t al = *cpu.pc++;
-  sub_4A79(al);
+  get_bit_mask_from_table(al);
   set_game_state(__func__, cpu.bx, game_state.unknown[cpu.bx] | (cpu.ax & 0xFF));
 }
 
@@ -6188,7 +6188,7 @@ static void op_9B(void)
 static void op_9D(void)
 {
   uint8_t al = *cpu.pc++;
-  sub_4A79(al);
+  get_bit_mask_from_table(al);
 
   // test [bx+3860], al
   cpu.cf = 0;
@@ -6385,10 +6385,10 @@ static void set_ui_header(unsigned char *base_ptr, uint16_t offset)
   set_sb_handler_append_string();
 
   // Flush to screen
-  sub_280E();
+  flush_ui_header();
 }
 
-static void sub_280E()
+static void flush_ui_header()
 {
   // check length against previous length (max length?)
   // XXX: Unknown.
@@ -6517,7 +6517,7 @@ static uint16_t get_player_record(uint16_t offset)
 // Inputs: 11C0, 11C2, 11C4
 // Side effects:
 // sets 11C4, 11C6, and 11C8
-static void sub_11A0(int set_11C4)
+static void multiply_16bit(int set_11C4)
 {
   uint32_t result;
 
@@ -6536,7 +6536,7 @@ static void sub_11A0(int set_11C4)
 
 // Input is 11C0, 11C6, 11C8
 // Output is 11CA, 11CC
-static void sub_11CE()
+static void divide_16bit()
 {
   int old_carry = 0;
   int carry = 0;

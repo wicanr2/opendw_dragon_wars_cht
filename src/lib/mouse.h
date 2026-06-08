@@ -28,7 +28,7 @@ extern "C" {
 void mouse_show_cursor();
 void mouse_restore_screen_buffer(uint8_t al);
 void mouse_disable_cursor();
-int sub_2AEE(uint16_t flags);
+int check_mouse_in_bounds(uint16_t flags);
 void poll_mouse();
 uint8_t mouse_get_clicked();
 

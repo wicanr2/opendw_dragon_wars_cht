@@ -37,7 +37,7 @@ struct mouse_status mouse;
 // Mouse cursors (see mouse.cpp in tools)
 uint16_t data_6470[] = { 0x647C, 0x64EE, 0x6654, 0x65D2, 0x66C6, 0x6550 };
 
-static void sub_2061();
+static void draw_mouse_cursor();
 
 // 0x1F10
 void mouse_show_cursor()
@@ -48,13 +48,13 @@ void mouse_show_cursor()
 
   if (mouse_cursor_visible == 0) {
     // 0x1F26
-    sub_2061(); // Draw mouse cursor
+    draw_mouse_cursor(); // Draw mouse cursor
   } else {
     // 0x1F1E
   }
 
   if (mouse_cursor_visible != 0) {
-    //sub_1F38();
+    //tandy_cleanup_check();
   }
 
   // 0x1F26
@@ -86,11 +86,11 @@ void mouse_disable_cursor()
 }
 
 // 0x2061
-static void sub_2061()
+static void draw_mouse_cursor()
 {
   uint16_t si = data_6470[mouse_cursor_idx];
 
-  //sub_23A1();
+  //draw_mouse_cursor();
 
   mouse_cursor_visible = 0xff;
 }
@@ -98,7 +98,7 @@ static void sub_2061()
 // 0x2AEE
 // Check if mouse is inbounds on a rectangle?
 // Side effects, set's carry flag and also mouse cursor
-int sub_2AEE(uint16_t flags)
+int check_mouse_in_bounds(uint16_t flags)
 {
   uint16_t ax;
   int cf;
