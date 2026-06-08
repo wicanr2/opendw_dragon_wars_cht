@@ -1,8 +1,36 @@
 # Dragon Wars 翻譯對照表
 
-## 遊戲內文字 (從 dragon.com 提取)
+## 遊戲內文字 (從 DATA1 script 提取)
 
-### UI 文字
+### 選單文字
+| 英文 | 中文 | 位置 |
+|------|------|------|
+| Begin a new game | 開始新遊戲 | script:21 |
+| Continue an old game | 繼續舊遊戲 | script:21 |
+| Starting a new game will destroy your last saved game. Do you still wish to start a new game? | 開始新遊戲會摧毀您最後儲存的遊戲。您仍然希望開始新遊戲嗎？ | script:75 |
+| Current party... | 目前隊伍... | script:153 |
+| Create character | 建立角色 | script:189 |
+| Delete | 刪除 | script:266 |
+| Rename | 重新命名 | script:286 |
+| View | 查看 | script:295 |
+| Male or Female | 男性或女性 | script:586 |
+| Name your new character. | 為您的新角色命名。 | script:549 |
+| What will (name)'s new name be? | （名字）的新名字是什麼？ | script:334 |
+| You are about to delete (name). What has (name) done to deserve such a fate? | 您即將刪除（名字）。（名字）做了什麼以至於落得如此下場？ | script:389 |
+| (name) will be gone forever. Have mercy. | （名字）將永遠消失。請大發慈悲。 | script:449 |
+| Bye bye, (name). | 再見，（名字）。 | script:478 |
+| You still have (N) points left to distribute. Do you wish to go back and distribute them? | 您還有（N）點可以分配。您希望回去分配它們嗎？ | script:660 |
+| You must have someone in the party to begin the game. | 您的隊伍中必須有人才能開始遊戲。 | script:747 |
+
+### 狀態文字
+| 英文 | 中文 | 位置 |
+|------|------|------|
+| chained | 被鏈住 | DATA1 script |
+| poisoned | 中毒 | DATA1 script |
+| stunned | 昏迷 | DATA1 script |
+| dead | 死亡 | DATA1 script |
+
+### UI 文字 (從 dragon.com 提取)
 | 英文 | 中文 | 位置 |
 |------|------|------|
 | Dragon Wars Configure Menu V1.1 | 龍之戰設定選單 V1.1 | dragon.com |
@@ -24,29 +52,22 @@
 | Fatal error : Out of memory.$ | 嚴重錯誤：記憶體不足。$ | dragon.com |
 | Loading... | 載入中… | DATA1 script |
 
-### 狀態文字
+### 物品名稱
 | 英文 | 中文 | 位置 |
 |------|------|------|
-| chained | 被鏈住 | DATA1 script |
-| poisoned | 中毒 | DATA1 script |
-| stunned | 昏迷 | DATA1 script |
-| dead | 死亡 | DATA1 script |
+| (需要進一步提取) | | |
 
 ### 對話文字
 | 英文 | 中文 | 位置 |
 |------|------|------|
-| (需要從 DATA1 script 提取) | | |
-
-### 物品名稱
-| 英文 | 中文 | 位置 |
-|------|------|------|
-| (需要從 DATA1 script 提取) | | |
+| (需要進一步提取) | | |
 
 ## 注意事項
 
-1. DATA1 中的文字使用 5-bit 壓縮編碼，需要解壓才能取得完整文字
+1. DATA1 中的文字使用 5-bit 壓縮編碼，需要正確解壓才能取得完整文字
 2. 對話和物品名稱儲存在 script section (Section 0x00)
-3. 需要正確實作 bit_extract() 和 extract_letter() 才能解壓
+3. 每個選單項目的第一個字是快捷鍵控制碼（如 'B' = Begin, 'C' = Continue）
+4. 特殊字元：[bf] = ')', [be] = '-', [aa] = '(', [c4] = 'B', [c3] = 'C', [d3] = 'S'
 
 ## 解壓方式
 
@@ -59,7 +80,16 @@ be.offset = text_offset;
 while (1) {
     uint8_t letter = extract_letter(&be);
     if (letter == 0) break;
-    // letter 是 ASCII 字元 (bit 7 可能設為 1)
-    putchar(letter & 0x7F);
+    // letter 是 alphabet 編碼的值
+    // 需要對照 alphabet[] 表轉換為 ASCII
+    putchar(alphabet_index_to_char(letter));
 }
 ```
+
+## 待辦事項
+
+- [ ] 完整提取所有對話文字
+- [ ] 完整提取所有物品名稱
+- [ ] 建立完整的翻譯表
+- [ ] 實作中文顯示（24×24 點陣）
+- [ ] 實作中文輸入
