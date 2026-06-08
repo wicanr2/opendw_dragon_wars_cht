@@ -1,0 +1,20 @@
+# Build artifacts
+build/
+*.o
+*.a
+sdldragon
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Original game files (should not be committed)
+*.com
+DATA1
+DATA2
