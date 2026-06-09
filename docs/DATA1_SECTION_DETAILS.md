@@ -1,162 +1,252 @@
-# DATA1 Section 詳細分析
+# DATA1 區段詳細分析
 
-> **來源**：`docs/ALL_TEXT_FROM_DATA1.txt`（3,926 條文字，17 個 section）
-> **分析日期**：2026-06-09
-> **目標**：為每個 section 建立詳細的內容分類與結構描述
-
----
-
-## Section 類型對照表
-
-| Section | 類型 | 文字數 | 內容描述 | 萃取狀態 |
-|---------|------|--------|----------|----------|
-| 0x00 | SCRIPT | 241 | 遊戲邏輯 + 選單文字 | ✅ 完成 |
-| 0x01 | MAP/SCENE | 4 | 場景載入觸發 | ✅ 完成 |
-| 0x02 | MAP/SCENE | 20 | 場景載入觸發 | ✅ 完成 |
-| 0x03 | SCRIPT | 859 | 主要遊戲對話、NPC 對話 | ✅ 完成 |
-| 0x04 | MAP/SCENE | 10 | 場景載入觸發 | ✅ 完成 |
-| 0x05 | SCRIPT | 62 | 戰鬥對話 | ✅ 完成 |
-| 0x06 | SCRIPT | 481 | 城市/商店對話 | ✅ 完成 |
-| 0x07 | CHARACTER | 34 | 角色資料 | ✅ 完成 |
-| 0x08 | TEXT | 134 | 物品描述 | ✅ 完成 |
-| 0x09 | TEXT | 112 | 法術描述 | ✅ 完成 |
-| 0x0A | TEXT | 181 | 章節標題/結局 | ✅ 完成 |
-| 0x0B | TEXT | 137 | 戰鬥系統文字 | ✅ 完成 |
-| 0x0C | TEXT | 151 | 商店/道具店 | ✅ 完成 |
-| 0x0D | TEXT | 228 | 酒保傳聞 | ✅ 完成 |
-| 0x0E | TEXT | 59 | 戰鬥遭遇 | ✅ 完成 |
-| 0x0F | TEXT | 156 | 結局/遊戲結束 | ✅ 完成 |
-| 0x10 | ITEM_DATA | — | **物品二進位資料** | ⚠️ 無文字 |
-| 0x11 | ITEM_TEXT | 71 | 物品名稱/治療服務 | ✅ 完成 |
-| 0x12 | ITEM_SHOP | 215 | 道具店交易 | ✅ 完成 |
-| 0x13 | SPELL_TEXT | 640 | 法術名稱/競技場 | ✅ 完成 |
-| 0x14 | SPELL_SHOP | 86 | 法術商店 | ✅ 完成 |
-| 0x15 | MONSTER_TEXT | 15 | 怪物名稱 | ✅ 完成 |
-| 0x16 | GAME_OVER | 30 | 遊戲結束畫面 | ✅ 完成 |
+> **日期**：2026-06-09
+> **來源**：`/tmp/dw_disk1/data1`（296,439 bytes）
+> **工具**：`section_dump.cpp`（待建置）、Python `extract_sections.py`
+> **現有萃取**：`ALL_TEXT_FROM_DATA1.txt`（3,926 個字串，1057 行原始資料）
 
 ---
 
-## 詳細內容分類
+## 區段地圖
 
-### 選單文字（Section 0x00）
-- 新遊戲/繼續遊戲
-- 按鍵映射（方向鍵、功能鍵）
-- 未知指令提示（"Unknown"）
+### 區段類型分類
 
-### NPC 對話（Section 0x03）
-- 城市居民對話
-- 商店老板對話
-- 任務提示
-- 戰鬥中對話
+| 類型 | 區段範圍 | 說明 |
+|------|----------|------|
+| 遊戲腳本 | 0x00 | 初始遊戲腳本 |
+| 地圖/場景 | 0x01–0x02 | 地圖、場景資料 |
+| 對話/UI | 0x03, 0x06, 0x0B, 0x0D, 0x0F | 主要對話、物品描述 |
+| 角色資料 | 0x07 | 角色樣板（binary） |
+| 地圖/遭遇 | 0x08 | 遭遇事件 |
+| 未知/混合 | 0x01–0x06, 0x09–0x0F | 部分含文字 |
+| **物品資料** | **0x10–0x12** | 物品資料（0x10 = 空） |
+| **法術資料** | **0x13–0x14** | 法術資料 |
+| **怪物資料** | **0x15–0x16** | 怪物資料（binary + 文字） |
+| 標題畫面 | 0x18–0x1D | 0x18–0x1C 為空 (0xFFFE)；0x1D = 標題 |
+| 壓縮資源 | 0x1E–0xFF | LZSS 壓縮（地圖、影像、音訊） |
 
-### 物品描述（Section 0x08）
-已辨識的物品類型：
-- 武器：劍（sword）、雙手劍（2 handed sword）
-- 防具：布甲（cloth armor）、皮甲（leather armor）、鎖子甲（chain armor）、板甲（full plate armor）
-- 配件：靴子（pair of boots）、手套（mage gloves）、盾牌（full shield）
-- 特殊物品：Armor of Light
+### 區段 0x10–0x16 分析
 
-### 法術描述（Section 0x09）
-已辨識的法術：
-- Elvar's Fire
-- Column of Fire
-- Greater Healing
-- Major Healing
-- Full Shield
+| 區段 | 偏移 | 大小 | 文字數 | 內容 |
+|------|------|------|--------|------|
+| **0x10** | 0x6642 | 8,192 | 0 | 全 0xFF（未使用空間） |
+| **0x11** | 0x8642 | 358 | 71 | 治療/復活相關文字 |
+| **0x12** | 0x87A8 | 1,375 | 215 | 戰鬥選單、對話選項 |
+| **0x13** | 0x8D07 | 1,394 | 640 | 對話選項（大量重疊片段） |
+| **0x14** | 0x9279 | 903 | 86 | 商店/物品交易 |
+| **0x15** | 0x9600 | 257 | 15 | 技能名稱、物品類別名稱 |
+| **0x16** | 0x9701 | 78 | 30 | 死亡/結局訊息 |
 
-### 章節標題（Section 0x0A）
-- 遊戲章節標題
-- 結局段落
+### 區段 0x11 內容 — 治療/復活
 
-### 戰鬥系統（Section 0x0B）
-- 戰鬥選項（Fight、Quick Fight、Run）
-- 攻擊模式（Normal Blow、Mighty Blow）
-- 距離計算（40 呎法則）
+**位置**：`0x8642`，358 bytes  
+**主題**：治療師（Healer）對話
 
-### 商店交易（Section 0x0C）
-- 購買/出售提示
-- 金幣不足提示
-- 物品選擇
+**關鍵文字**：
+- "Who needs healing?"（治療師問）
+- "I'm sorry but"（無法治療）
+- "is beyond our help."（無法復活）
+- "is in perfect health."（健康良好）
+- "What service would you like performed on"（選擇服務）
+- "Full healing / Partial healing"（治療選項）
+- "How much healing do you wish?"（詢問數量）
+- "That will cost ... in gold, pay?"（價格詢問）
 
-### 酒保傳聞（Section 0x0D）
-- 遊戲中的「Read Paragraph」場景線索
-- 城市情報
+**備註**：
+- 部分文字有亂碼（遊戲使用 5-bit 字母編碼 + 大小寫 escape codes）
+- 現有萃取已正確解碼多數條目
 
-### 遊戲結束（Section 0x0F, 0x16）
-- "Alas, your brave party has met its match!"
-- 勝利結局
-- 感謝訊息（Humbaba 勝利）
+### 區段 0x12 內容 — 戰鬥選單
+
+**位置**：`0x87A8`，1,375 bytes  
+**主題**：戰鬥中選單選項
+
+**關鍵文字**：
+- "Will the party: / Fight / Quickly fight"（戰鬥選項）
+- "Advance ahead"（前進）
+- 商店相關文字
+
+**備註**：
+- 包含戰鬥系統大多數選單文字
+- 有重疊字串（同一句話被切成多個片段）
+
+### 區段 0x13 內容 — 對話選項
+
+**位置**：`0x8D07`，1,394 bytes  
+**主題**：對話系統選項按鈕
+
+**關鍵文字**：
+- "Do you wish to enter the arena?"（競技場詢問）
+- "Come back when you are ready to face the challenge of combat!"
+- 640 條文字（最多片段的區段）
+
+**備註**：
+- 大量重複片段，實際独特選項約 50–80 個
+- 包含酒保傳聞、任務提示等
+
+### 區段 0x14 內容 — 商店/交易
+
+**位置**：`0x9279`，903 bytes  
+**主題**：商店交易、物品購買
+
+**關鍵文字**：
+- "Skill / Amount / Cost"（商店表格標題）
+
+**備註**：
+- 商店相關文字
+
+### 區段 0x15 內容 — 技能名稱
+
+**位置**：`0x9600`，257 bytes  
+**主題**：技能名稱列表
+
+**關鍵文字**：
+- "Mountain Lore"（山脈知識）
+- "Fistfighting"（拳鬥）
+- "Thrown weapons"（投擲武器）
+- 其他技能名稱
+
+**備註**：
+- 技能名稱以特殊格式儲存（含二進制屬性）
+
+### 區段 0x16 內容 — 死亡/結局
+
+**位置**：`0x9701`，78 bytes  
+**主題**：隊伍滅亡訊息
+
+**關鍵文字**：
+- "Alas, your brave party has met its match! Your current adventure is over."
+- 標準遊戲結束訊息
 
 ---
 
-## 物品/法術/怪物名稱清單
+## 壓縮區段（>0x17）
 
-### 物品名稱（來自 sections 0x08, 0x11, 0x12）
+### 區段類型
+
+區段 > 0x17 使用 LZSS 壓縮（見 `compress.c`）。
+
+**解碼方式**：
+1. 前 2 bytes = 未壓縮大小（little-endian）
+2. 剩餘 bytes = LZSS 壓縮資料
+3. 使用 `build_dictionary` + `decompress` 解壓縮
+
+### 重要壓縮區段
+
+| 區段 | 未壓縮大小 | 用途 |
+|------|-----------|------|
+| 0x1D | 32,000 | 標題畫面 |
+| 0x1E | 660 | 未知（可能是地圖資料） |
+| 0x1F | 2,177 | 怪物字串 |
+| 0x20 | 770 | 地圖/場景 |
+| 0x21 | 291 | 地圖/場景 |
+| 0x26 | 1,293 | 地圖/場景 |
+| 0x2C | 1,491 | 地圖/場景 |
+| 0x2F | 980 | 地圖/場景 |
+| 0x30 | 1,448 | 地圖/場景 |
+| 0x31 | 579 | 地圖/場景 |
+| 0x46 | 6,140 | 大型地圖 |
+| 0x47 | 5,846 | Purgatory 關卡 |
+| 0x58 | 4,995 | 大型地圖 |
+| 0x5D | 3,114 | 大型地圖 |
+| 0x61 | 6,685 | 大型地圖 |
+| 0x6E | 11,860 | 大型地圖 |
+| 0x71 | 9,785 | 大型地圖 |
+| 0x73 | 11,860 | 大型地圖 |
+| 0x7D | 11,860 | 大型地圖 |
+| 0x7E | 11,860 | 大型地圖 |
+| 0x81 | 9,462 | 大型地圖 |
+| 0xA6 | 7,924 | 大型地圖 |
+| 0xA7 | 6,831 | 大型地圖 |
+| 0xA8 | 4,996 | 大型地圖 |
+| 0xA9 | 4,954 | 大型地圖 |
+| 0xD2 | 8,708 | 大型地圖 |
+| 0xE2 | 5,862 | 大型地圖 |
+| 0xE3 | 10,278 | 大型地圖 |
+| 0xFD | 3,379 | 大型地圖 |
+
+### 區段 0x1E（660 bytes 解壓後）
+
+**用途**：可能為早期地圖或小型場景资料
+
+### 區段 0x1F（2,177 bytes 解壓後）
+
+**用途**：怪物字串資料（per `doc/resources.md` resource 31）
+
+### 區段 0x47（5,846 bytes 解壓後）
+
+**用途**：Purgatory 關卡（per `doc/resources.md` resource 71）
+
+---
+
+## 文字編碼方式
+
+### 一般文字（區段 0x00–0x17）
+
+- 8-bit ASCII，部分區段使用 5-bit 字母壓縮（`compress.c:alphabet`）
+- 大小寫由 0x1E escape code 控制
+- 特殊字元（0xAF, 0xDC）用於 escape sequences
+
+### 壓縮區段（>0x17）
+
+- LZSS 壓縮
+- 解壓縮後為 8-bit ASCII
+
+### 遊戲引擎字串提取
+
+遊戲使用 `extract_string()`（`engine.c:6207`）提取字串：
+- 輸入：區段資料 + 字節偏移
+- 輸出：解碼後的文字（透過 `extract_letter()` + `alphabet[]`）
+- 每個字母 5 bits（1–30 查表），31–94 用 6-bit 擴展
+
+---
+
+## 現有萃取狀態
+
+### 已完整萃取的區段
+- ✅ 0x00–0x0F（遊戲腳本 + 對話）
+- ✅ 0x11–0x16（物品/法術/怪物資料）
+- ❌ 0x10（空區段）
+
+### 待處理
+- ❌ 壓縮區段（0x1D–0xFF）尚未解壓縮
+- ❌ 區段 0x1E、0x1F 文字未萃取
+- ❌ 區段 0x47（Purgatory）文字未萃取
+
+### 工具狀態
+- ✅ `resextract`（需要 SDL2 才能建置）
+- ✅ `section_dump.cpp`（獨立版本，已Compile）
+- ✅ `extract_sections.py`（Python 解碼器）
+- ❌ `section_dump`（完整 LZSS 解壓縮版本）
+
+---
+
+## 區段 0x10–0x16 Hex 摘要
+
+### 區段 0x11（開頭）
 ```
-full shield
-2 handed sword
-cloth armor
-leather armor
-cuir bouilli armor
-brigandine armor
-scale armor
-chain armor
-plate and chain armor
-full plate armor
-pair of boots
-mage gloves
-Armor of Light
+0000: 00 55 12 41 55 12 16 05 42 08 18 07 0f 16 56 0a  .U.AU...B.....V.
+0010: 41 56 01 74 06 08 22 20 05 18 13 03 00 0a 16 30  AV.t.." .......0
 ```
 
-### 法術名稱（來自 sections 0x09, 0x13, 0x14）
+### 區段 0x15（技能名稱）
 ```
-Elvar's Fire
-Column of Fire
-Greater Healing
-Major Healing
-Full healing
-Partial healing
-Heal
+0000: 21 2b 00 0d 09 00 7a 01 59 3f 00 48 00 50 00 59   !+....z.Y?.H.P.Y
+0010: 00 63 00 6b 00 71 00 76 00 7f 00 84 00 8b 00 93   .c.k.q.v........
+0020: 00 97 00 9d 00 a6 00 af 00 b8 00 c0 00 c7 00 cf   ................
+0030: 00 d4 00 d9 00 de 00 e3 00 ec 00 f0 00 f7 00 f0   ................
+0040: a2 41 38 c1 f3 1f 13 00 f1 05 53 07 cc 7c 4c 00   .A8.......S..|L.
 ```
+**觀察**：開頭為索引表（每個 entry 2 bytes，指向區段內偏移），後接字串資料。
 
-### 怪物名稱（來自 section 0x15）
-需要進一步分析（OCR 品質影響）
+### 區段 0x16（死亡訊息）
+```
+0000: 9a 41 5c 44 00 66 41 44 43 00 74 05 28 23 90 78   .A\D.fADC.t.(#.x
+0010: f0 98 29 6c 37 7d 22 11 c4 55 30 60 28 ce e1 48   ..)l7}"..U0`(..H
+```
+**觀察**：78 bytes，結構化資料 + 文字混雜。
 
 ---
 
-## 待處理項目
-
-### Section 0x10（ITEM_DATA）
-- 此 section 為二進位結構資料，非文字
-- 需要 `src/tools/section_dump.cpp` 來解析
-- 結構猜測：
-  ```
-  struct item_record {
-    uint16_t item_id;
-    char name[20];      // null-terminated ASCII
-    uint8_t type;       // 武器/防具/消耗品
-    uint8_t stats[8];   // 屬性數值
-  };
-  ```
-
-### Section 0x15（MONSTER_TEXT）
-- 目前僅 15 條文字
-- 可能需要從其他 section 補充怪物名稱
-
----
-
-## 萃取工具狀態
-
-### 可用工具
-- `src/tools/resextract.cpp` — 萃取指定 section 為 binary
-- `src/tools/strextract.cpp` — 文字萃取測試
-- `src/tools/disasm.cpp` — 反組譯
-
-### 待建工具
-- `src/tools/section_dump.cpp` — section 結構傾印
-- `src/tools/script_lint.cpp` — script 文字使用分析
-- `tools/verify_extraction.py` — 萃取完整性驗證
-
----
-
-*產生日期：2026-06-09*
+*檔案產生日期：2026-06-09*
+*工具：section_dump.cpp, extract_sections.py*
