@@ -1,0 +1,38 @@
+# 建置產物
+build/
+build_cmake/
+*.o
+*.a
+*.so
+*.dylib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# 文件（太大型）
+*.pdf
+*.rar
+*.zip
+珍066-火龍之戰.rar
+
+# 遊戲資料（機密）
+*.com
+DATA1
+DATA2
+
+# 測試截圖
+tests/data/expected/*.png
+en_manual_images/
+chinese_manual_images/
+
+# 暫存檔
+*.tmp
+*.log
