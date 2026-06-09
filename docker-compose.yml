@@ -1,0 +1,83 @@
+# OpenDW Dragon Wars 中文化專案 - 開發環境
+# 使用方式：
+#   docker-compose up --build   # 建置並執行
+#   docker-compose run build    # 仅建置
+#   docker-compose run test     # 僅執行測試
+#   docker-compose run shell    # 進入開發 shell
+
+version: '3.8'
+
+services:
+  # 開發編譯環境
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - .:/app
+      - build-cache:/app/build
+      # 如果有遊戲資料，掛載進來
+      - ./data:/app/data:ro
+    environment:
+      - CC=gcc
+      - CXX=g++
+      - CMAKE_BUILD_TYPE=Debug
+    command: >
+      bash -c "
+        mkdir -p build &&
+        cd build &&
+        cmake -DCMAKE_BUILD_TYPE=Debug .. &&
+        cmake --build . --parallel $$(nproc) &&
+        echo 'Build complete.'
+      "
+
+  # 執行測試
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - .:/app
+      - build-cache:/app/build
+    depends_on:
+      - build
+    command: >
+      bash -c "
+        cd build &&
+        ctest --output-on-failure --parallel $$(nproc) &&
+        echo 'All tests passed.'
+      "
+
+  # 開發 shell（可互動）
+  shell:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - .:/app
+      - build-cache:/app/build
+      - ./data:/app/data:ro
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # 執行階段（需要 X11 或 VNC）
+  game:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    volumes:
+      - ./data:/app/data:ro
+    environment:
+      - DISPLAY=${DISPLAY}
+      - SDL_VIDEODRIVER=x11
+    network_mode: host
+    profiles:
+      - game
+
+volumes:
+  build-cache:
