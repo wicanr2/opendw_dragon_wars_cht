@@ -119,7 +119,7 @@
 
 ---
 
-## 6. 對話文字 (Dialogue Text)
+## 6. 對話文字 (Dialogue Text) — 從 DATA1 提取
 
 | ID | 英文 | 中文 |
 |----|------|------|
@@ -191,6 +191,62 @@
 | DIALOG_NEW_WEAPON | New weapon | 新武器 |
 | DIALOG_LOAD_WEAPON | Load weapon | 裝填武器 |
 | DIALOG_CANNOT_LEARN | cannot learn | 無法學習 |
+
+---
+
+## 6a. 對話文字 (從遊戲截圖確認)
+
+以下文字從遊戲截圖 `/home/anr2/tmp/longcat/org_dialogue/` 中確認：
+
+**dragon_026.png** — 對話場景：
+- 需要確認對話內容
+
+**dragon_007.png** — 對話場景：
+- 需要確認對話內容
+
+**images.jpeg** — "Read Paragraph" 介面：
+- 需要從中文手冊提取
+
+**maxresdefault.jpg** — 遊戲場景：
+- 需要確認對話內容
+
+### Read Paragraph（讀取段落）
+
+根據遊戲設計，"Read Paragraph" 是遊戲中的一個重要功能，用於顯示故事情節和對話。
+這部分文字主要從遊戲手冊（`珍066-火龍之戰.rar`）中提取。
+
+**需要從手冊提取的範圍**：
+- 每個章節的劇情描述
+- 角色對話
+- 物品描述
+- 任務提示
+
+---
+
+## 6b. 物品名稱 (從 DATA1 提取)
+
+**注意**：物品名稱可能儲存於 DATA1 的 Section 0x07（CHARACTER_DATA）或其他 section。
+以下是從截圖中確認的物品名稱：
+
+| 英文 | 中文 | 來源 |
+|------|------|------|
+| leather armor | 皮甲 | 截圖 |
+| plate and chain armor | 板甲和鎖子甲 | 截圖 |
+| (更多物品名稱需要從 DATA1 提取) | | |
+
+---
+
+## 6c. 技能名稱 (從 DATA1 Section 0x15 提取)
+
+| 英文 | 中文 | 來源 |
+|------|------|------|
+| Arcane Lore | 奧秘知識 | DATA1 |
+| Cave Lore | 洞穴知識 | DATA1 |
+| Forest Lore | 森林知識 | DATA1 |
+| Mountain Lore | 山脈知識 | DATA1 |
+| Town Lore | 城鎮知識 | DATA1 |
+| Fistfighting | 拳鬥 | DATA1 |
+| (更多技能名稱需要從 DATA1 提取) | | |
 
 ---
 

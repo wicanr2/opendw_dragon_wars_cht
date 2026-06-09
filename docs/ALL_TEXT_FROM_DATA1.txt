@@ -1,0 +1,9877 @@
+# All Text Extracted from DATA1
+# Total: 3926 meaningful text strings
+# Format: [Section:Offset] Text
+
+
+============================================================
+# Section 0x00 (241 texts)
+============================================================
+
+[   5] g.e kpatdg udc
+
+[  18] b
+.fr!iBn2e"ihcem2foo,c" h.cgd.'.d
+
+[  20] ob.v!e
+Pe"ihcem2foo,c" h.cgd.'.d
+
+[  21] Do you wish to..
+
+Begin a new game
+Continue an old game
+
+[  23] bn2e"ihcem2foo,c" h.cgd.'.d
+
+[  25] pe"ihcem2foo,c" h.cgd.'.d
+
+[  26] wish to..
+
+Begin a new game
+Continue an old game
+
+[  28] sbeLbyy
+slpu!aca!mlapc'm,'ontinue an old game
+
+[  31] .
+
+Begin a new game
+Continue an old game
+
+[  33] "egin a new game
+Continue an old game
+
+[  34] hsatpgpkrvpi
+
+[  35] pu!aca!mlapc'm,'ontinue an old game
+
+[  38]  new game
+Continue an old game
+
+[  40] lapc'm,'ontinue an old game
+
+[  41] u etnVfyhvfib
+
+[  42] hu,y
+u
+eu
+glac!a.iapc'l
+
+[  43] e
+Continue an old game
+
+[  45] 'ontinue an old game
+
+[  46] ,u'tv pgtpk, gi
+
+[  47] eu
+glac!a.iapc'l
+
+[  50]  an old game
+
+[  75] Starting a new game will destroy your last saved game. Do you still wish to start a new game?
+
+
+
+[  77] dbeu!paca!mlapc'lblu..aimdfaEe
+Scdpiilegiu.ud
+
+[  80] g a new game will destroy your last saved game. Do you still wish to start a new game?
+
+
+
+[  82] a!mlapc'lblu..aimdfaEe
+Scdpiilegiu.ud
+
+[  85] game will destroy your last saved game. Do you still wish to start a new game?
+
+
+
+[  87] lblu..aimdfaEe
+Scdpiilegiu.ud
+
+[  89] hrpcu'ind!e
+Scdpiilegiu.ud
+
+[  90] l destroy your last saved game. Do you still wish to start a new game?
+
+
+
+[  92] mdfaEe
+Scdpiilegiu.ud
+
+[  93] h.y,p,y'gpw hhp" itapu etl
+
+[  94] d!e
+Scdpiilegiu.ud
+
+[  95] y your last saved game. Do you still wish to start a new game?
+
+
+
+[  98] gpw hhp" itapu etl
+
+[ 100] ast saved game. Do you still wish to start a new game?
+
+
+
+[ 102] bcdiliapc'mpb!iBn2eimhrpe"ihcem!eilielcgd.'.d
+
+[ 105] d game. Do you still wish to start a new game?
+
+
+
+[ 107] c'mpb!iBn2eimhrpe"ihcem!eilielcgd.'.d
+
+[ 110] Do you still wish to start a new game?
+
+
+
+[ 112] bn2eimhrpe"ihcem!eilielcgd.'.d
+
+[ 114] peimhrpe"ihcem!eilielcgd.'.d
+
+[ 115] still wish to start a new game?
+
+
+
+[ 117] ..blvcsbeBdedbeaca!mlapc'mZ,' bacs
+
+[ 119] "ihcem!eilielcgd.'.d
+
+[ 120] sh to start a new game?
+
+
+
+[ 122] eBdedbeaca!mlapc'mZ,' bacs
+
+[ 125] art a new game?
+
+
+
+[ 127] aca!mlapc'mZ,' bacs
+
+[ 150] cslfr!hhbal
+eb
+
+[ 151] t !oaig.tfhp. g",!llnP
+
+[ 153] Current party...
+
+
+
+[ 188] oby
+valdelagsdachemb'
+
+[ 189] 
+Create character
+
+
+[ 190] ,ic.il.crcicgsl'fu
+
+[ 191] reate character
+
+
+[ 193] elagsdachemb'
+
+[ 212] oby
+slpu!beslapc'l
+
+[ 213] 
+Begin the game
+
+[ 215] egin the game
+
+[ 263] cslfr!iBn2e"ihcem2foo,l"p'l.c
+
+[ 265] ob.v!e
+Pe"ihcem2foo,l"p'l.c
+
+[ 266] Do you wish to..
+
+Delete 
+
+[ 268] bn2e"ihcem2foo,l"p'l.c
+
+[ 270] pe"ihcem2foo,l"p'l.c
+
+[ 271] wish to..
+
+Delete 
+
+[ 273] sbeLbyy
+wl.mela
+
+[ 314] tnhp *gb pbrufr
+lsdeblu..a
+
+[ 317] :u p. .'b.What will 
+
+[ 319]  p. .'b.What will 
+
+[ 321] brufr
+lsdeblu..a
+
+[ 333] obigd.'.d.hu.cl,Lyuaeve.g iga
+
+[ 334] 's new name be?
+
+
+
+[ 335] pkrvpkpthpg"y3ogcmimppaupc
+
+[ 336] !mla!c'laemZ,' bitlc
+
+[ 338] d.hu.cl,Lyuaeve.g iga
+
+[ 340] hpg"y3ogcmimppaupc
+
+[ 341] aemZ,' bitlc
+
+[ 342] toFogcmimppaupc
+
+[ 343] Lyuaeve.g iga
+
+[ 389] You are about to delete 
+
+[ 391] gadalace4lem!cu"p'l.c
+
+[ 393] c.cgmSlem!cu"p'l.c
+
+[ 394]  about to delete 
+
+[ 419]  done to deserve such a fate??
+
+Delete 
+
+[ 420] k,rpl,.hhurumhplv aggph.u"y33oo,l"p'l.c
+
+[ 421] !lbeAimcmbilbdggsacandemZZ,,,elete 
+
+[ 423] m!cu'g'eu.eiprccgc!il,LLyy
+wl.mela
+
+[ 424]  deserve such a fate??
+
+Delete 
+
+[ 425] hurumhplv aggph.u"y33oo,l"p'l.c
+
+[ 426] cmbilbdggsacandemZZ,,,elete 
+
+[ 428] u.eiprccgc!il,LLyy
+wl.mela
+
+[ 429]  such a fate??
+
+Delete 
+
+[ 431] gsacandemZZ,,,elete 
+
+[ 433] gc!il,LLyy
+wl.mela
+
+[ 434] fate??
+
+Delete 
+
+[ 436] mZZ,,,elete 
+
+[ 449]  forever.
+Have mercy.
+
+[ 450] ,!hvhunfo,!iu.du'csj
+
+[ 451] amimbr,1ila'mahop
+
+[ 453] 'fby
+Dila'mahop
+
+[ 454] .
+Have mercy.
+
+[ 455] o,!iu.du'csj
+
+[ 481] r,tmppb
+ eyge ge c
+
+[ 502]  lddla.kalddic.kcvhnw
+
+[ 504] i.dpwc.iiuhpwhis
+l
+
+[ 505]  ldreasvaldsiuyk
+
+[ 506]  lhpuvgt lsvd'. c.o.puut
+
+[ 507] alddic.kcvhnw
+
+[ 508]  hirea"dikvpahpKassl
+
+[ 511]  lsvd'. c.o.puut
+
+[ 513] ikvpahpKassl
+
+[ 543] npebpfbgob".hu.e
+Scd.'.crcicgsl'fbyu
+
+[ 544]  p! .'b.Name your new character.
+
+
+
+[ 546] brufr!!c'lbn4cd.'.crcicgsl'fbyu
+
+[ 548] ob".hu.e
+Scd.'.crcicgsl'fbyu
+
+[ 549] Name your new character.
+
+
+
+[ 550] pthpm,
+cgkrvphagugrc"unfog
+
+[ 551] 'lbn4cd.'.crcicgsl'fbyu
+
+[ 553] 
+Scd.'.crcicgsl'fbyu
+
+[ 554] ur new character.
+
+
+
+[ 556] !mlagsdachembr,'
+
+[ 558] crcicgsl'fbyu
+
+[ 574] npdtpfkgob"igc
+
+[ 585] obyyGc.la3y
+'l'c.mY
+
+[ 586] 
+
+Male or
+Female?
+
+[ 588] cale or
+Female?
+
+[ 589] t pk!oo,u"uhp,I
+
+[ 590] la3y
+'l'c.mY
+
+[ 618] h.cpayso c"d!n.h ho
+
+[ 621] k"fpslsFlcpuypmk.fv!ciAmo lw
+
+[ 622] h!ctcyr, cdd!bi 
+o ayptk.kdpd
+
+[ 624] ehobwagik.ev!b'Ado eypwk
+
+[ 626] flcpuypmk.fv!ciAmo lw
+
+[ 627]  cdd!bi 
+o ayptk.kdpd
+
+[ 629] k.ev!b'Ado eypwk
+
+[ 631] k.fv!ciAmo lw
+
+[ 632]  
+o ayptk.kdpd
+
+[ 644] ". fr
+n2eimhrpdciu.c
+
+[ 646] ob'
+Peimhrpdciu.c
+
+[ 647] You still have 
+
+[ 649] gbdeu..asdila
+
+[ 660]  points left to distribute, do you wish to go back and distribute them?
+
+
+
+[ 661] b'tu!pk r!.l,.hiuu!ip
+c"w.hk.m,
+
+
+[ 662] u
+fca.loebeAivdfaufhemwaiBn2e"ihcem!d !clgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 664] gdp.Lem!cviindgnsl,lcv!e
+Pe"ihcem!d !clgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 665] left to distribute, do you wish to go back and distribute them?
+
+
+
+[ 666] r!.l,.hiuu!ip
+c"w.hk.m,
+
+
+[ 667] ebeAivdfaufhemwaiBn2e"ihcem!d !clgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 668] "ypsvhh.v 'htmpsyp,y'
+
+[ 669] !cviindgnsl,lcv!e
+Pe"ihcem!d !clgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 670] distribute, do you wish to go back and distribute them?
+
+
+
+[ 671] uu!ip
+c"w.hk.m,
+
+
+[ 672] faufhemwaiBn2e"ihcem!d !clgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 673] v 'htmpsyp,y'
+
+[ 674] nsl,lcv!e
+Pe"ihcem!d !clgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 675] te, do you wish to go back and distribute them?
+
+
+
+[ 677] aiBn2e"ihcem!d !clgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 679] e
+Pe"ihcem!d !clgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 680] ou wish to go back and distribute them?
+
+
+
+[ 682] lvcsbeApAecgwac!iaivdfaufhelbesl,Z,' bad". dpd
+
+[ 683] hcp"ypufprradprfapsvhh.v 'ht
+
+[ 684] cem!d !clgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 685] to go back and distribute them?
+
+
+
+[ 686] .ib.g.ra.gtrghiuu!ip
+c"pl'hto3ogclgyf
+
+[ 687] pAecgwac!iaivdfaufhelbesl,Z,' bad". dpd
+
+[ 688] prradprfapsvhh.v 'ht
+
+[ 689] lgrlch.ucviindgnsl.emc"yLyuaecktpak
+
+[ 690] ck and distribute them?
+
+
+
+[ 691] .gtrghiuu!ip
+c"pl'hto3ogclgyf
+
+[ 692] c!iaivdfaufhelbesl,Z,' bad". dpd
+
+[ 693] apsvhh.v 'ht
+
+[ 694] cviindgnsl.emc"yLyuaecktpak
+
+[ 695] istribute them?
+
+
+
+[ 696] u!ip
+c"pl'hto3ogclgyf
+
+[ 697] aufhelbesl,Z,' bad". dpd
+
+[ 699] sl.emc"yLyuaecktpak
+
+[ 701] l'hto3ogclgyf
+
+[ 702] sl,Z,' bad". dpd
+
+[ 721] k.nd'dsAro p
+
+[ 744] b
+.fr
+n2dwsildciu.eh
+u"
+..dh.emc.e
+
+[ 746] ob'
+Pdwsildciu.eh
+u"
+..dh.emc.e
+
+[ 747] You must have someone in the party to begin the game!!
+
+[ 749] ga,hdeasdilbc'l!lau!beslb
+
+[ 751] sildciu.eh
+u"
+..dh.emc.e
+
+[ 752] t have someone in the party to begin the game!!
+
+[ 753] igvhplt,ht,rpitpl'hpl
+
+[ 754] dilbc'l!lau!beslb
+
+[ 757] omeone in the party to begin the game!!
+
+[ 758] ht,rpitpl'hpl
+
+[ 762] n the party to begin the game!!
+
+[ 767] rty to begin the game!!
+
+[ 768] 
+.l,.g"satpl'hpi
+
+[ 769] beAelpu!beslapc'm". aassl
+
+[ 772] egin the game!!
+
+[ 774] !beslapc'm". aassl
+
+[ 798]  tdpfeiec. rV. d!
+
+[ 826]  K npihfg seprbs!dccopngc
+
+
+[ 833] cm afd.iggq"
+
+[ 834] ggr"nasaf.fcanpb hkhsrat
+
+[ 837]  h b!bs fg puvu"grhpf gikilugwpbpv
+
+[ 839] f.fcanpb hkhsrat
+
+[ 845] i'lugu.bpuddveickg .ipcwgds
+
+[ 848] il .ias'tdadu
+
+[ 850] puddveickg .ipcwgds
+
+[ 873] kg "uw!'iMdvesw
+
+[ 875] thm"uv!'kimdl l.sl p
+
+[ 877] thk"uwu'i.a"rc.b
+
+[ 879] thmhuvpdtahpe
+
+[ 880] kimdl l.sl p
+
+[ 897]  ilgiapaf,Qtapecpcfi
+
+[ 902] f,Qtapecpcfi
+
+[ 922] atdpeagpp.hhpasw
+
+[ 939] ahi ddp  K nvahw
+
+[ 951] c"ismd,eivb,
+
+[ 960]  ilgitauhlnlw
+
+[ 961] taau.vakbtdpf\hYuvu"gthpf gikiluhwpbpucp
+
+[ 962] pvedgs.!"l -ioAswtdame
+
+[ 964] irdr"s.b>u?ii'luhu.bpuddveic,g .iag
+
+[ 966] btdpf\hYuvu"gthpf gikiluhwpbpucp
+
+[ 967] "l -ioAswtdame
+
+[ 969] >u?ii'luhu.bpuddveic,g .iag
+
+[ 971] ?ii'luhu.bpuddveic,g .iag
+
+[ 973] i'luhu.bpuddveic,g .iag
+
+[ 975] gthpf gikiluhwpbpucp
+
+[ 976] 'l .ias'tdamu
+
+[ 978] puddveic,g .iag
+
+[1022] thm"uv!'kimdl
+
+[1058] aKcsgpcc'kwmd'dcga
+
+[1059] s"csc  es
+thnrha
+
+[1061] cgaamd,es
+asc 
+
+[1093] taav.t.cbtdpf\g pk c
+
+[1119] ivodnwpe ccvnt!"crcwn a!ncadgyimtdafw  pi"fhswp
+
+[1124]  ccvnt!"crcwn a!ncadgyimtdafw  pi"fhswp
+
+[1126] i
+f"shahl!ad.!gcirnu,eicolab
+
+[1128] tcscs".ckr.pgva
+hwlug.ce kc
+ei'
+
+[1129] crcwn a!ncadgyimtdafw  pi"fhswp
+
+[1131] l!ad.!gcirnu,eicolab
+
+[1133] kr.pgva
+hwlug.ce kc
+ei'
+
+[1134] ncadgyimtdafw  pi"fhswp
+
+[1136] irnu,eicolab
+
+[1139] tdafw  pi"fhswp
+
+
+============================================================
+# Section 0x01 (4 texts)
+============================================================
+
+[  42] ag .wvbmrm.urwsdfg
+
+[  44] rmie,a,rhbmcinp
+
+[  45] irw.w!ig,hatu
+
+[ 146] mpgu a.icslugl
+
+
+============================================================
+# Section 0x02 (20 texts)
+============================================================
+
+[  22] gdodiasbk"kpawg
+
+[  32] kvisPgsgdnvnphp
+
+[  33] iuyuacs kvkual
+
+[  53]  f?!hcacsb c
+
+[  82] iuytwysvgdop
+
+[  84] fmodipija
+i!sd!v. kc
+
+[  98]  g,v!vgifdodnwpr
+
+[  99] e
+odiar"k"kvucgek
+
+[ 100] k"ipuniI
+m a s.
+
+[ 101] iudbsysykggplw
+
+[ 115] gc.tnvpigm ga
+
+[ 145] You don't have enough gold.
+
+[ 147] gai
+veasdilal!3 cd 
+py
+
+[ 150] 't have enough gold.
+
+[ 151] .igvhphtt
+aagib, n
+
+[ 152] sdilal!3 cd 
+py
+
+[ 155] enough gold.
+
+[ 323] cekp.oib ewuat.  epds
+
+[ 325]  pUeammgdfpaam
+
+[ 328]  ewuat.  epds
+
+
+============================================================
+# Section 0x03 (859 texts)
+============================================================
+
+[   7] eugtl pe ld ecih p
+
+[  20] b!pdf!gcimvpauS
+
+[  21] c h0ade'. ioh
+
+[  76] dalfo
+n2eimhrpc!gp.c
+
+[  77] t ,9ou still face 
+
+[  79] You still face 
+
+[  81] gbdeu..ancgla
+
+[ 110] w.c a!prnv,el!sdou
+
+[ 112] ad" a
+kwl""ci2
+
+[ 113] nggyi
+tenhay'
+
+[ 122] ilmpn"tvgwap
+
+[ 130] iltpnattfv,cdcp
+
+[ 201] p.cyi
+stmcbdp
+
+[ 218] fudblof1p kdnu.nc tda.
+
+[ 220] e.OOp kdnu.nc tda.
+
+[ 225] kdnu.nc tda.
+
+[ 235] gdmd'bi rnpYpnkugv!ca
+amo cagfldecibg  c
+
+[ 236] khnp'yplkufv!bs
+ado 
+
+[ 240]  rnpYpnkugv!ca
+amo cagfldecibg  c
+
+[ 241] kufv!bs
+ado 
+
+[ 243] k.fd'ciA nreyps cbwatad u
+
+[ 245] kugv!ca
+amo cagfldecibg  c
+
+[ 247] k.gd'c'Agcpn.ilguepaag
+
+[ 248] a nreyps cbwatad u
+
+[ 250] amo cagfldecibg  c
+
+[ 252] agcpn.ilguepaag
+
+[ 266] bho pwpfsmivmeicdu
+
+[ 267] k.ldu !tivkhsr m
+
+[ 269] kgb"eviwtdaa'
+
+[ 273] i'lugkg tgct!
+
+[ 275] gpwpbephf. ughp crh,i scc.
+
+[ 280] f. ughp crh,i scc.
+
+[ 287] wubcghp accyrwbSc!ia
+
+[ 292] accyrwbSc!ia
+
+[ 293]  d!mp>rfapp ivlu
+v
+
+[ 301] ivkdfmgegrcpaviwk
+
+[ 304] wubcgsg ivkdp
+
+[ 315] iusdlopcgrcpau
+v
+
+[ 318] f.acgsg in'plrgp
+
+[ 329] ividfmgeagcslal  epge
+
+[ 331] in'plcphc.c.aam
+
+[ 334] agcslal  epge
+
+[ 354] gcctgau  et.ewgrg!cpecsdin'plred
+
+[ 356] epdgaamfpmlrar.h
+
+[ 359]  et.ewgrg!cpecsdin'plred
+
+[ 360] u vscif c rcritwubchrg a 
+
+[ 362] kcgunagbahavfmgegtapaca  chcsasdc!hcwu
+v
+
+[ 364] g!cpecsdin'plred
+
+[ 365]  c rcritwubchrg a 
+
+[ 367] ahavfmgegtapaca  chcsasdc!hcwu
+v
+
+[ 372] gtapaca  chcsasdc!hcwu
+v
+
+[ 376] gccrcsgigutrcs'twubchcp a 
+
+[ 377]  chcsasdc!hcwu
+v
+
+[ 378] ahcpurhfahdvfmgegsh
+
+[ 379] hcdcih.shmh,i scsg
+
+[ 380]  hasncskin'plrcs
+
+[ 381] gutrcs'twubchcp a 
+
+[ 394] fvcuhrg gfapbesf hatws.shpasni
+
+[ 399] gfapbesf hatws.shpasni
+
+[ 404]  hatws.shpasni
+
+[ 416] fvauhip fvdukk. fme kh
+
+[ 443] .pa krpciui!g 
+
+[ 457] gvypa"sfgvvpav
+
+[ 484] g,vpaca  nddheieP
+
+[ 514] igdpc pbigdpc 'w  e"srrm
+
+[ 519] igdpc 'w  e"srrm
+
+[ 523] i.cc,eiedu  c s
+h.jmaan
+
+[ 525] hwlulkgaagbd'tr
+
+[ 528] du  c s
+h.jmaan
+
+[ 534] f. ugh.ad
+esai.
+
+[ 536] gptpck'mccvp
+
+[ 557] in'plca chh l
+
+[ 603] in'plca cgjmafn
+
+[1282] tdbpu gf 
+lc'irccc
+
+[1300]  
+la'khmduws'h
+
+[1302] duws'khmdus ci
+
+[1303] duws'khmcphapb'.f
+
+[1315] ahnaib'.alucubhe
+
+[1317] cufvpc"ghgesl grg!gup
+
+[1322] hgesl grg!gup
+
+[1348] hgapnb'.hupswhg
+
+[1364] g
+h,i pf 
+l lpiicdlpiag
+
+[1369]  
+l lpiicdlpiag
+
+[1381] hguwe gpgccs'khmdulcaggpgcddln
+
+[1382] ddrpica  cws'khmb 
+
+[1386] gccs'khmdulcaggpgcddln
+
+[1389] duws'ea ccgcaaswf
+
+[1397]  hkbpf..gcddikhmduws'vr.
+
+[1398] i.! Ea  his'khmduwvln
+
+[1400] b!lcaasvduws'khmi.!
+
+[1402] gcddikhmduws'vr.
+
+[1403]  his'khmduwvln
+
+[1404] iuws'khmdvkbp
+
+[1415] cmis'ea cggcaf'wf
+
+[1423] b
+kbpf..gcovikhmduws'ea c.gcagawf
+
+[1424] i.! Ea b
+is'khmduwrpphea 
+
+[1426] b!lcaf'vduws'khmb 
+
+[1428] gcovikhmduws'ea c.gcagawf
+
+[1429] b
+is'khmduwrpphea 
+
+[1430] iuws'khmdulcahppgcpdln
+
+[1432] duws'kg.gct 
+
+[1433] duws'ea c.gcagawf
+
+[1441] c kbpb..gcpdikhmduwvln
+
+[1444]  !lcagavduws'kiwf
+
+[1446] gcpdikhmduwvln
+
+[1447] c is'khmdvkbp
+
+[1474] ccfvpds hg"!e gig
+h,i pdh
+
+[1475]  
+l lpiieo piasfin'pl ig lva'kh. Luk.
+
+[1480] eo piasfin'pl ig lva'kh. Luk.
+
+[1485] in'pl ig lva'kh. Luk.
+
+[1501]  desgea  caupa"kf'
+
+[1513] duwtpf' Lat"(gcsha 
+
+[1520] ftMphcsca b!yusea b!
+
+[1522] cphcsca b!yusea b!
+
+[1536]  lus'khmduwpan
+
+[1546] tdare ppgcdc'h
+
+[1547] guhplca  hesgea  ghcs hf hbrkh
+
+[1552]  hesgea  ghcs hf hbrkh
+
+[1553] hus ppgiahcpih.ig!i'g
+
+[1554] cplcaapshcasnasfaws
+
+[1556] gcd csgdc!dcndmc
+
+[1558] ahcpih.ig!i'g
+
+[1565] up vfupedliyp
+
+[1582] eh d! tehdaru rbh
+
+[1584] k.belsidbgbaes bh
+
+[1586] l"cuiepecmcaes bh
+
+[1593] cmcaes bg!dcnohggc"
+
+[1595] cmcaer.ig!Spphs
+
+[1599]  hbt'ia egapur"
+
+[1601] fuucalpd hbt! aakubdfmge
+
+[1606]  hbt! aakubdfmge
+
+[1607] g!jr d' stwub
+
+[1608] f.accygein'pl "aa"
+
+[1617] cgkcasr!igbaer'sg.bdgca  g.usea  hhdp ph
+
+[1619] gddb.upecmbvcrpeipgcaarrhclcaassk
+
+[1620] hgDc rbg
+hcl sua 
+
+[1622] igbaer'sg.bdgca  g.usea  hhdp ph
+
+[1624] cmbvcrpeipgcaarrhclcaassk
+
+[1627] g.bdgca  g.usea  hhdp ph
+
+[1629] ipgcaarrhclcaassk
+
+[1631] gcdbasg.gcddcw
+
+[1632]  g.usea  hhdp ph
+
+[1668] hd'pl pbamy e'shrcb bb
+
+[1673] amy e'shrcb bb
+
+[1675] amvctageaee bbpr,ug.'cloaedv"ipe cdpl pv".actg.eipcp
+
+[1676] mhc.s prrpg.!cn
+aeerbb.rrmniu ph lb
+
+[1677] hecplcllaef bygrrug.Clkksv
+
+[1680] aee bbpr,ug.'cloaedv"ipe cdpl pv".actg.eipcp
+
+[1681] rpg.!cn
+aeerbb.rrmniu ph lb
+
+[1682] aef bygrrug.Clkksv
+
+[1683] r.g
+'clmaefrba'!vgb
+
+[1684] afnrbbgrr!g.wydi
+
+[1685] ,ug.'cloaedv"ipe cdpl pv".actg.eipcp
+
+[1686] aeerbb.rrmniu ph lb
+
+[1690] aedv"ipe cdpl pv".actg.eipcp
+
+[1695]  cdpl pv".actg.eipcp
+
+[1700] ".actg.eipcp
+
+[1708] k"sd!"i'in'plwltccvp
+
+[1709] lroeiwstwubdtc" dl
+
+[1711] lvmdfmgekehsai.
+
+[1712] khh,i s"slpsw
+
+[1713] in'plwltccvp
+
+[1737] ..a cpg spfcawg slgcaaa.
+
+[1742] spfcawg slgcaaa.
+
+[1758] d
+nub"pe f?Idheic ubvlkhmduws'ggmalbrg
+
+[1763]  f?Idheic ubvlkhmduws'ggmalbrg
+
+[1765] ;uislugbgfi.ws'khmdupp'c.fap
+
+[1767] islugbgfi.ws'khmdupp'c.fap
+
+[1769] gpepnvrmduws'kh  uhpnd
+
+[1770]  ubvlkhmduws'ggmalbrg
+
+[1772] i.ws'khmdupp'c.fap
+
+[1773] duws'khmccere .u
+
+[1775] duws'ggmalbrg
+
+[1822] 
+ga c!.gnsmfcv
+
+[1825] nlcfhetsipasnun!
+
+[1854] 
+gacsogfkrppn"rfgrp
+
+[1883] ,p cstpfirnp!u,l
+
+[1892] mpbpi pv
+gaducsb cdu'h cd
+ uaPf fSrtgerwf
+
+[1897] 
+gaducsb cdu'h cd
+ uaPf fSrtgerwf
+
+[1899] kghceagkhusagk'bgd
+
+
+[1900] ah psa'mcpsaP' ogbpt\g"ubg,bpnelb
+
+[1902]  cdu'h cd
+ uaPf fSrtgerwf
+
+[1905] cpsaP' ogbpt\g"ubg,bpnelb
+
+[1907] d
+ uaPf fSrtgerwf
+
+[1913] >ul' umr.fbe plyilfa
+
+[1915] l' umr.fbe plyilfa
+
+[1916] pmbln ."plbd't .pelukhpf
+
+[1924] hp!gbeidu.bp
+
+[1932] kuibayi vcb"srdh
+
+[1934] ednubigftdais 'Arnrpli2m"
+
+[1936] geupoeicvcbv!da
+b
+
+[1939] tdais 'Arnrpli2m"
+
+[1940] gsupnypukulbay' ycb"srd"
+
+[1945] kulbay' ycb"srd"
+
+[1947] edoubngftdaks 'B
+
+[2006] ednub"gftdani .vo
+
+[2008] gfspoeic!ubri
+
+[2022] beacwaubin'plca  lq"a
+
+[2026] pmh,i ppgcdt!bsc gcb!aic gcb!hac gcb!c'c gcb!nadbcc
+
+[2027] in'plca  lq"a
+
+[2031] gcdt!bsc gcb!aic gcb!hac gcb!c'c gcb!nadbcc
+
+[2033] f.fcgapgf.cugapgf.scgapgf.hugapgf.!ciegg cuc'h
+
+[2036]  gcb!aic gcb!hac gcb!c'c gcb!nadbcc
+
+[2038] f.cugapgf.scgapgf.hugapgf.!ciegg cuc'h
+
+[2043] f.scgapgf.hugapgf.!ciegg cuc'h
+
+[2048] f.hugapgf.!ciegg cuc'h
+
+[2074] gcea'khmfbAa
+
+[2099] cp"tnatnd!,rc,pin 
+
+[2100] el,pu,roe!he!atpgd 
+
+[2103] m.ytnctn h.cappgcpytsctp
+
+[2108]  h.cappgcpytsctp
+
+[2159] gcdanea  gtanarffvduhmgg
+
+[2160]  gtrppgic.tpuh"
+hmakia
+
+[2161] c!lcaarec!danoikgs'pp hf yn
+
+[2163] gcdalh.ic!Uwrdv 
+
+[2164]  gtanarffvduhmgg
+
+[2165] c.tpuh"
+hmakia
+
+[2166] c!danoikgs'pp hf yn
+
+[2244] Lcarc.mup vfmgea 
+
+[2257] duwrcRoruhfsat'dFrcUua 
+
+[2258] duhfuk!mah!puRor!hfvd
+
+[2259] ah
+a2rcGiogy.Ct'spgcah"oociu
+
+[2260] ogy.'ct" h
+a3rcUua 
+
+[2261] dErcGiogy.Ct'spgcah"oociu
+
+[2262] ruhfsat'dFrcUua 
+
+[2264] ocdfuk!oah
+hgca c!yysdi
+
+[2266] ogy.Ct'spgcah"oociu
+
+[2269] ah
+hgca c!yysdi
+
+[2271] spgcah"oociu
+
+[2281] gcuaPvng utr.gkdnopaa"kufa'kgsochfu ge yf
+
+[2283] d
+
+ i!pbhfbppwi!jgkdnp!khmah!rcPd
+
+[2286] ng utr.gkdnopaa"kufa'kgsochfu ge yf
+
+[2288] hfbppwi!jgkdnp!khmah!rcPd
+
+[2289] .!cdsyf.  lv'brmduhfsct'
+
+[2291] kdnopaa"kufa'kgsochfu ge yf
+
+[2293] jgkdnp!khmah!rcPd
+
+[2294]   lv'brmduhfsct'
+
+[2295] kdnp!khmah!rcPd
+
+[2296] kufa'kgsochfu ge yf
+
+[2298] duwrcGsogaplbnn
+
+[2307] ".aaabke cyysk!lah!p'
+phd
+
+a3 cS
+luyyuys' k
+
+[2309] ccewlahoocy..ct" v,
+
+[2311] l.csHorphfsbkw cyyuk!nah
+d'"hoohoduaw
+
+[2312]  cyysk!lah!p'
+phd
+
+a3 cS
+luyyuys' k
+
+[2313] d
+!s2 cGmn.csRor.hfuykdd
+
+d!wpi.
+
+[2315] dE cGmn.csRor.hfuykdd
+
+d!wpi.
+
+[2316] rphfsbkw cyyuk!nah
+d'"hoohoduaw
+
+[2317] ah!p'
+phd
+
+a3 cS
+luyyuys' k
+
+[2318] oceylahoogy.!ct'kvssSKgdl
+
+[2320] n.csRor.hfuykdd
+
+d!wpi.
+
+[2322] d
+
+a3 cS
+luyyuys' k
+
+[2323] ogy.!ct'kvssSKgdl
+
+[2337] ,uhfu.". dnwgk,"k"lpuU"g!'psag
+
+[2339] ohrtpai
+lpyysys" h
+hsr"v ccp
+
+[2342]  dnwgk,"k"lpuU"g!'psag
+
+[2343] kvsaIKcdfveifeucps
+
+[2345] d
+!v!wgioilunmgh c
+
+[2346] ododsat'tdbtiagh
+
+[2347] k"lpuU"g!'psag
+
+[2348] kcdfveifeucps
+
+[2371] duws'kifhuct"(gk,"ah!wp
+
+[2372] duws'r'm cOH oochfs'
+
+[2373] duwuntghftMpyysct"m
+
+[2375] g
+epsof5 oochfs'
+
+[2376] huct"(gk,"ah!wp
+
+[2396]  cOH ooghfuta'
+
+[2397] ftMpyyuct'hrm
+
+[2439]  hybs! "mg!w"eic!.crap,u g. !!b.Each member gets 
+
+[2441] fd.bs'r"msluh"phad ygarpb".fr!lcgsa'l'emaapmfca
+
+[2444] mg!w"eic!.crap,u g. !!b.Each member gets 
+
+[2446] msluh"phad ygarpb".fr!lcgsa'l'emaapmfca
+
+[2449] !.crap,u g. !!b.Each member gets 
+
+[2451] ad ygarpb".fr!lcgsa'l'emaapmfca
+
+[2454]  g. !!b.Each member gets 
+
+[2456] b".fr!lcgsa'l'emaapmfca
+
+[2457] n !ob acpwtertgpubh"
+
+[2459] Each member gets 
+
+[2460] pragkhtg"ugi u!pg
+
+[2461] gsa'l'emaapmfca
+
+[2472] m"h2cudpphphyfpamAperience points 
+
+[2474] PcudpphphyfpamAperience points 
+
+[2477] .gc.c,t. experience points 
+
+[2479] phyfpamAperience points 
+
+[2482]  experience points 
+
+[2484] aperience points 
+
+[2485]  uirtr plb'tu!pg
+
+[2496] th pl'stPcudy
+
+[2497] glbeuuQaia,pcwlp'c'pcypc!ia
+
+[2502]  d m.akegmamgak.and 
+
+[2504] ,pcwlp'c'pcypc!ia
+
+[2505]  dtcereu d! fapp
+
+[2507] gmamgak.and 
+
+[2535] ad v.f.il" uh!phr
+
+[2536] gmn Ategmaocalg
+
+[2552]  l  cnh"eLugfgi gotrY
+
+[2554] ag!tsm!"gpnpuap0fj ve!dbnnh"tdarearbe!dbnc.
+
+[2557] eLugfgi gotrY
+
+[2558] tda 'apib!!o
+
+[2559] gpnpuap0fj ve!dbnnh"tdarearbe!dbnc.
+
+[2561]  gd Nfj ve!dbnnh"tdarearbe!dbnc.
+
+[2567] eu,pum""feluic.icl,pum.t
+
+[2568] e!dbnnh"tdarearbe!dbnc.
+
+[2569]  g,tsnl"guhpug"y g,re
+
+[2570] e!!tteidaldaem.ie!hp
+
+[2571] fc!"srgt grtnaryal
+
+[2572] feluic.icl,pum.t
+
+[2573] tdarearbe!dbnc.
+
+[2575] aldaem.ie!hp
+
+[2584] fchpctauhmid't .pelukk
+
+[2585] al c.vakirnu.nc tda'.ap
+
+[2587] hricwva
+hp!gbeidvpd
+
+[2589] hmid't .pelukk
+
+[2590] irnu.nc tda'.ap
+
+[2600] bdybnekpfcbdau
+ glwum."mp!plvit,udd't" p
+
+[2603] bd.bs srionpuekie!lw.ngeivh
+'as
+h!qp
+
+[2605] fcbdau
+ glwum."mp!plvit,udd't" p
+
+[2607] idh
+'ap"mg,rs, "
+
+[2608] ionpuekie!lw.ngeivh
+'as
+h!qp
+
+[2609] ,ud s'rybdwbs svionpuyiof.e
+
+[2610]  glwum."mp!plvit,udd't" p
+
+[2613] e!lw.ngeivh
+'as
+h!qp
+
+[2614] bdwbs svionpuyiof.e
+
+[2615] mp!plvit,udd't" p
+
+[2618] ivh
+'as
+h!qp
+
+[2633] c!vauggmvud crgmv!d cr'
+ic.uics kvhuc'gic!H?gsw
+
+[2634] dgvaabmm ghcibmo ghcnyiredarcpi
+im esarff,?
+ai.arrg
+
+
+[2635] dgpp,kgiahap,k.iahbv'uhrguhcayitghupuh"?3dl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2636] cce''apsgue'Apsg
+nvalidah
+
+[2637]  wwpucsd wypucsfkvgtargsgdnvepth gtt
+?Rdl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2638] vud crgmv!d cr'
+ic.uics kvhuc'gic!H?gsw
+
+[2639]  ghcibmo ghcnyiredarcpi
+im esarff,?
+ai.arrg
+
+
+[2640] ahap,k.iahbv'uhrguhcayitghupuh"?3dl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2641] gue'Apsg
+nvalidah
+
+[2642]  wypucsfkvgtargsgdnvepth gtt
+?Rdl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2643] v!d cr'
+ic.uics kvhuc'gic!H?gsw
+
+[2644]  ghcnyiredarcpi
+im esarff,?
+ai.arrg
+
+
+[2645] ahbv'uhrguhcayitghupuh"?3dl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2647] kvgtargsgdnvepth gtt
+?Rdl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2648] ic.uics kvhuc'gic!H?gsw
+
+[2649] edarcpi
+im esarff,?
+ai.arrg
+
+
+[2650] guhcayitghupuh"?3dl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2652] gdnvepth gtt
+?Rdl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2653] kvhuc'gic!H?gsw
+
+[2654] im esarff,?
+ai.arrg
+
+
+[2655] ghupuh"?3dl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2656] mcdanoy?'cvpdbar' vpdd!u.igdodayiocsluijuh'H!
+
+[2657]  gtt
+?Rdl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2659] f,?
+ai.arrg
+
+
+[2660] ?3dl g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2661] >cvpdbar' vpdd!u.igdodayiocsluijuh'H!
+
+[2663] vpdbar' vpdd!u.igdodayiocsluijuh'H!
+
+[2664]  g.unpml hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2668] vpdd!u.igdodayiocsluijuh'H!
+
+[2669]  hodeas k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2670] k"hpupiIdnuHc"gv
+
+[2671] ildcaysrkvfsheidopdanyso
+
+[2673] gdodayiocsluijuh'H!
+
+[2674] k"gv't"ctday.arfk"fpayh,cpsb!
+
+[2676] kvfsheidopdanyso
+
+[2677] h!shsrk! gtv!t. ku
+sgh 
+
+[2679] tday.arfk"fpayh,cpsb!
+
+[2682]  gtv!t. ku
+sgh 
+
+[2684] k"fpayh,cpsb!
+
+[2690] cpjh guaph>Fmtcerl. imce
+
+
+[2691] f. cdapi fT.
+wlp'dt
+
+[2697] >Fmtcerl. imce
+
+
+[2699] fmtcerl. imce
+
+
+[2711] r Ypasdcapcu!liaca.mil""'
+
+[2714]  has gained a level!
+
+
+[2716] capcu!liaca.mil""'
+
+[2719] ned a level!
+
+
+[2787] s! cb,gicsluh!pid!!ub
+.i f?L
+
+[2790] 
+udaheicGdaNi !d
+
+[2791]  gshsrfs gytspoy gc?)
+
+[2792] csluh!pid!!ub
+.i f?L
+
+[2796]  gytspoy gc?)
+
+[2821] 
+gad't .peluig
+
+[2832] ".ahsrpm ppsw
+
+[2849] iledebat rhp"bpkc
+
+[2850]  rhp.u.lileg!a"
+
+[2864]  onpy,gkl.ds
+
+[2877] inopl pbchh,i ppgcct!
+
+[2882] chh,i ppgcct!
+
+[2883] in'plca  cjh
+
+[2889] f. caupkc!lcaaihggdyo
+eslb
+
+[2892] igdsnea  dcuca,yThe party advances.
+
+[2894] c!lcaaihggdyo
+eslb
+
+[2897]  dcuca,yThe party advances.
+
+[2900]  m,5he party advances.
+
+[2902] The party advances.
+
+[2907] ty advances.
+
+[2916] shifl9pbbg
+cadldo.
+
+[2918] n"Ypbbg
+cadldo.
+
+[2936] gcstF'argdppp'.ahgp
+
+[2937] cuL
+ gua.ggml cug
+
+[2938] f!oudapk   vpcsr
+
+[2939] b
+ gua.ggml cug
+
+[2950] gdhfna"ebHdg
+t
+ yipgvr.o!h
+
+[2951] ih,pwhpMsun"P,vgci.!fCpfiwluolpkm
+
+[2952] n!dslf!sir,f'bnv
+
+[2953]  lt 5dg
+t
+ yipgvr.o!h
+
+[2954] c.o"cvbwoue
+i awf Kgbvkeifwgdwp
+
+[2955] bHdg
+t
+ yipgvr.o!h
+
+[2956] shifl2,vgci.!fCpfiwluolpkm
+
+[2958] n"P,vgci.!fCpfiwluolpkm
+
+[2959] oue
+i awf Kgbvkeifwgdwp
+
+[2961] 'uadlnb0pfiwluolpkm
+
+[2963] i.!fCpfiwluolpkm
+
+[2966] agbvkeifwgdwp
+
+[2980]  deequips the 
+
+[2981] hry.eriagemc.c
+
+[3001] b!qra!sa,. reloads
+
+[3003]  ra!sa,. reloads
+
+[3015] 'pdypam uips the 
+
+[3018]  equips the 
+
+[3019] y.eriagemc.c
+
+[3035] shifl9pagsdapmcacslck.
+
+[3037] n"Ypagsdapmcacslck.
+
+[3040]  charges ahead!
+
+[3041] agui upgshpro
+
+[3042] dapmcacslck.
+
+[3051] 2kn"Ypbamfaldfcaecgy.
+
+[3053] n"Ypbamfaldfcaecgy.
+
+[3056]  retreats back!
+
+[3069] 'uab'f'a le cp'.ahgp clsip!fCud yipgcub yn
+
+[3071] fuouca.lah vpcsr
+
+[3074]  le cp'.ahgp clsip!fCud yipgcub yn
+
+[3079] ahgp clsip!fCud yipgcub yn
+
+[3082] sehdgnb0ud yipgcub yn
+
+[3083] shibpZd gm'ua d
+
+[3085] f Kiap,vgcai p,y
+
+[3087] aiap,vgcai p,y
+
+[3095] ,pa d pm!la d !'rcdgfeifd.edfmgegp"p.w
+
+[3099]  yrpgcufticpv
+
+[3100] !la d !'rcdgfeifd.edfmgegp"p.w
+
+[3102] aib"vagipnlunkplin'plr t rl
+
+[3103] pMgsaubtdbs!batwubcgl.lk
+
+[3105] rcdgfeifd.edfmgegp"p.w
+
+[3106]  i "sr"n rh,i sceledp p
+
+[3107] pnlunkplin'plr t rl
+
+[3108] tdbs!batwubcgl.lk
+
+[3111]  rh,i sceledp p
+
+[3122] sgg.sclgipe
+i 
+
+[3123] aecrbaau yipgcub yn
+
+[3140] aicep .sp.g.n'
+
+[3146] aebwp pspvhacb
+
+[3150] aiavcgpl yipgnu
+
+[3163] ,pa c)
+)pf.s
+
+[3185] b!helopggffp.atef.duhg.llohp!pni ru
+
+[3188] f.ccbt.l htb!a'culeefu.ngfd
+
+[3190] gffp.atef.duhg.llohp!pni ru
+
+[3192]  pdelopkgsrp..T "
+
+[3193]  htb!a'culeefu.ngfd
+
+[3194] l.qmaiebbb'lfcbsplm
+
+[3196]  maiebbb'lfcbsplm
+
+[3199]  rr
+ebs "geepar. !q
+
+[3210] f.cbp 'as.eajddgglah pv
+
+[3215] s.eajddgglah pv
+
+[3258] f!YPws slukrglcphfUws smeleu
+
+[3260] o
+ mcbc"gyap.h
+
+[3262] 'gehsrnd ps c\dupltht v
+
+[3263]  slukrglcphfUws smeleu
+
+[3264] tda!ib cahSkh
+
+[3266] .ueagct6ws smeleu
+
+[3267]  ps c\dupltht v
+
+[3268] cphfUws smeleu
+
+[3283] p a
+sb bp hr.b' Altdaoubat!.f
+
+[3288] p hr.b' Altdaoubat!.f
+
+[3290] bpfub.ltdaoubat!.f
+
+[3292] gf
+p"eic2liot
+
+[3293] Altdaoubat!.f
+
+[3309]  is out of range.
+
+[3310] upk
+c.k".lgts w
+
+[3321] shidf"pn htb!aa aleugbgmf.cuib.ms
+
+[3326]  htb!aa aleugbgmf.cuib.ms
+
+[3328] f.ccac.mgpep'ophgufp,c
+
+[3331] aleugbgmf.cuib.ms
+
+[3334]  uet!aid !e"
+
+[3350]  . tpp G ad!bphc!awlp
+
+[3379] ah!raIi\cr.msml
+
+[3381] adjvShbp,c'.
+
+[3382] o.ayUsf whvp
+
+[3391] nlfucrpmcm4rct.bkeo"afpbtel"bwpbi
+c!q 
+
+[3392]  
+ clbhbo'icso
+
+[3394] g.eseRgsh! vtf!rb. "telr,g vnsnopggdnp'agfcce!cbpsornp.utzkg 
+
+[3395]  ury
+dahfpewlMg
+
+[3396] cm4rct.bkeo"afpbtel"bwpbi
+c!q 
+
+[3398] srct.bkeo"afpbtel"bwpbi
+c!q 
+
+[3401]  vtf!rb. "telr,g vnsnopggdnp'agfcce!cbpsornp.utzkg 
+
+[3403] o"afpbtel"bwpbi
+c!q 
+
+[3406]  "telr,g vnsnopggdnp'agfcce!cbpsornp.utzkg 
+
+[3411]  vnsnopggdnp'agfcce!cbpsornp.utzkg 
+
+[3412] kutt!aa kueps "  y 
+
+[3414] f.ccaygm cbsabna .hf.yglihJvu
+
+[3416] gdnp'agfcce!cbpsornp.utzkg 
+
+[3418]  ucpnggm.gf c1'baso!ewpa
+
+[3419]  cbsabna .hf.yglihJvu
+
+[3421] cce!cbpsornp.utzkg 
+
+[3423] .gf c1'baso!ewpa
+
+[3425] ahD'baso!ewpa
+
+[3450] cekp.li
+e.arhkpm
+
+[3453] edntl guv.epi pm".ab!
+
+[3458] v.epi pm".ab!
+
+[3470] speps amcpiipbgrlcgwc kDahpu1p
+
+[3475] cpiipbgrlcgwc kDahpu1p
+
+[3479] adpra.pdo.uheat!k
+
+[3482] lgay!ict hDp
+
+[3506]  uywapm, uc?Khppbdaht.epi pm".ab!
+
+[3507] d
+pubn.m f?!hea
+
+[3509] ge
+p'ao?.slc
+
+[3511]  uc?Khppbdaht.epi pm".ab!
+
+[3515] ahppbdaht.epi pm".ab!
+
+[3520] t.epi pm".ab!
+
+[3550]  h2ctrcak. time\s\ for 
+
+[3552] pctrcak. time\s\ for 
+
+[3554] agcypbeu'mTdSan0c
+
+[3557]  time\s\ for 
+
+[3573]  hnsnniAgcypb
+
+[3576] fdo cak. point\s\ of damage
+
+[3581]  point\s\ of damage
+
+[3583] u
+fTdSaNaic'cpl
+
+[3584] h>"o
+gk".hgtgs p
+
+[3586] "o
+gk".hgtgs p
+
+[3597] f. uaegnf.bueegns
+
+[3611] olbualgnobldmhrrh"
+
+[3613] gc.p!E.i'tbats
+
+[3648] fga ibpb eygeut "!brdeh
+
+[3651]  . ptkubihq"!brdeh
+
+[3654] v' vcI! .stcpl,.hk.gtv.hgtgs w
+
+[3655] pmhf!bt.fails to do any damage.
+
+[3657] o.ffpncu"cbeAiAc
+naic'cpmp
+
+[3660] fails to do any damage.
+
+[3661] stcpl,.hk.gtv.hgtgs w
+
+[3662] "cbeAiAc
+naic'cpmp
+
+[3665]  do any damage.
+
+[3666] k.gtv.hgtgs w
+
+[3667] ac
+naic'cpmp
+
+[3679]  . tro.v . yresladfecgwavcae.Gwlk.
+
+[3684]  . yresladfecgwavcae.Gwlk.
+
+[3686] oamc.cinlgrldigcmr!rl.yp
+
+[3687] the attack is blocked!
+
+[3688] hpgu!.ra.iupg,b"a"ro
+
+[3691] lgrldigcmr!rl.yp
+
+[3692] ck is blocked!
+
+[3693] .iupg,b"a"ro
+
+[3702] shifp'vdcmdp
+
+[3718] b!qrahabr ma!
+
+[3782] ch aeh tep,bnmh.fc!tu'
+
+[3783] ggrsgl"ue.,tin "fc
+ep
+
+[3784] clsbem we!'tpnh"fhu
+
+[3785] cp"tgmryeu!bsnh'm
+
+[3787] ep,bnmh.fc!tu'
+
+[3788] e.,tin "fc
+ep
+
+[3799] !pfep h.b!qraGbskkhedu
+t
+tgcwl"se!fep h.b!
+
+[3804] b!qraGbskkhedu
+t
+tgcwl"se!fep h.b!
+
+[3806]  raGbskkhedu
+t
+tgcwl"se!fep h.b!
+
+[3808] !pfcwwslkh,f,ephl"tcm
+.nm
+
+[3809]  "dvuta'n""uakel"bonbtg
+
+[3811] khedu
+t
+tgcwl"se!fep h.b!
+
+[3812] hrmflBuakel"bonbtg
+
+[3813] kh,f,ephl"tcm
+.nm
+
+[3814] n""uakel"bonbtg
+
+[3816] tgcwl"se!fep h.b!
+
+[3827] fpe cak. \attack/shoot/s 
+
+[3829] agcypbSdfecgyRcs14gc
+
+[3832]  \attack/shoot/s 
+
+[3833] Uinlgro4hd
+O4gc
+
+[3834] attack/shoot/s 
+
+[3835] !.ra-csk,!-cpg
+
+[3867] ipdgenb0smin'plrbk !gcaah
+p  wB.dc!u
+
+[3868]  i tpZctitwubcg'.oa 
+
+[3869] pl!fCsmin'plrbk !gcaah
+p  wB.dc!u
+
+[3870] f KhevfmgegrvpCa  c.
+
+[3872] ahevfmgegrvpCa  c.
+
+[3873] hvh,i scmlfr
+
+[3874] in'plrbk !gcaah
+p  wB.dc!u
+
+[3892] up t'tidglfp'bpbf'
+
+[3895] hvaueb.m . t
+
+
+[3904] gdopSht !asni
+
+[3914] up t'tidkcfp'bpbf Kuf
+
+[3917] hvavsb.m . tpZibpbhdcpUrp !ep!
+
+[3922]  . tpZibpbhdcpUrp !ep!
+
+[3938] fig ibpb aac.v
+
+[3941]  . pr alipcp
+
+[3950] ipcpas'u cgc'l
+
+[3964]  !xh iub.sola.gbks
+
+[3965] f.hcdipoah
+pk 
+
+[3966] ah iub.sola.gbks
+
+[3990] gempAo8k'tdb'ub"sp
+
+[3992]  !c;.yveifvgftd
+
+[3993]  fOd
+hsr
+i !"g
+
+[3995] ed
+hsr
+i !"g
+
+[4003] fv
+ubipohrluwwgrnuaynag
+
+[4007]  
+edss'"ad'pi
+.h
+
+[4010] hmlra
+gdn!cp
+
+[4022]  . tro.v . wlf'cs!g
+
+[4029] l.ouhd.p h!dfmgeac,rana!t
+
+[4034]  h!dfmgeac,rana!t
+
+[4035] o h,i pre!gtpyc.a
+
+[4036] in'plchyac!d"e
+
+[4037] wub am.rf nhpc
+
+[4049] ac!tim.sg!dcal h
+
+[4051] eu,rcr.igc.as
+
+[4089] huyu8ulggpedbt
+1Pp!aalulggpf.a
+
+[4091] hLulggpedbt
+1Pp!aalulggpf.a
+
+[4092] tdbaac rg!HtQgn  eieccgb! 
+
+[4096] edbt
+1Pp!aalulggpf.a
+
+[4097] g!HtQgn  eieccgb! 
+
+[4138] >cmcgbrp 
+h
+awsc
+
+[4140] mcgbrp 
+h
+awsc
+
+[4144] fvfui'gp "ubpl A 
+
+[4157] a adlc C aeacct
+
+[4159] i.gb!gaclcghe ky uf
+
+[4161] f.pcg.gpslaynbgn
+
+[4165] aahpi
+.m . tpccutdaypcasmcghe ky uf
+
+[4170]  . tpccutdaypcasmcghe ky uf
+
+[4173] aaihsrk.a hescct
+
+[4175] tdaypcasmcghe ky uf
+
+[4181] aahpi
+.m . tpgash.g 
+
+[4186]  . tpgash.g 
+
+[4269] ae. abgrcug!wccbatcrgnprs!ghnccyaakr d.p
+
+[4271] acerahgr"lggedehap
+ bd.ps!ghnccyaakr
+
+[4272]  ugsicnkaa rhsgufgg"nccyaakr d.ps!g
+
+[4273] acsrbs.pplilsd 'aekr d.ps!ghnccya
+
+[4274] cug!wccbatcrgnprs!ghnccyaakr d.p
+
+[4276] "lggedehap
+ bd.ps!ghnccyaakr
+
+[4277] aa rhsgufgg"nccyaakr d.ps!g
+
+[4278] plilsd 'aekr d.ps!ghnccya
+
+[4279] atcrgnprs!ghnccyaakr d.p
+
+[4280] "cibuclyaakr d.ps!ghnc
+
+[4281] ap
+ bd.ps!ghnccyaakr
+
+[4282] fgg"nccyaakr d.ps!g
+
+[4283] aekr d.ps!ghnccya
+
+[4284] s!ghnccyaakr d.p
+
+[4285] aakr d.ps!ghnc
+
+[4286] s!ghnccyaakr
+
+[4300] smhpacivtda
+pc
+
+[4312] ahaps"amfvaud!ppoaer'gci.iI
+
+[4313] gucwgth
+gv occb.runs away!
+
+[4314]  dsc'oidgk" 
+
+[4315] lret'riaGgfrbg
+cadldo.
+
+[4316] huUipysa !g'fh
+
+[4317] fvaud!ppoaer'gci.iI
+
+[4318] gv occb.runs away!
+
+[4320] Ggfrbg
+cadldo.
+
+[4330] bd,uwu,n ahdgC!irrgl,.lmbpgvpvjcsir, aag
+
+[4331] n
+dve,pgshifrfaulibeBbg!adldo.
+
+[4332] hmhw!acsir!h.vbap"yp.'f
+
+[4334] m.chcvb.tried to run away!
+
+[4335]  ahdgC!irrgl,.lmbpgvpvjcsir, aag
+
+[4336] shifrfaulibeBbg!adldo.
+
+[4337] ir!h.vbap"yp.'f
+
+[4338] oandg.uem!eer.ci.iIahdg
+pr c
+
+[4339] tried to run away!
+
+[4340] irrgl,.lmbpgvpvjcsir, aag
+
+[4341] libeBbg!adldo.
+
+[4343] m!eer.ci.iIahdg
+pr c
+
+[4345] mbpgvpvjcsir, aag
+
+[4348] .iIahdg
+pr c
+
+[4361]  epgevatw!hve
+
+[4362] ua vgu
+yamhpack.blocks!
+
+[4365] in,reu. ad! wfsd"n
+
+[4367] amhpack.blocks!
+
+[4388] irhpack.dodges!
+
+[4409] irhpack.calls for more help 
+
+[4414] calls for more help 
+
+[4415] tbcph,!gkk!hpihtc
+
+[4416] "can0dvC.dc"s
+
+[4419] r more help 
+
+[4438] ahaps"amfvaudg.ra u
+
+[4439] gucwgth
+gv iecgpm
+
+[4440]  dsc'oidgirracbg
+
+[4441] lret'riaulgr
+
+[4442] huUipvbacgep
+
+[4488] cplcaast'gbawdk.
+
+[4490] gcddfupedliyp
+
+[4500] cltypc!iasl"
+
+[4503] and help comes!
+
+[4513] shifpfhea!!lag'mdp csuin,reat.fi
+
+[4516] but none comes.
+
+[4518] a!!lag'mdp csuin,reat.fi
+
+[4523] 'mdp csuin,reat.fi
+
+[4526] shidfm.t h!bv
+
+[4543] duws'kl"gyc ah
+
+[4545] duw"srngacs d
+
+[4555] gctagctqpcil
+ epn0l"gskr
+
+[4556] c.s cYl atfghuby.rtdahncas
+uhvehpt
+
+[4557] cphf pcil
+ epn0l"gskr
+
+[4558] ahI.adenptgforbeics!gdd,gtilt e lb yf
+
+[4562] il
+ epn0l"gskr
+
+[4563] fghuby.rtdahncas
+uhvehpt
+
+[4565] gforbeics!gdd,gtilt e lb yf
+
+[4566] ,!g"srcya hn'c'tc.hpk
+
+[4567] aeluhd.pikwreu"eala.ebnn
+
+[4568] tdahncas
+uhvehpt
+
+[4570] s!gdd,gtilt e lb yf
+
+[4571] a hn'c'tc.hpk
+
+[4572] ikwreu"eala.ebnn
+
+[4574] amhslc.dple!!  
+
+[4583] f.aug gtadjvSkxehvp
+
+[4598] ochud3ag,Src8gwlMgfpta u
+
+[4599] am o'chbo'ict!.rl"4po ecbg
+
+[4600] gkRag,Src8gwlMgfpta u
+
+[4601] Qrcm4rc8gwlMgfpta u
+
+[4602] acry
+dahLgwlMgfpta u
+
+[4603] cm4rc8gwlMgfpta u
+
+[4604] o'ict!.rl"4po ecbg
+
+[4605] src8gwlMgfpta u
+
+[4606] hf"ra"tGpo ecbg
+
+[4607] LgwlMgfpta u
+
+[4617] ah a.grlgl.e s
+klhciciea u
+
+[4618] opgwackabe plyi,ahararppm
+
+[4619] adpra.p"plbd'w.sgugulcbg
+
+[4622] lgl.e s
+klhciciea u
+
+[4623] be plyi,ahararppm
+
+[4636]  !jdaslcprgugul kDahpu1p
+
+[4640] c.h argrg.ay!ict hDp
+
+[4642] adararpdo.uheat!k
+
+[4645] g.ay!ict hDp
+
+[4657] ku.uipr'agcp
+
+[4666] d
+puapps f?!hea
+
+[4668] gd  cao?.slc
+
+[4689]  hpuiy.sduw"sri0ph
+
+[4690] ldavCrmdwluiy.s c
+
+[4691] gvorckhmtdavCph
+
+[4725] gv
+ ccixs
+fdo"s
+
+[4726] ogh ay.iku!v8parftaguapa
+
+[4727] aggvAs
+fdo"s
+
+[4728] adopuyh"kLparftaguapa
+
+[4729] k!dd'niOg gt"rci g 
+
+[4731] ku!v8parftaguapa
+
+[4733] kLparftaguapa
+
+[4744]  hn"srlpagddVp ob7dio4inr,4gc
+
+[4747] gwg cas7p ob7dio4inr,4gc
+
+[4749] agddVp ob7dio4inr,4gc
+
+[4754] ob7dio4inr,4gc
+
+[4755] \hit/stun/s 
+
+[4756] vdio4inr,4gc
+
+[4791] accuhopstgcypb
+
+[4794] y.hhuak. point\s\ of damage
+
+[4801] u
+fTdSaNaic'cpl c
+
+[4802] h>"o
+gk".hgtgs pcp dl
+
+[4804] "o
+gk".hgtgs pcp dl
+
+[4823]  d!mp>hh'ffo
+i'tbfVh"
+
+[4824] oblf4inr",7mhrt7h"
+
+[4825] , /stunn\kill\ing 
+
+[4826] oSinr",7mhrt7h"
+
+[4827] ustunn\kill\ing 
+
+[4828] u
+btyVmhrt7h"
+
+[4829] g!
+Swu."Su!pa
+
+[4847] v' "cvb.fails to do any damage.
+
+[4848] pnhdg .stcpl,.hk.gtv.hgtgs w
+
+[4849] shifpncu"cbeAiAc
+naic'cpmp csu
+
+[4854] "cbeAiAc
+naic'cpmp csu
+
+[4859] ac
+naic'cpmp csu
+
+[4871]  cdrktpcoamc.cinlgrldigcmr!rl.yp
+
+[4872]  li!! b.the attack is blocked!
+
+[4874] ".afresladfecgwavcae.Gwlk.
+
+[4892] shifp'vdcmdp csuil
+
+[4901] irhpack.attacks 
+
+[4912] be pl9pac!ia
+
+[4921] ipgcaah
+p  yic"3' hchpif.ghucc!gsmccc
+
+[4926] p  yic"3' hchpif.ghucc!gsmccc
+
+[4927] gm'reo.2ihalarAam  facth  
+
+[4928] nuhtF' hchpif.ghucc!gsmccc
+
+[4932] gdcre gxam  facth  
+
+[4933] hchpif.ghucc!gsmccc
+
+[4934] alarAam  facth  
+
+[4936] b!cc'aanchesaa
+
+[4937]   epptrahuppp r3'allhv't .pelui..t a u.v df
+eua'pt
+
+[4942] huppp r3'allhv't .pelui..t a u.v df
+eua'pt
+
+[4947] b
+ eec'
+hp!gbeidllhpr
+
+[4949] llhv't .pelui..t a u.v df
+eua'pt
+
+[4950] amnu.nc tdawec.gpmedghh5i mghpnhsnl"fciu
+
+[4952] hp!gbeidllhpr
+
+[4954] pelui..t a u.v df
+eua'pt
+
+[4955] tdawec.gpmedghh5i mghpnhsnl"fciu
+
+[4956] gvrreacbhriaio'mgdv e "eh"tc!ripalcp
+
+[4958] alcgetaucuRv
+
+[4959]  a u.v df
+eua'pt
+
+[4960] pmedghh5i mghpnhsnl"fciu
+
+[4961] hriaio'mgdv e "eh"tc!ripalcp
+
+[4962] ipstTi mghpnhsnl"fciu
+
+[4966] gdv e "eh"tc!ripalcp
+
+[4967] mghpnhsnl"fciu
+
+[4968] albsltteh"av
+
+[4971] h"tc!ripalcp
+
+[4990] f. uhl.tf.hcdmgtah
+rt
+
+[4992] gs"reopsgi'rect,be plyi'ah
+
+
+[4993] wlht!csawuhrc."plbd'wpsogdgau
+v
+
+[4994] alxh kic.soll.e s
+kghfuau in'plca 
+
+[4995] f.hcdmgtah
+rt
+
+[4996] ah kic.soll.e s
+kghfuau in'plca 
+
+[4997] gi'rect,be plyi'ah
+
+
+[4998] wuhrc."plbd'wpsogdgau
+v
+
+[5001] oll.e s
+kghfuau in'plca 
+
+[5003] plbd'wpsogdgau
+v
+
+[5005] kvm cPipdh,i ppgcb cGdpgeu
+
+[5006] kghfuau in'plca 
+
+[5029]  l.yveifwuhtd
+
+[5030] ed
+hsr
+val"g
+
+[5038] fv
+ubmgthrluwwgpgcs"srflalaynbgn
+
+[5040] ge'reta"hmlr
+
+[5041] wuhu.wikkcgcahl"gtw e ky uf
+
+[5043] hrluwwgpgcs"srflalaynbgn
+
+[5044] kddvsca cwluh,
+
+[5046] kcgcahl"gtw e ky uf
+
+[5048] gcs"srflalaynbgn
+
+[5050] tdan.c.dn!ep!
+
+[5052] 
+phpi
+.m . tp c"gtw ebgn
+
+[5061] tdan.c.m . tr.v . vivit
+
+[5066]  . tr.v . vivit
+
+[5074] ivhpack.picks up 
+
+[5100] ipgcag".galug
+
+[5102] gcrtppc"gp rgca cl!kEa clcp
+
+[5111] gcrtro..gcrps
+
+[5120] igb gca cchcica  cUip.uaptrcrhcedarppghn/'hpg
+
+[5122] apgcaggsgugcaah
+gv rgd fahasglidb 
+
+[5124] gcprcrgpgcct'ribapiancsdcp.uiea  d,5he 
+
+[5125] cchcica  cUip.uaptrcrhcedarppghn/'hpg
+
+[5127] gugcaah
+gv rgd fahasglidb 
+
+[5129] gcct'ribapiancsdcp.uiea  d,5he 
+
+[5130]  cUip.uaptrcrhcedarppghn/'hpg
+
+[5132] gv rgd fahasglidb 
+
+[5133] gli gh.sgusbarg.gccyo
+esla
+
+[5134] apiancsdcp.uiea  d,5he 
+
+[5135] aptrcrhcedarppghn/'hpg
+
+[5136] c!hcih rgulcaakyThe 
+
+[5138] gusbarg.gccyo
+esla
+
+[5139] cp.uiea  d,5he 
+
+[5141] gulcaakyThe 
+
+[5149] p tciranapgcaarfagcp
+
+[5152] grf gca  gtrcag
+
+[5167]  advance/s/ 
+
+[5177]  hatgau obgc!.'o
+
+[5204]  waits for you.
+
+[5205] psu!ph,!gm,
+e
+
+[5218] f Khnpih"g ws
+
+[5236] ,p alytek"ag
+
+[5261] tda"cd caib b .io
+
+[5263] sgiagcueaebpu 'p
+
+[5264] aps d prp!dfpnu
+
+[5296] il
+ epnbasluhd.pikwreat.fi
+
+[5297] fghubp.utdahncas
+uhpu 'p
+
+[5299] gf rheics!gdd,gt h!bv
+
+[5300] .lihsrcya hn'c.io
+
+[5301] asluhd.pikwreat.fi
+
+[5302] tdahncas
+uhpu 'p
+
+[5304] s!gdd,gt h!bv
+
+[5320] irhpack.breathes
+
+[5339] i.ws'khmtdaLd
+
+[5340] duws'kl"gyt gagpai
+
+[5342] duw"sroeapcr
+
+[5351] p itpb.rg!melc
+
+[5366] bd,.c pfil
+ epggawluhd.pikwrew
+
+[5371] il
+ epggawluhd.pikwrew
+
+[5374] gcc keics!gdd,gtk
+
+[5376] awluhd.pikwrew
+
+[5377] tdahncas
+uhvp wg
+
+
+============================================================
+# Section 0x04 (10 texts)
+============================================================
+
+[  70] pdeds"upg"gp
+
+[  83] hrlyo
+edapmfrrr'
+
+[  84] kd,5arget...
+
+
+[ 135] tnhp )cpilkc"kata"hmlps
+
+[ 141] hrltdlilkddvsag
+
+[ 142] kc"kata"hmlps
+
+[ 153] ge ptilbivkdp
+
+[ 164]  ee.evhcf.achm.
+
+[ 166] pmisgopcgs,p
+
+[ 233] fiyafb?'vg?'v:pb?'
+
+
+============================================================
+# Section 0x05 (62 texts)
+============================================================
+
+[  43] ob'mc'c.cic.f2k6u,8gp".vh"
+
+[  44] There are /a\de\scending stairs here. Do you wish to take them?
+
+
+
+[  46] maladalbQdSimTcgl!iu!pbdecvbcasmampb!iBn2e"ihcem!elhl.emc"yLyu
+
+[  49] re /a\de\scending stairs here. Do you wish to take them?
+
+
+
+[  51] QdSimTcgl!iu!pbdecvbcasmampb!iBn2e"ihcem!elhl.emc"yLyu
+
+[  53] SimTcgl!iu!pbdecvbcasmampb!iBn2e"ihcem!elhl.emc"yLyu
+
+[  55] mTcgl!iu!pbdecvbcasmampb!iBn2e"ihcem!elhl.emc"yLyu
+
+[  57] cgl!iu!pbdecvbcasmampb!iBn2e"ihcem!elhl.emc"yLyu
+
+[  60] ing stairs here. Do you wish to take them?
+
+
+
+[  62] bdecvbcasmampb!iBn2e"ihcem!elhl.emc"yLyu
+
+[  65] rs here. Do you wish to take them?
+
+
+
+[  67] smampb!iBn2e"ihcem!elhl.emc"yLyu
+
+[  70]  Do you wish to take them?
+
+
+
+[  72] Bn2e"ihcem!elhl.emc"yLyu
+
+[  74] Pe"ihcem!elhl.emc"yLyu
+
+[  75]  wish to take them?
+
+
+
+[  76] susgl,.l.s"pl'hto3og
+
+[  77] csbeBecwlbesl,Z,'
+
+[  80]  take them?
+
+
+
+[  81] .s"pl'hto3og
+
+[ 101] bdapcch
+ac5r'vsas d!
+
+[ 102] gu  aogrf"efiwgigcyp
+
+[ 104] acRaoslnvlpupho
+
+[ 105] fugt!tbvkcdcak.
+
+[ 106] ac5r'vsas d!
+
+[ 116] gcdcek. ah vg
+Tcvacpscrgrahtg;nP
+
+[ 118] glypacsbir,8hich character?
+
+
+
+[ 121] ah vg
+Tcvacpscrgrahtg;nP
+
+[ 122] gmifo
+lsugsagsdachembZ,'
+
+[ 123] ir,8hich character?
+
+
+
+[ 124] n\siraghagugrc"uo3og
+
+[ 125] Which character?
+
+
+
+[ 126] siraghagugrc"uo3og
+
+[ 127] ugsagsdachembZ,'
+
+[ 128] cpscrgrahtg;nP
+
+[ 129] crcicgsl'fLyu
+
+[ 153] torp \'t .;"gwup
+
+[ 175] n/'gu.hagugrc"ugiupk
+c.k".hb,kiuust,w
+
+[ 176] That character is out of commission.
+
+[ 177] 'gu.hagugrc"ugiupk
+c.k".hb,kiuust,w
+
+[ 178] deagsdachemaavca4ld!!cr
+vviihh
+,
+
+[ 179] pscrgrahtgpvh
+
+[ 180] rcicgsl'cdigdSld!!cr
+vviihh
+,
+
+[ 181] aracter is out of commission.
+
+[ 182] grc"ugiupk
+c.k".hb,kiuust,w
+
+[ 183] hemaavca4ld!!cr
+vviihh
+,
+
+[ 185] cdigdSld!!cr
+vviihh
+,
+
+[ 186] is out of commission.
+
+[ 187] pk
+c.k".hb,kiuust,w
+
+[ 189] hpytpsfwwvhhdfyl
+
+[ 191] f commission.
+
+[ 204] n/'gu.hagugrc"ugiuphhprn
+
+[ 205] That character is dead.
+
+[ 206] 'gu.hagugrc"ugiuphhprn
+
+[ 207] deagsdachemaavcailckp
+
+[ 209] rcicgsl'cdigcu.gy
+
+[ 210] aracter is dead.
+
+[ 211] grc"ugiuphhprn
+
+[ 212] hemaavcailckp
+
+[ 222] hlcp ei"hlc%lvsyfl
+
+[ 225] tdluwaoOi"ktw
+
+[ 226] kddpt<swi!
+p
+
+
+============================================================
+# Section 0x06 (481 texts)
+============================================================
+
+[  17] n"YpaiMc
+veasdilal!3 cei
+
+[  20]  doesn't have enough spell power.
+
+[  21] k"utwu.igvhphtt
+aaglu tb
+
+[  22] mc
+veasdilal!3 cei
+
+[  25]  have enough spell power.
+
+[  26] gvhphtt
+aaglu tb
+
+[  30] ough spell power.
+
+[  69] ai yl"udg.cpbc
+
+[ 224] l
+lypafheaveaiui
+vebcll'beBl1o
+
+[ 227]  but it didn't seem to work.
+
+[ 228] 
+c.iu.hirkwu.lrrtgl,.mt!i
+
+[ 229] eaveaiui
+vebcll'beBl1o
+
+[ 230] vhpsvaymhp"bbep"yp,f.v!
+
+[ 231] lcvgv,ileg."uem!e"Do
+
+[ 232] didn't seem to work.
+
+[ 233] rkwu.lrrtgl,.mt!i
+
+[ 236] eg."uem!e"Do
+
+[ 237] eem to work.
+
+[ 287] Nothing happens.
+
+[ 305]  u,pavp irnpayg ku
+
+[ 350] ob'mcilcvgv,ilcv!ch'!d 
+!y
+
+[ 351] That didn't do any good.
+
+[ 352] 'gu.hirkwu.hk.gtv.ib,"n
+
+[ 353] deaiui
+veaiAc
+napKp
+
+[ 354] psvaymhpsyprfkpufys!
+
+[ 356] dn't do any good.
+
+[ 357] wu.hk.gtv.ib,"n
+
+[ 379] kvnrgoi
+ghnpacs9gwfvnubbp  hntay' ku
+
+[ 384] ghnpacs9gwfvnubbp  hntay' ku
+
+[ 391] fvnubbp  hntay' ku
+
+[ 398] edouayg ahn"sra
+
+
+[ 400] gdnpacs
+tdad'
+
+[ 424] be pl2s , hraC
+
+[ 450]  feels better.
+
+[ 467]  ylpavp itrpb.. !l
+
+[ 483] ob'mc.dil"udcigd"!esg.dc'c,
+
+[ 484] The item has no use here.
+
+[ 485] 'hpiu"tgigupkt.mcrpihuhw
+
+[ 486] lavel'asdca!Bhclasmamp
+
+[ 488] l"udcigd"!esg.dc'c,
+
+[ 489] m has no use here.
+
+[ 490] igupkt.mcrpihuhw
+
+[ 491] dca!Bhclasmamp
+
+[ 501] kdYpbfaumcbeA.lda!a
+
+[ 504]  tries to learn 
+
+[ 505] !irupl,.k pukpg
+
+[ 506] umcbeA.lda!a
+
+[ 549] aecds9pavcball!mapvBed!
+
+[ 551] kdYpavcball!mapvBed!
+
+[ 554]  is reenergized!
+
+[ 555] uplhrtruiay.l.yp
+
+[ 556] ball!mapvBed!
+
+[ 557] tbfbgudop"ro
+
+[ 570] gdnr.k' gdapcao?.sgdnr!oi gdg
+
+[ 575] gdapcao?.sgdnr!oi gdg
+
+[ 579] ?0s kuob'pi i
+
+[ 580] ?sgdnr!oi gdg
+
+[ 641]  a.pklgdwca,a mr
+
+[ 700] bpdr.a.! n.pkd.dwca,a mr
+
+[ 705]  n.pkd.dwca,a mr
+
+[ 743]  mdpsigdwca,eaabgm
+
+[ 746] dca,a mt   uepa
+
+[ 756] .a ceu'sgvruepccg 
+
+[ 757] ph veusdlm u  a
+
+[ 759] imhci.'bgaac
+
+[ 776] p aderscghbl .c
+
+[ 778] imbcgpse.bpg 
+
+[ 789] p  dir'"l"sc
+
+[ 888] caluhd.bacbfreslb
+
+[ 890] gskpecgeoamc.e
+
+[ 891] s! ra t.the party and now everyone
+
+[ 896] the party and now everyone
+
+[ 901] y and now everyone
+
+[ 902] gtrgkt
+phvhum,,rp
+
+[ 903] !ia!Ac'u'e
+
+..
+
+[ 916] ikape9pac!ia!Ac
+
+[ 934]  cbwatac.p ypa.Ycaemfemaan0cgcu.gue
+
+[ 939] .p ypa.Ycaemfemaan0cgcu.gue
+
+[ 942]  looks better for a dead person.
+
+[ 944] Ycaemfemaan0cgcu.gue
+
+[ 947] etter for a dead person.
+
+[ 949] maan0cgcu.gue
+
+[ 952] r a dead person.
+
+[ 963] kcbypanll"caemfembp
+
+[ 977] kvebnriHpa.ibhm
+
+[1010] gcdcanfptdaC
+
+[1021] fgg cpkpgcgt'amnpml"'
+
+[1026] gcgt'amnpml"'
+
+[1027] acPtkubkenpchsd!g
+
+[1030] v' vtfgac"aC
+
+[1045] ikIll.e s
+lpsd!"
+
+[1046] ?bbe plykccroegag
+
+[1048] be plykccroegag
+
+[1059] Qhigapgu! glvep.ipml
+
+[1061] igapgu! glvep.ipml
+
+[1065] t.d su'b i vp
+
+[1083] gcbapb' d
+brnpis
+
+[1087] gcyund' igapgu! glvep.ipml
+
+[1115] igapgu! gdgew
+
+[1138] up rcugh . rcpg bdhueaubf Khnpih"g 
+gt'yidsua
+
+[1143]  . rcpg bdhueaubf Khnpih"g 
+gt'yidsua
+
+[1148] bdhueaubf Khnpih"g 
+gt'yidsua
+
+[1151]  i tpZcygdc!u
+
+[1153] f Khnpih"g 
+gt'yidsua
+
+[1155] ahnpih"g 
+gt'yidsua
+
+[1184] up rcugh . rcpg bdhueaubf Khnpih"g 
+gt'yid".a
+
+[1189]  . rcpg bdhueaubf Khnpih"g 
+gt'yid".a
+
+[1194] bdhueaubf Khnpih"g 
+gt'yid".a
+
+[1199] f Khnpih"g 
+gt'yid".a
+
+[1201] ahnpih"g 
+gt'yid".a
+
+[1231] w.adc gcbe plykdd
+bv!"is
+
+[1236] be plykdd
+bv!"is
+
+[1237] plbd'"hog
+oeiupd
+
+[1240] luyunytdigapgu! gdcnk!laiedc gcdF dbss
+
+[1245] igapgu! gdcnk!laiedc gcdF dbss
+
+[1250]  gdcnk!laiedc gcdF dbss
+
+[1252] g!y..culigapgk!naifdc gcdFaknvc gc
+
+[1255] aiedc gcdF dbss
+
+[1257] igapgk!naifdc gcdFaknvc gc
+
+[1262] aifdc gcdFaknvc gc
+
+[1264] igapgk
+aknvc gc
+
+[1271] igapg plbe pmd.
+
+[1290] igapgesh rn l is
+
+[1294] hced.dpdigapg ihs!
+
+[1328] t.d aak. and 
+
+[1363] wcbancph i vp
+
+[1375]  miss/es/ an attack!
+
+[1376] iuuyP'k2ch.cinlgrop
+
+[1377] ddQmdQac!adfecgy.
+
+[1378] o
+ uyPch.cinlgrop
+
+[1379] gmdQac!adfecgy.
+
+[1381] 2ch.cinlgrop
+
+[1406] a
+gusIiC'hpl
+
+[1407] idcy! k.the party 
+
+[1415]  g",ppask.apk
+
+[1427] idhdp g"im pv
+
+[1455]  hbvlnfoahDin
+
+[1456] g
+kbr,.soritpc
+
+[1481] pdbci ,ec
+anc
+
+[1497]  htb!gaa.a"srfk
+
+[1498] l.0  ol l"gtvpiaubk
+
+[1499] f.pcd
+pdtdanw gipml
+
+[1500] c  ol l"gtvpiaubk
+
+[1539] adpra.teg!cpa
+
+[1548] gpgplaueahrpaat!k
+
+[1560] 
+pba.iadlb c.helmteergt
+
+[1562] d
+puci.eahpsl.,elmare ssdubhu.gr"
+
+[1563] ld aw pslctee"tbguhplurm
+
+[1564] ggvplct c"rwl.'dalbdckgethprbs
+
+[1565] dlb c.helmteergt
+
+[1567] ahpsl.,elmare ssdubhu.gr"
+
+[1568] lctee"tbguhplurm
+
+[1569] c"rwl.'dalbdckgethprbs
+
+[1571] l"ruic.eigwpmet afc bsp be
+
+[1572] lmare ssdubhu.gr"
+
+[1574] albdckgethprbs
+
+[1576] igwpmet afc bsp be
+
+[1592] ip  cGro.g!latef.p
+
+[1594] ah!raJbrpil.0
+
+[1609]  i tpZcr.f aa
+
+[1621] up pab'rahcelr'el.bb'r'dv
+
+[1624]  
+grcsbeg
+bel r
+g
+a'p tep afp pdh
+
+[1629] g
+bel r
+g
+a'p tep afp pdh
+
+[1634] g
+a'p tep afp pdh
+
+[1665] ppba'cs
+adosM dsa scbafsp  hcbv
+
+[1667] duhd'ci7Gakccbcgecod
+
+[1670] adosM dsa scbafsp  hcbv
+
+[1677] scbafsp  hcbv
+
+[1690] olbubg.ecobam bel"ak
+
+[1692] gerplgEc'ael"scw
+
+[1693] ulbafrreprtelrdp
+
+[1695] cobam bel"ak
+
+[1713] o"akuat. and hits 
+
+[1715] ygdfpac!iasvfca
+
+[1719] trgiiu!pg telrnk
+
+[1725] l"tcks.e i vp
+
+[1761]  g,tsnl"gyvplg"ypg,pum"ffc!"s
+
+[1762] e!!tteid
+lbaem!ae!dbnh""felparf"
+
+[1764] feluk'.ecl,.cm.ie!ttsnl"
+
+[1765] tdaW rbe bnaryc!!tteg gt!pmepho
+
+[1766] gyvplg"ypg,pum"ffc!"s
+
+[1767] 
+lbaem!ae!dbnh""felparf"
+
+[1769] cl,.cm.ie!ttsnl"
+
+[1770] e bnaryc!!tteg gt!pmepho
+
+[1771] pg,pum"ffc!"s
+
+[1775] c!!tteg gt!pmepho
+
+[1789] h>"o
+gk".hgtgs pbel"a c ,. each
+
+[1791] "o
+gk".hgtgs pbel"a c ,. each
+
+[1796] gtgs pbel"a c ,. each
+
+[1812] gpapgE.i'tbats
+
+[1823] l"tcikgf i vp
+
+[1834] igapgawefv4u
+pn
+
+[1871] l"tciy.faccpv
+
+[1904] gr'pnaueahrpaat!k
+
+[1916] 
+pba.iar!brc.helmteerky
+
+[1918] d
+pudb.fahpsl.,elmayn 'sscb"u.gr"
+
+[1919] ld g .slctee"tbgv,pnuur
+
+[1920] gifpnct c"rwl.'dn!bvdcgfthprbs
+
+[1921] r!brc.helmteerky
+
+[1923] ahpsl.,elmayn 'sscb"u.gr"
+
+[1925] c"rwl.'dn!bvdcgfthprbs
+
+[1927] l"rui
+.fiigpoet afc bsp ad!raJbrtel.bukh
+
+[1928] lmayn 'sscb"u.gr"
+
+[1930] n!bvdcgfthprbs
+
+[1932] iigpoet afc bsp ad!raJbrtel.bukh
+
+[1937] afc bsp ad!raJbrtel.bukh
+
+[1942] ad!raJbrtel.bukh
+
+[1944] adxfbel"pfgws
+
+[1947] ."tel 'dupbpk
+
+[1959] p akp .dpccpsw
+
+[1983]  hpubrgfduhdKgskuy!pcwggfhpngI
+
+[1985] gfapnkgsk!wrcyho"
+
+[1986] .ubs'cs7gskuy!pcwggfhpngI
+
+[1988] duhdKgskuy!pcwggfhpngI
+
+[1989] ahos'cs
+d4akccbu.fcod
+
+[1992] ahnsM dsa 'lbsfsp k
+
+[2006] olbubygfcobel"sc
+gbpk
+
+[2009] ,ubsfrtel"anu .dplstF' upbwlMhnpio
+
+[2011] cobel"sc
+gbpk
+
+[2014] l"anu .dplstF' upbwlMhnpio
+
+[2019] plstF' upbwlMhnpio
+
+[2033] trgiiu!pg telrgd 
+
+[2039] l"tci gg i vp
+
+[2075] e!!tteidcpcaem!ae!dbnh""felpar s am
+
+[2078] tdasga be bnaryc!!tteg gp"
+
+[2080] cpcaem!ae!dbnh""felpar s am
+
+[2083] e bnaryc!!tteg gp"
+
+[2085] e!dbnh""felpar s am
+
+[2094] egchuak. point\s\ of damage
+
+[2102] h>"o
+gk".hgtgs pbel"acwab. each
+
+[2104] "o
+gk".hgtgs pbel"acwab. each
+
+[2109] gtgs pbel"acwab. each
+
+[2126]  f de
+pgigapganbim,
+
+[2129] n.cdc gc f ve
+pg aSgapgandim,
+
+[2134]  f ve
+pg aSgapgandim,
+
+[2139]  aSgapgandim,
+
+[2166] i.ej bpb.sp tcnr
+c 
+
+[2185] ag,rangip."tn"r"gwo
+
+[2186] e!gtsaueel,wlnidt.c
+
+[2187] ac!pv rte
+tbsrl 
+
+[2189]  ibbem,efda"!a
+
+[2225] p idffpiaccwm
+
+[2226] irh"!apr dtger
+xc' d!
+
+[2228] t.d aakepmb,Ac' d!
+
+[2229]  ggps"ubgJam
+
+[2232] l' uoo.gtgcypac!ibeslbR
+
+[2235] y!chuak. and the /party is
+
+[2237] tgcypac!ibeslbR
+
+[2240]  and the /party is
+
+[2253] gE  hSak. \are/is
+
+[2255]   hSak. \are/is
+
+[2257] 
+ccypbSdamQvc
+
+[2269]  imprisoned!
+
+[2279] pmb6c su'b c
+
+[2289] cckuawl'rmlvffpi i "srpb cdgaw
+
+[2293] tidvsu! gdgfeie
+
+[2294] rmlvffpi i "srpb cdgaw
+
+[2295] kdh"!apipnlul
+
+[2299]  i "srpb cdgaw
+
+[2312] im plagogcyunopogckpsagoa
+
+
+[2315]  cfuak'ff.fuad.h cfrnpgr dtger"a em
+
+[2317] gcyunopogckpsagoa
+
+
+[2318] d
+bt!b' a!cpsb.ygcgps"ubg!r
+
+[2320] f.fuad.h cfrnpgr dtger"a em
+
+[2323] a!cpsb.ygcgps"ubg!r
+
+[2324]  ccpD' accwm
+
+[2325]  cfrnpgr dtger"a em
+
+[2326]  !kuacghl' ungphtgcypac!ibeslbR
+
+[2331] l' ungphtgcypac!ibeslbR
+
+[2334] cgc"uak. and the /party is
+
+[2352] g!JdhSak. \are/is
+
+[2354]  dhSak. \are/is
+
+[2368]  pushed away! 
+
+[2390] n\siraneefog
+
+[2422] agbwp rP aiAhPraiAkg
+
+[2427] p aiAhPraiAkg
+
+[2429] v!ct
+ acv!cwp
+
+[2439] f!2d iAhcahbwp
+
+[2441] ed iAhcahbwp
+
+[2456] n*.libpf'mc.c
+
+[2468]  is recharged!
+
+[2469] uplhragui ro
+
+[2478] kd,9ou can't recharge that.
+
+[2480] You can't recharge that.
+
+[2482] gagc
+vebalgsdaplbesdfp
+
+[2483] s fmhp.tacrgub
+
+[2485] 't recharge that.
+
+[2486] .lhragui pl'gu
+
+[2487] algsdaplbesdfp
+
+[2499] i.cpu "pge ptilbk
+
+[2516] ,uc.eItblbhrm
+
+[2517]  e y!almpmedu
+
+[2541] wcbanvps cdgew
+
+[2569]  f?!hdYgwfvouad.i hov!da
+b
+
+[2570] ?0s9gwfvouad.i hov!da
+b
+
+[2571] ?sk
+nrloi2gy gddYpukulaYiacudaYi d
+
+[2573] k
+nrloi2gy gddYpukulaYiacudaYi d
+
+[2575] a.VPgy gddYpukulaYiacudaYi d
+
+[2576] fvouad.i hov!da
+b
+
+[2578] gckpuas9pukulaYiacudaYi d
+
+[2580]  gddYpukulaYiacudaYi d
+
+[2582] k
+o gyg.d
+nuchgid
+nuai
+
+[2583] k.id'e okv aiarokv
+
+[2584] arnrpk'
+ggspuk'
+gcu
+
+[2585] kulaYiacudaYi d
+
+[2587] d
+nuchgid
+nuai
+
+[2597]  f?!hdYg'fvoual.i hov!e
+
+[2598] ?0s9g'fvoual.i hov!e
+
+[2599] ?sk
+nruoi2ht gddYp.
+
+[2601] k
+nruoi2ht gddYp.
+
+[2604] fvoual.i hov!e
+
+[2636] balpariw gcp
+
+[2644] k
+edg"rvgsapu ld y.
+
+[2646] irtbircd ga.ibop
+
+[2648] evagiapdpuej bpb!"gsapucu
+
+[2653] puej bpb!"gsapucu
+
+[2668] peluo gi i "srt" gdgaggh dl
+
+[2669] tdb.iapipnlulGi i
+
+[2670] gApuaubtdbfsapipcppsai.
+
+[2673]  i "srt" gdgaggh dl
+
+[2675] tdbfsapipcppsai.
+
+[2676] g"!puau cccpsw
+
+[2691] p!dc.vb. but the spell couldn't reach!
+
+[2693] hrifpafhebeslbd
+
+[2696]  but the spell couldn't reach!
+
+[2701]  spell couldn't reach!
+
+[2703] l..ag3pv,ilec.grfp
+
+[2706] ouldn't reach!
+
+[2726] am kpasu iavev
+
+[2734] ip  cIt,pdcbipiiviyrwafheaveascia!Alnnlheadeac.".
+
+[2737] odh
+.as vgddivk., but it had no effect at all!
+
+[2739] ,pdcbipiiviyrwafheaveascia!Alnnlheadeac.".
+
+[2742] vgddivk., but it had no effect at all!
+
+[2743]  hiviE.g
+c.iu.igrgkt.hr""rc.gu.gtbf
+
+[2744] iviyrwafheaveascia!Alnnlheadeac.".
+
+[2745] iv!mpr'hpvhpurapyfptbttahprhpreen
+
+[2746] oblcnsldildcgud"!c.!!.slcilchrtp
+
+[2747] , but it had no effect at all!
+
+[2748] g
+c.iu.igrgkt.hr""rc.gu.gtbf
+
+[2749] heaveascia!Alnnlheadeac.".
+
+[2750] pvhpurapyfptbttahprhpreen
+
+[2751] ildcgud"!c.!!.slcilchrtp
+
+[2752]  had no effect at all!
+
+[2754] ia!Alnnlheadeac.".
+
+[2755] yfptbttahprhpreen
+
+[2756] !c.!!.slcilchrtp
+
+[2757] effect at all!
+
+[2767] kcej bpb!"gympuagpkccr
+
+[2772]  Lukw.i cgdsagphu.
+
+[2773] tda
+wapha lpscame
+
+[2774] gympuagpkccr
+
+[2789]  lxh  ua.sol
+
+[2800] ng pa lc 
+grcS
+a
+
+[2804] ppfvact'kuga'khood 
+
+[2806] ichfuygpduwsIa ldt
+
+[2807] ah
+d'c mduyysppk l.
+
+[2820] ggdpyeif udps)aU"g.m
+
+[2821]  ld"sr.m lcyLk'tdb ua"
+om
+
+[2822]  nlunbgk dOd
+hsrp' lYwpg' medgs'u
+
+[2823] tdbp'a.ho!.yveiebgdt'' bgdu.vakiparP
+
+[2824] g!epwak8k'tdb ua"
+om
+
+[2825]  udps)aU"g.m
+
+[2826]  lcyLk'tdb ua"
+om
+
+[2827]  dOd
+hsrp' lYwpg' medgs'u
+
+[2828] o!.yveiebgdt'' bgdu.vakiparP
+
+[2829] ed
+hsrp' lYwpg' medgs'u
+
+[2830] oilulepkfv
+uaepkhricwv
+
+[2833] bgdt'' bgdu.vakiparP
+
+[2834]  lYwpg' medgs'u
+
+[2835] fv
+uaepkhricwv
+
+[2838] bgdu.vakiparP
+
+[2884]  mcuaa.f .,"p
+
+[2902] ag,pa .ne!sv!ba ufbnhi "o
+
+[2906]  .,siyplk.ep!m"dk.fd!b.ne!sv!caAcfbnhiAho ebrycvo gypwk.ld!ep
+
+[2907] e!sv!ba ufbnhi "o
+
+[2909] k.ed!bgne!sv!bs !fbnhiA o abrycvo cypt .,siypuk.kd!eaBg
+
+[2911] k.ep!m"dk.fd!b.ne!sv!caAcfbnhiAho ebrycvo gypwk.ld!ep
+
+[2913]  .,siypnk.fp!m"dk.gd!cgne!sv!csAlfbnhiAro lyp.k.m
+
+[2914] e!sv!bs !fbnhiA o abrycvo cypt .,siypuk.kd!eaBg
+
+[2916] k.fd!b.ne!sv!caAcfbnhiAho ebrycvo gypwk.ld!ep
+
+[2918] k.fp!m"dk.gd!cgne!sv!csAlfbnhiAro lyp.k.m
+
+[2919]  !fbnhiA o abrycvo cypt .,siypuk.kd!eaBg
+
+[2920]  .,siyppk.gp!m"dk.hd!c.ne!sv!daA"o pyp'
+
+[2921] e!sv!caAcfbnhiAho ebrycvo gypwk.ld!ep
+
+[2923] k.gd!cgne!sv!csAlfbnhiAro lyp.k.m
+
+[2924] a o abrycvo cypt .,siypuk.kd!eaBg
+
+[2925] k.gp!m"dk.hd!c.ne!sv!daA"o pyp'
+
+[2926] acfbnhiAho ebrycvo gypwk.ld!ep
+
+[2927]  .,siypsk.hp!m"dk.id!dsB o u
+
+[2928] e!sv!csAlfbnhiAro lyp.k.m
+
+[2929] cvo cypt .,siypuk.kd!eaBg
+
+[2930] k.hd!c.ne!sv!daA"o pyp'
+
+[2932] k.hp!m"dk.id!dsB o u
+
+[2933] alfbnhiAro lyp.k.m
+
+[2934]  .,siypuk.kd!eaBg
+
+[2935] e!sv!daA"o pyp'
+
+[2937] k.id!dsB o u
+
+[2946]  ibauisL.raM.se!bp!m,ccvd
+
+[2947] p.vauytecgytncry
+
+[2948] dgvd!"rad!,rcm.f .,wghii
+
+[2949] dhoelgroe!hbn .ne
+saispcr.dpa
+
+[2950] k"tack"yag,pnbrylpsuu cn l
+
+[2951] l.raM.se!bp!m,ccvd
+
+[2953] d!,rcm.f .,wghii
+
+[2954] e!hbn .ne
+saispcr.dpa
+
+[2955] ag,pnbrylpsuu cn l
+
+[2959] e
+saispcr.dpa
+
+[2987] yldIdtlbbr swp"wglageusbn 
+f"i rol!ywK,tua
+
+[2989] jke.efabdm tlp.cpmhce!b'osuba""om!yyfgc
+
+[2991] e.efabdm tlp.cpmhce!b'osuba""om!yyfgc
+
+[2994]  swp"wglageusbn 
+f"i rol!ywK,tua
+
+[2996]  tlp.cpmhce!b'osuba""om!yyfgc
+
+[2999] ageusbn 
+f"i rol!ywK,tua
+
+[3000]  vcp,pohIplk,fd
+ys!
+
+
+[3001] hce!b'osuba""om!yyfgc
+
+[3004] 
+f"i rol!ywK,tua
+
+[3005] Iplk,fd
+ys!
+
+
+[3006] uba""om!yyfgc
+
+[3035] 
+f"i vf 
+ty!!!
+
+[3037] ubinb,fo
+"". o.
+
+[3055] .fu6plb!ym
+
+"lk.osTui rol!yw!
+
+
+[3056] 
+f"i pos
+yyydro K'nrged
+ts,,tuagf
+
+[3057] Iplb!ym
+
+"lk.osTui rol!yw!
+
+
+[3059] .f"n,,,s.yp7'nrged
+ts,,tuagf
+
+[3061] 
+yyydro K'nrged
+ts,,tuagf
+
+[3062] 
+
+"lk.osTui rol!yw!
+
+
+[3064] .yp7'nrged
+ts,,tuagf
+
+[3066] K'nrged
+ts,,tuagf
+
+[3067] Tui rol!yw!
+
+
+[3069] uba""om
+"' cbp 
+
+[3114] .yp7'nrget
+buK,bc'JTs6plk,fd
+yyfgd
+
+[3116] K'nrget
+buK,bc'JTs6plk,fd
+yyfgd
+
+[3117] Tui u3'od
+rsmo.ou!y"i rol!yw!
+
+
+[3118] 
+apmf'fh!ywehvz
+fdIplk,fd
+yyfgd
+
+[3119] ubhR'od
+rsmo.ou!y"i rol!yw!
+
+
+[3120] 'ount"olltkB
+fdIplk,fd
+yyfgd
+
+[3121] 
+buK,bc'JTs6plk,fd
+yyfgd
+
+[3124] 
+rsmo.ou!y"i rol!yw!
+
+
+[3125] ltkB
+fdIplk,fd
+yyfgd
+
+[3126] 'JTs6plk,fd
+yyfgd
+
+[3128] Ts6plk,fd
+yyfgd
+
+[3131] uba""om
+"' gb. 
+
+[3133] 
+ts,,tuapfpa
+
+[3174] 'JTs6pmo'on!
+"!m'os!wplk,fd
+ys!
+
+
+[3176] Ts6pmo'on!
+"!m'os!wplk,fd
+ys!
+
+
+[3177] !y"i v5,yfnobnt!yduba""om!yyfge
+
+[3178] Ipmo'on!
+"!m'os!wplk,fd
+ys!
+
+
+[3179] ubkT,yfnobnt!yduba""om!yyfge
+
+[3180] 'R
+,tyfryhKs' rol!ywK,tub
+
+[3181] 
+fynn!E
+f"nkged
+ts,"onnpl c
+
+[3182] 
+,tyfryhKs' rol!ywK,tub
+
+[3183] !
+"!m'os!wplk,fd
+ys!
+
+
+[3184] nobnt!yduba""om!yyfge
+
+[3185] .,u7s' rol!ywK,tub
+
+[3186] 
+f"nkged
+ts,"onnpl c
+
+[3187] Ks' rol!ywK,tub
+
+[3189] uba""om!yyfge
+
+[3191] 
+ts,"onnpl c
+
+[3234] .,u7s' u3'od
+rsld"o M'
+
+[3235] 
+f"nkget
+buK,bc.ksB!,u !g
+
+[3236] Ks' u3'od
+rsld"o M'
+
+[3238] ubhR'od
+rsld"o M'
+
+[3241] 
+fs."ea!yp9'
+
+[3287] V"mf!fhKuygaps g
+
+[3288] nkhzu7uygaps g
+
+[3289] 'o.nt!yhnpd cap
+
+[3335] .f'7p' u3'od
+rsmo,H"d
+
+[3336] Y"nbget
+buK,bc'X
+Mubhzu7uygc
+
+[3337] Kp' u3'od
+rsmo,H"d
+
+[3338] !epmf'fh!ywehvH,5getBu7uygc
+
+[3339] ubhR'od
+rsmo,H"d
+
+[3340] 'ount"olltk*HgetBu7uygc
+
+[3342] 
+fs."ey
+X!spmf!fhKuygc
+
+[3343] !ywehvH,5getBu7uygc
+
+[3345] ltk*HgetBu7uygc
+
+[3347] 
+X!spmf!fhKuygc
+
+[3349] !spmf!fhKuygc
+
+[3377] 'o.n"'onTs5". o.
+
+[3401] 'op".om!fynh"ksa
+
+[3402] !fwnb,o 
+,sni!ppb
+
+[3403] 
+tp,.on!tsycc
+
+
+============================================================
+# Section 0x07 (34 texts)
+============================================================
+
+[  13] aui gapi gd 
+
+[3852] !.esub,s Hr c.r'lgrecstaihrdm
+
+[3854] dgfycb!taahrbu.ralhdecutai' f
+
+
+[3856] ngf"ecctafhrac.silhhecvuao' f
+
+
+[3857]  Hr c.r'lgrecstaihrdm
+
+[3858] slghecntachrcu.sslhkgcQcQd
+
+[3859] aahrbu.ralhdecutai' f
+
+
+[3860] slg
+ecgtahhrdc.swph2h2i
+
+[3861] afhrac.silhhecvuao' f
+
+
+[3862] 'lgrecstaihrdm
+
+[3863] achrcu.sslhkgcQcQd
+
+[3864] alhdecutai' f
+
+
+[3865] ahhrdc.swph2h2i
+
+[3866] ilhhecvuao' f
+
+
+[3879] bga wmp!p!nlnfeybykr
+vp3r
+
+[3883] bsbr"r.!'!n
+nfwwb!oa
+
+[3885] btbr"v.
+'!omlf.C
+
+[3894] b.p !haCroaiyret.th!h
+ndayatfriy!v,Kf
+
+[3896] b.sd!haCvoamfret.t'!idndeoavo"ky!wn
+
+[3897] croagyrdk.th!huCYarkrht.vkI
+7f
+
+[3898] k.sd!hiC'oamfrfv.ui!ilDiNnNtpa,?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+
+[3899] croaiyret.th!h
+ndayatfriy!v,Kf
+
+[3900] k.sv!huC'oaokrgv.u"!iv6
+7f
+
+[3901] cvoamfret.t'!idndeoavo"ky!wn
+
+[3902] k.th!huCYarkrht.vkI
+7f
+
+[3903] c'oamfrfv.ui!ilDiNnNtpa,????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+
+[3904] t.th!h
+ndayatfriy!v,Kf
+
+[3905] c'oaokrgv.u"!iv6
+7f
+
+[3906] t.t'!idndeoavo"ky!wn
+
+[3907] cYarkrht.vkI
+7f
+
+[3908] v.ui!ilDiNnNtpa,????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+
+[3909] dayatfriy!v,Kf
+
+[3913] diNnNtpa,???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+
+[3915] dnNtpa,?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+
+
+============================================================
+# Section 0x08 (134 texts)
+============================================================
+
+[  16] bp dcppaikkpcuws
+
+[  31] fUiep npcapgb.ob'g'leghhpc
+Fbbbyu
+
+[  39] c !fr
+cmebccu.an3bbbyu
+
+[  42] Set sail for...
+
+
+
+[  44] ebccu.an3bbbyu
+
+[ 113] You sail back to Smuggler's cove without incident.
+
+[ 115] gbccu.aecgwbeB
+c,gpp.mbvcag6.e"imdSldh.rgu"'o
+
+[ 117] hhpclgrlem!f'hwr  p'figcrU.e"imdSldh.rgu"'o
+
+[ 118] l back to Smuggler's cove without incident.
+
+[ 119] g.ra.l,.outmaab unuphb
+hpmsu'k
+c.itrarhtu
+
+[ 120] cgwbeB
+c,gpp.mbvcag6.e"imdSldh.rgu"'o
+
+[ 121] dp"yp4muggler's cove without incident.
+
+[ 122] em!f'hwr  p'figcrU.e"imdSldh.rgu"'o
+
+[ 123] o Smuggler's cove without incident.
+
+[ 124] outmaab unuphb
+hpmsu'k
+c.itrarhtu
+
+[ 125] c,gpp.mbvcag6.e"imdSldh.rgu"'o
+
+[ 127]   p'figcrU.e"imdSldh.rgu"'o
+
+[ 128] ler's cove without incident.
+
+[ 129] unuphb
+hpmsu'k
+c.itrarhtu
+
+[ 130] vcag6.e"imdSldh.rgu"'o
+
+[ 132] rU.e"imdSldh.rgu"'o
+
+[ 133] ve without incident.
+
+[ 134] pmsu'k
+c.itrarhtu
+
+[ 136] huy'hpvfadatfh!
+
+[ 138] ut incident.
+
+[ 151] You climb abord ship and sail for the island of Rustic and after many days of travel you arrive at the northern shore.
+
+[ 153] gag.u'eace0uehdi
+
+[ 155] rhulcgmCuehdi
+
+[ 156] mb abord ship and sail for the island of Rustic and after many days of travel you arrive at the northern shore.
+
+[ 161]  ship and sail for the island of Rustic and after many days of travel you arrive at the northern shore.
+
+[ 165] h.ueghhpc
+Cemc.dihph.ud!!f'esimgpch.ucgL'cduh'!cuiGd!!enciu"pe
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 166] d sail for the island of Rustic and after many days of travel you arrive at the northern shore.
+
+[ 168] cu.an0emc.dihph.ud!!f'esimgpch.ucgL'cduh'!cuiGd!!enciu"pe
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 170] c
+Cemc.dihph.ud!!f'esimgpch.ucgL'cduh'!cuiGd!!enciu"pe
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 171] or the island of Rustic and after many days of travel you arrive at the northern shore.
+
+[ 173] eslavc.c!iaNb
+bhdeugac!iacoemaa'c
+naidocaNbfadil.bn2ciediu.cilemc.d"Emc'd.ehdC,
+
+[ 175] dihph.ud!!f'esimgpch.ucgL'cduh'!cuiGd!!enciu"pe
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 176] sland of Rustic and after many days of travel you arrive at the northern shore.
+
+[ 178] !iaNb
+bhdeugac!iacoemaa'c
+naidocaNbfadil.bn2ciediu.cilemc.d"Emc'd.ehdC,
+
+[ 179] pytp3ustic and after many days of travel you arrive at the northern shore.
+
+[ 180] !!f'esimgpch.ucgL'cduh'!cuiGd!!enciu"pe
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 181]  Rustic and after many days of travel you arrive at the northern shore.
+
+[ 183] hdeugac!iacoemaa'c
+naidocaNbfadil.bn2ciediu.cilemc.d"Emc'd.ehdC,
+
+[ 185] gpch.ucgL'cduh'!cuiGd!!enciu"pe
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 186]  and after many days of travel you arrive at the northern shore.
+
+[ 188] iacoemaa'c
+naidocaNbfadil.bn2ciediu.cilemc.d"Emc'd.ehdC,
+
+[ 189] rb"tgpwrfkpsrk"
+
+[ 190] L'cduh'!cuiGd!!enciu"pe
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 191] er many days of travel you arrive at the northern shore.
+
+[ 193] 'c
+naidocaNbfadil.bn2ciediu.cilemc.d"Emc'd.ehdC,
+
+[ 195] !cuiGd!!enciu"pe
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 196] days of travel you arrive at the northern shore.
+
+[ 198] caNbfadil.bn2ciediu.cilemc.d"Emc'd.ehdC,
+
+[ 200] !enciu"pe
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 201] travel you arrive at the northern shore.
+
+[ 203] il.bn2ciediu.cilemc.d"Emc'd.ehdC,
+
+[ 205] e
+Pciediu.cilemc.d"Emc'd.ehdC,
+
+[ 206] ou arrive at the northern shore.
+
+[ 208] dbaviladebesla!2mc'd.ehdC,
+
+[ 210] iu.cilemc.d"Emc'd.ehdC,
+
+[ 211] e at the northern shore.
+
+[ 212] gu.l'hpkt!l'hukplsk!hw
+
+[ 213] ebesla!2mc'd.ehdC,
+
+[ 216]  northern shore.
+
+[ 217] t!l'hukplsk!hw
+
+[ 280] acYiwg  ufp!f
+
+[ 309] Pirate's Cove
+
+
+[ 310] augu"wuporb
+hyg
+
+[ 311] ademvcb!g6,u
+
+[ 317] 'tnp !!lhaq
+riku
+
+[ 330] !hrub!l2fuvbs"tplmatuyg
+
+[ 332] gf."Pfuvbs"tplmatuyg
+
+[ 336] Sunken ruins
+
+
+[ 337] vbs"tplmatuyg
+
+[ 376] aihpa ia ai"ech
+nlb
+
+[ 410] i.dcavp obLyu
+
+[ 443] cuf"ecp hml"srwf
+
+[ 449] kelumr. mmedscud
+
+[ 451] g,bpa''lkchgi rpf.bcb". 
+
+[ 463] gftpa rof.lub". 
+
+[ 470] gftpa rnf.tcb". 
+
+[ 477] gftpa rsf.
+cd,p s!
+
+[ 491] gfjcdgiy"!n"Ypa.lda
+c
+
+[ 492] Y  iavObwov!
+
+[ 502]  pukupaligdpc
+t
+o
+
+[ 505] g edca.an"Ypagc!!8dp.id.
+
+[ 508]  l fl9pagc!!8dp.id.
+
+[ 510] n"Ypagc!!8dp.id.
+
+[ 513]  cannot learn
+
+[ 553] kuibapi ep hsrh
+
+[ 581] iuhcavgsslaucacv
+
+[ 583] gdirdc.dggchi .oslhbn pa Hrcni
+iuytnysvkvkua'pacslug,.ad!!ua
+
+
+[ 584] iuhhe ia aipnb!tag,pl
+
+[ 585] aihpippgsubp5rcm.e
+
+[ 588] ggchi .oslhbn pa Hrcni
+iuytnysvkvkua'pacslug,.ad!!ua
+
+
+[ 589]  aipnb!tag,pl
+
+[ 593] slhbn pa Hrcni
+iuytnysvkvkua'pacslug,.ad!!ua
+
+
+[ 598]  Hrcni
+iuytnysvkvkua'pacslug,.ad!!ua
+
+
+[ 599] slhbsyivd!,v!vi
+i
+
+
+[ 600] ag!v'vhoe
+odiyiygdv
+
+[ 601] fdnvik"yk"iv'v' mg aheicm! aNi np 
+
+[ 602] kvisM'Ivnvnpki
+
+[ 603] iuytnysvkvkua'pacslug,.ad!!ua
+
+
+[ 606] k"iv'v' mg aheicm! aNi np 
+
+[ 608] kvkua'pacslug,.ad!!ua
+
+
+[ 611] mg aheicm! aNi np 
+
+[ 613] cslug,.ad!!ua
+
+
+[ 623]  f?
+odiysy iht
+
+[ 644] gdirdc.dggchi .oslhbn pa Hrcngd
+
+[ 649] ggchi .oslhbn pa Hrcngd
+
+[ 654] slhbn pa Hrcngd
+
+[ 660] slhbs gesmni.
+
+[ 662] fcapmc'!vp hga
+
+[ 678] i.dcavp kdnu.nc tda
+a
+
+[ 683] kdnu.nc tda
+a
+
+[ 693] kvgsM'Idnvepnd
+
+[ 694] icytnysrkvhubrgacsluhspad!!ubt.a f?
+odaystkh,P
+
+[ 696] e
+odayitgfapchc"gtd
+
+[ 697] k"gv'u' .u aheic"g aNi "! 
+
+[ 699] kvhubrgacsluhspad!!ubt.a f?
+odaystkh,P
+
+[ 702] .u aheic"g aNi "! 
+
+[ 704] csluhspad!!ubt.a f?
+odaystkh,P
+
+[ 709] d!!ubt.a f?
+odaystkh,P
+
+[ 711] gffpcao?'Idodewty
+
+
+[ 714]  f?
+odaystkh,P
+
+[ 726]  h!ogt ap. grcgrgcpp
+
+[ 742] gdirdc.dggchi .osn
+
+[ 743] iuhhe ia aipnb!tpcdheh ci.dcavp  eygewg
+
+[ 744] aihpippgsubp5.aautcpsdlas i.
+
+[ 748]  aipnb!tpcdheh ci.dcavp  eygewg
+
+[ 749] subp5.aautcpsdlas i.
+
+[ 751]  H.aautcpsdlas i.
+
+[ 753] pcdheh ci.dcavp  eygewg
+
+[ 758] i.dcavp  eygewg
+
+
+============================================================
+# Section 0x09 (112 texts)
+============================================================
+
+[   1] iuhcavgss.aucac.
+
+[   3] gdirddpdggchp .os"k
+
+[  47] , you can...
+
+
+[  66] oby
+rcwan0ev
+sr'l.'eg
+
+[  67] 
+Ask for volunteers
+
+[  68] ,ahlc
+Cev
+sr'l.'eg
+
+[  69] sk for volunteers
+
+[  72] .p'ywifhtbg"
+
+[  89] ccf"meghp afc
+
+[  98] obyEvdel!an0eervEg
+
+[  99] 
+Listen for rumors
+
+[ 100] !miil".c
+CeervEg
+
+[ 101] isten for rumors
+
+[ 102] u"tph,!glmbk!lp
+
+[ 129] :vnmlyo
+eslaedawlm
+
+[ 131] nmlyo
+eslaedawlm
+
+[ 132] kd,5he barkeep says, "I hear 
+
+[ 134] The barkeep says, "I hear 
+
+[ 139] keep says, "I hear 
+
+[ 142] " k"mp!6 hear 
+
+[ 201] belce pc Khsrdv
+
+[ 207] s'luhmg ccuawhgrg!gupaahdahscl
+
+[ 209] gs'paghgdlsrar.rh
+
+[ 212] ccuawhgrg!gupaahdahscl
+
+[ 215] cuguncig  csrc"ae
+
+[ 217] g!gupaahdahscl
+
+[ 239] ialukj dctd.rc!s bgIctyp
+
+[ 245] slyactsgcmb"gsn
+
+[ 246] d.rc!s bgIctyp
+
+[ 275] n/'iupg!gvhplt
+b
+
+[ 276] This brave soul wishes
+
+[ 277] 'iupg!gvhplt
+b
+
+[ 278] vcafadilbc3pe"ihc'g hbl
+
+[ 281] ave soul wishes
+
+[ 294] n/'hurpg!gvhplt
+bcpmsusgb. to join up!
+
+
+
+[ 295] These brave souls wish
+
+[ 296] 'hurpg!gvhplt
+bcpmsusgb. to join up!
+
+
+
+[ 297] mclafadilbc3sge"ihc !
+
+[ 299] cnciu.ehRsge"ihc !
+
+[ 300] rave souls wish
+
+[ 301] vhplt
+bcpmsusgb. to join up!
+
+
+
+[ 302] lbc3sge"ihc !
+
+[ 306] pmsusgb. to join up!
+
+
+
+[ 311]  to join up!
+
+
+
+[ 312] ,.o. 
+h.esbtyu
+
+[ 322] adbpishgslyacuaggrwpaasfe 
+
+[ 323] g!ausictd.rd
+
+[ 325] hcuhekrai ccg,g  hbt
+
+[ 326] dahs!gsph ae'
+
+[ 327] slyacuaggrwpaasfe 
+
+[ 330] i ccg,g  hbt
+
+[ 338] ge ptilbdlrb
+
+[ 392] i cckb. cpsuta
+
+[ 407]  K cm. belbs .oe!.dntu"iotpa h"sl p
+
+[ 409] ag,pael.fcbpM"pi
+fhsu0
+
+[ 412] belbs .oe!.dntu"iotpa h"sl p
+
+[ 414] fcbpM"pi
+fhsu0
+
+[ 417] e!.dntu"iotpa h"sl p
+
+[ 422] iotpa h"sl p
+
+[ 437] n)t.k,rpmptu!pl,.o. 
+h.esb
+
+[ 438] No one wants to join up.
+
+[ 439] t.k,rpmptu!pl,.o. 
+h.esb
+
+[ 440] a!lblc
+fcbeB
+
+[ 443] wants to join up.
+
+[ 444] tu!pl,.o. 
+h.esb
+
+[ 459] The party has 7 characters already.
+
+[ 463] ien!dcigf!wagsdachembcac"alckop
+
+[ 464] ty has 7 characters already.
+
+[ 465] .igupo"lcrcicgsl'egchsc.gwj hlg
+
+[ 466] sdcbK characters already.
+
+[ 468] f!wagsdachembcac"alckop
+
+[ 469] dpscrgrahtg"
+
+[ 470] crcicgsl'egchsc.gwj hlg
+
+[ 471] haracters already.
+
+[ 472] ugrc"ulpgtchprm
+
+[ 473] chembcac"alckop
+
+[ 513] mcdutYa .oe!sd!tg
+
+[ 515] hfIcbpM"ck"ep
+
+[ 542] ag,pa .oe!sv!ba uftnhi "o
+
+[ 546]  !,siyplk.epM"dk.fd!b.oe!sv!caAcftnhiAho e
+
+[ 547] e!sv!ba uftnhi "o
+
+[ 549] k.ed!bgoe!sv!bs !ftnhiA o ab"ycvo cypt
+
+[ 551] k.epM"dk.fd!b.oe!sv!caAcftnhiAho e
+
+[ 553]  !,siypnk.fpM"dk.gd!cgoe!sv!csAl
+
+[ 554] e!sv!bs !ftnhiA o ab"ycvo cypt
+
+[ 556] k.fd!b.oe!sv!caAcftnhiAho e
+
+[ 558] k.fpM"dk.gd!cgoe!sv!csAl
+
+[ 559]  !ftnhiA o ab"ycvo cypt
+
+[ 560]  !,siyppk.gpM"dk.hd!c.
+
+[ 561] e!sv!caAcftnhiAho e
+
+[ 563] k.gd!cgoe!sv!csAl
+
+[ 564] a o ab"ycvo cypt
+
+[ 566] acftnhiAho e
+
+[ 567]  !,siypsk.hp
+
+[ 576] k.nd!fp  !,siypuk.kd!eaBgftnhiH!ftnhiH.
+
+[ 581]  !,siypuk.kd!eaBgftnhiH!ftnhiH.
+
+[ 582] e!sv!daA"o pyp' !,siyso !,siysn
+
+[ 583] cvo gypwk.ld!epoe!sv!t.oe!sv!tp
+
+[ 584] k.id!dsB o ub"ycvocB"ycvoc!
+
+[ 586] k.kd!eaBgftnhiH!ftnhiH.
+
+[ 587] a"o pyp' !,siyso !,siysn
+
+[ 588] k.ld!epoe!sv!t.oe!sv!tp
+
+[ 591] bgftnhiH!ftnhiH.
+
+[ 592]  !,siyso !,siysn
+
+[ 593] e!sv!t.oe!sv!tp
+
+[ 606] ag,pa .oe!pu /gPaslb
+
+[ 611] e!pu /gPaslb
+
+[ 639]  !,t
+/he.ai.!fW
+
+[ 641] f,Qsmpcvr.o
+l
+
+[ 668] cl,pa pbsle,w
+
+[ 677] cekp dc"gw!pcsm 
+
+[ 680] sslukngaheppc
+
+
+============================================================
+# Section 0x0A (181 texts)
+============================================================
+
+[   3] gdirddpdggchp pa KbrY
+
+[  60] 
+
+Who will enter?
+
+
+
+[  62] lsBlu..al
+embZ,'
+
+[  65] ill enter?
+
+
+
+[  86] nv"vsuJb.Welcome 
+
+[ 102] , you can ...
+
+
+
+[ 126] ob
+thnac!avel,'
+
+[ 127] Buy an item
+
+
+[ 128] es!ch.dil"yu
+
+[ 156] obUl..ac!avel,,!xamine an item
+
+
+[ 157] Sell an item
+Examine an item
+
+
+[ 158] g"rpch.dil"yy
+"Aamine an item
+
+
+[ 159] ll an item
+Examine an item
+
+
+[ 161] c!avel,,!xamine an item
+
+
+[ 163] il"yy
+"Aamine an item
+
+
+[ 164] em
+Examine an item
+
+
+[ 165] oo,t!cc'u!lac!avel,'
+
+[ 166] !xamine an item
+
+
+[ 168] aamine an item
+
+
+[ 169] titrpgtpiu"tog
+
+[ 182] btdp rk.Pool gold
+
+[ 231] kvircm'
+i!hbt
+
+[ 232] iuhbnyiyag!.cm. o
+
+[ 233] ag,v'v.sfe bn
+
+[ 266] Sell which item?
+
+
+
+[ 268] ..blsugsavel,Z,'
+
+[ 311] kvisM'Ivnvnpif
+
+[ 312] iuytnysvkvkuar. cslugt
+
+[ 314] e
+odiyiygdbpahc"gre
+
+[ 317] kvkuar. cslugt
+
+[ 327] d!!uaug  f?
+odiysy
+
+[ 329] gdgpaao?'Ivodn
+
+[ 333] ?9svk"kpa".r
+
+[ 352] n1ut!lm.g
+c.osphk,wu.mptu.l,.g
+d.l'guEg
+
+[ 353] "Sorry, but I don't want to buy that."
+
+[ 354] ut!lm.g
+c.osphk,wu.mptu.l,.g
+d.l'guEg
+
+[ 355] 2eAg
+c.osphk,wu.mptu.l,.g
+d.l'guEg
+
+[ 356] .,
+pr'hp6 don't want to buy that."
+
+[ 357] Ag
+c.osphk,wu.mptu.l,.g
+d.l'guEg
+
+[ 358]  but I don't want to buy that."
+
+[ 359] 
+c.osphk,wu.mptu.l,.g
+d.l'guEg
+
+[ 360] eb!uai
+veblc
+ebeAfhnbesdfrs
+
+[ 361] 6 don't want to buy that."
+
+[ 362] gcv
+,ile.h'lem!cns!emciobc
+
+[ 363] don't want to buy that."
+
+[ 364] ,wu.mptu.l,.g
+d.l'guEg
+
+[ 365] veblc
+ebeAfhnbesdfrs
+
+[ 366] p, fhp"ypr'kp"urh!lp aas2
+
+[ 367] .h'lem!cns!emciobc
+
+[ 368] nt to buy that."
+
+[ 370] eAfhnbesdfrs
+
+[ 371] pr'kp"urh!lp aas2
+
+[ 390] ngao?pauJb.Examine which item?
+
+
+
+[ 398] ob.,!cc'u!lblsugsavel,Z,'
+
+[ 399] Examine which item?
+
+
+
+[ 401] aamine which item?
+
+
+
+[ 402] titrpmsiragiu"to3og hww
+
+[ 403] u!lblsugsavel,Z,'
+
+[ 406] hich item?
+
+
+
+[ 407] ragiu"to3og hww
+
+[ 409] vhte;nPatml ucwg
+
+[ 422] g"Idhyg aao!
+
+[ 426] npaccYa
+Jcup,y'gppbO
+
+[ 428] ghId,xhh your 
+
+[ 431] nYsigm,
+cgg 1
+
+[ 441]  is considered a
+
+[ 442] uphb,usrhuhrggp
+
+[ 443] ag
+cuimaliac
+
+[ 471] bLuk,g ob.h'
+
+..cph.esg.dio
+
+[ 473] gywpaFptv,,rph
+
+[ 476] ob.h'
+
+..cph.esg.dio
+
+[ 477] Anyone can use it.
+
+[ 481] .cph.esg.dio
+
+[ 491] el fr
+n2e"Rpudciu.em!dciu.cgc
+
+[ 493] ob'
+Pe"Rpudciu.em!dciu.cgc
+
+[ 494] You would have to have a 
+
+[ 496] gbl3pudciu.em!dciu.cgc
+
+[ 498] Rpudciu.em!dciu.cgc
+
+[ 499] ld have to have a 
+
+[ 501] sdilbeAsdilaca
+
+[ 503] .em!dciu.cgc
+
+[ 515] f.ccad.aegidpdg
+
+[ 564] ihIdwpc
+paol gg
+
+[ 621]  general item
+
+[ 635]  full shield
+
+[ 659]  2 handed sword
+
+[ 661]  handed sword
+
+[ 689]  thrown weapon
+
+[ 690] 'lk
+tpmrpub,p
+
+[ 712]  mage gloves
+
+[ 729]  cloth armor
+
+[ 738]  leather armor
+
+[ 748]  cuir bouilli armor
+
+[ 749] daugg,
+atbapgukk!g
+
+[ 750] vaae3hrrgcidvC
+
+[ 761]  brigandine armor
+
+[ 763] upc!iu!lada'0
+
+[ 773]  scale armor
+
+[ 782]  chain armor
+
+[ 791]  plate and chain armor
+
+[ 793] delac!iagscu!ada'0
+
+[ 796] nd chain armor
+
+[ 797] ghagstpgukk!g
+
+[ 806]  full plate armor
+
+[ 828]  pair of boots
+
+[ 861] Intelligence
+
+[ 862] tu"tbas tr p 
+d
+
+[ 871] uauiu.bbu! pu "pg
+
+[ 893] su pb pbtnspfZa ,g nlukcgbbd
+
+[ 898] tnspfZa ,g nlukcgbbd
+
+[ 902] acbwpa!"gwgpeei 
+
+[ 908] sc rspge fRribdpgs
+
+[ 958] "p t!a'c"p wp rP amw
+
+[ 963] "p wp rP amw
+
+[1003] jbob'adgp"p'iku
+
+[1005] ob'adgp"p'iku
+
+[1017] us .cm.hrw u.wu"grc
+
+[1018] pn bnalmpmedveich
+
+[1019] pg,ptblbhrmhsrag
+
+[1021]  ee.eta'tdacp 
+
+[1049] ag,p'upcag!puph.b!
+
+[1052] iga cngigc! 
+
+[1071] eu,pum""feluin.ccl,patau r.
+
+[1072] e!dbnnh"tdatw  be!
+
+[1073]  g,tsnl"gu
+pgg"y
+
+[1074] e!!tteidflaaem. hri
+
+[1076] feluin.ccl,patau r.
+
+[1141] kvitam.se
+nvnpud
+
+[1142] iu.tncrykvkud gctdahe  fec!ubc.ck"kpum'Iu
+
+[1143] ec,rcm'
+i
+ gi c"gshpgh"rfd
+
+[1144] e!hbnyiygiapheicslaanlh"gehpgysy g,v!vg hri
+
+[1145] ag,v'v'apuahsrct
+
+[1147] kvkud gctdahe  fec!ubc.ck"kpum'Iu
+
+[1148] i
+ gi c"gshpgh"rfd
+
+[1149] giapheicslaanlh"gehpgysy g,v!vg hri
+
+[1152] tdahe  fec!ubc.ck"kpum'Iu
+
+[1154] slaanlh"gehpgysy g,v!vg hri
+
+[1157] ec!ubc.ck"kpum'Iu
+
+[1159] gehpgysy g,v!vg hri
+
+[1160] slad!v.ie
+odi
+
+[1227] ov!mp6 have...
+
+
+
+[1229] , I have...
+
+
+
+[1230] ospigvhweefog
+
+[1241]  Kancsdad pl ltl"apt
+
+[1245] gugue pdsmtcial
+
+[1246] ad pl ltl"apt
+
+[1277] glirl hdcusppp"egwiaihhdhgiC 
+
+[1279] a.asihhd   slrlucussispv!ga s s rc
+
+[1281] cussiaabc"a"ghhdcvd k.pcbcbcbag
+
+[1282] cusppp"egwiaihhdhgiC 
+
+[1283] cuccehsdspssihiiayr
+
+[1284]    slrlucussispv!ga s s rc
+
+[1285] gltckd dcusuudoa
+
+[1287] gwiaihhdhgiC 
+
+[1289] cussispv!ga s s rc
+
+[1328] vla spgeiivpgcsm
+
+[1331] gcbddi.cahepm4ihhd uk
+
+[1334] vla ctgeRdcusp'dpdfveuio
+
+[1336] ahepm4ihhd uk
+
+[1337] hubo'hhdcuerl h
+hvat. hae. suirp
+
+[1339] Rdcusp'dpdfveuio
+
+[1341] cusp'dpdfveuio
+
+[1342] cuerl h
+hvat. hae. suirp
+
+[1344] a.at'tidfpascmpbdgvb
+
+[1347] hvat. hae. suirp
+
+[1349] fpascmpbdgvb
+
+[1363] ob.ns!e"dgrcdil"yLyu
+
+[1364] Buy which item?
+
+
+
+[1365] 
+d.msiragiu"to3og
+
+[1366] nblsugsavel,Z,'
+
+[1367] ,cvacpvhte;nP
+
+[1383]  K csgf 
+csesg atapkc"ae 
+
+[1385] ahcpnb'hcmcpaded
+
+[1388]  
+csesg atapkc"ae 
+
+[1468] us .cm.hrw "gspbnpascla
+
+[1469] pn bnalmpnicu
+
+[1473] rw "gspbnpascla
+
+[1483] atipiegegecp 
+
+[1506] s.jda'w askc
+
+[1546]  9srhpc atnpaccu
+
+[1548] srhpc atnpaccu
+
+
+============================================================
+# Section 0x0B (137 texts)
+============================================================
+
+[  48] gdYpapmfcbesla
+
+[  52]  u!pl'hpg qeygewswtc
+
+[  57] g qeygewswtc
+
+[  76] kaiawb'.akkpa i' blvtd k vi
+
+[  81] akkpa i' blvtd k vi
+
+[  85] kgcmswludlevg
+
+[  87] ,dl"gi.mip rdv. 
+
+[  94] akkpa cu blvsw
+
+[  98] spcmswi. lIahpe
+
+[ 119] r lu.wi. lIahpe
+
+[ 145]  can't carry any more.
+
+[ 148] hps g.,prfkpwy.tl
+
+[ 150] arry any more.
+
+[ 151] lm.gtv.kk!hw
+
+[ 166] gdirdc.dggchi .osmk
+
+[ 167] iuhhe ia aipnb!ti.dcavp adfpl
+
+[ 168] aihpippgsubp5vlas i.
+
+[ 172]  aipnb!ti.dcavp adfpl
+
+[ 173] subp5vlas i.
+
+[ 177] i.dcavp adfpl
+
+[ 216] cgsa5rdc.f HtrY egislsch!p
+
+[ 218] dHrdc.f HtrY egislsch!p
+
+[ 220] aihpnb!tfbIalpvc"cgt"
+
+[ 221] slbp5trY egislsch!p
+
+[ 223]  HtrY egislsch!p
+
+[ 225] fbIalpvc"cgt"
+
+[ 235] c!a"kc.boic dc. n\sk.mstb
+
+[ 237] swhpeUgaihpa
+Tcyp,dee
+
+[ 240] oic dc. n\sk.mstb
+
+[ 242] aihpa
+Tcyp,dee
+
+[ 246] Who will get loot?
+
+
+
+[ 248] Blu..apmea.1Lyu
+
+[ 251] l get loot?
+
+
+
+[ 267] n\siragiu"tneefog
+
+[ 268] Which item...
+
+
+
+[ 269] siragiu"tneefog
+
+[ 270] ugsavel,rrr,'
+
+[ 280] slra'la pm!o!.g
+
+[ 290]  Ht
+Min. ob" 
+puf4
+
+[ 292] f,4u
+paFsb, goG
+
+[ 294] gu
+paFsb, goG
+
+[ 331] sshsib!ttdad.
+
+[ 345]  eu.ealmpniaihgoslH
+arp
+
+[ 346] ve ptblbspssib!tf,Qul
+
+[ 349] rw "ghhd Ht
+/ie
+
+[ 350] pniaihgoslH
+arp
+
+[ 351] spssib!tf,Qul
+
+[ 375] to'p )dph dnhp5t
+Mkk. cuf"eu..
+
+[ 378] <s.cpsyc.oslH"a'
+
+[ 380] .cpsyc.oslH"a'
+
+[ 381] ccv"eb!tf,4wypahgosmhrp
+
+[ 382] dnhp5t
+Mkk. cuf"eu..
+
+[ 383] slf"eoyGwypahgosmhrp
+
+[ 384]  Ht
+Mkk. cuf"eu..
+
+[ 386] f,4wypahgosmhrp
+
+[ 388] gwypahgosmhrp
+
+[ 398] kvisM'Ivnvnpl
+
+[ 399] iuytnysvkvkubfp csluhg. d!!ubi
+
+[ 404] kvkubfp csluhg. d!!ubi
+
+[ 409] csluhg. d!!ubi
+
+[ 420] ?9svk"kpbdas"
+
+[ 422] k"iv!v. srhlp
+
+[ 443] snluga. c!k"feid l
+
+[ 445] gpdpah.ysnluia. d
+
+[ 458] cuf"ei gaHsihh.?
+
+[ 460] sluapd!tcustrY
+
+[ 478]  Ht
+/ia.  hat
+/h,p h!
+
+[ 480] f,Qudpaasdf,Qty
+
+[ 482] gudpaasdf,Qty
+
+[ 485]  hat
+/h,p h!
+
+[ 509] tlapd/.apeirdvgapee
+
+[ 557]  Hrcrh>cfl d eicnl aib!ttda!
+
+[ 559] ahat
+/gn.aialug!.acuf"feid
+.
+
+[ 562] >cfl d eicnl aib!ttda!
+
+[ 564] fl d eicnl aib!ttda!
+
+[ 566] ialug!.acuf"feid
+.
+
+[ 569] nl aib!ttda!
+
+[ 579]  Ht
+/h,p npbrpgmgob'
+Pc
+h.uch.d
+
+[ 592] You find an opened chest here.
+
+[ 594] ganu!iac!aj"..ucrc'ildc'c,
+
+[ 597] d an opened chest here.
+
+[ 598] gtpk! trrghahuu.ihuhw
+
+[ 599] !aj"..ucrc'ildc'c,
+
+[ 600] y.bfbapscthhputgtl
+
+[ 602] ned chest here.
+
+[ 603] rghahuu.ihuhw
+
+[ 604] agsmdeasmamp a
+
+[ 617] dHrdc. thavd
+g
+
+[ 619] aihpbesdik'p
+
+[ 636] npbrpgmgob'
+Pdciu.c
+R.ucgdr!rl.ucrc'io
+
+[ 642] You have found a locked chest.
+
+[ 644] gasdilan3.ucgdr!rl.ucrc'io
+
+[ 647] e found a locked chest.
+
+[ 652] a locked chest.
+
+[ 654] Gwliagsmdfp abyWho will unlock the chest?
+
+
+
+[ 659] mdfp abyWho will unlock the chest?
+
+
+
+[ 662] r ,8ho will unlock the chest?
+
+
+
+[ 664] Who will unlock the chest?
+
+
+
+[ 666] Blu..bg!.GwbeslagsmdfZ,'
+
+[ 668] hrper"r!rlemc.crc'ioLyu
+
+[ 669] l unlock the chest?
+
+
+
+[ 670] mbtb"a.l'hphahuu%fog
+
+[ 671] !.GwbeslagsmdfZ,'
+
+[ 673] rlemc.crc'ioLyu
+
+[ 674]  the chest?
+
+
+
+[ 721] lret'pia2an"Ypaj"'gemc.crc'iop
+
+[ 726] 2an"Ypaj"'gemc.crc'iop
+
+[ 728] n"Ypaj"'gemc.crc'iop
+
+[ 731]  opens the chest!
+
+[ 732] ! tupl'hphahuuj
+
+[ 733] l
+cbeslagsmdf.
+
+[ 748] aHpurh>clu c
+eislu fo
+eslagsmdebal'cu
+ca.Gwlk.
+
+[ 750]  hat
+/g"gah'lvc"gan/'hphahuu.lhtgstupkb"a"ro
+
+[ 752] f,Qrspctu"ihspc
+Rut
+
+[ 753] >clu c
+eislu fo
+eslagsmdebal'cu
+ca.Gwlk.
+
+[ 754] grspctu"ihspc
+Rut
+
+[ 755] lu c
+eislu fo
+eslagsmdebal'cu
+ca.Gwlk.
+
+[ 757] h'lvc"gan/'hphahuu.lhtgstupkb"a"ro
+
+[ 760] lu fo
+eslagsmdebal'cu
+ca.Gwlk.
+
+[ 762] n/'hphahuu.lhtgstupkb"a"ro
+
+[ 763] The chest remains locked!
+
+[ 764] 'hphahuu.lhtgstupkb"a"ro
+
+[ 765] lagsmdebal'cu
+ca.Gwlk.
+
+[ 766] scthhp.terdfh
+
+[ 767] c'ilec"uhh'gdr!rl.yp aass! bci
+
+[ 768] st remains locked!
+
+[ 769] .lhtgstupkb"a"ro
+
+[ 772] hh'gdr!rl.yp aass! bci
+
+[ 777] l.yp aass! bci
+
+[ 788] apfpu gsgcws'kh.J 
+
+[ 790]  garcphmduwtrxa
+
+[ 802] ep rcm.me. rcngigc! 
+
+[ 804] ag,p'mpbag!puph.b!
+
+[ 866] KpO,FgetTy!"g
+
+[ 867] !ft*i uR,E"g
+
+[ 868] !X
+'pmf
+fo
+"sp
+
+[ 870] 
+'pmf
+fo
+"sp
+
+
+============================================================
+# Section 0x0C (151 texts)
+============================================================
+
+[  61] hrlyl9pagc
+vebhclbesla
+
+[  63] n"Ypagc
+vebhclbesla
+
+[  66]  can't use the 
+
+[  68] 
+vebhclbesla
+
+[  70] esg.emc.c qeygfaas g
+
+[  72] pl'hpgb eygfaas g
+
+[  75] c qeygfaas g
+
+[  84] n"Ypasdca!Avel,dp
+
+[  87]  has no items.
+
+[  88] gupkt.iu"tlw
+
+[  98] hmlpu "pge ptilbk
+
+[ 146] n\siraggu!!ip
+c"weefog
+
+[ 147] Which attribute...
+
+
+
+[ 148] siraggu!!ip
+c"weefog
+
+[ 149] ugsadffaufhemrrr,'
+
+[ 151] cinndgnsl,bbbyu
+
+[ 152] ttribute...
+
+
+
+[ 179] yi "nbc  ee.ehii ar
+
+[ 181] s!egaalmplsuuada
+
+[ 219] aib b 'lkfup !
+
+[ 260] pcgua !t wiped d
+
+[ 266] su rghg adbrasc"gpu
+
+[ 268] apspacifadchsr g
+
+[ 318]  w"pecs  w'peni ah
+
+[ 319] wl rcpgmwu tspgsgce,n
+
+[ 324] wu tspgsgce,n
+
+[ 342]  ha cring!rb
+
+[ 365] gp pc
+TcvacpwrcdalllnP
+
+[ 368] n\siragkgsareeefog
+
+[ 369] Which magic...
+
+
+
+[ 370] siragkgsareeefog
+
+[ 371] ugsa'cpuhrrr,'
+
+[ 372] cpwrcdalllnP
+
+[ 381] ad poc"ai bpt
+
+[ 397]  ygpeT. Magic
+
+
+[ 413] awwpahhdcuccfdai
+
+[ 417] cusppp!uhga.
+
+[ 448] n"Ypa!"nasdca
+
+[ 467]  point\s\ of magic power.
+
+[ 469] u
+fTdSaNa'cpugb
+
+[ 470] h>"o
+gk".kgsar
+
+[ 472] "o
+gk".kgsar
+
+[ 476]  magic power.
+
+[ 488] n"Ypasdca!Bd
+
+[ 491]  has no spells.
+
+[ 492] gupkt.lu tbcw
+
+[ 510] injuhcicibadbpurhu
+
+[ 511] y.arcrgrglgunasdepbaaag
+
+[ 513] aharap.rg!dcim
+
+[ 514] guguecif hatg r  c
+
+[ 516] glgunasdepbaaag
+
+[ 528]  w"pfeg iva 
+
+[ 534] gpopccs cm u!r"dcusb!
+
+[ 538] gcruetsfcussgopbgcf
+
+[ 539] cm u!r"dcusb!
+
+[ 541] h"bsihhcf. uabpa h t!
+
+[ 546] f. uabpa h t!
+
+[ 558] n\siragl
+! weefog
+
+[ 559] Which type...
+
+
+
+[ 560] siragl
+! weefog
+
+[ 595] avrpchhdcuccfdai
+
+[ 596] ll aihhd   "gspbfu gs
+
+[ 599] cusppp!uhg t'
+
+[ 629] injuhcaasdep sPgsgupp,dgbast
+
+[ 636] ep sPgsgupp,dgbast
+
+[ 639] gchciggmsu rhhpa ws
+
+[ 657] wl rcr. ad pngspg
+aii
+
+[ 662] ad pngspg
+aii
+
+[ 663] glbscuafgsspcg'bd
+drd ii
+
+[ 666] i buhhgacm sS.spvd
+
+[ 668] gsspcg'bd
+drd ii
+
+[ 669] uu aep"ohlhgispdtc fo
+lsugsbd
+
+[ 672] glyuwcudhga"s
+
+[ 674] hlhgispdtc fo
+lsugsbd
+
+[ 679] tc fo
+lsugsbd
+
+[ 681] n\siraglu tbeeefog
+
+[ 682] Which spell...
+
+
+
+[ 683] siraglu tbeeefog
+
+[ 704] 'g ack'kaiaraaa. .
+
+[ 725] !p aihhd   "gsppyc gs
+
+[ 727] cussiaabsrd  ngarc
+
+[ 729] cuccfdaiaa!pdag
+
+[ 798] y.asS.spua.ibge
+
+[ 880]  points maximum.
+
+
+
+[ 882] u
+fca'dAimum.
+
+
+
+[ 902] eLuh
+p fwbcdcpbaib
+
+[ 936] achrsf" c."binr'fg
+
+[ 937] allrGheeg'tunr'
+
+[ 938] bcosahrseu
+bunp
+
+[1008] . Y pa frb,g.u2 !slc"'
+
+[1035] waypla
+o ! pg
+
+[1066] v'ykc mswgikc gg
+
+[1083] wi"kdlpg gfppes c
+
+[1095] sle"! gulla ar.rh
+
+[1097] t.arg..cadbras
+
+[1119] g!ruaspbilahgi.
+
+[1138] g!a ap.rg!bsw
+
+[1147]  w"pfeg d"agw  bglccagsng
+d
+
+[1152] d"agw  bglccagsng
+d
+
+[1154] rlaaep.ggcrc!r'i
+
+[1156] cm ppphah"buu
+
+[1172] ,lach
+gcn\siragl
+! weefog
+
+[1174] gt'pg
+Tcvacp",.blllnP
+
+[1175] Uafo
+lsugsbfo
+
+[1213] gli!!  dcusppp!uhg 'p ch
+
+[1215] ".aaihhd   "gspbv
+
+[1229] pbenw e 
+laly'.cto,
+
+[1243] n"Ypasdca!Bcwu."dp
+
+[1246]  has no skills.
+
+[1247] gupkt.ls'tbcw
+
+[1260] bhf!! aty.arcpgdgce"! gubgap,ggdahdsw
+
+[1264] injuhca i  wo
+
+[1265] y.arcpgdgce"! gubgap,ggdahdsw
+
+[1270] gce"! gubgap,ggdahdsw
+
+[1272] t.argepd wppicskdl
+
+[1275] bgap,ggdahdsw
+
+[1285] wl rcr. ad pngspg
+a s hbglyuwcudhgap' gigljdag kyWhich skill...
+
+
+
+[1290] ad pngspg
+a s hbglyuwcudhgap' gigljdag kyWhich skill...
+
+
+
+[1291] glbscuafgplpig'bd
+drd ii
+
+[1294] i bugegdcm sS.spvd
+
+[1295] g
+a s hbglyuwcudhgap' gigljdag kyWhich skill...
+
+
+
+[1297] bcasep"ohlhgispd uapup"
+
+[1300] glyuwcudhgap' gigljdag kyWhich skill...
+
+
+
+[1302] hlhgispd uapup"
+
+[1305] hgap' gigljdag kyWhich skill...
+
+
+
+[1310] gljdag kyWhich skill...
+
+
+
+[1313] gsfpi
+Tcvacp"dveelllnP
+
+[1314] r!ayo
+lsugsbcwu."rrr,'
+
+[1316] n\siragls'tbeeefog
+
+[1317] Which skill...
+
+
+
+[1318] siragls'tbeeefog
+
+[1338] gripicggcgyuwvs.au
+
+[1339] iuaraa ad
+dvlw
+
+[1341] accack'ki"l i
+
+[1355] yi "ngc  ee.eapg
+
+[1366] gliwn hdcusppp!uhgcbg lh
+
+[1367] avtpihhdcuccfdai 
+
+[1368] l!asihhd   "gspgepa.s
+
+[1373]    "gspgepa.s
+
+[1412] bhfwn ity.asS.spua.igrpu
+
+[1417] y.asS.spua.igrpu
+
+[1421] aiapk haeap d lyc
+
+[1432] aib b 'lkcapp p
+
+[1446] v!a,l otb!hyg
+
+[1471] ahepm4ihhd "ft'tid.lascmpbip
+
+[1472] hubo'hhdcufcOimgy pigrw
+
+[1474] Rdcusp!t"
+hva!e hae. vg
+
+[1475] cussibsofveukp.dcg,
+
+[1476] cusp!t"
+hva!e hae. vg
+
+[1477] cufcOimgy pigrw
+
+[1478]  "ft'tid.lascmpbip
+
+
+============================================================
+# Section 0x0D (228 texts)
+============================================================
+
+[   7] obigeilinskbyyu
+
+[   8] 's status.
+
+
+
+
+[  29] ob
+!l!mac.a6'evg',ua
+
+[  30] General overview
+
+
+[  32] neral overview
+
+
+[  60] imI !oy'sag hy
+
+[  68] imI !ow!marg
+
+[ 106] sla!"ypd"bIyaaa wtgpbl'"getnepm*pa'cpuh' 
+
+[ 111] "bIyaaa wtgpbl'"getnepm*pa'cpuh' 
+
+[ 118] gpbl'"getnepm*pa'cpuh' 
+
+[ 121] lubhybge:. magic
+
+
+[ 123] tnepm*pa'cpuh' 
+
+[ 139]   ,f'Euplu.u'uu'rcwfouu!oA np"
+
+[ 142] obigeilimiimgskby'infU
+
+[ 143] 's statistics.
+Str:
+
+[ 146] rhvhhvahln4tr:
+
+[ 147] miimgskby'infU
+
+[ 194] oby.inlgroU nvsu,
+
+[ 198] rad-pd'wit,lbg
+
+[ 208]  h!oatbtfhbo.a
+khh
+w u
+
+[ 211] hr"turyAa
+khh
+w u
+
+[ 244] kvm.aFgggoshptc'gg
+
+[ 246] pd!nppp5ealth 
+
+[ 247] obuccf"c.hsmcc
+
+[ 285] kumgaFgggoub
+ruoA
+
+[ 318] ichceyitaha.cp. obyu 
+
+[ 319] ah v'u.sgw ce
+
+[ 320] gmnvecsdph paFoga
+
+[ 332]  m!oa g.vbapvhte"npg
+
+[ 333] ob.piedg.udil"wkua
+
+[ 334] Carried items
+
+
+[ 336] bauliavel,d' 
+
+[ 337] vbapvhte"npg
+
+[ 358] kvircp'
+i!hcinibtc
+
+[ 359] iuhceyiyahatsp!"
+
+[ 360] ah v'v.sgu!ufeg gvjd!
+
+[ 361] gmnvncsdfd "s
+
+[ 404] gslpaaiaasvpbag
+
+[ 464] gtopaopkgtopa'
+
+[ 499]  ee.eta'nXog
+
+[ 517] ah v'v.sgu!ufeg gum
+
+[ 535] igspcamcpn ce
+
+[ 550] nl fpap.kwaiBn2e"ihcem2efooog
+
+[ 553]  gold, do you wish to...
+
+
+
+
+
+[ 555] .kwaiBn2e"ihcem2efooog
+
+[ 557] cv!e
+Pe"ihcem2efooog
+
+[ 558] o you wish to...
+
+
+
+
+
+[ 560] 2e"ihcem2efooog
+
+[ 562] "ihcem2efooog
+
+[ 584]  v!o'sguhpib, og
+
+[ 585] obUsdalap.k'
+
+[ 605] obYacilap.k'
+
+[ 663] iuhcayiyah .cpg oby"d.dwprcd 
+pucv!'gc
+
+[ 674] 
+How much gold does 
+
+[ 675] sk
+pkm agib, ghk"upg
+
+[ 679] ch gold does 
+
+[ 680] gib, ghk"upg
+
+[ 687] p Ypblc
+ebeBfacimZ,' blo
+
+[ 690]  want to trade?
+
+
+
+[ 691] ptu.l,.l!grhy3ogcmr!
+
+[ 692] 
+ebeBfacimZ,' blo
+
+[ 693] p"yp".ratoFogcmr!
+
+[ 694] m!encgu,Lyuae.
+
+[ 706] e!!tteicj kvkt'ni ,g cf
+.akvit'm'a! 
+
+[ 711] j kvkt'ni ,g cf
+.akvit'm'a! 
+
+[ 713] kvkt'ni ,g cf
+.akvit'm'a! 
+
+[ 715] fu!ubwpago,pcyivfu,ud
+.a
+
+[ 718] ,g cf
+.akvit'm'a! 
+
+[ 720] go,pcyivfu,ud
+.a
+
+[ 733] g YpaiMc
+veasdilbesdea,ggsap.kp
+
+[ 736]  doesn't have that much gold.
+
+[ 737] k"utwu.igvhpl'gu.km agib, n
+
+[ 738] mc
+veasdilbesdea,ggsap.kp
+
+[ 740] ildciu.emcildwprcd 
+py
+
+[ 741]  have that much gold.
+
+[ 742] gvhpl'gu.km agib, n
+
+[ 743] ilbesdea,ggsap.kp
+
+[ 745] mcildwprcd 
+py
+
+[ 746] at much gold.
+
+[ 772]  want to give the gold to?
+
+
+
+[ 773] ptu.l,.iavhpl'hpib, gl,%fog
+
+[ 774] 
+ebeApvilbeslap.ibe?r,'
+
+[ 776] m!d iu.emc.d 
+puem?byu
+
+[ 777]  give the gold to?
+
+
+
+[ 778] avhpl'hpib, gl,%fog
+
+[ 779] ilbeslap.ibe?r,'
+
+[ 782] e gold to?
+
+
+
+[ 802] kvisM'Ivnvnphs
+
+[ 803] iuytnysvkvkualpbcslugm.bd!!uao
+
+[ 806] k"iv'v' eg sheice! sNi fp pt?Ysvk"kpaeih
+
+[ 808] kvkualpbcslugm.bd!!uao
+
+[ 811] eg sheice! sNi fp pt?Ysvk"kpaeih
+
+[ 813] cslugm.bd!!uao
+
+[ 816] e! sNi fp pt?Ysvk"kpaeih
+
+[ 821] fp pt?Ysvk"kpaeih
+
+[ 824] ?9svk"kpaeih
+
+[ 835] kvitam'Ivnvnpso
+
+[ 836] iu.tnysvkvkuct.bc!.tsysyik!
+
+[ 838] e
+odiyiyghfpeh"rfdodnuy.
+
+[ 839] k"iv'v'ah! snlh"k"kvd
+
+[ 841] kvkuct.bc!.tsysyik!
+
+[ 847] ec!v!v'sj ek  c " m
+
+[ 868]  wbpiovkgwspeyilf
+
+[ 869] p!at
+i'duu v't .
+
+[ 881] gsspe
+Ty'gpscrdfh
+
+[ 882] uu yo
+n4ccrchh'gc".srul'ce
+T
+
+[ 884] n\,
+cghagstuphtrdbg"ugm,
+e
+
+[ 885] Your chains encumber you.
+
+[ 886] ,
+cghagstuphtrdbg"ugm,
+e
+
+[ 887] haagscu
+cal!hg'emabn5
+
+[ 889] rchh'gc".srul'ce
+T
+
+[ 890] ains encumber you.
+
+[ 891] tuphtrdbg"ugm,
+e
+
+[ 892] cal!hg'emabn5
+
+[ 893] tfaiertgp,y'l
+
+[ 906] n/'iupiu"tgh
+
+[ 907] This item cannot be transferred.
+
+[ 909] vcavel'agc!!8cl.ench'g!'ec.y
+
+[ 912] em cannot be transferred.
+
+[ 917] t be transferred.
+
+[ 919] lbfac
+cnmbalkp
+
+[ 920] ".rfhbtg.ta!
+
+[ 940] oblcv!e
+Pe"ihcem2efog
+
+[ 941] , do you wish to...
+
+
+
+[ 943] Bn2e"ihcem2efog
+
+[ 945] Pe"ihcem2efog
+
+[ 946]  wish to...
+
+
+
+[ 958] p!at
+i'cb!ag
+
+[ 967] obYacilbesla
+
+[ 982] ob
+wvcgdaibesla
+
+[ 983] Discard the 
+
+[ 984] migpicuemc.c
+
+[1020] ob
+" uip the 
+
+[1046] 
+calhnpc.viph?
+
+[1057] ob.!m uip the 
+
+[1058] Unequip the 
+
+[1116] m.aepapsgllpnrkbt
+
+[1142] You must equip a weapon that uses the 
+
+[1144] ga,hdeam uip a weapon that uses the 
+
+[1147] t equip a weapon that uses the 
+
+[1149]  uip a weapon that uses the 
+
+[1153] ge..i 
+.emcilesg'gemc.c
+
+[1154] weapon that uses the 
+
+[1155] pub,pl'gu.mcrupl'hpg
+
+[1158] emcilesg'gemc.c
+
+[1159] hat uses the 
+
+[1160] u.mcrupl'hpg
+
+[1192]  m kp bg g
+uenfptda,p akkhedu
+Jgt
+
+[1197]  g
+uenfptda,p akkhedu
+Jgt
+
+[1202] tda,p akkhedu
+Jgt
+
+[1206] hmmc.wtyAre you sure you want to throw away the 
+
+[1208] hrmfo!dalbn2eisc.e
+Pe.h'lem!emed.ci.i!emc.c
+
+[1209] kh,xre you sure you want to throw away the 
+
+[1211] Are you sure you want to throw away the 
+
+[1213] lbn2eisc.e
+Pe.h'lem!emed.ci.i!emc.c
+
+[1215] Peisc.e
+Pe.h'lem!emed.ci.i!emc.c
+
+[1216]  sure you want to throw away the 
+
+[1218] albn2e.h'lem!emed.ci.i!emc.c
+
+[1220] 
+Pe.h'lem!emed.ci.i!emc.c
+
+[1221] u want to throw away the 
+
+[1222] mptu.l,.l'lk
+pgvpv.l'hpg
+
+[1223] c
+ebeBetaAci.i!emc.c
+
+[1225] em!emed.ci.i!emc.c
+
+[1226] o throw away the 
+
+[1228] taAci.i!emc.c
+
+[1257] n\sk.hk"upg Ypblc
+ebeApvilbesla
+
+[1259] sk.hk"upg Ypblc
+ebeApvilbesla
+
+[1264] g Ypblc
+ebeApvilbesla
+
+[1267]  want to give the 
+
+[1268] ptu.l,.iavhpl'hpg 1
+
+[1269] 
+ebeApvilbesla
+
+[1271] m!d iu.emc.c
+
+[1335] n/t!lm.g
+c.g
+
+[1363] hcbddhgbn"Ypa!Adcigemc.c
+
+[1366] uu yl9pa!Adcigemc.c
+
+[1368] n"Ypa!Adcigemc.c
+
+[1371]  now has the 
+
+[1372] t
+pigupl'hpg
+
+[1429] obigehmhrskbb
+
+[1430] 's skills...
+
+[1439] ad poc!ycaluhsgdah
+
+[1442] snks eic"carcpgigl!
+
+[1445] tdals gsgcdcen
+
+[1446] gtcpics  h tp
+
+[1455] tda,s ghrw vdn.dp
+
+[1456] gw!pialmpmhkw l
+
+[1457] ycaptblbii
+pk
+
+[1473]  e
+geas pcrufdaibnr
+
+[1474] yi pupl cm "gsp,uga.s
+
+[1479] cm "gsp,uga.s
+
+[1499] ,.a-,f'Eupotb
+p
+
+[1523] ,.a.rc.dtlap
+
+[1535] n"Yrvcb!sups
+
+[1544] biaplesbbdh. uh
+
+[1545] pub up."infpmag
+
+[1566] ccbo
+t
+obigf.wergu
+
+[1579] biarsesbc"h. uh
+
+[1580] pulrup"einfpmag
+
+[1581] bcmcehstr!bgs
+
+[1601] gpbo
+t
+obigf'ir.
+
+[1612] biaslesbfhh. uh
+
+[1613] put up"'infpmag
+
+[1614] c.mcenstr!bgs
+
+[1625] gpbgpggetlap
+
+[1634] lubo
+t
+obigf"vigp"rph."Sg
+
+[1639] obigf"vigp"rph."Sg
+
+[1640] 's Miscellaneous
+
+[1643] vhabee fbf'h
+
+[1652] biatuesbfvh. uh
+
+[1653] pu
+ up"
+infpmag
+
+[1654] fgmceoitr!bgs
+
+[1680]  Magic spells...
+
+[1692] adcpv k frakw pihc!
+
+[1693] hcdgi.h!gs
+plashf
+
+[1721] cmcsf gipuUepm
+
+[1722] hcr.iaudfv ubg
+
+[1732] l"cukwpe ee.e9paiMc
+veasdilac
+op
+
+[1737]  ee.e9paiMc
+veasdilac
+op
+
+[1739] pmYpaiMc
+veasdilac
+op
+
+[1742]  doesn't have any.
+
+[1743] k"utwu.igvhpgtv
+
+[1744] mc
+veasdilac
+op
+
+[1746] ildciu.ch'j ihsr0 sw ew.evh!<cpdi
+
+[1751] h'j ihsr0 sw ew.evh!<cpdi
+
+[1754] isluo".ei.c',
+
+[1755] tdbN sw ew.evh!<cpdi
+
+[1757] !!bdlammpmit"(h
+
+[1761] vw viof5c ip
+
+
+============================================================
+# Section 0x0E (59 texts)
+============================================================
+
+[ 141] iupukgfragukg
+
+[ 151] d a. !.mdcmab!slc.
+
+[ 181] Elvar's Fire
+
+[ 182] tdgunupor'uhp
+
+[ 191] Poog's Vortex
+
+[ 199] topp !uglb!gsu..
+
+[ 225] Mystic Might
+
+[ 235] Reveal Glamour
+
+[ 246] Sala's Swift
+
+[ 256] Vorn's Guard
+
+[ 288] Cloak Arcane
+
+[ 299] rturpou!gucp !cvab
+dg''!
+
+[ 316] Earth Summon
+
+[ 326] Water Summon
+
+[ 337] 'uhpouvbkk,p !ildesb!hhbcl
+
+[ 342] kk,p !ildesb!hhbcl
+
+[ 363] Insect Plague
+
+[ 367] lf' phap.b'"didpf'"h.u
+
+[ 370] crgl 
+lsva.b
+lu!i
+
+[ 372] .b'"didpf'"h.u
+
+[ 394] Greater Healing
+
+[ 395] chpu"ugoshptats
+
+[ 396] ldemab!slc.u!p
+
+[ 422] Soften Stone
+
+[ 432] Invoke Spirit
+
+[ 433] tvk'"pouuauiu.fp"puu.or
+
+[ 438] uauiu.fp"puu.or
+
+[ 440] vhpo t hhp0all
+
+[ 452] t,"gouuauiu. 
+dg!b
+dfaWl
+
+[ 457] uiu. 
+dg!b
+dfaWl
+
+[ 459] pb'ir.f'ind
+l.
+
+[ 472] !hautgfugs pk".otiu'lgup
+
+[ 473] gvc' 
+acplaNb!'vetadc
+
+[ 476] Rage of Mithras
+
+[ 477] gs pk".otiu'lgup
+
+[ 478] plaNb!'vetadc
+
+[ 488] Wrath of Mithras
+
+[ 489] ugu'gk".otiu'lgupb.
+ic.f'imDu
+
+[ 490] desaNb!'vetadc
+
+[ 491] upytp9ithras
+
+[ 492] d!!f"vimecig !nvalb
+de1u
+
+[ 494] otiu'lgupb.
+ic.f'imDu
+
+[ 497] ecig !nvalb
+de1u
+
+[ 499] pb.
+ic.f'imDu
+
+[ 516] k,d.opstgb.linmp.f' .'c
+
+[ 521] gb.linmp.f' .'c
+
+[ 522] Battle Power
+
+[ 532] Column of Fire
+
+[ 534] "g'!aNb!nval
+
+[ 543] Mithras' Bless
+
+[ 544] iu'lguwpop, uup
+
+[ 545] etaddub!e.mdc
+
+[ 563] Armor of Light
+
+[ 564] ukk!gk".otasal.
+
+[ 571] cc"p 
+dg!b!.upte
+
+[ 586] Major Healing
+
+[ 620] Summon Salamander
+
+[ 622] ''!b
+cc.c'c!ima
+
+[ 636] ubgp 
+Bak's Speed
+
+
+============================================================
+# Section 0x0F (156 texts)
+============================================================
+
+[  23] ism
+buB'yamrt. 
+
+[  54] bv!fr!iBn2e"ihcem!f!bgvebeslapc'mZ,'
+
+[  56] ob.v!e
+Pe"ihcem!f!bgvebeslapc'mZ,'
+
+[  57] Do you wish to quit the game?
+
+
+
+[  59] bn2e"ihcem!f!bgvebeslapc'mZ,'
+
+[  61] pe"ihcem!f!bgvebeslapc'mZ,'
+
+[  62] wish to quit the game?
+
+
+
+[  63] usgl,.o.erilemc.d
+
+[  64] sbeB uit the game?
+
+
+
+[  66] !f!bgvebeslapc'mZ,'
+
+[  67] quit the game?
+
+
+
+[  69] it the game?
+
+
+
+[  89] bv!fr!iBn2e"ihcem!egiu.e
+Scd
+
+[  91] ob.v!e
+Pe"ihcem!egiu.e
+Scd
+
+[  92] Do you wish to save your game?
+
+
+
+[  94] bn2e"ihcem!egiu.e
+Scd
+
+[  96] pe"ihcem!egiu.e
+Scd
+
+[  97] wish to save your game?
+
+
+
+[  98] usgl,.lpvhpm,
+cgi
+
+[  99] sbeBcdilbn4cd
+
+[ 102] save your game?
+
+
+
+[ 105] ,y'gpu etoFogclgy
+
+[ 119] Saving game...
+
+
+[ 121] iu!papc'mrrr'
+
+[ 130]  kovlagfp.hhpesb
+
+[ 157] ggr"nasaf.fcbdg
+
+[ 159] s!dccopngeip
+
+[ 187]  cb.nau.pucr  pst
+
+[ 190]  ilgiagpp.hhpasw
+
+[ 207] ahi ddp  
+i odsh'p
+
+[ 219] c"ismd,eivb
+g
+
+[ 228]  cggnau.pv,9our game is saved.
+
+[ 229] aabpvecdn\,
+cgi
+
+[ 230] p!dhr kyYour game is saved.
+
+[ 231]  ilgi
+Ty'gpu et
+
+[ 233] pv,9our game is saved.
+
+[ 235] Your game is saved.
+
+[ 237] haapc'lavcbcdilkp
+
+[ 240] me is saved.
+
+[ 249] r ir
+grfugt!wku g! !.b.The game is paused
+
+[ 250] iuoyich
+ac7d'
+
+[ 251] b
+'raogrf"lygar.b"pfr
+eslapc'lavcb
+
+[ 253] acRaos"npdbpft
+
+[ 254] fugt!wku g! !.b.The game is paused
+
+[ 256] f"lygar.b"pfr
+eslapc'lavcb
+
+[ 259]  g! !.b.The game is paused
+
+[ 261] b"pfr
+eslapc'lavcb
+
+[ 264] The game is paused
+
+[ 293] ggmpbeuhti rbys.
+
+[ 306] aecrbabe,.g
+!rh
+
+[ 307] rcg.p"wAfociop r 'vs
+
+
+[ 308] aecemypr,"at!
+
+[ 309] r tm!cnGujecfiwku gl 
+ib.Which character?
+
+
+
+[ 312] afociop r 'vs
+
+
+[ 314] gujecfiwku gl 
+ib.Which character?
+
+
+
+[ 318] nvlygap.b'ufr
+lsugsagsdachembZ,'
+
+[ 320] npd pfvgob'"dgrccrcicgsl'fLyu
+
+[ 321]  gl 
+ib.Which character?
+
+
+
+[ 323] b'ufr
+lsugsagsdachembZ,'
+
+[ 324] v !okcvacpscrgrahtg;nP
+
+[ 325] ob'"dgrccrcicgsl'fLyu
+
+[ 361] n"Ypbhcmdrrr,,qel,,6wu.",.ttribute
+
+[ 364]  uses...
+
+Item
+Skill
+Attribute
+
+[ 365] cruweefoo!al"yyUwu.",.ttribute
+
+[ 366] mdrrr,,qel,,6wu.",.ttribute
+
+[ 368] bbyy el,,6wu.",.ttribute
+
+[ 369] 
+
+Item
+Skill
+Attribute
+
+[ 370] o!al"yyUwu.",.ttribute
+
+[ 372] "too
+hmhrty
+rffaufhel
+
+[ 373] ,,6wu.",.ttribute
+
+[ 375] uwu.",.ttribute
+
+[ 377] rty
+rffaufhel
+
+[ 441] ghupaegepdhau
+
+[ 467] npatpg,.ob'
+Pcph""Lcvihviigemc.dpiile
+
+[ 470] cm!fr
+n2cph""Lcvihviigemc.dpiile
+
+[ 472] ob'
+Pcph""Lcvihviigemc.dpiile
+
+[ 473] You cannot dismiss the last party member.
+
+[ 475] gagc!!8cvihviigemc.dpiile
+
+[ 477] h""Lcvihviigemc.dpiile
+
+[ 478] not dismiss the last party member.
+
+[ 479] !.hiutiuupl'hpk
+
+[ 480] aivc'vdcbesla.ddeb
+
+[ 482] hviigemc.dpiile
+
+[ 483] iss the last party member.
+
+[ 488] last party member.
+
+[ 522] ob.ic.e
+Peisc.e
+Pe"ihcem!cvihviigc
+
+[ 523] Are you sure you wish to dismiss 
+
+[ 525] lbn2eisc.e
+Pe"ihcem!cvihviigc
+
+[ 527] Peisc.e
+Pe"ihcem!cvihviigc
+
+[ 528]  sure you wish to dismiss 
+
+[ 530] albn2e"ihcem!cvihviigc
+
+[ 532] 
+Pe"ihcem!cvihviigc
+
+[ 533] u wish to dismiss 
+
+[ 534] msusgl,.hiutiuupg Ypan0'u'fLyu
+
+[ 535] vcsbeAivc'vdca
+
+[ 537] em!cvihviigc
+
+[ 539] hiutiuupg Ypan0'u'fLyu
+
+[ 544] g Ypan0'u'fLyu
+
+[ 571] hp apa.ii.dpwc.iiuhpwhisel alf!rkdYpavcagdbbnu!pbesla
+
+[ 574]  lddla.kalddic.kcvhbe
+
+[ 576] i.dpwc.iiuhpwhisel alf!rkdYpavcagdbbnu!pbesla
+
+[ 577]  ldreasvaldsiurt
+
+[ 578]  lhpuvgt lsvcl.ac.o"awk
+o
+
+[ 579] alddic.kcvhbe
+
+[ 580]  hirea"dig"pchpMi"ov!
+
+[ 581] iuhpwhisel alf!rkdYpavcagdbbnu!pbesla
+
+[ 583]  lsvcl.ac.o"awk
+o
+
+[ 585] ig"pchpMi"ov!
+
+[ 586] el alf!rkdYpavcagdbbnu!pbesla
+
+[ 589] bGvs9pavcagdbbnu!pbesla
+
+[ 591] kdYpavcagdbbnu!pbesla
+
+[ 594]  is carrying the 
+
+[ 596] agdbbnu!pbesla
+
+[ 607] oblch.dil"ud!!dac.ile"Emf
+
+[ 608] , an item of great worth. You must trade it to another party member.
+
+[ 609] gtpiu"tgk".ichpu.mt!l'n
+
+[ 610] !avel'aNaraldebl2mf
+
+[ 612] l"ud!!dac.ile"Emf
+
+[ 613] m of great worth. You must trade it to another party member.
+
+[ 614] k".ichpu.mt!l'n
+
+[ 615] naraldebl2mf
+
+[ 618] at worth. You must trade it to another party member.
+
+[ 623] . You must trade it to another party member.
+
+[ 625] n2dwsilencgu.dilem!ch"Mc'ce
+
+[ 627] dwsilencgu.dilem!ch"Mc'ce
+
+[ 628] ust trade it to another party member.
+
+[ 629] u.l!grhpiu.l,.gtt!'hugl
+
+[ 630] bfacilavebeAc!9c'ce
+
+[ 632] gu.dilem!ch"Mc'ce
+
+[ 633] e it to another party member.
+
+[ 634] iu.l,.gtt!'hugl
+
+[ 638] another party member.
+
+[ 643] party member.
+
+[ 698] a'gfr!!mlb!0u'fXu
+
+[ 712] g!gupalmpldcpldrplc,
+
+
+[ 715]  ee.easgea..eamPncr 
+
+[ 716] rw pus pwe ptoubrcgg
+
+[ 720] ea..eamPncr 
+
+[ 721] we ptoubrcgg
+
+[ 732] tlrpf)dlipg
+a
+l
+
+[ 738] i bukvpah"bsaa.r
+
+[ 741] '. c!r"  lgpis
+
+[ 754] cusswi"k c hi4es
+
+[ 756] dlvswagasvSes
+
+[ 762] ourupasgcpRPnk
+
+[ 781] igbpeggkacaupc.i
+
+[ 805]  lgreashcu vdj
+
+[ 829] ccdp eiciu snc.
+
+[ 836] c!hp eidiu "hc.mll saag
+
+[ 840] gvipfdct vrpeggh
+
+[ 841] iu "hc.mll saag
+
+[ 855] fc v.".b grvtpwb.ta,
+o
+
+[ 857] krtpearbkf lfredy'?b
+
+[ 860]  grvtpwb.ta,
+o
+
+[ 876] pc snytetda.a
+
+[ 878] c
+oemeidpc ps
+
+
+============================================================
+# Section 0x11 (71 texts)
+============================================================
+
+[  40] n\sk.krrrlpihptatsf3og
+
+[  41] Who needs healing?
+
+
+
+[  42] sk.krrrlpihptatsf3og
+
+[  43] A!llkcaslc.u!rZ,'
+
+[  46] ds healing?
+
+
+
+[  47] pihptatsf3og
+
+[  63] nv"vsagfldecg'
+
+[  64] nmlps , hraep
+
+[  73] n(wtglt!lm.g
+c.gb
+o
+
+[  74] I'm sorry but 
+
+[  75] wtglt!lm.g
+c.gb
+o
+
+[  76] 'bc2e!cnslc Ypavcaemn!ia4cdc"sb
+
+[  78] Ee!cnslc Ypavcaemn!ia4cdc"sb
+
+[  83] c Ypavcaemn!ia4cdc"sb
+
+[  86]  is beyond our help.
+
+[  87] upg"v,,rgk
+cgihtce
+
+[  88] aemn!ia4cdc"sb
+
+[  89] tkyyapy'gputegl
+
+[  91] nd our help.
+
+[ 105] kui cpi
+a..uacs
+tc
+
+[ 108] gdnrlli ahn"s
+
+[ 109] kukbapgskwlparln
+
+[ 123]  is in perfect health.
+
+[ 124] upitpl uh"rc.ihptc'n
+
+[ 128] erfect health.
+
+[ 129] h"rc.ihptc'n
+
+[ 142] n\sgu.lrumir pmt
+b gm,
+
+
+[ 143] What service would you like performed on 
+
+[ 144] sgu.lrumir pmt
+b gm,
+
+
+[ 145] debcmbiuglbl3pue
+Pdrhl.e
+
+[ 148] rvice would you like performed on 
+
+[ 149] ir pmt
+b gm,
+
+
+[ 153] uld you like performed on 
+
+[ 158] like performed on 
+
+[ 159] s"pl uh,!khrgk,pg YrZ,,
+ull healing
+Partial healing
+
+[ 161] .bgty.wtapyy
+
+[ 164] !khrgk,pg YrZ,,
+ull healing
+Partial healing
+
+[ 169] g YrZ,,
+ull healing
+Partial healing
+
+[ 170] ov!oFoo,wrrpdc.hrh"byNdbeuc.aslc.u!p
+
+[ 171] obLyy
+,g..aslc.u!r,0dbeuc.aslc.u!p
+
+[ 172] ?
+
+Full healing
+Partial healing
+
+[ 173] byy
+,g..aslc.u!r,0dbeuc.aslc.u!p
+
+[ 174] 
+Full healing
+Partial healing
+
+[ 175] ,wrrpdc.hrh"byNdbeuc.aslc.u!p
+
+[ 176] ull healing
+Partial healing
+
+[ 178] aslc.u!r,0dbeuc.aslc.u!p
+
+[ 180] hrh"byNdbeuc.aslc.u!p
+
+[ 181] ing
+Partial healing
+
+[ 182] sfo!!iemghpdc.hrh"
+
+[ 183] ,0dbeuc.aslc.u!p
+
+[ 185] dbeuc.aslc.u!p
+
+[ 204] tltp *o!sAdwprcdc.hrh"
+
+[ 207] :yHow much healing do you wish?
+
+
+
+[ 208] n(k
+pkm agihptats
+
+[ 209] How much healing do you wish?
+
+
+
+[ 210] k
+pkm agihptats
+
+[ 211] la,ggsaslc.u!paiBn2e"ihfLyu
+
+[ 212] w'acput edfc
+
+[ 214] h healing do you wish?
+
+
+
+[ 216] lc.u!paiBn2e"ihfLyu
+
+[ 219] g do you wish?
+
+
+
+[ 265] That will cost 
+
+[ 276] bdntnch"el,.cm,. in gold, pay?
+
+
+
+[ 277] ku,ranhte bn
+
+[ 278] e!gtsl"ypg,ypau!ap.kwb
+
+[ 281] el,.cm,. in gold, pay?
+
+
+
+[ 286]  in gold, pay?
+
+
+
+[ 316] n"Ypavcaslc.lkp
+
+[ 329] kuiaYgsldnrlok gdl
+
+[ 330] apyv'ct kukb'.i k
+
+[ 331] d
+nrc.i
+a.Wapi.
+
+
+============================================================
+# Section 0x12 (215 texts)
+============================================================
+
+[  52] gmnu.nc tdace
+
+[ 115] iehpa i  
+gvl ib 
+gpipgyidipip.yieics,g
+
+[ 119] gcfvavpdglfva i a
+gvi iba
+g"gskm
+
+[ 120]  
+gvl ib 
+gpipgyidipip.yieics,g
+
+[ 124] glfva i a
+gvi iba
+g"gskm
+
+[ 125]  
+gpipgyidipip.yieics,g
+
+[ 126] icauad'riuaued'rsrcw'
+
+[ 128] gckvavgdglkvbdahmu
+
+[ 129] a
+gvi iba
+g"gskm
+
+[ 130] idipip.yieics,g
+
+[ 131] iuaued'rsrcw'
+
+[ 147] !lanu b.Will the party:
+Fight
+Quickly fight
+
+[ 149] 
+gafr
+lu..beslb
+
+[ 152] Will the party:
+Fight
+Quickly fight
+
+[ 157] e party:
+Fight
+Quickly fight
+
+[ 159] dbfo*,
+ight
+Quickly fight
+
+[ 160] ",-Wvcc"/idadwkptvcc"p
+
+[ 161] ?oy
+'uptf,3gugw"nanupte
+
+[ 162] 
+Wvcc"/idadwkptvcc"p
+
+[ 163] y
+'uptf,3gugw"nanupte
+
+[ 164] nvcc"/idadwkptvcc"p
+
+[ 165] h eoyRgugw"nanupte
+
+[ 166] ht
+Quickly fight
+
+[ 167] H'dara,d.h'sal.
+
+[ 168] 3gugw"nanupte
+
+[ 169] dara,d.h'sal.
+
+[ 231] oby
+pkic!glacslci
+
+[ 232] 
+Advance ahead
+
+[ 234] dvance ahead
+
+[ 258] "! lb,pa?slugwn
+
+
+[ 261] 
+. oCtdadtygdp
+
+[ 278]  mhtw i
+hp!gbeidf. 
+
+[ 280] flav't .peluiopa e
+
+[ 307] n"Yrwags4,Xyu
+
+[ 308] ov!mpscyy"boGp
+
+[ 338] gdspaopkghspaF,anlgrou
+
+[ 343] ghspaF,anlgrou
+
+[ 353] btwpbpk.Dodge enemies
+
+
+[ 356] .d!ow,"i phtrtiruyg
+
+[ 357] ob
+wIplal!l'umd'
+
+[ 358] Dodge enemies
+
+
+[ 360] dge enemies
+
+
+[ 371] gbguh . ob
+s.Gwadfecgy'
+
+[ 373] gsbpaF,dr!rlcinlgrou
+
+[ 376] ob
+s.Gwadfecgy'
+
+[ 377] Block attack
+
+
+[ 378] dr!rlcinlgrou
+
+[ 396] gsnpaF,giilei
+
+[ 409] bt"pbp,.Use item
+New weapon
+Load weapon
+
+
+[ 412] .m!o,crpiu"too!u'.e..i 
+,yECiblld
+
+[ 413] ob"clavel,,6mlblld
+
+[ 414] Use item
+New weapon
+Load weapon
+
+
+[ 415] sg.dil"yyImlblld
+
+[ 416] e item
+New weapon
+Load weapon
+
+
+[ 417] iu"too!u'.e..i 
+,yECiblld
+
+[ 423]  weapon
+Load weapon
+
+
+[ 424] rpub,yo!m!gue..i 
+,u
+
+[ 426] fynZyrap,b gfynpbe,ma!e
+
+[ 428] Load weapon
+
+
+[ 429] m!gue..i 
+,u
+
+[ 431] gmrpub,yg tmwrnb
+
+[ 433]  gfynpbe,ma!e
+
+[ 437] l,mukp. obTg
+'
+
+[ 450] 'gawipergtmpa g2
+
+[ 471] bpapdtghf ypb
+iumlbeslb
+
+[ 474] "uctqypb
+iumlbeslb
+
+[ 476] f ypb
+iumlbeslb
+
+[ 479]  View the party
+
+[ 494] yp !hrga.lkpkuwi
+
+[ 515] ip !'".ay!fpde"c
+
+[ 524] cp o
+kyViewing current party.
+
+[ 527] nv,7iewing current party.
+
+[ 529] Viewing current party.
+
+[ 531] mlu!pahhbal
+eb
+
+[ 534]  current party.
+
+[ 548] c"twl"'ell  s".ekvebr
+
+[ 550] l"tul..abdtplyilfa
+
+[ 556] l!bd't .pelugcg igs
+
+[ 570] l
+htw hbl!awno.2gr
+
+[ 572] flase".dl!L
+
+
+[ 574] cmtpi""3' ac
+
+[ 578] f!ouacg n\crpl'hurphb,kgtrly3og
+
+[ 584] Use these commands?
+
+
+
+[ 586] lbesmclag''c!kdZ,'
+
+[ 589] se commands?
+
+
+
+[ 674] wp hwcg ?dl!ranu'c
+
+[ 676] tlgpbYi""ac
+hug gh  hbs
+
+[ 689] ig!pc kfcgsder
+
+[ 699]  ccvcnga cavcnga cbdcnga cddcnga cd cpi!,p  u". ihbpc gekvebr
+
+[ 701] ig!pcagdig!pcageig!pcagiig!pcagiah
+
+[ 704]  cavcnga cbdcnga cddcnga cd cpi!,p  u". ihbpc gekvebr
+
+[ 706] ig!pcageig!pcagiig!pcagiah
+
+[ 709]  cbdcnga cddcnga cd cpi!,p  u". ihbpc gekvebr
+
+[ 711] ig!pcagiig!pcagiah
+
+[ 714]  cddcnga cd cpi!,p  u". ihbpc gekvebr
+
+[ 735] hp!gbegh maU
+
+[ 745] gdhtw i' cevdugak
+
+[ 746] il
+piwph vhma
+
+[ 747] flavuagmikgpcw
+
+[ 766] f. uaogbf.eccogbm
+
+[ 769] fu t!baafu wp
+
+[ 782] el yo!iBn2e"ihcem!cu.,!bgv
+
+[ 785] Do you wish to deequip your 
+
+[ 787] bn2e"ihcem!cu.,!bgv
+
+[ 789] pe"ihcem!cu.,!bgv
+
+[ 790] wish to deequip your 
+
+[ 791] usgl,.hhry.eri
+
+[ 792] sbeAilm uip your 
+
+[ 795] deequip your 
+
+[ 822] gpaps asfc fo
+esla
+
+[ 824]  cadcngan/'hpg
+
+[ 836]  is not a weapon!
+
+[ 837] upkt!.gpmrpub,y
+
+[ 838] a!8cge..i 
+,p
+
+[ 894] gllua ,g g
+uenfptda"p
+
+[ 896] gcbwpar,gl!o eidt
+
+[ 899]  g
+uenfptda"p
+
+[ 930]  can't be loaded into your weapon!
+
+[ 932] 
+veaela.Ciliau
+eBn4ce..i 
+,p aasip wfp.c fQdopg'
+
+[ 934] cl.dr!gu.udh'm!e
+Sce..i 
+,p aasip wfp.c fQdopg'
+
+[ 935] e loaded into your weapon!
+
+[ 936] kb.rhrgitu,.m,
+cgmrpub,y
+
+[ 937] Ciliau
+eBn4ce..i 
+,p aasip wfp.c fQdopg'
+
+[ 938] atapvfhyp,y'gp,b gfyn
+
+[ 939] .udh'm!e
+Sce..i 
+,p aasip wfp.c fQdopg'
+
+[ 940]  into your weapon!
+
+[ 941] tu,.m,
+cgmrpub,y
+
+[ 942] eBn4ce..i 
+,p aasip wfp.c fQdopg'
+
+[ 944] 
+Sce..i 
+,p aasip wfp.c fQdopg'
+
+[ 949]  
+,p aasip wfp.c fQdopg'
+
+[ 954] ip wfp.c fQdopg'
+
+[ 956] lo pgao2iqbg
+
+[ 978] duws'khmduhccp
+
+[ 979] duws'khmah c
+
+[ 993] ah rs 'dlompgeid
+
+[ 994] gllpnrkb,la srgfgg
+
+[1008] You must reload!
+
+[1021] iggpa kdgbgugrgc
+
+[1036] guafo!nvau!pbadem,,6u!p.m,"urst
+
+
+[1039] Firing rate
+
+Single
+Burst
+
+
+[1041] au!pbadem,,6u!p.m,"urst
+
+
+[1044] rate
+
+Single
+Burst
+
+
+[1046] m,,6u!p.m,"urst
+
+
+[1048] Uu!p.m,"urst
+
+
+[1059] p abc b.Full auto
+
+
+[1061] egafr
+ull auto
+
+
+[1079] pbhui eahgallt.ctlgpbYspasica
+
+[1081] gualcspc."fphe.r
+
+[1084] hgallt.ctlgpbYspasica
+
+[1089] tlgpbYspasica
+
+[1105] fcbpi sthuaps
+
+[1117]  gbpi sthuapi"i
+
+[1121] imepi kdgbguhi.cnYu!.ra.lu
+, weefoo,anlgrlcmr,yGuptfnae.Dy
+wvcda'al!l,n
+
+[1126] gbguhi.cnYu!.ra.lu
+, weefoo,anlgrlcmr,yGuptfnae.Dy
+wvcda'al!l,n
+
+[1127] 'daiw byAttack style...
+
+Attack blow
+Mighty blow
+Disarm enemy
+
+[1128] gsvpg
+Jh"radp"h,wblllnUh"radprwf,n(dcc",prwf,nVvh gwptfbe,p ag
+
+[1129] vlafo!dfecgwbdfn.mrrr,,.ttack blow
+Mighty blow
+Disarm enemy
+
+[1131] nYu!.ra.lu
+, weefoo,anlgrlcmr,yGuptfnae.Dy
+wvcda'al!l,n
+
+[1132] Attack style...
+
+Attack blow
+Mighty blow
+Disarm enemy
+
+[1133] u!.ra.lu
+, weefoo,anlgrlcmr,yGuptfnae.Dy
+wvcda'al!l,n
+
+[1134] ecgwbdfn.mrrr,,.ttack blow
+Mighty blow
+Disarm enemy
+
+[1135] adp"h,wblllnUh"radprwf,n(dcc",prwf,nVvh gwptfbe,p ag
+
+[1136] lein
+p,bbbyy
+rfecgwae.DyGuptfnae.Dy
+wvcda'al!l,n
+
+[1137] style...
+
+Attack blow
+Mighty blow
+Disarm enemy
+
+[1138] 
+, weefoo,anlgrlcmr,yGuptfnae.Dy
+wvcda'al!l,n
+
+[1139] .mrrr,,.ttack blow
+Mighty blow
+Disarm enemy
+
+[1140] lllnUh"radprwf,n(dcc",prwf,nVvh gwptfbe,p ag
+
+[1141] bbyy
+rfecgwae.DyGuptfnae.Dy
+wvcda'al!l,n
+
+[1142] 
+
+Attack blow
+Mighty blow
+Disarm enemy
+
+[1143] o,anlgrlcmr,yGuptfnae.Dy
+wvcda'al!l,n
+
+[1144] .ttack blow
+Mighty blow
+Disarm enemy
+
+[1145] !.ra.g,b
+yo!rh en!cmr,y
+wvcda'al!l,n
+
+[1146] cgwae.DyGuptfnae.Dy
+wvcda'al!l,n
+
+[1147] dprwf,n(dcc",prwf,nVvh gwptfbe,p ag
+
+[1148] cmr,yGuptfnae.Dy
+wvcda'al!l,n
+
+[1149] low
+Mighty blow
+Disarm enemy
+
+[1150] 
+yo!rh en!cmr,y
+wvcda'al!l,n
+
+[1151] ,4uptfnae.Dy
+wvcda'al!l,n
+
+[1152] "asal
+.g,b
+yo,migiduc"."w!
+
+[1153] uptfnae.Dy
+wvcda'al!l,n
+
+[1154] c",prwf,nVvh gwptfbe,p ag
+
+[1155] n!cmr,y
+wvcda'al!l,n
+
+[1156]  blow
+Disarm enemy
+
+[1157] ,b
+yo,migiduc"."w!
+
+[1159] nVvh gwptfbe,p ag
+
+[1161] vh gwptfbe,p ag
+
+[1173] vlal,hpc.spphe.r
+
+[1176] u.alhggctlgpbYs
+
+[1187] iiwpgag iiwpgag
+
+[1212] l
+hug isf. ep
+
+[1223] ,caep h.b!jm
+
+[1229] f. ubwgcf.ecdwgchmmc.wtg
+
+[1231] gflpgoplgklpgs''hrmep
+
+[1232] ,cab!baa,cacwwslkhu
+
+[1234] f.ecdwgchmmc.wtg
+
+[1235]  r ms akkhedu'
+
+[1236] gklpgs''hrmep
+
+[1247] ,caep h.b!qra
+s bg g
+uenfptda
+s akkhl
+
+[1252] b!qra
+s bg g
+uenfptda
+s akkhl
+
+[1254]  ra
+s bg g
+uenfptda
+s akkhl
+
+[1256] ,caepar,gl!o eid,cacwws. pap
+
+[1259]  g
+uenfptda
+s akkhl
+
+[1260] fm tr!c"gylpgs''k
+
+[1261] gl!o eid,cacwws. pap
+
+[1263] Alukwgchmmdpb
+
+[1266] ,cacwws. pap
+
+[1291] gpapu 'thuapsbasfc dpb
+
+[1293]  gbvetgd cedcngak
+
+[1295] imepiaglig!pcw
+
+[1296] huapsbasfc dpb
+
+[1320] gpapv sthuapv 'ti.apv h'p hbs
+
+[1322]  ibdetgd ibvevpd iatv
+
+[1325] huapv 'ti.apv h'p hbs
+
+[1327]  ibvevpd iatv
+
+[1330] i.apv h'p hbs
+
+
+============================================================
+# Section 0x13 (640 texts)
+============================================================
+
+[   7] a! vdpgbtvrhsrkv
+
+[  10] .c "'.u"gv'p fgaydasc
+
+[  15] gv'p fgaydasc
+
+[  35]  g. !!b.Do you wish to enter the arena?
+
+
+
+[  37] b".fr!iBn2e"ihcem!c"'l'cemc.cic".kLyu
+
+[  39] ob.v!e
+Pe"ihcem!c"'l'cemc.cic".kLyu
+
+[  40] Do you wish to enter the arena?
+
+
+
+[  42] bn2e"ihcem!c"'l'cemc.cic".kLyu
+
+[  44] pe"ihcem!c"'l'cemc.cic".kLyu
+
+[  45] wish to enter the arena?
+
+
+
+[  46] usgl,.htu"ugl'hpguhtpy3og
+
+[  47] sbeAl
+emabesladal!dZ,'
+
+[  49] !c"'l'cemc.cic".kLyu
+
+[  50] enter the arena?
+
+
+
+[  52] mabesladal!dZ,'
+
+[  54] mc.cic".kLyu
+
+[  67] nZb,hpg.ra.mshtpm,
+
+
+[  68] Come back when you are ready to face the challenge of combat!
+
+[  69] b,hpg.ra.mshtpm,
+
+
+[  70] 'laecgwblsl!bn2cic.ec.gw!em!c!gp.emc.crchrp""
+
+[  72] lgrle"c".e
+Pcic.ec.gw!em!c!gp.emc.crchrp""
+
+[  73] ck when you are ready to face the challenge of combat!
+
+[  75] lsl!bn2cic.ec.gw!em!c!gp.emc.crchrp""
+
+[  77] .e
+Pcic.ec.gw!em!c!gp.emc.crchrp""
+
+[  78] you are ready to face the challenge of combat!
+
+[  80] adalbalcknbeAncglbeslagsc..l!plaNag'edf.
+
+[  83] ready to face the challenge of combat!
+
+[  84] prm.l,.h.r pl'hphagtb ts pk".hb,g.uj
+
+[  85] knbeAncglbeslagsc..l!plaNag'edf.
+
+[  88]  face the challenge of combat!
+
+[  89] .r pl'hphagtb ts pk".hb,g.uj
+
+[  90] glbeslagsc..l!plaNag'edf.
+
+[  93] e challenge of combat!
+
+[  94] hagtb ts pk".hb,g.uj
+
+[  95] sc..l!plaNag'edf.
+
+[  98] nge of combat!
+
+[ 109] ac wwch
+nveds
+
+
+[ 113] fv'u.wku g. !!b.Several gladiators bearing recent battle scars block your way. "You may only enter once!"
+
+[ 115] hrlygarpb".fr
+cmimac.ap.ciude2gcl.idh"
+
+[ 118]  g. !!b.Several gladiators bearing recent battle scars block your way. "You may only enter once!"
+
+[ 120] b".fr
+cmimac.ap.ciude2gcl.idh"
+
+[ 122] ob'g'u'chpd pgvgimEgcl.idh"
+
+[ 123] Several gladiators bearing recent battle scars block your way. "You may only enter once!"
+
+[ 125] imac.ap.ciude2gcl.idh"
+
+[ 127] hpd pgvgimEgcl.idh"
+
+[ 128]  gladiators bearing recent battle scars block your way. "You may only enter once!"
+
+[ 133] ors bearing recent battle scars block your way. "You may only enter once!"
+
+[ 135] aeldau!pbalgl
+eaedfe.lbcgdbcae.Gwbn4ce.ijnov,
+
+
+[ 138] ing recent battle scars block your way. "You may only enter once!"
+
+[ 140] balgl
+eaedfe.lbcgdbcae.Gwbn4ce.ijnov,
+
+
+[ 141] tabfhprrh"wb
+
+[ 142] p"'lclinmp.egpiegcmr!rle
+Sce.ijnov,
+
+
+[ 143] nt battle scars block your way. "You may only enter once!"
+
+[ 145] edfe.lbcgdbcae.Gwbn4ce.ijnov,
+
+
+[ 147] mp.egpiegcmr!rle
+Sce.ijnov,
+
+
+[ 148] e scars block your way. "You may only enter once!"
+
+[ 150] gdbcae.Gwbn4ce.ijnov,
+
+
+[ 152] gcmr!rle
+Sce.ijnov,
+
+
+[ 153] block your way. "You may only enter once!"
+
+[ 154] b"a.m,
+cgmpv
+
+[ 155] gwbn4ce.ijnov,
+
+
+[ 157] 
+Sce.ijnov,
+
+
+[ 158] ur way. "You may only enter once!"
+
+[ 160] ldopbt
+n2dui!d
+"s!c"'l'cd
+.p,tc
+
+[ 163] "You may only enter once!"
+
+[ 165] 2dui!d
+"s!c"'l'cd
+.p,tc
+
+[ 167] ui!d
+"s!c"'l'cd
+.p,tc
+
+[ 168] y only enter once!"
+
+[ 170] !"nal
+emaa!gm"s
+
+[ 171] kptfhtgpyyabnlp
+
+[ 184] npd pfvgobf.,!cgl..l
+f"sbcdocbeslargdakwbt!c!ib!ubcllbesdebn2c
+
+[ 185]  gl 
+ib."Excellent!" says the guard, "And I see that you 
+
+[ 187] b'ufrt!mAcellent!" says the guard, "And I see that you 
+
+[ 188] v !l2xcellent!" says the guard, "And I see that you 
+
+[ 189] obf.,!cgl..l
+f"sbcdocbeslargdakwbt!c!ib!ubcllbesdebn2c
+
+[ 190] "Excellent!" says the guard, "And I see that you 
+
+[ 191] ry.gp"rp"'otcegiGemc.dapicylff.h.uf"geg..emcile
+Pc
+
+[ 192] Acellent!" says the guard, "And I see that you 
+
+[ 194] l..l
+f"sbcdocbeslargdakwbt!c!ib!ubcllbesdebn2c
+
+[ 196] "'otcegiGemc.dapicylff.h.uf"geg..emcile
+Pc
+
+[ 197] t!" says the guard, "And I see that you 
+
+[ 199] bcdocbeslargdakwbt!c!ib!ubcllbesdebn2c
+
+[ 201] Gemc.dapicylff.h.uf"geg..emcile
+Pc
+
+[ 202]  the guard, "And I see that you 
+
+[ 204] largdakwbt!c!ib!ubcllbesdebn2c
+
+[ 205] ui gs
+p!xnd I see that you 
+
+[ 206] picylff.h.uf"geg..emcile
+Pc
+
+[ 207] rd, "And I see that you 
+
+[ 208] n.noptrgosplrrpl'gu.m,
+
+
+[ 209] bt!c!ib!ubcllbesdebn2c
+
+[ 210] xnd I see that you 
+
+[ 211] h.uf"geg..emcile
+Pc
+
+[ 212] d I see that you 
+
+[ 213] osplrrpl'gu.m,
+
+
+[ 214] ubcllbesdebn2c
+
+[ 243] ai
+ypdalau!a!lliaNbc'la'0.c,!bgv
+
+[ 246] are in need of some more equipment."
+
+[ 247] hpitpkrrrgk".lt,hpkk!hphy.eri u"'obc abyYou may choose 
+
+[ 248] au!a!lliaNbc'la'0.c,!bgv
+
+[ 251] eed of some more equipment."
+
+[ 252] rgk".lt,hpkk!hphy.eri u"'obc abyYou may choose 
+
+[ 253] aNbc'la'0.c,!bgv
+
+[ 256] ome more equipment."
+
+[ 257] hpkk!hphy.eri u"'obc abyYou may choose 
+
+[ 261]  equipment."
+
+[ 262] y.eri u"'obc abyYou may choose 
+
+[ 264] aubhtuEgacfo
+n2dui!crd
+G.c
+
+[ 267] 'obc abyYou may choose 
+
+[ 269] gacfo
+n2dui!crd
+G.c
+
+[ 270] r ,9ou may choose 
+
+[ 272] You may choose 
+
+[ 287]  items. Who will choose an item?
+
+
+
+[ 289] l,dpb
+lsBlu..ags4.ch.dil"yLyu
+
+[ 292] Who will choose an item?
+
+
+
+[ 294] Blu..ags4.ch.dil"yLyu
+
+[ 297] l choose an item?
+
+
+
+[ 298] hak,!rpgtpiu"to3og
+
+[ 299] s4.ch.dil"yLyu
+
+[ 321] :yWhich item...
+
+
+
+[ 363]  ee.fdai dfpbag
+
+[ 392] ggfpahv,l'
+uib. n1rk,wu.h,!i u.l,.hy.eri
+
+[ 399] gufpa
+Ork,wu.h,!i u.l,.hy.eri
+
+[ 403] "Don't forget to equip your items", says the guard.
+
+[ 406] mhpty.ubhp"yptopmau
+
+[ 408] forget to equip your items", says the guard.
+
+[ 410] pmebeAm uip your items", says the guard.
+
+[ 413] o equip your items", says the guard.
+
+[ 415]  uip your items", says the guard.
+
+[ 419] 
+Scdil"wkflegiGemc.dapicy
+
+[ 420] ur items", says the guard.
+
+[ 421] giu"tlwn.lpv!pl'hpid
+
+[ 422] vel,dtwbcdocbeslargdakp
+
+[ 424] wkflegiGemc.dapicy
+
+[ 425] ", says the guard.
+
+[ 427] cdocbeslargdakp
+
+[ 441] all have brought your own equipment."
+
+[ 443] asdilafa3 ele
+Scd".c,!bgv
+
+[ 446]  brought your own equipment."
+
+[ 447] !k
+aal.m,
+cgk
+tphy.eri u"'obc
+
+[ 451]  your own equipment."
+
+[ 452] ,
+cgk
+tphy.eri u"'obc
+
+[ 456] n equipment."
+
+[ 466] r !l8et the combat commence!"
+
+[ 467] obf"p'lemc.cr
+ulilcr
+vu".p,tc
+
+[ 468] "Let the combat commence!"
+
+[ 470] mebeslag'edeag''l!gm"s
+
+[ 472] mc.cr
+ulilcr
+vu".p,tc
+
+[ 473] e combat commence!"
+
+[ 475] 'edeag''l!gm"s
+
+[ 476] rrhpsfwwtfabnlp
+
+[ 477] ilcr
+vu".p,tc
+
+[ 487] ob'mdG.e"Cwgdcicvs!c
+h"ihcc.rd
+h"
+
+[ 488] Those words hardly finish echoing in your ears as the gate slams shut behind you and the roar of the crowd raises to a cresendo.
+
+[ 489] 'k!rpmt!hlpiguhkd.h'tsusghrak'ts
+
+[ 490] 4.e"Cwgdcicvs!c
+h"ihcc.rd
+h"
+
+[ 492] e"Cwgdcicvs!c
+h"ihcc.rd
+h"
+
+[ 493] ords hardly finish echoing in your ears as the gate slams shut behind you and the roar of the crowd raises to a cresendo.
+
+[ 494] hlpiguhkd.h'tsusghrak'ts
+
+[ 495] casdai"nanu!vcsalgsU!pau!bn4cc.iegcigemc.d
+
+[ 496] urgswkptvfdhcptacyvfc
+
+[ 497] icvs!c
+h"ihcc.rd
+h"
+
+[ 498] dly finish echoing in your ears as the gate slams shut behind you and the roar of the crowd raises to a cresendo.
+
+[ 499] d.h'tsusghrak'ts
+
+[ 500] anu!vcsalgsU!pau!bn4cc.iegcigemc.d
+
+[ 501] vfdhcptacyvfc
+
+[ 503] sh echoing in your ears as the gate slams shut behind you and the roar of the crowd raises to a cresendo.
+
+[ 505] lgsU!pau!bn4cc.iegcigemc.d
+
+[ 508] ng in your ears as the gate slams shut behind you and the roar of the crowd raises to a cresendo.
+
+[ 510] u!bn4cc.iegcigemc.d
+
+[ 512] 
+Scc.iegcigemc.d
+
+[ 513] ur ears as the gate slams shut behind you and the roar of the crowd raises to a cresendo.
+
+[ 514] ghpulpgupl'hpi
+
+[ 515] ldbcadcbeslapdelbc.c,cbctheaelsu!ibn2ch.uemc.ed!icd!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 518] as the gate slams shut behind you and the roar of the crowd raises to a cresendo.
+
+[ 520] eslapdelbc.c,cbctheaelsu!ibn2ch.uemc.ed!icd!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 523] ate slams shut behind you and the roar of the crowd raises to a cresendo.
+
+[ 525] bc.c,cbctheaelsu!ibn2ch.uemc.ed!icd!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 527] hwgeheslcl"dh.ue
+Pch.uemc.ed!icd!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 528] s shut behind you and the roar of the crowd raises to a cresendo.
+
+[ 529] lsmc.g"sitrgm,
+
+
+[ 530] theaelsu!ibn2ch.uemc.ed!icd!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 531] hprtcvfap,y'
+
+[ 532] cl"dh.ue
+Pch.uemc.ed!icd!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 533] ehind you and the roar of the crowd raises to a cresendo.
+
+[ 535] !ibn2ch.uemc.ed!icd!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 537] 
+Pch.uemc.ed!icd!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 538] u and the roar of the crowd raises to a cresendo.
+
+[ 539] gtrgl'hplk.ugk".l'hphck
+rglgsurupl,.gphchurtrk
+
+[ 540] !ibeslbaDaaNbeslahaAuechig'gem!cgcsc'g".vj
+
+[ 542] mc.ed!icd!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 543] e roar of the crowd raises to a cresendo.
+
+[ 544] lk.ugk".l'hphck
+rglgsurupl,.gphchurtrk
+
+[ 545] DaaNbeslahaAuechig'gem!cgcsc'g".vj
+
+[ 547] d!!emc.csd.uechig'gem!cgcsc'g".vj
+
+[ 548] f the crowd raises to a cresendo.
+
+[ 549] l'hphck
+rglgsurupl,.gphchurtrk
+
+[ 550] slahaAuechig'gem!cgcsc'g".vj
+
+[ 552] sd.uechig'gem!cgcsc'g".vj
+
+[ 553] owd raises to a cresendo.
+
+[ 554] rglgsurupl,.gphchurtrk
+
+[ 555] bacvcmcbeAcahamcl!iI
+
+[ 557] ig'gem!cgcsc'g".vj
+
+[ 558] es to a cresendo.
+
+[ 560] eAcahamcl!iI
+
+[ 596] cnlfr
+esvcavcbesla'cu!apdelbeB
+ hapde2!f*/emc.d
+
+[ 598] ob'mdigdigemc.duhh.d
+
+[ 599] This is the main gate to Purgatory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 600] 'iupiupl'hpkgstpi
+
+[ 601] vcavcbesla'cu!apdelbeB
+ hapde2!f*/emc.d
+
+[ 603] igemc.duhh.d
+
+[ 604]  the main gate to Purgatory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 606] la'cu!apdelbeB
+ hapde2!f*/emc.d
+
+[ 609] n gate to Purgatory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 611] delbeB
+ hapde2!f*/emc.d
+
+[ 614] o Purgatory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 616]  hapde2!f*/emc.d
+
+[ 619] tory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 621] nb:>beslapdelbeta3 ce"dgrce
+Pe.'c.er.p'c"v
+"hShs!cwrw
+
+[ 623] ,>beslapdelbeta3 ce"dgrce
+Pe.'c.er.p'c"v
+"hShs!cwrw
+
+[ 625] beslapdelbeta3 ce"dgrce
+Pe.'c.er.p'c"v
+"hShs!cwrw
+
+[ 628] gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 629] u"pl'lk
+aagmsiragm,
+
+
+[ 630] lbeta3 ce"dgrce
+Pe.'c.er.p'c"v
+"hShs!cwrw
+
+[ 633] ough which you were unceremoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 634] aagmsiragm,
+
+
+[ 638] ch you were unceremoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 643] ere unceremoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 644] hpmbr uhtk,st
+ctd.hmbl rgh,,bb
+sts
+
+[ 645] bg!gmal'!u4hs!cwrw
+
+[ 646] fabgteyydf'hekps'e.baptywef,dfc
+
+[ 648] remoniously dumped following your arrival in port. Guards are posted here. 
+
+[ 649] tk,st
+ctd.hmbl rgh,,bb
+sts
+
+[ 651] df'hekps'e.baptywef,dfc
+
+[ 653] sly dumped following your arrival in port. Guards are posted here. 
+
+[ 654] d.hmbl rgh,,bb
+sts
+
+[ 656] 'e.baptywef,dfc
+
+[ 658] ed following your arrival in port. Guards are posted here. 
+
+[ 663] wing your arrival in port. Guards are posted here. 
+
+[ 667] Scciediuhpdh.e Eo
+
+[ 668] r arrival in port. Guards are posted here. 
+
+[ 673] l in port. Guards are posted here. 
+
+[ 678] t. Guards are posted here. 
+
+[ 683] ds are posted here. 
+
+[ 688] osted here. 
+
+[ 697] ob'
+Tic.cC..em!d !e
+Scd".e.i!dh.emc.crinAg
+c.l'hpid
+
+[ 698] You're free to go your own way in the city, but the guards will happily kick your spleen up through your teeth if you want to rush the gate.
+
+[ 699] ,
+euhph!hrpl,.ib.m,
+cgk
+tpmpv.itpl'hphau
+.g
+c.l'hpid
+
+[ 700] hvalaoallbeApBn4cd".e.i!dh.emc.crinAg
+c.l'hpid
+
+[ 702] .cC..em!d !e
+Scd".e.i!dh.emc.crinAg
+c.l'hpid
+
+[ 703] free to go your own way in the city, but the guards will happily kick your spleen up through your teeth if you want to rush the gate.
+
+[ 704] hrpl,.ib.m,
+cgk
+tpmpv.itpl'hphau
+.g
+c.l'hpid
+
+[ 705] lbeApBn4cd".e.i!dh.emc.crinAg
+c.l'hpid
+
+[ 707] !d !e
+Scd".e.i!dh.emc.crinAg
+c.l'hpid
+
+[ 708] go your own way in the city, but the guards will happily kick your spleen up through your teeth if you want to rush the gate.
+
+[ 709] .m,
+cgk
+tpmpv.itpl'hphau
+.g
+c.l'hpid
+
+[ 710] n4cd".e.i!dh.emc.crinAg
+c.l'hpid
+
+[ 712] cd".e.i!dh.emc.crinAg
+c.l'hpid
+
+[ 713] own way in the city, but the guards will happily kick your spleen up through your teeth if you want to rush the gate.
+
+[ 714] tpmpv.itpl'hphau
+.g
+c.l'hpid
+
+[ 715] bldnau!beslagvfowafhebeslargdakcblu..asd 
+
+[ 717] !dh.emc.crinAg
+c.l'hpid
+
+[ 718] in the city, but the guards will happily kick your spleen up through your teeth if you want to rush the gate.
+
+[ 719] pl'hphau
+.g
+c.l'hpid
+
+[ 720] eslagvfowafhebeslargdakcblu..asd 
+
+[ 722] crinAg
+c.l'hpid
+
+[ 723] ity, but the guards will happily kick your spleen up through your teeth if you want to rush the gate.
+
+[ 725] wafhebeslargdakcblu..asd 
+
+[ 727] slemc.dapicwge"hrpdcia hs!dmgrle
+Scei p.".es
+
+[ 728]  the guards will happily kick your spleen up through your teeth if you want to rush the gate.
+
+[ 730] largdakcblu..asd 
+
+[ 732] picwge"hrpdcia hs!dmgrle
+Scei p.".es
+
+[ 733] rds will happily kick your spleen up through your teeth if you want to rush the gate.
+
+[ 737] rpdcia hs!dmgrle
+Scei p.".es
+
+[ 738]  happily kick your spleen up through your teeth if you want to rush the gate.
+
+[ 739] gucatd.i'ra.m,
+cglub rtpmc
+
+[ 742] s!dmgrle
+Scei p.".es
+
+[ 743]  kick your spleen up through your teeth if you want to rush the gate.
+
+[ 744] 'ra.m,
+cglub rtpmc
+
+[ 745] gwbn4cei p.".es
+
+[ 747] 
+Scei p.".es
+
+[ 748] ur spleen up through your teeth if you want to rush the gate.
+
+[ 753] n up through your teeth if you want to rush the gate.
+
+[ 756] "u.y'ccp,y'gp"tbhupvbp,y'
+
+[ 757] edR ce
+Scel.'mcdg!e
+Pe.h'lem!eeshcemc.d
+
+[ 758] ough your teeth if you want to rush the gate.
+
+[ 759] aagm,
+cgl"ru'gir.m,
+
+
+[ 760] sbn4cel.'mcdg!e
+Pe.h'lem!eeshcemc.d
+
+[ 761] ,y'gp"tbhupvbp,y'
+
+[ 762] Scel.'mcdg!e
+Pe.h'lem!eeshcemc.d
+
+[ 763] r teeth if you want to rush the gate.
+
+[ 764] l"ru'gir.m,
+
+
+[ 765] lmesaunbn2e.h'lem!eeshcemc.d
+
+[ 767] cdg!e
+Pe.h'lem!eeshcemc.d
+
+[ 768] if you want to rush the gate.
+
+[ 770] n2e.h'lem!eeshcemc.d
+
+[ 772] e.h'lem!eeshcemc.d
+
+[ 773] ant to rush the gate.
+
+[ 774] u.l,.lmcsgl'hpi
+
+[ 775] beBbhcsbeslapdemp
+
+[ 778] ush the gate.
+
+[ 795] p !ohh.vggbapytpree
+
+[ 797] Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 798] u!iuc rgk".gtb
+
+[ 802] d of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 806] rpe Ig'ihh
+'gch.ue..hsmfle
+Tiu.cl.".cwdA
+
+[ 807]  possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 808] b!uruust,upgtrgmrptc'n.m,
+evhpg"rtphlk!c rgkps"rggtrghhr"turt uupitu,.l'hpltdblpk".oudci
+
+[ 809] dcmdcu
+cac!ibllc"etwbn5iu.cl.".cwdA
+
+[ 811] ihh
+'gch.ue..hsmfle
+Tiu.cl.".cwdA
+
+[ 812] ions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 813] ,upgtrgmrptc'n.m,
+evhpg"rtphlk!c rgkps"rggtrghhr"turt uupitu,.l'hpltdblpk".oudci
+
+[ 814] cac!ibllc"etwbn5iu.cl.".cwdA
+
+[ 815] rfap,b ehu
+p,y'mit
+
+[ 816] .ue..hsmfle
+Tiu.cl.".cwdA
+
+[ 817]  wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 818] rptc'n.m,
+evhpg"rtphlk!c rgkps"rggtrghhr"turt uupitu,.l'hpltdblpk".oudci
+
+[ 819] c"etwbn5iu.cl.".cwdA
+
+[ 821] fle
+Tiu.cl.".cwdA
+
+[ 822]  you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 823] ,
+evhpg"rtphlk!c rgkps"rggtrghhr"turt uupitu,.l'hpltdblpk".oudci
+
+[ 824] hvilaell!akax
+
+[ 827] been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 828] rtphlk!c rgkps"rggtrghhr"turt uupitu,.l'hpltdblpk".oudci
+
+[ 830] s.y.gbapy dtaprfapstbtfhbebhh
+
+[ 832] pped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 833]  rgkps"rggtrghhr"turt uupitu,.l'hpltdblpk".oudci
+
+[ 834] ia!cwliac!iailnl
+cl.mdcau
+eBeslbc"g,caNb
+ hapde2!cn!dCu'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 835] y dtaprfapstbtfhbebhh
+
+[ 836] hl.uch.ucu.!"'g"p'igdh'm!emc.ehsrwgd!!f'asd
+
+[ 837] ed and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 838] ggtrghhr"turt uupitu,.l'hpltdblpk".oudci
+
+[ 839] c!iailnl
+cl.mdcau
+eBeslbc"g,caNb
+ hapde2!cn!dCu'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 840] apstbtfhbebhh
+
+[ 841] cu.!"'g"p'igdh'm!emc.ehsrwgd!!f'asd
+
+[ 842] efenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 843] "turt uupitu,.l'hpltdblpk".oudci
+
+[ 844] 
+cl.mdcau
+eBeslbc"g,caNb
+ hapde2!cn!dCu'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 846] p'igdh'm!emc.ehsrwgd!!f'asd
+
+[ 847] ss into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 848] pitu,.l'hpltdblpk".oudci
+
+[ 849] u
+eBeslbc"g,caNb
+ hapde2!cn!dCu'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 851] !emc.ehsrwgd!!f'asd
+
+[ 852] the slums of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 853] hpltdblpk".oudci
+
+[ 854] bc"g,caNb
+ hapde2!cn!dCu'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 857] s of Purgatory by order of Namtar, the Beast From The Pit.
+
+[ 859] nb
+ hapde2!cn!dCu'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 860] 2urgatory by order of Namtar, the Beast From The Pit.
+
+[ 862] rgatory by order of Namtar, the Beast From The Pit.
+
+[ 864] e2!cn!dCu'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 865] .,pr,py.stgpytp0amtar, the Beast From The Pit.
+
+[ 866] !cn!dCu'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 867] by order of Namtar, the Beast From The Pit.
+
+[ 868] .k!hhugk".otptl.un.l'hpop"puu.or!k,gou'hpouau
+
+[ 869] 0u'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 870] stgpytp0amtar, the Beast From The Pit.
+
+[ 871] 'cd!!f".hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 872]  of Namtar, the Beast From The Pit.
+
+[ 873] ".otptl.un.l'hpop"puu.or!k,gou'hpouau
+
+[ 874] b!!c,edbwbeslb!elddeb!oa'b
+eslb
+
+
+[ 876] hwliflemc.f.l.iilf.D
+uf'mc.f' io
+
+[ 877] tar, the Beast From The Pit.
+
+[ 879] wbeslb!elddeb!oa'b
+eslb
+
+
+[ 881] c.f.l.iilf.D
+uf'mc.f' io
+
+[ 882]  Beast From The Pit.
+
+[ 884] lddeb!oa'b
+eslb
+
+
+[ 885] hhp3rom The Pit.
+
+[ 886] lf.D
+uf'mc.f' io
+
+[ 887] From The Pit.
+
+[ 900] No one escapes Purgatory alive, and few know the luxury to die in bed within her walls.
+
+[ 905] escapes Purgatory alive, and few know the luxury to die in bed within her walls.
+
+[ 910] Purgatory alive, and few know the luxury to die in bed within her walls.
+
+[ 912] apde2!chriu,lch.uc!'.dm".emc.dst!dhbnbeAiulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 913]  hy.,preditmprfapttk
+
+[ 914] mE!chriu,lch.uc!'.dm".emc.dst!dhbnbeAiulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 915] ry alive, and few know the luxury to die in bed within her walls.
+
+[ 916] .gtavhw.gtrgh"vpi,t
+pl'hpkdf.ise!em!cvg.dh.cl.ue"imdh.dc'ce.hrsk
+
+[ 917] c.vimwac!ianmlaw!Aemc.dst!dhbnbeAiulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 918] ditmprfapttk
+
+[ 919] u,lch.uc!'.dm".emc.dst!dhbnbeAiulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 920] , and few know the luxury to die in bed within her walls.
+
+[ 921] gtrgh"vpi,t
+pl'hpkdf.ise!em!cvg.dh.cl.ue"imdh.dc'ce.hrsk
+
+[ 922] !ianmlaw!Aemc.dst!dhbnbeAiulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 924] !'.dm".emc.dst!dhbnbeAiulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 925] w know the luxury to die in bed within her walls.
+
+[ 926] i,t
+pl'hpkdf.ise!em!cvg.dh.cl.ue"imdh.dc'ce.hrsk
+
+[ 927] !Aemc.dst!dhbnbeAiulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 929] emc.dst!dhbnbeAiulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 930] he luxury to die in bed within her walls.
+
+[ 931] pkdf.ise!em!cvg.dh.cl.ue"imdh.dc'ce.hrsk
+
+[ 932] "hAury to die in bed within her walls.
+
+[ 933] opvcm.l,.hirpitpg"rgmsu'itpihugmptbcw
+
+[ 934] dhbnbeAiulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 936] !em!cvg.dh.cl.ue"imdh.dc'ce.hrsk
+
+[ 937] to die in bed within her walls.
+
+[ 938] .hirpitpg"rgmsu'itpihugmptbcw
+
+[ 939] iulau!aeliblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 941] dh.cl.ue"imdh.dc'ce.hrsk
+
+[ 942] n bed within her walls.
+
+[ 943] g"rgmsu'itpihugmptbcw
+
+[ 944] liblvesu!asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 946] "imdh.dc'ce.hrsk
+
+[ 947] thin her walls.
+
+[ 948] itpihugmptbcw
+
+[ 949] !asmablc."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 954] ."dp abvnmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 957] r 'yewkttus"sra.
+
+[ 959] nmlyffhdtdadp c
+c'luilpctlths
+
+
+[ 964] tdadp c
+c'luilpctlths
+
+
+[ 969] c'luilpctlths
+
+
+[ 970] tdatc c,c'lyg  gcr.frt!veavcac!as!0em!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 972] egahwhu"npaaphbpobf"ildigch.dd
+"Cem!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 975] c'lyg  gcr.frt!veavcac!as!0em!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 977] npaaphbpobf"ildigch.dd
+"Cem!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 980] cr.frt!veavcac!as!0em!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 981] n !l6t is an honor to have you amongst us, O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[ 982] obf"ildigch.dd
+"Cem!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 983] "It is an honor to have you amongst us, O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[ 984] su.iupgtpik,t!gl,.igvhpm,
+
+
+[ 985] eavcac!as!0em!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 987] gch.dd
+"Cem!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 988] an honor to have you amongst us, O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[ 989] pik,t!gl,.igvhpm,
+
+
+[ 990] s!0em!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 992] Cem!dciu.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 993]  to have you amongst us, O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[ 995] asdilbn2chv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 997] u.e
+Pchv
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[ 998]  you amongst us, O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[1000] gac'!rdebhdwb!A'uptfnbiuhe2gd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1001] reyychhp'hmp1 mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[1002] v
+"ailesklf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1003] ngst us, O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[1004] cu.mcw.ot.kisal
+.mirc,!lpk".l'hpichpu.osmbg.p.y
+
+[1005] ebhdwb!A'uptfnbiuhe2gd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1006] 'hmp1 mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[1007] klf"!dvh en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1008]  O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[1009] t.kisal
+.mirc,!lpk".l'hpichpu.osmbg.p.y
+
+[1010] a'uptfnbiuhe2gd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1012]  en!evgsmEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1013] ty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[1014] .mirc,!lpk".l'hpichpu.osmbg.p.y
+
+[1015] iuhe2gd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1017] mEgd!!emc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1018] rs of the great Humbaba! Accept this gold as a token of our gratitude!"
+
+[1019] pk".l'hpichpu.osmbg.p.y
+
+[1020] Nbeslaraldeb!tg'eced.b!cggm ebesvcap.iadcacbeWl!aNa4cdaciminpu,tc
+
+[1022] mc.dac.ilf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1023] e great Humbaba! Accept this gold as a token of our gratitude!"
+
+[1024] ichpu.osmbg.p.y
+
+[1025] aldeb!tg'eced.b!cggm ebesvcap.iadcacbeWl!aNa4cdaciminpu,tc
+
+[1026]  hp5umbaba! Accept this gold as a token of our gratitude!"
+
+[1027] lf"erulglkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1028] Humbaba! Accept this gold as a token of our gratitude!"
+
+[1030] 'eced.b!cggm ebesvcap.iadcacbeWl!aNa4cdaciminpu,tc
+
+[1032] lkpf.gpp'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1033] ! Accept this gold as a token of our gratitude!"
+
+[1034] opr  uc.l'iupib, ggupgpl,'"tpk".k
+cgicgu'u
+ hyeg
+
+[1035] cggm ebesvcap.iadcacbeWl!aNa4cdaciminpu,tc
+
+[1037] 'alemdigd 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1038] t this gold as a token of our gratitude!"
+
+[1039] l'iupib, ggupgpl,'"tpk".k
+cgicgu'u
+ hyeg
+
+[1040] svcap.iadcacbeWl!aNa4cdaciminpu,tc
+
+[1042] d 
+pucigcgem
+l".d!!dScdaciminpu,tc
+
+[1043] old as a token of our gratitude!"
+
+[1044]  ggupgpl,'"tpk".k
+cgicgu'u
+ hyeg
+
+[1045] adcacbeWl!aNa4cdaciminpu,tc
+
+[1047] cgem
+l".d!!dScdaciminpu,tc
+
+[1048]  token of our gratitude!"
+
+[1049] ,'"tpk".k
+cgicgu'u
+ hyeg
+
+[1050] wl!aNa4cdaciminpu,tc
+
+[1052] d!!dScdaciminpu,tc
+
+[1053] f our gratitude!"
+
+[1055] haaradevfgim"s
+
+[1056] pugrhvh'atnlp
+
+[1074] npatpg,gobf.",!
+
+[1078] m !l2njoy your meager existence amongst us!"
+
+[1080] "Enjoy your meager existence amongst us!"
+
+[1081] rty. !e
+Scdu.h
+
+[1083] pb
+.m,
+cgkhps ughy.hiil".p.chv
+"ailesktc
+
+[1085] p,y'gpwt cbgptopsuu"tr pgtk,scu.mcyeg
+
+[1087] ur meager existence amongst us!"
+
+[1088] gkhps ughy.hiil".p.chv
+"ailesktc
+
+[1089] 'lcpmaamAistence amongst us!"
+
+[1090]  cbgptopsuu"tr pgtk,scu.mcyeg
+
+[1092] r existence amongst us!"
+
+[1093] hy.hiil".p.chv
+"ailesktc
+
+[1094] Aistence amongst us!"
+
+[1095] suu"tr pgtk,scu.mcyeg
+
+[1096] del!glac'!rdebhd"s
+
+[1098] .p.chv
+"ailesktc
+
+[1099] e amongst us!"
+
+[1100] gtk,scu.mcyeg
+
+[1124] ob.rr h.f'ndRhrp.
+Pdad"sklff'mc'c.cic.d"!dd
+.'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1125] Clopin Trouillefou growls, "There are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1126] bb!atpou!k
+atb r,
+
+
+[1127] qh.f'ndRhrp.
+Pdad"sklff'mc'c.cic.d"!dd
+.'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1129] .f'ndRhrp.
+Pdad"sklff'mc'c.cic.d"!dd
+.'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1130] Trouillefou growls, "There are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1132] 3hrp.
+Pdad"sklff'mc'c.cic.d"!dd
+.'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1134] rp.
+Pdad"sklff'mc'c.cic.d"!dd
+.'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1135] efou growls, "There are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1137] garaBsklff'mc'c.cic.d"!dd
+.'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1138] ugy,ehmp!5here are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1139] d"sklff'mc'c.cic.d"!dd
+.'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1140] wls, "There are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1141] cw.nou'huhpguhpkt.ik,ruu.khtpitpl'hporb
+cl.k".otiugrb uw
+
+[1142] wbt
+esmaladala!As!mdea'l!au!beslb!g4eld!!f"vicgrp'k
+
+[1143] !5here are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1144] 'mc'c.cic.d"!dd
+.'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1145] here are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1146] uhpguhpkt.ik,ruu.khtpitpl'hporb
+cl.k".otiugrb uw
+
+[1147] ladala!As!mdea'l!au!beslb!g4eld!!f"vicgrp'k
+
+[1149] c.d"!dd
+.'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1150]  no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1151] t.ik,ruu.khtpitpl'hporb
+cl.k".otiugrb uw
+
+[1152] as!mdea'l!au!beslb!g4eld!!f"vicgrp'k
+
+[1154] .'ildu".dh.emc.f.rSeld!!f"vicgrp'k
+
+[1155] st men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1156] .khtpitpl'hporb
+cl.k".otiugrb uw
+
+[1157] 'l!au!beslb!g4eld!!f"vicgrp'k
+
+[1159] dh.emc.f.rSeld!!f"vicgrp'k
+
+[1160] n the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1161] l'hporb
+cl.k".otiugrb uw
+
+[1162] slb!g4eld!!f"vicgrp'k
+
+[1164] .rSeld!!f"vicgrp'k
+
+[1165] ourt of Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1166] cl.k".otiugrb uw
+
+[1167] eaNb!'vacg.mdpb
+n2e"hrpcl.ear"ihc.uer"p'igcgemdg.Ag"sa
+
+[1168] ytp9iracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1170] Miracles. You will be punished unless a thief, beggar, or tramp!"
+
+[1172] acg.mdpb
+n2e"hrpcl.ear"ihc.uer"p'igcgemdg.Ag"sa
+
+[1175] s. You will be punished unless a thief, beggar, or tramp!"
+
+[1177] 
+n2e"hrpcl.ear"ihc.uer"p'igcgemdg.Ag"sa
+
+[1179] pe"hrpcl.ear"ihc.uer"p'igcgemdg.Ag"sa
+
+[1180] will be punished unless a thief, beggar, or tramp!"
+
+[1182] .aelb g!vcslibg!.mdcacbesulowaelppdbwa0enchwbtc
+
+[1184] .ear"ihc.uer"p'igcgemdg.Ag"sa
+
+[1185] punished unless a thief, beggar, or tramp!"
+
+[1186] bsushrgmbt uupgpl'irr.g"sa
+
+[1187] vcslibg!.mdcacbesulowaelppdbwa0enchwbtc
+
+[1189] .uer"p'igcgemdg.Ag"sa
+
+[1190]  unless a thief, beggar, or tramp!"
+
+[1191] bt uupgpl'irr.g"sa
+
+[1192] .mdcacbesulowaelppdbwa0enchwbtc
+
+[1194] gcgemdg.Ag"sa
+
+[1195] a thief, beggar, or tramp!"
+
+[1197] sulowaelppdbwa0enchwbtc
+
+[1200]  beggar, or tramp!"
+
+[1202] ppdbwa0enchwbtc
+
+[1214] ob.v!e
+Pcu'gsdgl.e
+Seg"su'gcigemdg'u'klcl" 
+
+[1215] Do you describe yourselves as thieves, beggars, or tramps?
+
+
+
+[1217] bn2cu'gsdgl.e
+Seg"su'gcigemdg'u'klcl" 
+
+[1219] pcu'gsdgl.e
+Seg"su'gcigemdg'u'klcl" 
+
+[1220] describe yourselves as thieves, beggars, or tramps?
+
+
+
+[1221] urcip"pm,
+clrtdhupgupl'irvhuw.g"sa
+
+[1222] hauelbn4eg"su'gcigemdg'u'klcl" 
+
+[1224] l.e
+Seg"su'gcigemdg'u'klcl" 
+
+[1225]  yourselves as thieves, beggars, or tramps?
+
+
+
+[1226] ,
+clrtdhupgupl'irvhuw.g"sa
+
+[1227] hbcl"imcadcbesumimdwaelppdbdwa0enchwakLyu
+
+[1229] "su'gcigemdg'u'klcl" 
+
+[1230] ves as thieves, beggars, or tramps?
+
+
+
+[1231] upgupl'irvhuw.g"sa
+
+[1232] adcbesumimdwaelppdbdwa0enchwakLyu
+
+[1235] hieves, beggars, or tramps?
+
+
+
+[1237] imdwaelppdbdwa0enchwakLyu
+
+[1238] hmprtcc g"mpy.p".re.hoFog
+
+[1240] beggars, or tramps?
+
+
+
+[1243] g"mpy.p".re.hoFog
+
+[1245]  or tramps?
+
+
+
+[1255] rradg kyYou must then prove yourselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1257] ipayo
+n2dwsilemc".eadU.e
+Seg"su'gem!du,pf.u.!.ilemc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1260] You must then prove yourselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1262] ga,hdebesl!b a6.e
+Seg"su'gem!du,pf.u.!.ilemc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1264] silemc".eadU.e
+Seg"su'gem!du,pf.u.!.ilemc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1265] t then prove yourselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1266] l'htplck
+hpm,
+clrtdhupl,.khy
+
+[1267] sl!b a6.e
+Seg"su'gem!du,pf.u.!.ilemc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1269] eadU.e
+Seg"su'gem!du,pf.u.!.ilemc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1270] rove yourselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1271] 
+hpm,
+clrtdhupl,.khy
+
+[1272] lbn4eg"su'gem!du,pf.u.!.ilemc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1274] Seg"su'gem!du,pf.u.!.ilemc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1275] rselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1276] rtdhupl,.khy
+
+[1277] "imcbeA'm.b!ilnldebeslakalcilib!tg'ececac!ibn2e"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1279] gem!du,pf.u.!.ilemc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1280] to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1282] 'm.b!ilnldebeslakalcilib!tg'ececac!ibn2e"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1284] f.u.!.ilemc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1285] defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1286] r"pu.l'hphlhprhrgosmbg.p.pgtrgm,
+
+
+[1287] ldebeslakalcilib!tg'ececac!ibn2e"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1289] emc.cwc.gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1290] he dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1291] phlhprhrgosmbg.p.pgtrgm,
+
+
+[1292] kalcilib!tg'ececac!ibn2e"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1293] t atap5umbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1294] gu.uf"erulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1295] ed Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1296] gosmbg.p.pgtrgm,
+
+
+[1297] !tg'ececac!ibn2e"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1299] ulglgch.ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1300] aba and you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1302] ac!ibn2e"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1304] ue
+Pe"hrpdm".dd
+"Cdh.dw!crSeo
+
+[1305] you will know honor in my court. You will find him at the northeast corner of my realm.
+
+[1307] blu..aw!Add
+"Cdh.dw!crSeo
+
+[1309] rpdm".dd
+"Cdh.dw!crSeo
+
+[1310]  know honor in my court. You will find him at the northeast corner of my realm.
+
+[1311] ,t
+pik,t!gitpkm.hb
+cl
+
+[1312] Add
+"Cdh.dw!crSeo
+
+[1315] nor in my court. You will find him at the northeast corner of my realm.
+
+[1316] !gitpkm.hb
+cl
+
+[1320] y court. You will find him at the northeast corner of my realm.
+
+[1325]  You will find him at the northeast corner of my realm.
+
+[1327] 2e"hrpc
+h.uddhucilemc.d"Emc.iilcrD.'cd!!dw!ec.hry
+
+[1329] "hrpc
+h.uddhucilemc.d"Emc.iilcrD.'cd!!dw!ec.hry
+
+[1330] ll find him at the northeast corner of my realm.
+
+[1332] nu!iasu'adebesla!2mc.iilcrD.'cd!!dw!ec.hry
+
+[1333] fapuveprhp"ut
+
+[1334] uddhucilemc.d"Emc.iilcrD.'cd!!dw!ec.hry
+
+[1335] him at the northeast corner of my realm.
+
+[1336] tggu.l'hpkt!l'hpuu.hb!krugk".km.lhptbn
+
+[1337] adebesla!2mc.iilcrD.'cd!!dw!ec.hry
+
+[1339] emc.d"Emc.iilcrD.'cd!!dw!ec.hry
+
+[1340] he northeast corner of my realm.
+
+[1341] pkt!l'hpuu.hb!krugk".km.lhptbn
+
+[1342] !2mc.iilcrD.'cd!!dw!ec.hry
+
+[1343] ."ut hhpsf.ybgpytpw,p.t ee!
+
+[1344] mc.iilcrD.'cd!!dw!ec.hry
+
+[1345] east corner of my realm.
+
+[1346] uu.hb!krugk".km.lhptbn
+
+[1348] sf.ybgpytpw,p.t ee!
+
+[1350] ner of my realm.
+
+[1351] ugk".km.lhptbn
+
+[1352] aNa,nbalc.,p
+
+[1382] ac raoi" ccdpa
+
+
+============================================================
+# Section 0x14 (86 texts)
+============================================================
+
+[  22] aaiyr
+cwu..aaaab!c'3'lf.rIl
+
+[  24] ob'hmhrpccccf.hvR'lf.rIl
+
+[  25] Skill     Amount Cost
+
+[  27] u..aaaab!c'3'lf.rIl
+
+[  30]    Amount Cost
+
+[  68] dn ypaciibD
+
+
+[  78] dw ypbdgffachebD
+Z next menu
+
+[  81]  subtract 1
+Z next menu
+
+[  83] ffachebD
+Z next menu
+
+[  84] .rahpK?pybopu.khtv
+
+[  85] gslf!k,Ka!mAt menu
+
+[  86] t 1
+Z next menu
+
+[  88] d
+Z next menu
+
+[ 107] maiyr
+dfg!aab#
+
+[ 118] kukgbdt.
+Power  :
+
+[ 209] ac snoi gkmp
+
+[ 231] ac rcrgigcsb'riat!
+
+[ 233] ahapuphcfvaudf.
+
+[ 244] gchcao' gsop
+
+[ 276] ap sPh   bp,dgacd
+
+[ 279] gcpppr.msu aap
+
+[ 305]  yhpccsd wipcgitop cdf.
+
+[ 306] 'l  crgmsu aau,!
+
+[ 310]  wipcgitop cdf.
+
+[ 343] ku
+tariFnhpir.mG agdos
+
+[ 344] fl.uiyr,slaunbos
+
+[ 346] gvobyc.dg!e4 agdos
+
+[ 348] fnhpir.mG agdos
+
+[ 383] ap sPh   ap,dgaf..ckh. ku.b!
+
+[ 386] gcppprgmsu b!ladu!
+
+[ 390]  wipcorpgwtpayhpf. cdh. kuy"srgt
+
+[ 395] gwtpayhpf. cdh. kuy"srgt
+
+[ 400] f. cdh. kuy"srgt
+
+[ 402] gitpayhotdare
+
+[ 454] wp cktp  yhpccsfku
+sR' ,c
+
+[ 463] g
+ntwk'fgflpaao9r, wipcgi
+
+[ 466] d
+bubwg  fT.
+p,dgacd
+
+[ 468] gflpaao9r, wipcgi
+
+[ 471]  fT.
+p,dgacd
+
+[ 508]   aswi"kcg. pggh
+
+[ 519] suauio'  epcic.a ev.egrpge ptilb
+
+[ 524]  epcic.a ev.egrpge ptilb
+
+[ 526] guhpcamkplrb
+
+[ 529]  ev.egrpge ptilb
+
+[ 530] vn scla plc't
+
+[ 537] ve pip.map sRh sl"
+
+[ 548] egauamga wipclr
+
+[ 609] pnica,ga ew.f
+
+[ 611] gdwpcammpn vc
+.a w'
+
+[ 622] wp ci
+pa yhpd
+
+[ 628] 'l gbdphrw vgyhptda"a
+
+[ 633] rw vgyhptda"a
+
+[ 634] pmid'lc"gwgpcp ngshpcp ogshpcp sgshpctauhmi
+
+[ 635] irnt eidsc c
+
+[ 639] gwgpcp ngshpcp ogshpcp sgshpctauhmi
+
+[ 644] gshpcp ogshpcp sgshpctauhmi
+
+[ 649] gshpcp sgshpctauhmi
+
+[ 655] sl c.vakipepCgta.paagrbcpsslh"gdcvawk md.yt
+
+[ 658] irdvgbgoachrlg  cgrsghhec!uasirkdpws!k"peg"tgmhwe!!bsnp 
+
+[ 660] ipepCgta.paagrbcpsslh"gdcvawk md.yt
+
+[ 663] achrlg  cgrsghhec!uasirkdpws!k"peg"tgmhwe!!bsnp 
+
+[ 665] a.paagrbcpsslh"gdcvawk md.yt
+
+[ 667] ccraeh dc.tspihidlwa'kroe
+
+[ 668] cgrsghhec!uasirkdpws!k"peg"tgmhwe!!bsnp 
+
+[ 670] cpsslh"gdcvawk md.yt
+
+[ 671] cutani hdgvs.khnd!.bcl"ueu,bnn "fg
+
+[ 672] c.tspihidlwa'kroe
+
+[ 673] c!uasirkdpws!k"peg"tgmhwe!!bsnp 
+
+[ 675] dcvawk md.yt
+
+[ 678] dpws!k"peg"tgmhwe!!bsnp 
+
+[ 679] duyaL sel'bimryf
+
+[ 683] eg"tgmhwe!!bsnp 
+
+[ 790] ah,d'bi rnpYpnkugv!ca
+amo c
+
+[ 791] n"np'yplkufv!bs
+ado 
+
+[ 795]  rnpYpnkugv!ca
+amo c
+
+[ 798] k.fd'ciA nreyps
+
+[ 800] kugv!ca
+amo c
+
+[ 810] ahbpa pbslevu
+
+[ 822] ssluipgbhcype
+
+[ 834]  hbv!fs
+bpUnpir
+
+[ 837] b"nr.oifgdgpeasfk.nd'dsBg
+
+[ 842] gdgpeasfk.nd'dsBg
+
+[ 849] kukd!ep ku
+"swhpd!"a!'
+
+[ 854] ku
+"swhpd!"a!'
+
+[ 894] uauiu.fshptc'g
+
+[ 895] vave !slc"es
+
+
+============================================================
+# Section 0x15 (15 texts)
+============================================================
+
+[  81] ,!huu.otb!hp !'3'lhh.f"rC.b'm".f"rC.
+
+[  89] Mountain Lore
+
+[  90] k
+bu.stpotb!hpfu,
+tpotb!hp
+
+[ 118] Fistfighting
+
+[ 148] vstg 
+facgwma
+
+[ 154] dtgp !fhaldghachn
+
+[ 223] vt!hlpfu
+t?igtrhulpb.m'g
+
+[ 228] 
+t?igtrhulpb.m'g
+
+[ 237] ,
+up !ha6gm'g 
+etaB.e..i 
+'g
+
+[ 241] ck!up,
+upb'med".e..i 
+'g
+
+[ 242] 6gm'g 
+etaB.e..i 
+'g
+
+[ 244] m'g 
+etaB.e..i 
+'g
+
+[ 246] pb'med".e..i 
+'g
+
+[ 247] Thrown weapons
+
+[ 248] 'lk
+tpmrpub,up
+
+
+============================================================
+# Section 0x16 (30 texts)
+============================================================
+
+[  10] npaspg!pob.hpikle
+Sccnciu.e
+
+[  14] s !o e hmp,y'gpr.rit
+
+[  15] ob.hpikle
+Sccnciu.e
+
+[  16] Alas, your brave party has met its match! Your current adventure is over.
+
+[  19] mp,y'gpr.rit
+
+[  21] our brave party has met its match! Your current adventure is over.
+
+[  26] e party has met its match! Your current adventure is over.
+
+[  28] dbfnasdca'meavfca'degt.b
+n4ccssec"'lcgwu"'nsc.digdU'f
+
+[  30] !dcigdu'ldingduilrfpf'
+Sccssec"'lcgwu"'nsc.digdU'f
+
+[  31] has met its match! Your current adventure is over.
+
+[  32] upkhu.iu!pkgu"ao
+
+[  33] a'meavfca'degt.b
+n4ccssec"'lcgwu"'nsc.digdU'f
+
+[  35] ldingduilrfpf'
+Sccssec"'lcgwu"'nsc.digdU'f
+
+[  36] its match! Your current adventure is over.
+
+[  38] a'degt.b
+n4ccssec"'lcgwu"'nsc.digdU'f
+
+[  40] lrfpf'
+Sccssec"'lcgwu"'nsc.digdU'f
+
+[  41] h! Your current adventure is over.
+
+[  43] 
+n4ccssec"'lcgwu"'nsc.digdU'f
+
+[  44] y'gpsig.tfhpra'tfh'gt
+
+[  45] sccssec"'lcgwu"'nsc.digdU'f
+
+[  46]  current adventure is over.
+
+[  47] dclhtu.grmhtu
+chpiupk
+hun
+
+[  48] bal
+eackil
+fhalavca6'f
+
+[  49] tfhpra'tfh'gt
+
+[  50] 'lcgwu"'nsc.digdU'f
+
+[  51]  adventure is over.
+
+[  52] rmhtu
+chpiupk
+hun
+
+[  53] il
+fhalavca6'f
+
+[  65] nuodsagfldecitg
+
+[  66] b"lps , hrau'
+

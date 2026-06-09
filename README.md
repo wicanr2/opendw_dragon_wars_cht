@@ -3,33 +3,40 @@
 OpenDW 是 Interplay 1989/1990 年遊戲 **Dragon Wars** 的開源重製版。
 本專案旨在將 OpenDW 中文化（繁體中文），並整合 SDL2 顯示層。
 
+**Repo URL**: https://github.com/wicanr2/opendw_dragon_wars_cht
+
 ## 專案結構
 
 ```
 opendw_dragon_wars_cht/
-├── docs/                    # 文件
-│   ├── PLAN.md              # 中文化規劃
-│   ├── ANALYSIS.md          # 反組譯還原分析
-│   ├── dragon.asm           # 原始 DOS 反組譯（參考）
-│   └── README.md            # 本說明
-├── src/                     # OpenDW 原始碼
-│   ├── fe/                  # 前端（SDL2 輸出層）
-│   │   ├── main.c           # 程式進入點
-│   │   ├── vga_sdl.c        # SDL2 顯示驅動
-│   │   ├── vga_dos.c        # DOS VGA 驅動
-│   │   └── vga_null.c       # 空驅動
-│   ├── lib/                 # 核心引擎
-│   │   ├── engine.c         # 虛擬 CPU + 115 個 opcode
-│   │   ├── ui.c             # UI 繪製
-│   │   ├── resource.c       # 資源載入
-│   │   ├── tables.c         # 字型表
-│   │   ├── state.c          # 遊戲狀態
-│   │   ├── player.c         # 角色資料
+├── docs/                           # 文件
+│   ├── PLAN.md                     # 中文化規劃
+│   ├── ANALYSIS.md                 # 反組譯還原分析
+│   ├── TRANSLATION.md              # 翻譯對照表（100+ 條目）
+│   ├── ALL_TEXT_FROM_DATA1.txt     # DATA1 提取的所有文字（3926 條）
+│   ├── SDL2_IMPLEMENTATION.md      # SDL2 實作計畫
+│   ├── SKILL.md                    # Skill 文件（完整經驗記錄）
+│   ├── Dragon-Wars_Manual_DOS_EN.pdf # 英文手冊（48 頁掃描）
+│   ├── dragon.asm                  # 原始 DOS 反組譯（參考）
+│   └── README.md                   # 本說明
+├── src/                            # OpenDW 原始碼
+│   ├── fe/                         # 前端（SDL2 輸出層）
+│   │   ├── main.c                  # 程式進入點
+│   │   ├── vga_sdl.c               # SDL2 顯示驅動
+│   │   ├── vga_dos.c               # DOS VGA 驅動
+│   │   └── vga_null.c              # 空驅動
+│   ├── lib/                        # 核心引擎
+│   │   ├── engine.c                # 虛擬 CPU + 115 個 opcode
+│   │   ├── ui.c                    # UI 繪製
+│   │   ├── resource.c              # 資源載入
+│   │   ├── tables.c                # 字型表
+│   │   ├── state.c                 # 遊戲狀態
+│   │   ├── player.c                # 角色資料
 │   │   └── ...
-│   ├── tools/               # 輔助工具
-│   └── tests/               # 單元測試
-├── CMakeLists.txt           # CMake 建置
-└── Makefile                 # Make 建置
+│   ├── tools/                      # 輔助工具
+│   └── tests/                      # 單元測試
+├── CMakeLists.txt                  # CMake 建置
+└── Makefile                        # Make 建置
 ```
 
 ## 原始 OpenDW 資訊
@@ -37,6 +44,57 @@ opendw_dragon_wars_cht/
 Original game engine by [Rebecca Ann Heineman](https://www.burgerbecky.com/).
 
 This game can be purchased at [GOG](https://www.gog.com/game/dragon_wars).
+
+## 遊戲資料檔案
+
+| 檔案 | 大小 | 用途 |
+|------|------|------|
+| `DRAGON.COM` | 55 KB | 主程式（DOS COM 格式） |
+| `DATA1` | 296 KB | 遊戲資源（script、圖片、字型）- 24 個 section |
+| `DATA2` | 352 KB | 地圖/戰鬥/音效資源 |
+| `DWTRAN.COM` | 4 KB | 角色轉移工具（Bard's Tale I/II） |
+
+### DATA1 Section 結構
+
+| Section | 大小 | 內容 |
+|---------|------|------|
+| 0x00 | 1,148 B | 初始遊戲腳本（主選單、對話） |
+| 0x01 | 208 B | UI 文字 |
+| 0x02 | 336 B | 遊戲文字 |
+| 0x03 | 5,390 B | 大量對話和故事文字 |
+| 0x04-0x06 | 3.9 KB | 遊戲文字 |
+| 0x07 | 5,632 B | 角色資料（character data） |
+| 0x08-0x0F | 8.9 KB | 對話、物品、技能名稱 |
+| 0x10 | 8,192 B | 字型資料 |
+| 0x11-0x16 | 5.3 KB | 更多遊戲文字 |
+
+## 快速開始
+
+### 建置
+
+```bash
+mkdir build && cd build
+cmake ..
+make
+```
+
+### 執行
+
+需要原始遊戲檔案（dragon.com, data1, data2）：
+
+```bash
+./src/fe/sdldragon
+```
+
+## 中文化狀態
+
+- [x] 反組譯還原（52 個 unnamed 函式）
+- [x] DATA1 文字提取（3926 條）
+- [x] 翻譯對照表（100+ 條目）
+- [ ] 640×480 + 24×24 CJK 顯示
+- [ ] 外部字型載入
+- [ ] Big5 編碼支援
+- [ ] UI 佈局調整
 
 ## 快速開始
 
