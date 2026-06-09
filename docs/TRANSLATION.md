@@ -27,10 +27,13 @@
 | MENU_BYE | Bye bye, (name). | 再見，（名字）。 |
 | MENU_NAME_NEW | Name your new character. | 為您的新角色命名。 |
 | MENU_GENDER | Male or Female? | 男性或女性？ |
-| MENU_IS | Is (name) | 是（名字） |
 | MENU_POINTS | You still have (N) points left to distribute, do you wish to go back and distribute them? | 您還有（N）點可以分配，您希望回去分配它們嗎？ |
 | MENU_MUST_HAVE | You must have someone in the party to begin the game!! | 您的隊伍中必須有人才能開始遊戲！！ |
 | MENU_LOADING | Loading... | 載入中… |
+| MENU_QUIT | Do you wish to quit the game? | 您希望離開遊戲嗎？ |
+| MENU_SAVE | Do you wish to save your game? | 您希望儲存遊戲嗎？ |
+| MENU_SAVED | Your game is saved. | 遊戲已儲存。 |
+| MENU_PAUSED | The game is paused | 遊戲已暫停 |
 
 ---
 
@@ -42,10 +45,156 @@
 | STATUS_POISONED | poisoned | 中毒 |
 | STATUS_STUNNED | stunned | 昏迷 |
 | STATUS_DEAD | dead | 死亡 |
+| STATUS_OUT_OF_COMMISSION | That character is out of commission. | 該角色已無法行動。 |
+| STATUS_DEAD | That character is dead. | 該角色已死亡。 |
 
 ---
 
-## 3. UI 文字 (從 dragon.com 提取)
+## 3. 戰鬥文字 (Combat Text)
+
+| ID | 英文 | 中文 |
+|----|------|------|
+| COMBAT_STILL_FACE | You still face | 您仍然面對 |
+| COMBAT_GAINED_LEVEL | has gained a level! | 升級了！ |
+| COMBAT_PARTY_ADVANCES | The party advances. | 隊伍前進。 |
+| COMBAT_RETREATS | retreats back! | 撤退！ |
+| COMBAT_OUT_OF_RANGE | is out of range. | 超出範圍。 |
+| COMBAT_FAILS_DAMAGE | fails to do any damage. | 無法造成傷害。 |
+| COMBAT_ATTACK_BLOCKED | the attack is attack is blocked! | 攻擊被擋住了！ |
+| COMBAT_TRIED_RUN | tried to run away! | 試圖逃跑！ |
+| COMBAT_DODGES | dodges! | 閃避！ |
+| COMBAT_CALLS_HELP | calls for more help | 呼叫更多幫助 |
+| COMBAT_FOR_COMBAT | for combat. | 為了戰鬥。 |
+| COMBAT_TIME_FOR | time\s\ for | 時間\用於 |
+| COMBAT_POINT_DAMAGE | point\s\ of damage | 點傷害 |
+| COMBAT_BLOCKS | blocks! | 擋住！ |
+
+---
+
+## 4. 法術文字 (Spell Text)
+
+| ID | 英文 | 中文 |
+|----|------|------|
+| SPELL_LESSER_HEAL | Lesser Heal | 次級治療 |
+| SPELL_MAGE_LIGHT | Mage Light | 法師之光 |
+| SPELL_FIRE_LIGHT | Fire Light | 火焰之光 |
+| SPELL_ELVARS_FIRE | Elvar's Fire | 艾爾瓦之火 |
+| SPELL_CLOAK_ARCANE | Cloak Arcane | 隱匿奧秘 |
+| SPELL_GREATER_HEALING | Greater Healing | 高級治療 |
+| SPELL_CREATE_WALL | Create Wall | 創造牆壁 |
+| SPELL_SOFTEN_STONE | Soften Stone | 軟化石頭 |
+| SPELL_FIRE_STORM | Fire Storm | 火焰風暴 |
+| SPELL_BATTLE_POWER | Battle Power | 戰鬥之力 |
+| SPELL_MAJOR_HEALING | Major Healing | 主要治療 |
+| SPELL_NOT_ENOUGH_POWER | doesn't have enough spell power. | 法力不足。 |
+| SPELL_ENOUGH_POWER | have enough spell power. | 法力充足。 |
+| SPELL_NO_SPELLS | has no spells. | 沒有法術。 |
+| SPELL_BEYOND_HELP | is beyond our help. | 超出了我們的幫助範圍。 |
+| SPELL_PERFECT_HEALTH | is in perfect health. | 健康狀態完美。 |
+| SPELL_HEALED | is healed. | 已治癒。 |
+
+---
+
+## 5. 物品文字 (Item Text)
+
+| ID | 英文 | 中文 |
+|----|------|------|
+| ITEM_TARGET | Target... | 目標... |
+| ITEM_NO_USE | The item has no use here. | 該物品在這裡沒有用處。 |
+| ITEM_CANNOT_USE | can't use the | 無法使用 |
+| ITEM_CANNOT_CARRY | can't carry any more. | 無法攜帶更多。 |
+| ITEM_HAS_NO_ITEMS | has no items. | 沒有物品。 |
+| ITEM_CANNOT_TRANSFER | This item cannot be transferred. | 該物品無法轉移。 |
+| ITEM_DISCARD | Discard the | 丟棄 |
+| ITEM_EQUIP_WEAPON | You must equip a weapon that uses the | 您必須裝備使用該 |
+| ITEM_NOT_WEAPON | is not a weapon! | 不是武器！ |
+| ITEM_CANNOT_LOAD | can't be loaded into your weapon! | 無法裝入您的武器！ |
+| ITEM_MUST_RELOAD | You must reload! | 您必須重新裝填！ |
+| ITEM_USES | uses... | 使用... |
+| ITEM_NEW_WEAPON | New weapon | 新武器 |
+| ITEM_LOAD_WEAPON | Load weapon | 裝填武器 |
+| ITEM_USE_ITEM | Use item | 使用物品 |
+| ITEM_LEATHER_ARMOR | leather armor | 皮甲 |
+| ITEM_PLATE_CHAIN_ARMOR | plate and chain armor | 板甲和鎖子甲 |
+
+---
+
+## 6. 對話文字 (Dialogue Text)
+
+| ID | 英文 | 中文 |
+|----|------|------|
+| DIALOG_WHO_ENTER | Who will enter? | 誰要進入？ |
+| DIALOG_WHO_HEALING | Who needs healing? | 誰需要治療？ |
+| DIALOG_WHO_LOOT | Who will get loot? | 誰來分配戰利品？ |
+| DIALOG_WHO_UNLOCK | Who will unlock the chest? | 誰來解鎖寶箱？ |
+| DIALOG_ASK_VOLUNTEERS | Ask for volunteers | 請求志願者 |
+| DIALOG_LISTEN_RUMORS | Listen for rumors | 聆聽傳聞 |
+| DIALOG_WELCOME | Welcome | 歡迎 |
+| DIALOG_SAIL_FOR | Set sail for... | 啟航前往... |
+| DIALOG_TAKE_STAIRS | There are /a\de\scending stairs here. Do you wish to take them? | 這裡有樓梯。您希望走嗎？ |
+| DIALOG_CHEST_FOUND | You find an opened chest here. | 您找到了一個打開的寶箱。 |
+| DIALOG_LOCKED_CHEST | You have found a locked chest. | 您找到了一個鎖著的寶箱。 |
+| DIALOG_NO_GOLD | You don't have enough gold. | 您沒有足夠的金幣。 |
+| DIALOG_DONT_BUY | Sorry, but I don't want to buy that. | 抱歉，我不想買那個。 |
+| DIALOG_ANYONE_USE | Anyone can use it. | 任何人都可以使用。 |
+| DIALOG_HAVE_TO_HAVE | You would have to have a | 您必須擁有 |
+| DIALOG_TO_USE | to use it. | 才能使用它。 |
+| DIALOG_GETS_THE | gets the | 獲得 |
+| DIALOG_POOL_GOLD | Pool gold | 集合金幣 |
+| DIALOG_SHARE_GOLD | Share gold | 分享金幣 |
+| DIALOG_TRADE_GOLD | Trade gold | 交易金幣 |
+| DIALOG_HOW_MUCH_GOLD | How much gold does | 多少金幣 |
+| DIALOG_NOT_THAT_MUCH | doesn't have that much gold. | 沒有那麼多金幣。 |
+| DIALOG_WHO_GIVE_GOLD | Who does (name) want to give the gold to? | （名字）想把金幣給誰？ |
+| DIALOG_CHAINS_ENCUMBER | Your chains encumber you. | 您的鎖鏈妨礙了您。 |
+| DIALOG_GENERAL_OVERVIEW | General overview | 一般概述 |
+| DIALOG_ABILITIES | Abilities | 能力 |
+| DIALOG_STATISTICS | statistics. | 統計。 |
+| DIALOG_STATUS | status. | 狀態。 |
+| DIALOG_GOLD_DO_YOU_WISH | gold, do you wish to... | 金幣，您希望... |
+| DIALOG_DISCARD | Discard the | 丟棄 |
+| DIALOG_NEXT_MENU | next menu | 下一個選單 |
+| DIALOG_SUBTRACT_1 | subtract 1 | 減1 |
+| DIALOG_AT_MENU | at menu | 在選單 |
+| DIALOG_FULL_HEALING | Full healing | 完全治療 |
+| DIALOG_PARTIAL_HEALING | Partial healing | 部分治療 |
+| DIALOG_HEALING_DO_YOU_WISH | How much healing do you wish? | 您希望治療多少？ |
+| DIALOG_WILL_COST | That will cost | 那將花費 |
+| DIALOG_IN_GOLD_PAY | in gold, pay? | 金幣，支付？ |
+| DIALOG_IM_SORRY_BUT | I'm sorry but | 我很抱歉但 |
+| DIALOG_IS_BEYOND_HELP | is beyond our help. | 超出了我們的幫助範圍。 |
+| DIALOG_IS_PERFECT_HEALTH | is in perfect health. | 健康狀態完美。 |
+| DIALOG_NO_ONE_WANTS | No one wants to join up. | 沒有人想加入。 |
+| DIALOG_PARTY_HAS_7 | The party has 7 characters already. | 隊伍已有7個角色。 |
+| DIALOG_THIS_BRAVE_SOUL | This brave soul wishes | 這位勇敢的靈魂希望 |
+| DIALOG_THESE_BRAVE_SOULS | These brave souls wish | 這些勇敢的靈魂希望 |
+| DIALOG_BARKEEP_SAYS | The barkeep says, "I hear | 酒保說，"我聽說 |
+| DIALOG_ALAS | Alas, your brave party has met its match! Your current adventure is over. | 唉，您的勇敢隊伍遇到了對手！您目前的冒險結束了。 |
+| DIALOG_CANNOT_DISMISS | You cannot dismiss the last party member. | 您不能解僱最後一個隊伍成員。 |
+| DIALOG_ENTER_ARENA | Do you wish to enter the arena? | 您希望進入競技場嗎？ |
+| DIALOG_SEVERAL_GLADIATORS | Several gladiators bearing recent battle scars block your way. | 幾個帶著最近戰鬥傷痕的角鬥士擋住了您的去路。 |
+| DIALOG_YOU_MAY_ONLY | "You may only enter once!" | "您只能進入一次！" |
+| DIALOG_COME_BACK | Come back when you are ready to face the challenge of combat! | 當您準備好面對戰鬥挑戰時再回來！ |
+| DIALOG_EXCELLENT | "Excellent!" says the guard, "And I see that you | "太好了！"守衛說，"我看到您 |
+| DIALOG_VIEW_PARTY | View the party | 查看隊伍 |
+| DIALOG_VIEWING_PARTY | Viewing current party. | 查看目前隊伍。 |
+| DIALOG_USE_COMMANDS | Use these commands? | 使用這些指令？ |
+| DIALOG_DEEQUIP | Do you wish to deequip your | 您希望卸下您的 |
+| DIALOG_ATTACK_STYLE | Attack style... | 攻擊風格... |
+| DIALOG_ATTACK_BLOW | Attack blow | 攻擊打擊 |
+| DIALOG_MIGHTY_BLOW | Mighty blow | 強力打擊 |
+| DIALOG_DISARM_ENEMY | Disarm enemy | 解除敵人武裝 |
+| DIALOG_WILL_PARTY | Will the party: | 隊伍將： |
+| DIALOG_FIGHT | Fight | 戰鬥 |
+| DIALOG_QUICKLY_FIGHT | Quickly fight | 快速戰鬥 |
+| DIALOG_USE_ITEM | Use item | 使用物品 |
+| DIALOG_NEW_WEAPON | New weapon | 新武器 |
+| DIALOG_LOAD_WEAPON | Load weapon | 裝填武器 |
+| DIALOG_CANNOT_LEARN | cannot learn | 無法學習 |
+
+---
+
+## 7. UI 文字 (從 dragon.com 提取)
 
 | ID | 英文 | 中文 |
 |----|------|------|
@@ -69,7 +218,22 @@
 
 ---
 
-## 4. 使用方式
+## 8. 技能文字 (Skill Text)
+
+| ID | 英文 | 中文 |
+|----|------|------|
+| SKILL_ARCANE_LORE | Arcane Lore | 奧秘知識 |
+| SKILL_CAVE_LORE | Cave Lore | 洞穴知識 |
+| SKILL_FOREST_LORE | Forest Lore | 森林知識 |
+| SKILL_MOUNTAIN_LORE | Mountain Lore | 山脈知識 |
+| SKILL_TOWN_LORE | Town Lore | 城鎮知識 |
+| SKILL_FISTFIGHTING | Fistfighting | 拳鬥 |
+| SKILL_SKILL_AMOUNT_COST | Skill     Amount Cost | 技能     數量 費用 |
+| SKILL_AMOUNT_COST | Amount Cost | 數量 費用 |
+
+---
+
+## 9. 使用方式
 
 在重新實作時，可以直接嵌入翻譯文字：
 
@@ -90,7 +254,7 @@ const TranslationEntry translations[] = {
 
 ---
 
-## 5. 技術細節
+## 10. 技術細節
 
 ### 5-bit 編碼字母表
 ```
@@ -126,17 +290,16 @@ def extract_string(data, byte_offset, max_len=500):
     return bytes(result), be.byte_offset
 ```
 
+### 高位元處理
+字元值可能包含 `0x80` 高位元，需要 `& 0x7F` 取得實際字元：
+```c
+char actual_char = alphabet_value & 0x7F;
+```
+
 ---
 
-## 6. 物品名稱 (待提取)
+## 11. 待辦事項
 
-**注意**：物品名稱可能儲存於 DATA1 的其他 section，或需要從遊戲手冊提取。
-
----
-
-## 7. 待辦事項
-
-- [ ] 完整提取所有物品名稱
-- [ ] 完整提取所有對話文字
+- [ ] 從中文手冊提取更多對話文字
 - [ ] 實作中文顯示（24×24 點陣）
 - [ ] 實作中文輸入
