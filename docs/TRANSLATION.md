@@ -225,29 +225,45 @@
 
 ## 6b. 物品名稱 (從 DATA1 提取)
 
-**注意**：Section 0x07 是角色資料（CHARACTER_DATA），包含 512 位元組的個人記錄。
-物品名稱可能儲存於其他 section（如 0x06 物品資料）。
-以下是從截圖中確認的物品名稱：
+**注意**：
+- **Section 0x07 是角色資料（CHARACTER_DATA）**，包含 512 位元組的個人記錄，**不是物品名稱**
+- **物品名稱儲存於 Section 0x06（物品資料）和 Section 0x0D（物品描述）**
+- 以下是從截圖和文件中確認的物品名稱：
 
-| 英文 | 中文 | 來源 |
-|------|------|------|
-| leather armor | 皮甲 | 截圖 |
-| plate and chain armor | 板甲和鎖子甲 | 截圖 |
-| (更多物品名稱需要從 DATA1 提取) | | |
+| 英文 | 中文 | 來源 | 狀態 |
+|------|------|------|------|
+| leather armor | 皮甲 | 截圖 | ✅ 已翻譯 |
+| plate and chain armor | 板甲和鎖子甲 | 截圖 | ✅ 已翻譯 |
+| cloth armor | 布甲 | DATA1 Section 0x06 | ✅ 已翻譯 |
+| cuir bouilli armor | 硬化皮革甲 | DATA1 Section 0x06 | ✅ 已翻譯 |
+| brigandine armor | 布里甘丁甲 | DATA1 Section 0x06 | ✅ 已翻譯 |
+| scale armor | 鱗甲 | DATA1 Section 0x06 | ✅ 已翻譯 |
+| chain armor | 鎖子甲 | DATA1 Section 0x06 | ✅ 已翻譯 |
+| full plate armor | 全身板甲 | DATA1 Section 0x06 | ✅ 已翻譯 |
+| pair of boots | 靴子 | DATA1 Section 0x06 | ✅ 已翻譯 |
+| mage gloves | 法師手套 | DATA1 Section 0x06 | ✅ 已翻譯 |
+| Armor of Light | 光明甲 | DATA1 Section 0x06 | ✅ 已翻譯 |
+| (更多物品名稱需要從 DATA1 Section 0x06 提取) | | | |
 
 ---
 
 ## 6c. 技能名稱 (從 DATA1 Section 0x15 提取)
 
-| 英文 | 中文 | 來源 |
-|------|------|------|
-| Arcane Lore | 奧秘知識 | DATA1 |
-| Cave Lore | 洞穴知識 | DATA1 |
-| Forest Lore | 森林知識 | DATA1 |
-| Mountain Lore | 山脈知識 | DATA1 |
-| Town Lore | 城鎮知識 | DATA1 |
-| Fistfighting | 拳鬥 | DATA1 |
-| (更多技能名稱需要從 DATA1 提取) | | |
+**注意**：
+- **Section 0x15 只有 15 個文字**，包含部分技能名稱
+- **完整技能名稱可能在其他 section**（如 Section 0x05 物品/技能相關、Section 0x0E 技能描述）
+- 以下是從 DATA1 提取的技能名稱：
+
+| 英文 | 中文 | 來源 | 狀態 |
+|------|------|------|------|
+| Arcane Lore | 奧秘知識 | DATA1 Section 0x15 | ✅ 已翻譯 |
+| Cave Lore | 洞穴知識 | DATA1 Section 0x15 | ✅ 已翻譯 |
+| Forest Lore | 森林知識 | DATA1 Section 0x15 | ✅ 已翻譯 |
+| Mountain Lore | 山脈知識 | DATA1 Section 0x15 | ✅ 已翻譯 |
+| Town Lore | 城鎮知識 | DATA1 Section 0x15 | ✅ 已翻譯 |
+| Fistfighting | 拳鬥 | DATA1 Section 0x15 | ✅ 已翻譯 |
+| Thrown weapons | 投擲武器 | DATA1 Section 0x05 | ✅ 已翻譯 |
+| (更多技能名稱需要從 DATA1 Section 0x05/0x0E 提取) | | | |
 
 ---
 
