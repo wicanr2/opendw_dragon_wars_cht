@@ -124,7 +124,7 @@ make
 
 ## SDL2 實作計畫
 
-未實作功能的 SDL2 取代方案，請參考 [docs/SDL2_IMPLEMENTATION.md](docs/SDL2_IMPLEMENTATION.md)。
+未實作功能的 SDL2 取代方案，請參考 [docs/05_SDL2_IMPLEMENTATION.md](docs/05_SDL2_IMPLEMENTATION.md)。
 
 ### 未實作功能的 SDL2 取代
 
