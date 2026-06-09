@@ -312,4 +312,186 @@
 | UI_MOUSE_OFF | 2. Mouse Off | 2. 滑鼠關閉 | dragon.com | ✅ 已翻譯 |
 | UI_SELECT_SCREEN | Select a screen format by typing its letter. | 輸入字母選擇螢幕格式。 | dragon.com | ✅ 已翻譯 |
 | UI_PRESS_KEY | Press [KEY] to begin the game or press "S" to save configuration | 按 [KEY] 開始遊戲或按 "S" 儲存設定 | dragon.com | ✅ 已翻譯 |
+| UI_ESC_EXIT | or press ESC to return to MS-DOS. | 或按 ESC 返回 MS-DOS。 | dragon.com | ✅ 已翻譯 |
+| UI_MOUSE_HELP | Press 1 or 2 for enabling/disabling mouse support. | 按 1 或 2 啟用/停用滑鼠支援。 | dragon.com | ✅ 已翻譯 |
+| UI_SAVING | Saving game state. | 儲存遊戲進度。 | dragon.com | ✅ 已翻譯 |
+| UI_SAVED | Game state saved. | 遊戲進度已儲存。 | dragon.com | ✅ 已翻譯 |
+| UI_DRIVE_ERR | Drive error. | 磁碟錯誤。 | dragon.com | ✅ 已翻譯 |
+| UI_WRITE_PROT | Write protected. | 防寫保護。 | dragon.com | ✅ 已翻譯 |
+| UI_FATAL | Fatal error : Out of memory.$ | 嚴重錯誤：記憶體不足。$ | dragon.com | ✅ 已翻譯 |
+
+---
+
+## 13. 角色名稱 (Character Names)
+
+**注意**：遊戲有 7 個預設角色，以下從遊戲手冊和截圖中提取。
+
+| 英文 | 中文 | 職業 | 來源 | 狀態 |
+|------|------|------|------|------|
+| 待確認 | 待確認 | 戰士 | 遊戲手冊 | ⏳ 待翻譯 |
+| 待確認 | 待確認 | 法師 | 遊戲手冊 | ⏳ 待翻譯 |
+| 待確認 | 待確認 | 牧師 | 遊戲手冊 | ⏳ 待翻譯 |
+| 待確認 | 待確認 | 盜賊 | 遊戲手冊 | ⏳ 待翻譯 |
+| 待確認 | 待確認 | 弓箭手 | 遊戲手冊 | ⏳ 待翻譯 |
+| 待確認 | 待確認 | 騎士 | 遊戲手冊 | ⏳ 待翻譯 |
+| 待確認 | 待確認 | 術士 | 遊戲手冊 | ⏳ 待翻譯 |
+
+**需要從中文手冊提取**：
+- 角色名稱
+- 角色背景故事
+- 角色屬性
+
+---
+
+## 14. 技術細節
+
+### 14.1 5-bit 編碼字母表
+```
+0xa0 = 空格
+0xe1-0xfa = a-z, 0-9 (小寫字母和數字)
+0xb0-0xb9 = 0-9 (備用數字)
+0x41-0x5a = A-Z (大寫字母)
+0x8d = 換行 (\n)
+0xa8 = '
+0xa9 = :
+0xaf = /
+0xdc = \
+0xa3 = !
+0xaa = (
+0xbf = )
+0xbc = ]
+0xbe = -
+0xba = +
+0xbb = *
+0xad = ,
+0xa5 = .
+```
+
+### 14.2 解壓演算法
+```python
+def extract_string(data, byte_offset, max_len=500):
+    be = BitExtractor(data, byte_offset)
+    result = []
+    for _ in range(max_len):
+        letter = be.extract_letter()
+        if letter == 0: break
+        result.append(letter)
+    return bytes(result), be.byte_offset
+```
+
+### 14.3 高位元處理
+字元值可能包含 `0x80` 高位元，需要 `& 0x7F` 取得實際字元：
+```c
+char actual_char = alphabet_value & 0x7F;
+```
+
+### 14.4 中文編碼轉換
+- **Big5 → Unicode**：使用查表或演算法
+- **Unicode → Big5**：使用查表或演算法
+- **CP950 → Big5**：需要額外轉換層
+
+---
+
+## 15. 使用方式
+
+在重新實作時，可以直接嵌入翻譯文字：
+
+```c
+// 定義翻譯字串
+typedef struct {
+    const char* id;
+    const char* english;
+    const char* chinese;
+} TranslationEntry;
+
+const TranslationEntry translations[] = {
+    {"MENU_BEGIN", "Do you wish to..\n\nBegin a new game\nContinue an old game", "您希望..\n\n開始新遊戲\n繼續舊遊戲"},
+    {"MENU_LOADING", "Loading...", "載入中…"},
+    // ...
+};
+```
+
+---
+
+## 16. 翻譯進度追蹤
+
+### 16.1 各 Section 翻譯進度
+
+| Section | 文字數 | 已翻譯 | 覆蓋率 | 狀態 |
+|---------|--------|--------|--------|------|
+| 0x00（主選單） | 241 | 20 | 8.3% | 🔄 進行中 |
+| 0x01（角色初始化） | 4 | 0 | 0% | ⏳ 待處理 |
+| 0x02（遊戲狀態） | 20 | 6 | 30% | 🔄 進行中 |
+| 0x03（對話） | 859 | 50 | 5.8% | 🔄 進行中 |
+| 0x04（UI） | 10 | 0 | 0% | ⏳ 待處理 |
+| 0x05（物品/技能） | 62 | 20 | 32.3% | 🔄 進行中 |
+| 0x06（戰鬥） | 481 | 15 | 3.1% | 🔄 進行中 |
+| 0x07（角色資料） | 34 | 0 | 0% | ⏳ 待處理 |
+| 0x08（法術） | 134 | 17 | 12.7% | 🔄 進行中 |
+| 0x09（地圖/關卡） | 112 | 5 | 4.5% | 🔄 進行中 |
+| 0x0A（NPC 對話） | 181 | 0 | 0% | ⏳ 待處理 |
+| 0x0B（商店/交易） | 137 | 10 | 7.3% | 🔄 進行中 |
+| 0x0C（戰鬥訊息） | 151 | 0 | 0% | ⏳ 待處理 |
+| 0x0D（物品描述） | 228 | 15 | 6.6% | 🔄 進行中 |
+| 0x0E（技能描述） | 59 | 5 | 8.5% | 🔄 進行中 |
+| 0x0F（隨機事件） | 156 | 0 | 0% | ⏳ 待處理 |
+| 0x11（任務/目標） | 71 | 0 | 0% | ⏳ 待處理 |
+| 0x12（劇情文字） | 215 | 0 | 0% | ⏳ 待處理 |
+| 0x13（對話選項） | 640 | 10 | 1.6% | 🔄 進行中 |
+| 0x14（戰鬥選項） | 86 | 5 | 5.8% | 🔄 進行中 |
+| 0x15（技能名稱） | 15 | 6 | 40% | 🔄 進行中 |
+| 0x16（其他） | 30 | 0 | 0% | ⏳ 待處理 |
+| **總計** | **3926** | **~150** | **3.8%** | 🔄 進行中 |
+
+### 16.2 優先翻譯清單
+
+**P0（最優先）**：
+- [ ] Section 0x00（主選單）- 241 個文字
+- [ ] Section 0x03（對話）- 859 個文字
+- [ ] Section 0x13（對話選項）- 640 個文字
+
+**P1（次優先）**：
+- [ ] Section 0x06（戰鬥）- 481 個文字
+- [ ] Section 0x0D（物品描述）- 228 個文字
+- [ ] Section 0x12（劇情文字）- 215 個文字
+
+**P2（低優先）**：
+- [ ] Section 0x0A（NPC 對話）- 181 個文字
+- [ ] Section 0x0F（隨機事件）- 156 個文字
+- [ ] Section 0x0B（商店/交易）- 137 個文字
+
+---
+
+## 17. 待辦事項
+
+- [ ] 從中文手冊提取更多對話文字
+- [ ] 完成 Section 0x03（對話）翻譯
+- [ ] 完成 Section 0x13（對話選項）翻譯
+- [ ] 實作中文顯示（24×24 點陣）
+- [ ] 實作中文輸入
+- [ ] 建立翻譯工具鏈
+- [ ] 從資源 31 提取完整怪物名稱
+- [ ] 從資源 71 提取關卡對話
+- [ ] 建立完整的按鍵綁定映射表
+- [ ] 分析視埠繪製邏輯
+
+---
+
+## 18. 相關文件
+
+- `docs/PLAN.md` — 中文化計畫
+- `docs/ANALYSIS.md` — 反組譯分析
+- `docs/ORIGINAL_DOCS_SUMMARY.md` — 原始文件摘要
+- `docs/TECHNICAL_DEBT.md` — 技術債務清單
+- `docs/BUILD.md` — 建置指南
+- `docs/TEST_PLAN.md` — 測試計畫
+- `docs/TRANSLATION_DIALOGUE.md` — 對話翻譯（舊檔，已合併）
+- `docs/TRANSLATION_ITEMS.md` — 物品翻譯（舊檔，已合併）
+- `docs/TRANSLATION_MONSTERS.md` — 怪物翻譯（舊檔，已合併）
+- `docs/TRANSLATION_SKILLS.md` — 技能翻譯（舊檔，已合併）
+
+---
+
+**檔案結束**
+ dragon.com | ✅ 已翻譯 |
 |
