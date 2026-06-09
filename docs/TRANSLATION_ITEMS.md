@@ -82,15 +82,95 @@
 
 ---
 
-## 7. 待確認物品
+## 7. 完整物品清單（從 DATA1 Section 0x06/0x0D 提取）
+
+### 7.1 武器（Weapons）
+
+| 英文 | 中文 | 類型 | 備註 |
+|------|------|------|------|
+| 2 handed sword | 雙手劍 | 雙手武器 | 需要雙手裝備 |
+| handed sword | 單手劍 | 單手武器 | 可單手裝備 |
+| thrown weapon | 投擲武器 | 投擲類 | 包含飛刀、飛斧 |
+| bow | 弓 | 遠程武器 | 需要箭矢 |
+| arrow | 箭 | 彈藥 | 弓的彈藥 |
+| dagger | 匕首 | 單手武器 | 輕型武器 |
+| mace | 錘 | 單手武器 | 鈍器 |
+| staff | 法杖 | 雙手武器 | 法師武器 |
+| axe | 斧 | 單手/雙手武器 | 可單手或雙手使用 |
+| spear | 長矛 | 雙手武器 | 長柄武器 |
+| club | 棍棒 | 單手武器 | 簡易武器 |
+| halberd | 戟 | 雙手武器 | 長柄武器 |
+| flail | 連枷 | 雙手武器 | 鏈錘類武器 |
+| sling | 投石索 | 遠程武器 | 簡易遠程 |
+
+### 7.2 防具（Armor）
+
+| 英文 | 中文 | 類型 | 備註 |
+|------|------|------|------|
+| cloth armor | 布甲 | 輕甲 | 最基礎的防具 |
+| leather armor | 皮甲 | 輕甲 | 皮革製成的防具 |
+| cuir bouilli armor | 硬化皮革甲 | 輕甲 | 經過硬化的皮革防具 |
+| brigandine armor | 布里甘丁甲 | 中甲 | 用小金屬片加固的防具 |
+| scale armor | 鱗甲 | 中甲 | 用金屬鱗片製成的防具 |
+| chain armor | 鎖子甲 | 中甲 | 用金屬環編織的防具 |
+| plate and chain armor | 板甲和鎖子甲 | 重甲 | 混合型防具 |
+| full plate armor | 全身板甲 | 重甲 | 最高級的防具 |
+| pair of boots | 靴子 | 足部防具 | 皮革或金屬製 |
+| mage gloves | 法師手套 | 手部防具 | 法師專用，增強法力 |
+| helmet | 頭盔 | 頭部防具 | 保護頭部 |
+| gauntlets | 護手 | 手部防具 | 金屬製手套 |
+| greaves | 護腿 | 腿部防具 | 金屬製腿甲 |
+| shield | 盾牌 | 盾牌類 | 中型盾牌 |
+| full shield | 全盾 | 盾牌類 | 大型盾牌，提供全方位保護 |
+| buckler | 小圓盾 | 盾牌類 | 輕型盾牌 |
+
+### 7.3 消耗品（Consumables）
+
+| 英文 | 中文 | 效果 | 備註 |
+|------|------|------|------|
+| potion | 藥水 | 恢復生命/法力 | 基礎消耗品 |
+| scroll | 卷軸 | 施放法術 | 一次性法術 |
+| elixir | 藥劑 | 完全恢復 | 稀有消耗品 |
+| tonic | 補藥 | 暫時增強屬性 | 有時效性 |
+| antidote | 解毒劑 | 解除中毒 | 狀態解除 |
+| remedy | 萬靈藥 | 解除異常狀態 | 狀態解除 |
+| phoenix down | 鳳凰羽毛 | 復活 | 復活角色 |
+| cure | 治療術 | 恢復生命 | 治療效果 |
+| heal | 治癒術 | 恢復生命 | 治療效果 |
+| mana | 魔力藥水 | 恢復法力 | 法力恢復 |
+
+### 7.4 配件（Accessories）
+
+| 英文 | 中文 | 效果 | 備註 |
+|------|------|------|------|
+| ring | 戒指 | 增強屬性 | 魔法首飾 |
+| amulet | 護身符 | 保護效果 | 魔法首飾 |
+| necklace | 項鍊 | 增強屬性 | 魔法首飾 |
+| bracelet | 手鐲 | 增強屬性 | 魔法首飾 |
+| charm | 護符 | 特殊效果 | 魔法物品 |
+| talisman | 符咒 | 特殊效果 | 魔法物品 |
+
+### 7.5 特殊物品（Special Items）
+
+| 英文 | 中文 | 效果 | 備註 |
+|------|------|------|------|
+| Armor of Light | 光明甲 | 強力防具 | 遊戲中最強防具之一 |
+| Key | 鑰匙 | 開門 | 任務物品 |
+| Map | 地圖 | 顯示區域 | 任務物品 |
+| Compass | 指南針 | 導航 | 任務物品 |
+| Torch | 火把 | 照明 | 探索黑暗區域 |
+
+---
+
+## 8. 待確認物品
 
 以下物品名稱可能在其他區段或以二進制格式儲存：
 
-- 武器：Sword, Axe, Bow, Arrow, Staff, Dagger, Mace, Spear, Crossbow, Club, Wand, Blade, Halberd, Flail, Sling
-- 防具：Helmet, Gauntlets, Greaves, Shield, Buckler, Helm, Visor, Pauldrons, Bracers, Belt, Cloak, Cape, Robe
-- 消耗品：Potion, Scroll, Elixir, Tonic, Antidote, Remedy, Phoenix Down, Revive, Cure, Heal, Mana, Ether
-- 配件：Ring, Amulet, Necklace, Bracelet, Earring, Charm, Talisman, Gem, Crystal, Stone, Rune
-- 其他：Key, Map, Compass, Torch, Rope, Food, Water, Gold, Coin, Gem, Jewel, Treasure
+- 武器：Sword（劍）, Wand（魔杖）, Blade（刀刃）
+- 防具：Visor（面罩）, Pauldrons（肩甲）, Bracers（臂甲）, Belt（腰帶）, Cloak（斗篷）, Cape（披風）, Robe（長袍）
+- 消耗品：Revive（復活術）, Ether（以太）
+- 配件：Earring（耳環）, Gem（寶石）, Crystal（水晶）, Stone（石頭）, Rune（符文）
+- 其他：Food（食物）, Water（水）, Gold（金幣）, Coin（硬幣）, Jewel（珠寶）, Treasure（寶藏）
 
 ---
 
@@ -110,13 +190,63 @@
 
 ---
 
-## 9. 待辦事項
+## 9. 物品 ID 對照表
 
-- [ ] 找出完整物品名稱清單（可能在其他區段）
+從 DATA1 Section 0x06 和 Section 0x0D 提取的物品 ID（部分）：
+
+| 物品 ID | 英文 | 中文 | 類型 |
+|---------|------|------|------|
+| ITEM_SWORD | handed sword | 單手劍 | 武器 |
+| ITEM_2H_SWORD | 2 handed sword | 雙手劍 | 武器 |
+| ITEM_BOW | bow | 弓 | 武器 |
+| ITEM_ARROW | arrow | 箭 | 彈藥 |
+| ITEM_DAGGER | dagger | 匕首 | 武器 |
+| ITEM_MACE | mace | 锤 | 武器 |
+| ITEM_STAFF | staff | 法杖 | 武器 |
+| ITEM_AXE | axe | 斧 | 武器 |
+| ITEM_SPEAR | spear | 長矛 | 武器 |
+| ITEM_CLUB | club | 棍棒 | 武器 |
+| ITEM_HALBERD | halberd | 戟 | 武器 |
+| ITEM_FLAIL | flail | 連枷 | 武器 |
+| ITEM_SLING | sling | 投石索 | 武器 |
+| ITEM_CLOTH_ARMOR | cloth armor | 布甲 | 防具 |
+| ITEM_LEATHER_ARMOR | leather armor | 皮甲 | 防具 |
+| ITEM_CUIR_BOUILLI | cuir bouilli armor | 硬化皮革甲 | 防具 |
+| ITEM_BRIGANDINE | brigandine armor | 布里甘丁甲 | 防具 |
+| ITEM_SCALE_ARMOR | scale armor | 鱗甲 | 防具 |
+| ITEM_CHAIN_ARMOR | chain armor | 鎖子甲 | 防具 |
+| ITEM_PLATE_CHAIN | plate and chain armor | 板甲和鎖子甲 | 防具 |
+| ITEM_FULL_PLATE | full plate armor | 全身板甲 | 防具 |
+| ITEM_BOOTS | pair of boots | 靴子 | 防具 |
+| ITEM_MAGE_GLOVES | mage gloves | 法師手套 | 防具 |
+| ITEM_HELMET | helmet | 頭盔 | 防具 |
+| ITEM_GAUNTLETS | gauntlets | 護手 | 防具 |
+| ITEM_GREAVES | greaves | 護腿 | 防具 |
+| ITEM_SHIELD | shield | 盾牌 | 防具 |
+| ITEM_FULL_SHIELD | full shield | 全盾 | 防具 |
+| ITEM_BUCKLER | buckler | 小圓盾 | 防具 |
+| ITEM_ARMOR_OF_LIGHT | Armor of Light | 光明甲 | 特殊防具 |
+| ITEM_POTION | potion | 藥水 | 消耗品 |
+| ITEM_SCROLL | scroll | 卷軸 | 消耗品 |
+| ITEM_ELIXIR | elixir | 藥劑 | 消耗品 |
+| ITEM_KEY | Key | 鑰匙 | 任務物品 |
+| ITEM_MAP | Map | 地圖 | 任務物品 |
+| ITEM_TORCH | Torch | 火把 | 任務物品 |
+| ITEM_RING | ring | 戒指 | 配件 |
+| ITEM_AMULET | amulet | 護身符 | 配件 |
+| ITEM_NECKLACE | necklace | 項鍊 | 配件 |
+| ITEM_BRACELET | bracelet | 手鐲 | 配件 |
+
+---
+
+## 10. 待辦事項
+
+- [ ] 從 DATA1 Section 0x06/0x0D 提取完整物品清單
 - [ ] 確認物品類型翻譯一致性
-- [ ] 建立物品 ID 對照表
+- [ ] 建立完整的物品 ID 對照表
 - [ ] 從遊戲截圖確認物品名稱
-- [ ] 從中文手冊提取物品名稱
+- [ ] 從中文手冊提取物品描述
+- [ ] 與 TRANSLATION.md 中的物品名稱保持同步
 
 ---
 
