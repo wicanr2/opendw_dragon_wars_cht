@@ -2,8 +2,8 @@
 
 ## 概述
 
-本檔案包含 Dragon Wars 所有遊戲文字的英文原文與中文翻譯。
-這些文字從 DATA1 資源檔中提取，使用 5-bit 壓縮編碼。
+本檔案包含從 DATA1 提取的所有遊戲文字，以及中文翻譯。
+這些文字使用 5-bit 壓縮編碼，透過 `extract_string()` 函式提取。
 
 **注意**：此檔案可在重新實作時直接嵌入程式碼，無需再由 DATA1 取得。
 
@@ -11,24 +11,26 @@
 
 ## 1. 主選單 (Main Menu)
 
-| ID | 英文 | 中文 | 指令位置 |
-|----|------|------|----------|
-| MENU_BEGIN | Begin a new game | 開始新遊戲 | script:21 |
-| MENU_CONTINUE | Continue an old game | 繼續舊遊戲 | script:21 |
-| MENU_START_WARN | Starting a new game will destroy your last saved game. Do you still wish to start a new game? | 開始新遊戲會摧毀您最後儲存的遊戲。您仍然希望開始新遊戲嗎？ | script:75 |
-| MENU_PARTY | Current party... | 目前隊伍... | script:153 |
-| MENU_CREATE | Create character | 建立角色 | script:189 |
-| MENU_DELETE | Delete | 刪除 | script:266 |
-| MENU_RENAME | Rename | 重新命名 | script:286 |
-| MENU_VIEW | View | 查看 | script:295 |
-| MENU_NAME | What will (name)'s new name be? | （名字）的新名字是什麼？ | script:334 |
-| MENU_DELETE_WARN | You are about to delete (name). What has (name) done to deserve such a fate? | 您即將刪除（名字）。（名字）做了什麼以至於落得如此下場？ | script:389 |
-| MENU_FOREVER | (name) will be gone forever. Have mercy. | （名字）將永遠消失。請大發慈悲。 | script:449 |
-| MENU_BYE | Bye bye, (name). | 再見，（名字）。 | script:478 |
-| MENU_NAME_NEW | Name your new character. | 為您的新角色命名。 | script:549 |
-| MENU_GENDER | Male or Female | 男性或女性 | script:586 |
-| MENU_POINTS | You still have (N) points left to distribute. Do you wish to go back and distribute them? | 您還有（N）點可以分配。您希望回去分配它們嗎？ | script:660 |
-| MENU_MUST_HAVE | You must have someone in the party to begin the game. | 您的隊伍中必須有人才能開始遊戲。 | script:747 |
+| ID | 英文 | 中文 |
+|----|------|------|
+| MENU_BEGIN | Do you wish to..\n\nBegin a new game\nContinue an old game | 您希望..\n\n開始新遊戲\n繼續舊遊戲 |
+| MENU_START_WARN | Starting a new game will destroy your last saved game. Do you still wish to start a new game? | 開始新遊戲會摧毀您最後儲存的遊戲。您仍然希望開始新遊戲嗎？ |
+| MENU_PARTY | Current party... | 目前隊伍... |
+| MENU_CREATE | Create character | 建立角色 |
+| MENU_BEGIN_GAME | Begin the game | 開始遊戲 |
+| MENU_DELETE | Do you wish to..\n\nDelete (name) | 您希望..\n\n刪除（名字） |
+| MENU_RENAME | Rename (name) | 重新命名（名字） |
+| MENU_VIEW | View (name) | 查看（名字） |
+| MENU_NAME | What will (name)'s new name be? | （名字）的新名字是什麼？ |
+| MENU_DELETE_WARN | You are about to delete (name). What has (name) done to deserve such a fate?? | 您即將刪除（名字）。（名字）做了什麼以至於落得如此下場？？ |
+| MENU_FOREVER | (name) will be gone forever. Have mercy. | （名字）將永遠消失。請大發慈悲。 |
+| MENU_BYE | Bye bye, (name). | 再見，（名字）。 |
+| MENU_NAME_NEW | Name your new character. | 為您的新角色命名。 |
+| MENU_GENDER | Male or Female? | 男性或女性？ |
+| MENU_IS | Is (name) | 是（名字） |
+| MENU_POINTS | You still have (N) points left to distribute, do you wish to go back and distribute them? | 您還有（N）點可以分配，您希望回去分配它們嗎？ |
+| MENU_MUST_HAVE | You must have someone in the party to begin the game!! | 您的隊伍中必須有人才能開始遊戲！！ |
+| MENU_LOADING | Loading... | 載入中… |
 
 ---
 
@@ -64,81 +66,31 @@
 | UI_DRIVE_ERR | Drive error. | 磁碟錯誤。 |
 | UI_WRITE_PROT | Write protected. | 防寫保護。 |
 | UI_FATAL | Fatal error : Out of memory.$ | 嚴重錯誤：記憶體不足。$ |
-| UI_LOADING | Loading... | 載入中… |
 
 ---
 
-## 4. 對話文字 (待提取)
+## 4. 使用方式
 
-**注意**：以下文字需要從 DATA1 script 中進一步提取。
-目前由於 bit_extract 同步問題，部分文字尚未完整解碼。
+在重新實作時，可以直接嵌入翻譯文字：
 
-### 已知部分解碼的文字
-```
-[21]  [c4]n vns uiqh rnww\n\nRegim a meu gale\nSnmrimse am nkd gale
-     → "Do you wish to..\n\nBegin a new game\nContinue an old game"
+```c
+// 定義翻譯字串
+typedef struct {
+    const char* id;
+    const char* english;
+    const char* chinese;
+} TranslationEntry;
 
-[75]  [d3]raprimg a meu gale uikk deqrpnv vnsp kaqr qated galew [c4]n vns qrikk uiqh rn qrapr a meu gale[bf]
-     → "Starting a new game will destroy your last saved game. Do you still wish to start a new game)\n\n"
-
-[153] [c3]sppemr oaprvwww
-     → "Current party..."
-
-[189] \nSpeare chapacrep
-     → "\nCreate character"
-
-[213] \nRegim rhe gale
-     → "\nBegin the game"
-
-[266] [c4]n vns uiqh rnww\n\nTekere
-     → "Do you wish to..\n\nDelete "
-
-[286] \n]emale
-     → "\nRename "
-
-[295] \n,ieu
-     → "\nView "
-
-[324] [d7]har uikk
-     → "What will "
-
-[334] yq meu male be[bf]
-     → "'s new name be)\n\n"
-
-[389] [d9]ns ape abnsr rn dekere
-     → "You are about to delete "
-
-[419]  dnme rn deqepte qsch a fare[bf][bf]\n\nTekere
-     → " done to deserve such a fate))\n\nDelete "
-
-[449]  fnpetepw\nXate lepcvw
-     → " forever.\nHave mercy."
-
-[478] [c2]ve bvez
-     → "Bye bye, "
-
-[549] [ce]ale vnsp meu chapacrepw
-     → "Name your new character."
-
-[586] \n\n/ake np\nVelake[bf]
-     → "\n\nMale or Female)\n"
-
-[660]  onimrq kefr rn diqrpibsrez dn vns uiqh rn gn bacj amd diqrpibsre rhel[bf]
-     → " points left to distribute, do you wish to go back and distribute them)\n\n"
-
-[747] [d9]ns lsqr hate qnlenme im rhe oaprv rn begim rhe gale00
-     → " must have someone in the party to begin the game.."
+const TranslationEntry translations[] = {
+    {"MENU_BEGIN", "Do you wish to..\n\nBegin a new game\nContinue an old game", "您希望..\n\n開始新遊戲\n繼續舊遊戲"},
+    {"MENU_LOADING", "Loading...", "載入中…"},
+    // ...
+};
 ```
 
 ---
 
-## 5. 物品名稱 (待提取)
-
-**注意**：物品名稱儲存於 script 中，需要完整解壓才能取得。
-
----
-
-## 6. 技術細節
+## 5. 技術細節
 
 ### 5-bit 編碼字母表
 ```
@@ -162,28 +114,6 @@
 0xa5 = .
 ```
 
-### 控制碼
-```
-[c4] = B (Begin)
-[c3] = C (Continue/Create)
-[d3] = S (Start)
-[d0] = D (Delete)
-[52] = R (Rename)
-[56] = V (View)
-[4d] = M (Male)
-[46] = F (Female)
-[48] = H (Have mercy)
-[bf] = )
-[be] = -
-[aa] = (
-[d7] = W (What)
-[ce] = N (Name)
-[c9] = I (Is)
-[c2] = Y (Bye)
-[59] = .
-[5a] = ?
-```
-
 ### 解壓演算法
 ```python
 def extract_string(data, byte_offset, max_len=500):
@@ -198,35 +128,15 @@ def extract_string(data, byte_offset, max_len=500):
 
 ---
 
-## 7. 使用方式
+## 6. 物品名稱 (待提取)
 
-在重新實作時，可以直接嵌入翻譯文字：
-
-```c
-// 定義翻譯字串
-const char* MENU_BEGIN_EN = "Begin a new game";
-const char* MENU_BEGIN_ZH = "開始新遊戲";
-
-// 或使用結構體
-struct TranslationEntry {
-    const char* id;
-    const char* english;
-    const char* chinese;
-};
-
-const TranslationEntry translations[] = {
-    {"MENU_BEGIN", "Begin a new game", "開始新遊戲"},
-    {"MENU_CONTINUE", "Continue an old game", "繼續舊遊戲"},
-    // ...
-};
-```
+**注意**：物品名稱可能儲存於 DATA1 的其他 section，或需要從遊戲手冊提取。
 
 ---
 
-## 8. 待辦事項
+## 7. 待辦事項
 
-- [ ] 完整解壓所有對話文字
-- [ ] 完整解壓所有物品名稱
-- [ ] 建立完整的翻譯表
+- [ ] 完整提取所有物品名稱
+- [ ] 完整提取所有對話文字
 - [ ] 實作中文顯示（24×24 點陣）
 - [ ] 實作中文輸入
