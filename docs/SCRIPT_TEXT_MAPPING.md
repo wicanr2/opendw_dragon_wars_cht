@@ -1,225 +1,379 @@
-# 遊戲腳本文字映射
+# 遊戲腳本與 DATA1 文字對應
 
-> **來源**：`/home/anr2/tmp/longcat/opendw/script/*.scr` 分析
-> **分析日期**：2026-06-09
-> **目標**：建立 script 與 DATA1 文字的對應關係
-
----
-
-## 文字顯示相關 Opcodes
-
-### 主要文字顯示 Opcode
-
-| Opcode | 名稱 | 參數 | 說明 |
-|--------|------|------|------|
-| `extract_string` | 萃取字串 | 無 | 從資源萃取出 5-bit 壓縮字串並顯示 |
-| `write_character_name` | 顯示角色名字 | 無 | 從當前角色資料顯示名字 |
-| `load_resource` | 載入資源 | res: 0xNN, offset: 0xNNNN | 載入指定資源 |
-| `ui_draw_string` | 繪製字串 | 無 | 在螢幕繪製字串 |
-| `refresh_viewport` | 更新視窗 | 無 | 更新遊戲視窗 |
-| `wait_event` | 等待事件 | 多個 | 等待按鍵/事件（含選單文字） |
-
-### 資源載入格式
-```
-load_resource res: 0xNN, offset: 0xNNNN
-```
-- `res` = DATA1 section 索引
-- `offset` = section 內偏移位址
+> **日期**：2026-06-09
+> **來源**：`/home/anr2/tmp/longcat/opendw/script/*.scr`、`docs/ALL_TEXT_FROM_DATA1.txt`
+> **目的**：建立遊戲腳本指令與 DATA1 區段文字的交叉對照表
 
 ---
 
-## 各腳本使用文字資源統計
+## 腳本檔案總覽
 
-### script01.scr（主遊戲迴圈）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x0002 | res: 0x03 | 場景資源 |
-| 0x0036 | res: 0x16 | **遊戲結束畫面** |
-| 0x00A1 | res: 0x01 | 地圖資源 |
-| 0x00C2 | res: 0x0d | **酒保傳聞** |
-| 0x00C9 | res: 0x0f | **結局畫面** |
-
-**功能**：主遊戲迴圈，處理移動、轉向、進入場景
-
-### script03.scr（主要對話/事件）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x001F, 0x0029, 0x0045 | res: 0x12 | **道具店交易** |
-| 0x0038, 0x0061 | res: 0x12, offset: 0x0097 | 道具店 |
-| 0x006C, 0x00D0 | res: 0x03, offset: 0x08b6 | NPC 對話 |
-| 0x00D5 | res: 0x16 | **遊戲結束** |
-| 0x0137 | res: 0x03, offset: 0x014b | 對話 |
-| 0x015C | extract_string | 文字顯示 |
-| 0x01F2 | write_character_name | 角色名字 |
-| 0x06D7 | res: 0x03, offset: 0x06e8 | 對話 |
-
-**功能**：主要 NPC 對話、事件觸發
-
-### script06.scr（城市/商店）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x00A6 | res: 0x06, offset: 0x00e2 | 城市事件 |
-| 0x0109 | res: 0x06, offset: 0x0110 | 城市事件 |
-| 0x019C, 0x01BD | res: 0x03 | 對話 |
-| 0x05F3, 0x05FC, 0x0623 | res: 0x03 | 對話 |
-| 0x067C, 0x06A5, 0x06D1, 0x0733 | res: 0x03 | 對話 |
-
-**功能**：城市事件、商店交易
-
-### script0.scr（角色管理）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x017D | res: 0x0d | **酒保傳聞** |
-| 0x027F | res: 0x14 | **法術商店** |
-| 0x02C7 | res: 0x14, offset: 0x000a | 法術商店 |
-
-**功能**：角色管理、法術商店
-
-### script11.scr（治療服務）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x0012, 0x0066, 0x007B, 0x013B | res: 0x0b, offset: 0x003f | **戰鬥系統/治療** |
-| 0x00F0 | extract_string | 文字顯示 |
-
-**功能**：治療服務、生命值恢復
-
-### script12.scr（戰鬥遭遇）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x0190 | extract_string | 文字顯示 |
-| 0x024D | extract_string | 文字顯示 |
-| 0x02C9, 0x034F | res: 0x0e | **戰鬥遭遇** |
-
-**功能**：戰鬥觸發、遭遇處理
-
-### script13.scr（競技場）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x0088 | res: 0x03, offset: 0x08f4 | 競技場對話 |
-| 0x01BD, 0x027D, 0x0284, 0x0448, 0x046E | res: 0x02 | 地圖資源 |
-| 0x031A | res: 0x05, offset: 0x008b | 戰鬥對話 |
-
-**功能**：競技場戰鬥
-
-### script15.scr（UI 顯示）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x0327 | ui_draw_string | **繪製字串** |
-| 0x0328 | write_character_name | 角色名字 |
-
-**功能**：UI 畫面繪製
-
-### script18.scr（遭遇事件）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x0012 | extract_string | "You have just attracted some unwanted..." |
-| 0x003D | res: 0x12, offset: 0x0051 | 道具店 |
-| 0x00D0 | res: 0x03, offset: 0x06b1 | 對話 |
-| 0x02F3 | res: 0x0c, offset: 0x0005 | 商店交易 |
-
-**功能**：隨機遭遇事件
-
-### script19.scr（物品/法術描述）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x001B | res: 0x08, offset: 0x0018 | **物品描述** |
-| 0x0137 | res: 0x05, offset: 0x0012 | 戰鬥對話 |
-| 0x0184 | res: 0x0b, offset: 0x0006 | 戰鬥系統 |
-| 0x042A, 0x0555 | res: 0x08, offset: 0x0012~0x0015 | **物品描述** |
-
-**功能**：物品描述顯示
-
-### script71.scr（Purgatory 關卡）
-| 偏移 | 資源 | 用途 |
-|------|------|------|
-| 0x0E8E | res: 0x01, offset: 0x0002 | 地圖 |
-| 0x0EA0 | res: 0x13, offset: 0x0006 | 法術 |
-| 0x0EAB | res: 0x08, offset: 0x0018 | **物品描述** |
-| 0x0FC1 | res: 0x08, offset: 0x000f | **物品描述** |
-| 0x1050 | res: 0x08, offset: 0x000c | **物品描述** |
-| 0x105E, 0x1115, 0x1303 | res: 0x08, offset: 0x0018 | **物品描述** |
-| 0x10A2 | res: 0x05, offset: 0x000f | 戰鬥對話 |
-| 0x10A9 | res: 0x0c, offset: 0x0000 | 商店交易 |
-| 0x112D | res: 0x13, offset: 0x0000 | 法術 |
-| 0x1140, 0x1352 | res: 0x03, offset: 0x0000 | 對話 |
-| 0x11E5 | res: 0x0b, offset: 0x0000 | 戰鬥系統 |
-| 0x1338 | res: 0x08, offset: 0x0015 | **物品描述** |
-
-**功能**：Purgatory 特殊關卡
+| 檔案 | 大小 | 用途 | 載入資源 |
+|------|------|----------|----------|
+| `encounter.scr` | 2,511 bytes | 遭遇事件處理 | 0x03（主要對話） |
+| `init.cpp` | 1,903 bytes | 初始化腳本 | 0x00（遊戲腳本） |
+| `script0.scr` | 13,204 bytes | 主選單 + 遊戲初始化 | 0x03（主要對話） |
+| `script01.scr` | 2,542 bytes | 主遊戲迴圈 | 0x03（主要對話） |
+| `script03.scr` | 65,900 bytes | **主要遊戲邏輯** | 0x12、0x13、0x03、0x08 |
+| `script06.scr` | 21,324 bytes | 法术 / 戰鬥系統 | 0x03、0x06 |
+| `script11.scr` | 5,965 bytes | 角色管理（經驗/升級） | 0x0B、0x03 |
+| `script12.scr` | 8,956 bytes | 物品使用/裝備 | 0x03、0x06 |
+| `script13.scr` | 15,291 bytes | 角色狀態畫面 | 0x03、0x14 |
+| `script15.scr` | 8,174 bytes | 法術系統 | 0x03、0x06 |
+| `script18.scr` | 10,130 bytes | 隨機遭遇 | 0x03、0x11 |
+| `script19.scr` | 5,431 bytes | 競技場 | 0x03、0x08 |
+| `script22.scr` | 815 bytes | 死亡處理 | 0x16 |
+| `script71.scr` | 10,982 bytes | 世界地圖移動 | 0x01 |
 
 ---
 
-## 文字顯示流程圖
+## 主要對話資源（Section 0x03）
 
-### 1. 對話顯示
+### 位置
+- **偏移**：`0x099C`
+- **大小**：5,390 bytes
+- **文字數**：859 條
+
+### 用途
+幾乎所有遊戲內文字都集中在這裡：
+- 主選單（開始新遊戲、繼續遊戲）
+- 戰鬥訊息（攻擊、傷害、升級）
+- 法術文字（法術名稱、法力不足）
+- NPC 對話（酒保、商店）
+- 角色管理（刪除角色、改名）
+
+### 腳本引用
+| 指令 | 用途 | 範例 |
+|------|------|------|
+| `load_resource res: 0x03, offset: XXXX` | 載入區段 0x03 內文字 | `set_msg` 顯示 |
+| `set_msg $("...")` | 顯示文字（含解碼） | 主選單、戰鬥訊息 |
+| `draw_and_set` | 繪製 UI + 顯示文字 | 對話框 |
+| `wait_event` | 等待玩家輸入 | 選項按鈕 |
+
+### 關鍵文字片段（依遊戲流程）
+
+#### 主選單（script0.scr）
 ```
-script03.scr / script06.scr / script18.scr
-    ↓
-load_resource res: 0xNN (載入 section)
-    ↓
-extract_string (解壓縮 5-bit 文字)
-    ↓
-ui_draw_string (繪製到螢幕)
+"Do you wish to..\r\rBegin a new game\rContinue an old game"
+"Starting a new game will destroy your last saved game..."
+"Current party..."
 ```
 
-### 2. 角色名字顯示
+#### 戰鬥系統（script03.scr、script06.scr）
 ```
-script0.scr / script03.scr / script13.scr
-    ↓
-write_character_name (從角色資料讀取)
-    ↓
-ui_draw_string
-```
-
-### 3. 遊戲結束畫面
-```
-script01.scr
-    ↓
-load_resource res: 0x16, offset: 0x0000
-    ↓
-顯示 "Alas, your brave party has met its match!"
+" doesn't have enough spell power."
+" gets the "
+"'s status."
+"'s statistics.\rStr:"
 ```
 
-### 4. 物品/法術描述
+#### 法術系統（script15.scr）
 ```
-script19.scr
-    ↓
-load_resource res: 0x08, offset: 0xNNNN (物品描述)
-load_resource res: 0x14, offset: 0xNNNN (法術描述)
-    ↓
-extract_string
-    ↓
-ui_draw_string
+ magic\r    （德魯伊/太陽/雜項法術）
+```
+
+#### 角色畫面（script13.scr）
+```
+"View...\r\r"
+"General overview\r"
+"Abilities\r"
+"Low / High / Druid / Sun / Misc"
 ```
 
 ---
 
-## 翻譯影響分析
+## 物品/技能資源（Section 0x06）
 
-### 直接可翻譯的文字
-- `extract_string` 呼叫 → 從 DATA1 萃取的文字
-- `write_character_name` → 角色名字（需在角色資料中修改）
-- `ui_draw_string` → 直接繪製的字串
-- `wait_event` 選單 → 選單選項文字
+### 位置
+- **偏移**：`0x209C`
+- **大小**：3,453 bytes
+- **文字數**：481 條
 
-### 需特殊處理的文字
-- `res: 0x0d`（酒保傳聞）→ 對應中文手冊「Read Paragraph」
-- `res: 0x16`（遊戲結束）→ 固定訊息，可直譯
-- `res: 0x0f`（結局）→ 對應中文手冊結局段落
+### 用途
+物品名稱、武器/防具類型、技能需求。
 
-### 不需翻譯的資源
-- `res: 0x01, 0x02, 0x04, 0x05` → 地圖/場景資源
-- `res: 0x07` → 角色樣板（二進位）
+### 關鍵文字
+```
+"2 handed sword"
+"cloth armor / leather armor / chain armor / full plate armor"
+"Intelligence"
+"tries to learn"
+"Armor of Light"
+```
 
----
-
-## 待辦事項
-
-- [ ] 建立完整的 opcode 字典
-- [ ] 交叉比對所有 `extract_string` 與 `ALL_TEXT_FROM_DATA1.txt`
-- [ ] 建立文字索引（每條文字在哪些 script 中被使用）
-- [ ] 測試中文顯示不破壞遊戲邏輯
+### 腳本引用
+- `script12.scr`：物品使用/裝備時載入
+- `script06.scr`：法術使用時載入
 
 ---
 
-*產生日期：2026-06-09*
+## 物品交易資源（Section 0x0B）
+
+### 位置
+- **偏移**：`0x5004`
+- **大小**：877 bytes
+- **文字數**：137 條
+
+### 用途
+商店交易相關文字。
+
+### 關鍵文字
+```
+"can't carry any more"
+"Who will get loot?"
+"Which item..."
+```
+
+### 腳本引用
+- `script11.scr`：`load_resource res: 0x0b, offset: XXXX`
+
+---
+
+## 戰鬥選單資源（Section 0x12）
+
+### 位置
+- **偏移**：`0x87A8`
+- **大小**：1,375 bytes
+- **文字數**：215 條
+
+### 用途
+戰鬥中的選單選項。
+
+### 關鍵文字
+```
+"Will the party:\r\rFight\rQuickly fight"
+"Advance ahead"
+```
+
+### 腳本引用
+- `script03.scr`：`load_resource res: 0x12, offset: XXXX`
+
+---
+
+## 對話選項資源（Section 0x13）
+
+### 位置
+- **偏移**：`0x8D07`
+- **大小**：1,394 bytes
+- **文字數**：640 條
+
+### 用途
+對話系統中的選項按鈕文字。
+
+### 關鍵文字
+```
+"Do you wish to enter the arena?"
+"Come back when you are ready to face the challenge of combat!"
+"Several gladiators bearing recent battle scars..."
+```
+
+### 腳本引用
+- `script19.scr`：競技場對話
+- `script03.scr`：一般對話
+
+---
+
+## 商店/交易資源（Section 0x14）
+
+### 位置
+- **偏移**：`0x9279`
+- **大小**：903 bytes
+- **文字數**：86 條
+
+### 用途
+商店交易、購買物品。
+
+### 關鍵文字
+```
+"Skill     Amount Cost"
+```
+
+### 腳本引用
+- `script13.scr`：角色畫面中顯示商店資訊
+
+---
+
+## 技能名稱資源（Section 0x15）
+
+### 位置
+- **偏移**：`0x9600`
+- **大小**：257 bytes
+- **文字數**：15 條
+
+### 用途
+技能名稱列表。
+
+### 關鍵文字
+```
+"Mountain Lore"
+"Fistfighting"
+"Thrown weapons"
+"Arcane Lore / Cave Lore / Forest Lore / Town Lore"
+```
+
+### 腳本引用
+- `script15.scr`：法術系統
+
+---
+
+## 死亡訊息資源（Section 0x16）
+
+### 位置
+- **偏移**：`0x9701`
+- **大小**：78 bytes
+- **文字數**：30 條
+
+### 用途
+隊伍滅亡時的訊息。
+
+### 關鍵文字
+```
+"Alas, your brave party has met its match! Your current adventure is over."
+```
+
+### 腳本引用
+- `script22.scr`：`load_resource res: 0x16, offset: 0x0000`
+
+---
+
+## 治療/復活資源（Section 0x11）
+
+### 位置
+- **偏移**：`0x8642`
+- **大小**：358 bytes
+- **文字數**：71 條
+
+### 用途
+治療師對話。
+
+### 關鍵文字
+```
+"Who needs healing?"
+"I'm sorry but"
+"is beyond our help."
+"is in perfect health."
+"What service would you like performed on"
+"Full healing / Partial healing"
+"How much healing do you wish?"
+"That will cost ... in gold, pay?"
+```
+
+### 腳本引用
+- `script18.scr`：`load_resource res: 0x0b, offset: XXXX`（商店）
+- `script03.scr`：治療場景
+
+---
+
+## 法術系統資源（Section 0x06 + Section 0x15）
+
+### 法術名稱（Section 0x15）
+- "Druid magic"
+- "Sun magic"
+- "Misc magic"
+
+### 法術效果（Section 0x06）
+- 各法術的消耗/效果描述
+
+### 腳本引用
+- `script15.scr`：法術系統邏輯
+- `script06.scr`：戰鬥中施法
+
+---
+
+## 競技場資源（Section 0x08 + Section 0x03）
+
+### 位置
+- Section 0x08：偏移 `0x4419`，767 bytes，134 條文字
+- Section 0x03：競技場相關對話
+
+### 關鍵文字（Section 0x03）
+```
+"Do you wish to enter the arena?"
+"Come back when you are ready to face the challenge of combat!"
+"Several gladiators bearing recent battle scars..."
+```
+
+### 腳本引用
+- `script19.scr`：競技場邏輯
+
+---
+
+## 資源載入模式
+
+### 典型模式
+```asm
+# 載入區段資源
+load_resource res: 0x03, offset: 0x0000
+
+# 顯示解碼文字
+set_msg $("...")
+
+# 等待玩家選擇
+wait_event ..., 'Y', 0x..., 'N', 0x..., 0xff
+```
+
+### 解碼方式
+1. `load_resource` 載入指定區段
+2. `extract_string` 使用 5-bit 字母解碼
+3. `set_msg` 顯示解碼後的文字
+4. 特殊字元：`\r` = 換行，`\r\r` = 空行
+
+### 跳轉結構
+```asm
+# 根據玩家選擇跳轉
+wait_event 0x0000, 'B', 0x0045, 'C', 0x02df, 0xff
+# 'B' -> 0x0045 (Begin new game)
+# 'C' -> 0x02df (Continue)
+# 0xff -> 結束
+```
+
+---
+
+## 中文化重點
+
+### 高優先（P0）
+- **區段 0x03**：幾乎所有可見文字
+- **區段 0x16**：死亡訊息（简短，易處理）
+- **區段 0x15**：技能名稱（15 條，短）
+
+### 中優先（P1）
+- **區段 0x11**：治療對話
+- **區段 0x12**：戰鬥選單
+- **區段 0x13**：對話選項
+- **區段 0x0B**：商店交易
+
+### 低優先（P2）
+- **區段 0x06**：物品/技能（481 條，量大）
+- **區段 0x14**：商店表格
+- **區段 0x08**：競技場
+
+### 技術挑戰
+1. **指標區段**（0x00–0x0F）：可直接修改
+2. **壓縮區段**（0x1D–0xFF）：需要重新壓縮
+3. **指標表**：每個區段有 2-byte 索引，需維持正確性
+4. **字元編碼**：需處理 5-bit 字母表 + 大小寫 escape codes
+
+---
+
+## 區段大小限制
+
+| 區段 | 目前大小 | 最大可用 | 狀態 |
+|------|----------|----------|------|
+| 0x03 | 5,390 | 65,535 | 可擴充 |
+| 0x06 | 3,453 | 65,535 | 可擴充 |
+| 0x0B | 877 | 65,535 | 可擴充 |
+| 0x11 | 358 | 65,535 | 可擴充 |
+| 0x12 | 1,375 | 65,535 | 可擴充 |
+| 0x13 | 1,394 | 65,535 | 可擴充 |
+| 0x14 | 903 | 65,535 | 可擴充 |
+| 0x15 | 257 | 65,535 | 可擴充 |
+| 0x16 | 78 | 65,535 | 可擴充 |
+
+### 注意
+- 區段 0x10（8,192 bytes 全 0xFF）可作為擴充緩衝區
+- 區段 0x18–0x1C（0xFFFE = 空）也可重新配置
+
+---
+
+*檔案產生日期：2026-06-09*
+*工具：script/*.scr, docs/ALL_TEXT_FROM_DATA1.txt*
