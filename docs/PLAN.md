@@ -534,7 +534,7 @@ CMD ["./src/fe/sdldragon"]
 
 | 階段 | 項目 | 預估工時 |
 |------|------|----------|
-| Phase 0 | Pixel Scaling + 24×22 framebuffer | 1 天 |
+| Phase 0 | Pixel Scaling + 24×24 framebuffer | 1 天 |
 | Phase 1 | Text Rendering API | 1-2 天 |
 | Phase 2 | 字串萃取 + patch 工具 | 2 天 |
 | Phase 3 | SDL2 優化 | 0.5 天 |
@@ -561,5 +561,5 @@ CMD ["./src/fe/sdldragon"]
 
 1. **確認翻譯範圍**：哪些文字需要翻譯？（UI、對話、物品名稱、戰鬥訊息）
 2. **準備字型**：選擇開源 24×24 中文點陣字型
-3. **實作 Phase 0**：先完成 Pixel Scaling + 24×22 顯示
+3. **實作 Phase 0**：先完成 Pixel Scaling + 24×24 顯示
 4. **建立翻譯流程**：`extract_strings` → `.po` → `patch_strings`

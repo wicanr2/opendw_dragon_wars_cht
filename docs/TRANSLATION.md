@@ -225,7 +225,8 @@
 
 ## 6b. 物品名稱 (從 DATA1 提取)
 
-**注意**：物品名稱可能儲存於 DATA1 的 Section 0x07（CHARACTER_DATA）或其他 section。
+**注意**：Section 0x07 是角色資料（CHARACTER_DATA），包含 512 位元組的個人記錄。
+物品名稱可能儲存於其他 section（如 0x06 物品資料）。
 以下是從截圖中確認的物品名稱：
 
 | 英文 | 中文 | 來源 |
