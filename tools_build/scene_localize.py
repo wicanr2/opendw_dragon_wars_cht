@@ -51,10 +51,10 @@ def run(src,out):
     wrap(im,"一個和平的新時代就此展開,大地重生。願這樣的時光永不消逝……",8,120,304,16); save(im,out,27)
     # 28 The End -> 全劇終
     im=Image.new('RGB',(320,200)); centered(im,"全劇終",44,(255,255,255),70); save(im,out,28)
-    # 29 標題:保留龍/戰士藝術,清掉底部 logo 文字帶,改火龍之戰 + 版權
-    im=decode_rgb(R(29)); clear(im,0,150,320,50)
-    centered(im,"火龍之戰",40,(255,255,85),152)
-    ImageDraw.Draw(im).text((70,194),"Interplay 1989-90",font=ImageFont.truetype(FONT,10),fill=(85,255,255)); save(im,out,29)
+    # 29 標題:**保留**原本 Dragon Wars logo 與版權,僅在底部黑帶(y188-199)加小字火龍之戰
+    im=decode_rgb(R(29))
+    centered(im,"火龍之戰",12,(255,255,85),187)
+    save(im,out,29)
 
 def save(img,out,n):
     img.resize((640,400),Image.NEAREST).save(f'{out}/fullscreen_{n}_zh.png')
