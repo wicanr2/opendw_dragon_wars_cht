@@ -16,8 +16,11 @@
 |------|------|
 | `resource/text_codec`(5-bit 字串編解碼) | ✅ 對照 opendw compress.c/engine.c |
 | `resource/archive`(DATA1/DATA2 reader,含 DATA2 fallback 修正) | ✅ |
-| `tools/verify/verify_r0`(對拍 section 0 內嵌字串) | ✅ |
+| `resource/decompress`(Huffman 樹解壓) | ✅ round-trip byte-for-byte == opendw(res31/res168 驗證) |
+| `tools/verify`(verify_r0 / verify_decompress 對拍 opendw) | ✅ |
 | VM / render / i18n / game | ⏳ 見 ARCHITECTURE §7 階段表 |
+
+**R0(資產層)完成**:archive + text_codec + decompress 全數對拍 opendw 一致。
 
 ## 建置(docker first)
 

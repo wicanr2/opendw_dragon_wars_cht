@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <cstring>
 
+#include "decompress.hpp"
+
 namespace dw::res {
 namespace {
 
@@ -70,10 +72,8 @@ std::optional<std::vector<std::uint8_t>> Archive::load_raw(ResourceId id) const 
 std::optional<std::vector<std::uint8_t>> Archive::load(ResourceId id) const {
   auto raw = load_raw(id);
   if (!raw) return std::nullopt;
-  if (id <= 0x17) return raw;  // 未壓縮 section 直接回傳
-  // TODO(R0→R1): section > 0x17 需 decompress(對照 compress.c decompress_data1)。
-  // 由 resource/decompress 模組提供;在 decompress 完成前先回 raw 並標記。
-  return raw;
+  if (id <= 0x17) return raw;     // 未壓縮 section 直接回傳
+  return decompress(*raw);        // section > 0x17:Huffman 樹解壓
 }
 
 }  // namespace dw::res
