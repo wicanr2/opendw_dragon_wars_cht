@@ -1,4 +1,4 @@
-# OpenDW 龍之戰中文化 — 下一階段計畫
+# OpenDW 火龍之戰中文化 — 下一階段計畫
 
 > ⚠️ **作廢**:本計畫已被 `07_REVISED_PLAN.md`(v2, 2026-06-10)取代。
 > 本檔建立在「DATA1 已萃取 3,926 條文字」的錯誤前提上(該數據為暴力萃取雜訊)。
@@ -508,7 +508,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ### 5.5 Phase 3：SDL2 優化
-- 視窗標題改為「OpenDW - 龍之戰中文版」
+- 視窗標題改為「OpenDW - 火龍之戰中文版」
 - 使用 `SDL_UpdateTexture` 提升渲染效率
 - 命令列參數：`--font path/to/font.fnt --lang zh-TW --scale 2`
 
@@ -588,7 +588,7 @@ msgstr "治療藥水"
 **完成條件**：
 - [ ] Phase 0 完成：24×24 中文渲染層
 - [ ] Phase 1 完成：Text Rendering API
-- [ ] 能在 SDL2 視窗中顯示「龍之戰」標題
+- [ ] 能在 SDL2 視窗中顯示「火龍之戰」標題
 - [ ] 能正確顯示中英混合字串
 
 ### Milestone 2：可執行中文版（預估 7–10 天）
@@ -703,4 +703,4 @@ cmake .. && make
 
 ---
 
-*文件結束 — OpenDW 龍之戰中文化工作計畫 v1.0*
+*文件結束 — OpenDW 火龍之戰中文化工作計畫 v1.0*
