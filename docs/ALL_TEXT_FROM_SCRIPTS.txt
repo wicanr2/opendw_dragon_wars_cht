@@ -1,0 +1,401 @@
+# script0.scr
+Interplay
+Do you wish to..
+
+Begin a new game
+Continue an old game
+Starting a new game will destroy your last saved game. Do you still wish to start a new game?
+
+
+Current party...
+
+
+
+Create character
+
+
+Begin the game
+) 
+Do you wish to..
+
+Delete 
+
+Rename 
+
+View 
+What will 
+'s new name be?
+
+
+You are about to delete 
+. What has 
+ done to deserve such a fate??
+
+Delete 
+ forever.
+Have mercy.
+Bye bye, 
+Name your new character.
+
+
+Is 
+
+
+Male or
+Female?
+You still have 
+ points left to distribute, do you wish to go back and distribute them?
+
+
+You must have someone in the party to begin the game!!
+Loading...
+# script03.scr
+ appear.
+
+
+You still face 
+.
+
+
+, 
+a 
+an 
+Each member gets 
+ experience points 
+and 
+ gold 
+for combat.
+ has gained a level!
+
+b.
+The party advances.
+ runs away!
+ deequips the 
+ reloads
+ equips the 
+ charges ahead!
+ retreats back!
+ is out of range.
+hits 
+ time for 
+ point of damage
+, killing 
+fails to do any damage.
+the attack is blocked!
+misses.
+ shoots 
+ and 
+\hitstuns 
+ time for 
+ point of damage
+, stunning 
+fails to do any damage.
+the attack is blocked!
+misses.
+attacks 
+ and 
+picks up 
+ weapon.
+The 
+ advances 
+' feet.
+ waits for you.
+breathes
+# script06.scr
+ doesn't have enough spell power.
+ but it didn't seem to work.
+Nothing happens.
+That didn't do any good.
+ bandages 
+ and now 
+ feels better.
+ at the 
+monster
+ and hits 
+ of them
+ for 
+ point of damage
+ each
+, killing 
+all
+ of them.
+ at 
+the party
+ and hits 
+ of you
+ for 
+ point of damage
+ each
+ and the party is
+ is
+ imprisoned!
+ and the party is
+ is
+ pushed away! 
+Which...
+
+
+Zap! The 
+You can't recharge that.
+ but the spell couldn't reach!
+, but it had no effect at all!
+ and a 
+# script11.scr
+ gets the 
+ can't carry any more.
+Who will get loot?
+
+
+Which item...
+
+
+) 
+Gold (
+# script12.scr
+Which...
+
+
+ Magic 
+ only has 
+ point of magic power.
+ has no spells.
+Which type...
+
+
+Which spell...
+
+
+Power for 
+ spell...
+
+
+ points maximum.
+
+
+# script13.scr
+'s status.
+
+
+
+View...
+
+
+General overview
+
+Abilities
+
+Low
+High
+Druid
+Sun
+Misc
+ magic
+
+'s statistics.
+Str:
+Dex:
+Int:
+Spr:
+
+Attack:
+Defense:
+Level:
+AC:
+
+   Health 
+Stun 
+
+   Power:
+Exp 
+
+
+
+Carried items
+
+A) Gold
+ --
+
+
+
+#
+ --
+
+
+
+
+ has 
+no
+ in
+ gold, do you wish to...
+
+
+
+
+Pool gold
+
+Share gold
+
+Trade gold
+
+ has 
+
+How much gold does 
+ want to trade?
+
+
+
+
+
+ doesn't have that much gold.
+
+
+Who does 
+ want to give the gold to?
+
+
+Your chains encumber you.
+This item cannot be transferred.
+
+
+
+
+, do you wish to...
+
+
+Trade the 
+Discard the 
+Equip the 
+Unequip the 
+You must equip a weapon that uses the 
+Are you sure you want to throw away the 
+Who does 
+ want to give the 
+Sorry but 
+ can't carry any more.
+ now has the 
+.
+'s skills...
+'s High
+'s Druid
+'s Sun
+'s Miscellaneous
+ Magic spells...
+
+
+ doesn't have any.
+# script15.scr
+Do you wish to quit the game?
+
+
+Do you wish to save your game?
+
+
+Saving game...
+
+Your game is saved.
+The game is paused
+# script18.scr
+
+
+
+Will the party:
+Fight
+Quickly fight
+
+Run
+
+Advance ahead
+, choose:
+
+
+Attack
+
+Dodge enemies
+
+Block attack
+
+Cast spell
+
+Use item
+New weapon
+Load weapon
+
+Run
+
+Move
+
+ View the party
+Viewing current party.
+Use these commands?
+
+
+ moves...
+
+
+Ahead
+
+Behind
+Do you wish to deequip your 
+The 
+# script19.scr
+Do you wish to enter the arena?
+
+
+Come back when you are ready to face the challenge of combat!
+Several gladiators bearing recent battle scars block your way. "You may only enter once!"
+"Excellent!" says the guard, "And I see that you 
+are in need of some more equipment."
+You may choose 
+ items. Who will choose an item?
+
+
+"Don't forget to equip your items", says the guard.
+all have brought your own equipment."
+"Let the combat commence!"
+Those words hardly finish echoing in your ears as the gate slams shut behind you and the roar of the crowd raises to a cresendo.
+This is the main gate to Purgatory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. 
+You're free to go your own way in the city, but the guards will happily kick your spleen up through your teeth if you want to rush the gate.
+Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.
+No one escapes Purgatory alive, and few know the luxury to die in bed within her walls.
+"It is an honor to have you amongst us, O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!"
+"Enjoy your meager existence amongst us!"
+Clopin Trouillefou growls, "There are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!"
+Do you describe yourselves as thieves, beggars, or tramps?
+
+
+You must then prove yourselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm.
+# script22.scr
+Alas, your brave party has met its match! Your current adventure is over.
+# script71.scr
+There's a gap in the city wall. Far below, you see the water of the harbor through which you entered this dreaded isle. 
+Is freedom from Purgatory worth a long dive into what might be shallow water, then a desperate swim through the harbor?
+Do you feel lucky?
+The party climbs through the wall and dives into the cold waters of the sea.
+The stone walls of Purgatory stand as a monument to shattered lives and broken dreams.
+
+The sea is cold and rough. Only a good swimmer has a chance out here.
+Do you wish to pray to Irkalla?
+
+
+Who will sacrifice an item?
+
+
+Irkalla is 
+silent.
+pleased.
+Ahead lay odd waters.
+You stand above the dead remains of your opponents basking in glory as the crowd chants your names.
+"You have given us a spectacular battle and as the law decrees, you are now citizens of Purgatory!" exclaims the gamesmaster.
+
+
+The guards take your gold as a penalty for losing the combat.
+"Better luck next time!" snickers the guards.
+
+The crowd grows wild with the hope of more victims.
+
+You hear the lusty shouts of a large crowd coming from the east.
+You hear the bloodthirsty howls of a great crowd from behind the wall to the north.
+
+A great chorus of voices issues up from the west.
+
+A breeze crawls in from the harbor, bearing a sickly stench.

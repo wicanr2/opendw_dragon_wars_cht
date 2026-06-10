@@ -8,9 +8,13 @@
 **注意**：此檔案可在重新實作時直接嵌入程式碼，再由 DATA1 取得。
 
 **翻譯進度**：
-- 總文字串：3926 個
-- 已翻譯：~150 個（3.8%）
+- 總文字串：3926 個（DATA1）+ 268 個（腳本）= 4194 個
+- 已翻譯：~420 個（10%）
 - 目標：80%+ 覆蓋率
+
+**注意**：
+- Section 0x07 是角色資料（CHARACTER_DATA），**不是物品名稱**
+- Section 0x15 只有 15 個文字，技能名稱可能在其他 section
 
 **資源索引**：
 - Section 0x00（主選單）：241 個文字
@@ -492,6 +496,79 @@ const TranslationEntry translations[] = {
 
 ---
 
+## 19. 腳本文字（從 .scr 檔案提取）
+
+### script0.scr - 主選單與角色建立
+
+| ID | 英文 | 中文 | 狀態 |
+|----|------|------|------|
+| SCRIPT0_INTERPLAY | Interplay | _interp | ✅ |
+| SCRIPT0_BEGIN_NEW | Do you wish to..\n\nBegin a new game\nContinue an old game | 您希望..\n\n開始新遊戲\n繼續舊遊戲 | ✅ |
+| SCRIPT0_START_WARN | Starting a new game will destroy your last saved game. Do you still wish to start a new game? | 開始新遊戲會摧毀您最後儲存的遊戲。您仍然希望開始新遊戲嗎？ | ✅ |
+| SCRIPT0_PARTY | Current party... | 目前隊伍... | ✅ |
+| SCRIPT0_CREATE | Create character | 建立角色 | ✅ |
+| SCRIPT0_BEGIN_GAME | Begin the game | 開始遊戲 | ✅ |
+| SCRIPT0_DELETE | Do you wish to..\n\nDelete (name) | 您希望..\n\n刪除（名字） | ✅ |
+| SCRIPT0_RENAME | Rename (name) | 重新命名（名字） | ✅ |
+| SCRIPT0_VIEW | View (name) | 查看（名字） | ✅ |
+| SCRIPT0_NAME | What will (name)'s new name be? | （名字）的新名字是什麼？ | ✅ |
+| SCRIPT0_DELETE_WARN | You are about to delete (name). What has (name) done to deserve such a fate?? | 您即將刪除（名字）。（名字）做了什麼以至於落得如此下場？？ | ✅ |
+| SCRIPT0_FOREVER | (name) will be gone forever. Have mercy. | （名字）將永遠消失。請大發慈悲。 | ✅ |
+| SCRIPT0_BYE | Bye bye, (name). | 再見，（名字）。 | ✅ |
+| SCRIPT0_NAME_NEW | Name your new character. | 為您的新角色命名。 | ✅ |
+| SCRIPT0_IS | Is | 是 | ✅ |
+| SCRIPT0_GENDER | Male or Female? | 男性或女性？ | ✅ |
+| SCRIPT0_POINTS | You still have (N) points left to distribute, do you wish to go back and distribute them? | 您還有（N）點可以分配，您希望回去分配它們嗎？ | ✅ |
+| SCRIPT0_MUST_HAVE | You must have someone in the party to begin the game!! | 您的隊伍中必須有人才能開始遊戲！！ | ✅ |
+| SCRIPT0_LOADING | Loading... | 載入中… | ✅ |
+
+### script03.scr - 戰鬥與升級
+
+| ID | 英文 | 中文 | 狀態 |
+|----|------|------|------|
+| SCRIPT03_APPEAR | appear. | 出現了。 | ✅ |
+| SCRIPT03_STILL_FACE | You still face | 您仍然面對 | ✅ |
+| SCRIPT03_EACH_MEMBER | Each member gets | 每位成員獲得 | ✅ |
+| SCRIPT03_EXP | experience points | 經驗值 | ✅ |
+| SCRIPT03_GOLD | gold | 金幣 | ✅ |
+| SCRIPT03_GAINED_LEVEL | has gained a level! | 升級了！ | ✅ |
+| SCRIPT03_PARTY_ADVANCES | The party advances. | 隊伍前進。 | ✅ |
+| SCRIPT03_RUNS_AWAY | runs away! | 逃跑了！ | ✅ |
+| SCRIPT03_DEEQUIPS | deequips the | 卸下了 | ✅ |
+| SCRIPT03_RELOADS | reloads | 重新裝填 | ✅ |
+| SCRIPT03_EQUIPS | equips the | 裝備了 | ✅ |
+| SCRIPT03_CHARGES | charges ahead! | 衝鋒向前！ | ✅ |
+| SCRIPT03_RETREATS | retreats back! | 撤退！ | ✅ |
+| SCRIPT03_OUT_OF_RANGE | is out of range. | 超出範圍。 | ✅ |
+| SCRIPT03_HITS | hits | 命中 | ✅ |
+| SCRIPT03_TIME_FOR | time for | 時間用於 | ✅ |
+| SCRIPT03_POINT_DAMAGE | point\s\ of damage | 點傷害 | ✅ |
+
+### script06.scr - 物品與商店
+
+| ID | 英文 | 中文 | 狀態 |
+|----|------|------|------|
+| SCRIPT06_TARGET | Target... | 目標... | ✅ |
+| SCRIPT06_CANNOT_CARRY | can't carry any more. | 無法攜帶更多。 | ✅ |
+| SCRIPT06_ANYONE_USE | Anyone can use it. | 任何人都可以使用。 | ✅ |
+| SCRIPT06_HAVE_TO_HAVE | You would have to have a | 您必須擁有 | ✅ |
+| SCRIPT06_TO_USE | to use it. | 才能使用它。 | ✅ |
+| SCRIPT06_LEATHER_ARMOR | leather armor | 皮甲 | ✅ |
+| SCRIPT06_PLATE_CHAIN | plate and chain armor | 板甲和鎖子甲 | ✅ |
+| SCRIPT06_SORRY_DONT_BUY | Sorry, but I don't want to buy that. | 抱歉，我不想買那個。 | ✅ |
+| SCRIPT06_DONT_HAVE_GOLD | doesn't have that much gold. | 沒有那麼多金幣。 | ✅ |
+
+### script13.scr - 競技場
+
+| ID | 英文 | 中文 | 狀態 |
+|----|------|------|------|
+| SCRIPT13_ENTER_ARENA | Do you wish to enter the arena? | 您希望進入競技場嗎？ | ✅ |
+| SCRIPT13_SEVERAL_GLADIATORS | Several gladiators bearing recent battle scars block your way. | 幾個帶著最近戰鬥傷痕的角鬥士擋住了您的去路。 | ✅ |
+| SCRIPT13_YOU_MAY_ONLY | "You may only enter once!" | "您只能進入一次！" | ✅ |
+| SCRIPT13_COME_BACK | Come back when you are ready to face the challenge of combat! | 當您準備好面對戰鬥挑戰時再回來！ | ✅ |
+| SCRIPT13_EXCELLENT | "Excellent!" says the guard, "And I see that you | "太好了！"守衛說，"我看到您 | ✅ |
+
+---
+
 **檔案結束**
- dragon.com | ✅ 已翻譯 |
 |
