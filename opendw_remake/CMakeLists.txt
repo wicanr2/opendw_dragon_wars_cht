@@ -24,8 +24,15 @@ target_link_libraries(verify_r0 PRIVATE dwr_resource)
 add_executable(verify_decompress tools/verify/verify_decompress.cpp)
 target_link_libraries(verify_decompress PRIVATE dwr_resource)
 
+# --- vm 模組(R1:script 虛擬 CPU)---
+add_library(dwr_vm STATIC src/vm/interpreter.cpp)
+target_include_directories(dwr_vm PUBLIC src)
+
 enable_testing()
-# round-trip / differential 測試在 R1 起接入(對拍 opendw)。
+add_executable(vm_selftest tests/vm_selftest.cpp)
+target_link_libraries(vm_selftest PRIVATE dwr_vm)
+add_test(NAME vm_selftest COMMAND vm_selftest)
+# 差異測試(對拍 opendw trace)於後續 R1 batch 接入。
 
 # 後續階段(R2+)再加入 SDL2 / freetype:
 #   find_package(SDL2 REQUIRED); find_package(Freetype REQUIRED)
