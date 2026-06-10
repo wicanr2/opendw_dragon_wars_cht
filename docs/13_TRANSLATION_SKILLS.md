@@ -1,5 +1,9 @@
 # 技能翻譯對照表
 
+> ℹ️ **註(2026-06-10)**:資料來源標示的「Section 0x15 = 技能資料」並不準確(0x15 的「文字數」來自暴力萃取雜訊)。
+> 技能名稱實際隨角色/物品資料以 5-bit 編碼儲存。本檔的 Lore 類技能(Arcane/Cave/Forest/Mountain/Town Lore)+
+> Fistfighting / Thrown weapons 名稱可信;§3「技能描述」多為推測。譯名以 `../CONTEXT.md` 為準。
+
 ## 概述
 
 本檔案包含從 DATA1 提取的技能名稱和描述，以及中文翻譯。

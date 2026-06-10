@@ -1,5 +1,10 @@
 # 對話翻譯對照表
 
+> ⚠️ **譯名修正(2026-06-10)**:本檔 §11「翻譯注意事項」原稱「Purgatory 應翻譯為貧民窟」「Namtar 應為納姆塔」,
+> **兩者皆與官方手冊不符**。依 `../CONTEXT.md`:`Purgatory = 波卡城(地名)/罪惡之城(描述)`、`Namtar = 納達`、
+> `the Beast From The Pit = 深淵之獸`。長段敘事中的 Purgatory 譯法是否全域替換,見 `00_DOC_AUDIT.md` D2。
+> 對話文字本身的乾淨來源以 `ALL_TEXT_FROM_SCRIPTS.txt` 為準。
+
 ## 概述
 
 本檔案包含從 DATA1 提取的所有對話和敘事文字，以及中文翻譯。
@@ -183,10 +188,10 @@
 
 | 英文 | 中文 | 備註 |
 |------|------|------|
-| Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit. | 根據深淵野獸納姆塔的命令，您被剝奪了所有財產和財富，赤裸且毫無防備地被扔進了貧民窟。 | 開場故事 |
-| This is the main gate to Purgatory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. | 這是通往貧民窟的大門——您到達港口後就是被毫不客氣地從這裡扔進來的。這裡有守衛。 | 開場故事 |
+| Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit. | 根據深淵之獸納達的命令，您被剝奪了所有財產和財富，赤裸且毫無防備地被扔進了波卡城的貧民窟。 | 開場故事 |
+| This is the main gate to Purgatory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. | 這是通往波卡城的大門——您到達港口後就是被毫不客氣地從這裡扔進來的。這裡有守衛。 | 開場故事 |
 | You're free to go your own way in the city, but the guards will happily kick your spleen up through your teeth if you want to rush the gate. | 您可以在城市中自由行動，但如果您想衝過大門，守衛會很高興地把您的脾臟從牙齒裡踢出來。 | 開場故事 |
-| No one escapes Purgatory alive, and few know the luxury to die in bed within her walls. | 沒有人能活著逃出貧民窟，很少有人能在她的牆壁內死在床上。 | 開場故事 |
+| No one escapes Purgatory alive, and few know the luxury to die in bed within her walls. | 沒有人能活著逃出波卡城，很少有人能在她的牆壁內死在床上。 | 開場故事 |
 
 ### 9.2 競技場對話
 
@@ -197,15 +202,15 @@
 | Come back when you are ready to face the challenge of combat! | 當您準備好面對戰鬥挑戰時再回來！ | 競技場守衛 |
 | Those words hardly finish echoing in your ears as the gate slams shut behind you and the roar of the crowd raises to a cresendo. | 這些話幾乎還在您耳中迴盪，身後的大門就猛然關上，觀眾的歡呼聲逐漸高漲。 | 競技場開始 |
 
-### 9.3 奇蹟法庭對話
+### 9.3 奇蹟宮廷對話
 
 | 英文 | 中文 | 備註 |
 |------|------|------|
-| Clopin Trouillefou growls, "There are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!" | 克洛潘·特魯伊富咆哮道："奇蹟法庭裡沒有誠實的人。除非你是小偷、乞丐或流浪漢，否則你將受到懲罰！" | 奇蹟法庭 |
-| Do you describe yourselves as thieves, beggars, or tramps? | 你們認為自己是小偷、乞丐還是流浪漢？ | 奇蹟法庭 |
-| You must then prove yourselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm. | 那麼你們必須向我證明自己！擊敗可怕的亨巴巴，你們將在我的法庭上獲得榮譽。你們可以在我領地的東北角找到他。 | 奇蹟法庭 |
-| O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!" | 偉大的亨巴巴的勝利者啊！請接受這份金幣作為我們感謝的象徵！" | 奇蹟法庭 |
-| "Enjoy your meager existence amongst us!" | "在我們中間享受您們微薄的存在吧！" | 奇蹟法庭 |
+| Clopin Trouillefou growls, "There are no honest men in the Court of Miracles. You will be punished unless a thief, beggar, or tramp!" | 克洛潘·特魯伊弗咆哮道："奇蹟宮廷裡沒有誠實的人。除非你是小偷、乞丐或流浪漢，否則你將受到懲罰！" | 奇蹟宮廷 |
+| Do you describe yourselves as thieves, beggars, or tramps? | 你們認為自己是小偷、乞丐還是流浪漢？ | 奇蹟宮廷 |
+| You must then prove yourselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm. | 那麼你們必須向我證明自己！擊敗可怕的胡姆巴巴，你們將在我的宮廷中獲得榮譽。你們可以在我領地的東北角找到他。 | 奇蹟宮廷 |
+| O mighty victors of the great Humbaba! Accept this gold as a token of our gratitude!" | 偉大的胡姆巴巴的勝利者啊！請接受這份金幣作為我們感謝的象徵！" | 奇蹟宮廷 |
+| "Enjoy your meager existence amongst us!" | "在我們中間享受您們微薄的存在吧！" | 奇蹟宮廷 |
 
 ---
 
@@ -233,11 +238,12 @@
 
 ## 11. 翻譯注意事項
 
-1. **文化適應**：
-   - "Purgatory" 應翻譯為「貧民窟」，而非「煉獄」
-   - "Court of Miracles" 應翻譯為「奇蹟法庭」
-   - "Humbaba" 應音譯為「亨巴巴」
-   - "Namtar, the Beast From The Pit" 應翻譯為「深淵野獸納姆塔」
+1. **文化適應**(已依 `../CONTEXT.md` 全文統一)：
+   - "Purgatory" 譯為「波卡城」(地名)/「罪惡之城」(描述語境)，**非「貧民窟」「煉獄」**(slums of Purgatory = 波卡城的貧民窟)
+   - "Court of Miracles" 譯為「奇蹟宮廷」(本檔內文已統一)
+   - "Humbaba" 音譯為「胡姆巴巴」(本檔內文已統一)
+   - "Namtar, the Beast From The Pit" 譯為「深淵之獸納達」，**非「深淵野獸納姆塔」**(本檔內文已統一)
+   - "Clopin Trouillefou" 譯為「克洛潘·特魯伊弗」(本檔內文已統一)
 
 2. **語氣一致性**：
    - 守衛的對話應保持粗魯和威脅的語氣

@@ -1,6 +1,13 @@
 # Dragon Wars 翻譯對照表
 
-> 覆蓋率：412 個字串
+> ⚠️ **品質警語(2026-06-10),使用前必讀**:
+> 1. **「未知文字」雜訊條目已全數刪除(D1)** —— 原約 50 條來自 `_deprecated/20_ALL_TEXT_FROM_DATA1.txt` 暴力萃取的亂碼(如 `'l .ias'tdamu`、`JTs6plk,fd`),已移除。表中嵌入的損壞 section 統計表(`總計 3926 / ~150`…)亦一併清除。
+> 2. **section 0x08/0x15 等並非文字表**;本表「來源 0x08/0x15」的分節僅沿用舊假設,實際文字在 script bytecode / res。
+> 3. **譯名已對齊 `../CONTEXT.md`(D2)**:`Purgatory=波卡城/罪惡之城`(非「煉獄」)、`Namtar=納達`(非「納姆塔」)、`Nergal=奈羅`(≠Namtar)、`High/Low Magic=高級/初級魔法`。中英雙語條目皆保留;`slums of Purgatory` 保留「波卡城的貧民窟」語意。
+> 4. 「技能名稱」表中把 `Purgatory/Wolf/Spider/Pikeman` 連同 sprite 編號當技能,屬誤植,請改參考 `26_MONSTERS_AND_SPRITES.md`。
+> 乾淨可信的真實遊戲文字以 `ALL_TEXT_FROM_SCRIPTS.txt` 為準。
+
+> 覆蓋率:刪除雜訊後約 250 條有意義條目
 
 ## 概述
 
@@ -9,8 +16,6 @@
 
 ## 主選單 (Main Menu) — Section 0x00
 
-| L_IAS_TDAMU | 'l .ias'tdamu | 未知文字 | 0x00 | ✅ |
-| LBN4CD_CRCICGSL_FBYU | 'lbn4cd.'.crcicgsl'fbyu | 未知文字 | 0x00 | ✅ |
 | ONTINUE_AN_OLD_GAME | 'ontinue an old game | 載入舊遊戲 | 0x00 | ✅ |
 | S_NEW_NAME_BE | 's new name be? | 的新名字是？ | 0x00 | ✅ |
 | MENU_FOREVER | (name) will be gone forever. Have mercy. | （名字）將永遠消失。請大發慈悲。 | 0x00 | ✅ |
@@ -24,9 +29,7 @@
 | DO_YOU_WISH_TO | Do you wish to.. | 你是否要… | 0x00 | ✅ |
 | MENU_BEGIN | Do you wish to..\n\nBegin a new game\nContinue an old game | 您希望..\n\n開始新遊戲\n繼續舊遊戲 | 0x00 | ✅ |
 | MENU_DELETE | Do you wish to..\n\nDelete (name) | 您希望..\n\n刪除（名字） | 0x00 | ✅ |
-| K_NPIHFG_SEPRBS_DCCOPNGC | K npihfg seprbs!dccopngc | 未知文字 | 0x00 | ✅ |
 | MENU_LOADING | Loading... | 載入中… | 0x00 | ✅ |
-| LYUAEVE_G_IGA | Lyuaeve.g iga | 未知文字 | 0x00 | ✅ |
 | MENU_GENDER | Male or Female? | 男性或女性？ | 0x00 | ✅ |
 | MENU_NAME_NEW | Name your new character. | 為您的新角色命名。 | 0x00 | ✅ |
 | MENU_RENAME | Rename (name) | 重新命名（名字） | 0x00 | ✅ |
@@ -54,21 +57,14 @@
 ## 對話/劇情 (Dialogue) — Section 0x03
 
 | DIALOG_YOU_MAY_ONLY | "You may only enter once!" | "您只能進入一次！" | 0x03 | ✅ |
-| MDP_CSUIN_REAT_FI | 'mdp csuin,reat.fi | 未知文字 | 0x03 | ✅ |
-| PDYPAM_UIPS_THE | 'pdypam uips the | 未知文字 | 0x03 | ✅ |
-| UAB_F_A_LE_CP_AHGP_CLSIP_ | 'uab'f'a le cp'.ahgp clsip!fCud yipgcub yn | 未知文字 | 0x03 | ✅ |
-| UADLNB0PFIWLUOLPKM | 'uadlnb0pfiwluolpkm | 未知文字 | 0x03 | ✅ |
 | DIALOG_ASK_VOLUNTEERS | Ask for volunteers | 請求志願者 | 0x03 | ✅ |
 | DIALOG_COME_BACK | Come back when you are ready to face the challenge of combat! | 當您準備好面對戰鬥挑戰時再回來！ | 0x03 | ✅ |
 | DIALOG_ENTER_ARENA | Do you wish to enter the arena? | 您希望進入競技場嗎？ | 0x03 | ✅ |
-| LCARC_MUP_VFMGEA | Lcarc.mup vfmgea | 未知文字 | 0x03 | ✅ |
 | DIALOG_LISTEN_RUMORS | Listen for rumors | 聆聽傳聞 | 0x03 | ✅ |
 | PCUDPPHPHYFPAMAPERIENCE_P | PcudpphphyfpamAperience points | 經驗值 | 0x03 | ✅ |
-| QRCM4RC8GWLMGFPTA_U | Qrcm4rc8gwlMgfpta u | 未知文字 | 0x03 | ✅ |
 | DIALOG_SAIL_FOR | Set sail for... | 啟航前往... | 0x03 | ✅ |
 | DIALOG_SEVERAL_GLADIATORS | Several gladiators bearing recent battle scars block your way. | 幾個帶著最近戰鬥傷痕的角鬥士擋住了您的去路。 | 0x03 | ✅ |
 | DIALOG_DONT_BUY | Sorry, but I don't want to buy that. | 抱歉，我不想買那個。 | 0x03 | ✅ |
-| UINLGRO4HD | Uinlgro4hd | 未知文字 | 0x03 | ✅ |
 | DIALOG_WELCOME | Welcome | 歡迎 | 0x03 | ✅ |
 | DIALOG_WHO_HEALING | Who needs healing? | 誰需要治療？ | 0x03 | ✅ |
 | DIALOG_WHO_ENTER | Who will enter? | 誰要進入？ | 0x03 | ✅ |
@@ -98,38 +94,25 @@
 
 ## 技能名稱 (Skill Names) — Section 0x05/0x15
 
+> ⚠️ 下表原把 `Purgatory`(地名,波卡城)與 `Fanatic/Wolf/Spider/Pikeman`(怪物 sprite 編號)誤列為技能,已標註。
+> 怪物正解見 `26_MONSTERS_AND_SPRITES.md`;Purgatory 正譯為「波卡城/罪惡之城」(非「煉獄」)。
+
 | Sword | 劍術 | DATA1 Section 0x05 | 0x05/0x15 | ✅ |
 | Bow | 弓術 | DATA1 Section 0x05 | 0x05/0x15 | ✅ |
 | Fistfighting | 拳鬥 | DATA1 Section 0x15 | 0x05/0x15 | ✅ |
-| Purgatory | 煉獄 | 71 (0x71) | 0x05/0x15 | ✅ |
-| Fanatic | 狂熱者 | 222 (0xDE) | 0x05/0x15 | ✅ |
-| Wolf | 狼 | 168 (0xA8) | 0x05/0x15 | ✅ |
+| ~~Purgatory~~(誤植:地名,非技能) | 波卡城/罪惡之城 | 71 (0x71) 關卡 | — | ⚠️ |
+| ~~Fanatic~~(誤植:怪物 sprite) | 狂熱者 | 222 (0xDE) sprite | 見 26 | ⚠️ |
+| ~~Wolf~~(誤植:怪物 sprite) | 野狼 | 168 (0xA8) sprite | 見 26 | ⚠️ |
 | Shield | 盾術 | DATA1 Section 0x05 | 0x05/0x15 | ✅ |
-| Spider | 蜘蛛 | 196 (0xC4) | 0x05/0x15 | ✅ |
-| Pikeman | 長矛兵 | 210 (0xD2) | 0x05/0x15 | ✅ |
+| ~~Spider~~(誤植:怪物 sprite) | 蜘蛛 | 196 (0xC4) sprite | 見 26 | ⚠️ |
+| ~~Pikeman~~(誤植:怪物 sprite) | 長矛兵 | 210 (0xD2) sprite | 見 26 | ⚠️ |
 
 ## 戰鬥 (Combat) — Section 0x06
 
-| JTS6PLK_FD | 'JTs6plk,fd | 未知文字 | 0x06 | ✅ |
-| JTS6PMO_ON | 'JTs6pmo'on! | 未知文字 | 0x06 | ✅ |
-| O_NT_YHNPD_CAP | 'o.nt!yhnpd cap | 未知文字 | 0x06 | ✅ |
 | T_RECHARGE_THAT | 't recharge that. | 無法充值那個物品。 | 0x06 | ✅ |
-| IPLB_YM | Iplb!ym | 未知文字 | 0x06 | ✅ |
-| IPLK_FD | Iplk,fd | 未知文字 | 0x06 | ✅ |
-| IPMO_ON | Ipmo'on! | 未知文字 | 0x06 | ✅ |
-| KP_U3_OD | Kp' u3'od | 未知文字 | 0x06 | ✅ |
-| KS_ROL_YWK_TUB | Ks' rol!ywK,tub | 未知文字 | 0x06 | ✅ |
-| KS_U3_OD | Ks' u3'od | 未知文字 | 0x06 | ✅ |
-| LUKW_I_CGDSAGPHU | Lukw.i cgdsagphu. | 未知文字 | 0x06 | ✅ |
 | NOTHING_HAPPENS | Nothing happens. | 什麼都沒發生。 | 0x06 | ✅ |
-| QHIGAPGU_GLVEP_IPML | Qhigapgu! glvep.ipml | 未知文字 | 0x06 | ✅ |
 | THAT_DIDN_T_DO_ANY_GOOD | That didn't do any good. | 那沒有起任何作用。 | 0x06 | ✅ |
 | COMBAT_PARTY_ADVANCES | The party advances. | 隊伍前進。 | 0x06 | ✅ |
-| TS6PLK_FD | Ts6plk,fd | 未知文字 | 0x06 | ✅ |
-| TS6PMO_ON | Ts6pmo'on! | 未知文字 | 0x06 | ✅ |
-| TUI_ROL_YW | Tui rol!yw! | 未知文字 | 0x06 | ✅ |
-| TUI_U3_OD | Tui u3'od | 未知文字 | 0x06 | ✅ |
-| YCAEMFEMAAN0CGCU_GUE | Ycaemfemaan0cgcu.gue | 未知文字 | 0x06 | ✅ |
 | YOU_CAN_T_RECHARGE_THAT | You can't recharge that. | 你無法充值那個物品。 | 0x06 | ✅ |
 | COMBAT_STILL_FACE | You still face | 您仍然面對 | 0x06 | ✅ |
 | COMBAT_BLOCKS | blocks! | 擋住！ | 0x06 | ✅ |
@@ -160,11 +143,9 @@
 
 ## 角色資料 (Character Data) — Section 0x07
 
-| HR_C_R_LGRECSTAIHRDM | Hr c.r'lgrecstaihrdm | 未知文字 | 0x07 | ✅ |
 
 ## 法術 (Spells) — Section 0x08
 
-| TNP_LHAQ | 'tnp !!lhaq | 未知文字 | 0x08 | ✅ |
 | SPELL_BATTLE_POWER | Battle Power | 戰鬥之力 | 0x08 | ✅ |
 | SPELL_CLOAK_ARCANE | Cloak Arcane | 隱匿奧秘 | 0x08 | ✅ |
 | SPELL_CREATE_WALL | Create Wall | 創造牆壁 | 0x08 | ✅ |
@@ -190,8 +171,6 @@
 
 ## 招募 (Recruitment) — Section 0x09
 
-| HURPG_GVHPLT | 'hurpg!gvhplt | 未知文字 | 0x09 | ✅ |
-| IUPG_GVHPLT | 'iupg!gvhplt | 未知文字 | 0x09 | ✅ |
 | NO_ONE_WANTS_TO_JOIN_UP | No one wants to join up. | 沒有人想加入。 | 0x09 | ✅ |
 | THE_PARTY_HAS_7_CHARACTER | The party has 7 characters already. | 隊伍已有 7 名角色。 | 0x09 | ✅ |
 | THESE_BRAVE_SOULS_WISH | These brave souls wish | 這些勇者希望 | 0x09 | ✅ |
@@ -202,18 +181,12 @@
 | BUY_AN_ITEM | Buy an item | 購買物品 | 0x0A | ✅ |
 | BUY_WHICH_ITEM | Buy which item? | 要購買哪個物品？ | 0x0A | ✅ |
 | EXAMINE_WHICH_ITEM | Examine which item? | 要察看哪個物品？ | 0x0A | ✅ |
-| RDCUSP_DPDFVEUIO | Rdcusp'dpdfveuio | 未知文字 | 0x0A | ✅ |
-| RPUDCIU_EM_DCIU_CGC | Rpudciu.em!dciu.cgc | 未知文字 | 0x0A | ✅ |
 | SELL_AN_ITEM | Sell an item | 出售物品 | 0x0A | ✅ |
 | SELL_WHICH_ITEM | Sell which item? | 要出售哪個物品？ | 0x0A | ✅ |
 
 ## 寶箱 (Chest) — Section 0x0B
 
-| BLU_APMEA_1LYU | Blu..apmea.1Lyu | 未知文字 | 0x0B | ✅ |
-| BLU_BG_GWBESLAGSMDFZ | Blu..bg!.GwbeslagsmdfZ,' | 未知文字 | 0x0B | ✅ |
 | GWLIAGSMDFP_ABYWHO_WILL_U | Gwliagsmdfp abyWho will unlock the chest? | 誰要打開寶箱？ | 0x0B | ✅ |
-| HRCRH_CFL_D_EICNL_AIB_TTD | Hrcrh>cfl d eicnl aib!ttda! | 未知文字 | 0x0B | ✅ |
-| HTRY_EGISLSCH_P | HtrY egislsch!p | 未知文字 | 0x0B | ✅ |
 | THE_CHEST_REMAINS_LOCKED | The chest remains locked! | 寶箱仍然上鎖！ | 0x0B | ✅ |
 | WHICH_ITEM | Which item... | 哪個物品… | 0x0B | ✅ |
 | YOU_FIND_AN_OPENED_CHEST_ | You find an opened chest here. | 你發現這裡有一個已打開的寶箱。 | 0x0B | ✅ |
@@ -221,7 +194,6 @@
 
 ## 技能/法術選擇 (Skill/Spell) — Section 0x0C
 
-| G_ACK_KAIARAAA | 'g ack'kaiaraaa. . | 未知文字 | 0x0C | ✅ |
 | WHICH_ATTRIBUTE | Which attribute... | 哪項屬性… | 0x0C | ✅ |
 | WHICH_MAGIC | Which magic... | 哪種法術… | 0x0C | ✅ |
 | WHICH_SKILL | Which skill... | 哪個技能… | 0x0C | ✅ |
@@ -239,7 +211,6 @@
 
 ## 法術名稱 (Spell Names) — Section 0x0E
 
-| UHPOUVBKK_P_ILDESB_HHBCL | 'uhpouvbkk,p !ildesb!hhbcl | 未知文字 | 0x0E | ✅ |
 | ARMOR_OF_LIGHT | Armor of Light | 光明之鎧 | 0x0E | ✅ |
 | COLUMN_OF_FIRE | Column of Fire | 火柱 | 0x0E | ✅ |
 | EARTH_SUMMON | Earth Summon | 召喚大地 | 0x0E | ✅ |
@@ -264,7 +235,6 @@
 
 ## 神殿 (Temple) — Section 0x11
 
-| A_LLKCASLC_U_RZ | A!llkcaslc.u!rZ,' | 未知文字 | 0x11 | ✅ |
 | HOW_MUCH_HEALING_DO_YOU_W | How much healing do you wish? | 你希望治療多少？ | 0x11 | ✅ |
 | I_M_SORRY_BUT | I'm sorry but | 抱歉，但 | 0x11 | ✅ |
 | THAT_WILL_COST | That will cost | 這將花費 | 0x11 | ✅ |
@@ -278,7 +248,6 @@
 | DO_YOU_WISH_TO_DEEQUIP_YO | Do you wish to deequip your | 你是否要卸下你的 | 0x12 | ✅ |
 | DODGE_ENEMIES | Dodge enemies | 閃避敵人 | 0x12 | ✅ |
 | FIRING_RATE | Firing rate | 射速 | 0x12 | ✅ |
-| H_DARA_D_H_SAL | H'dara,d.h'sal. | 未知文字 | 0x12 | ✅ |
 | USE_THESE_COMMANDS | Use these commands? | 要使用這些指令嗎？ | 0x12 | ✅ |
 | VIEW_THE_PARTY | View the party | 查看隊伍 | 0x12 | ✅ |
 | VIEWING_CURRENT_PARTY | Viewing current party. | 目前隊伍一覽。 | 0x12 | ✅ |
@@ -288,44 +257,17 @@
 
 | SCRIPT13_EXCELLENT | "Excellent!" says the guard, "And I see that you | "太好了！"守衛說，"我看到您 | 0x13 | ✅ |
 | SCRIPT13_YOU_MAY_ONLY | "You may only enter once!" | "您只能進入一次！" | 0x13 | ✅ |
-| E_BAPTYWEF_DFC | 'e.baptywef,dfc | 未知文字 | 0x13 | ✅ |
-| ECED_B_CGGM_EBESVCAP_IADC | 'eced.b!cggm ebesvcap.iadcacbeWl!aNa4cdaciminpu,tc | 未知文字 | 0x13 | ✅ |
-| IUPIUPL_HPKGSTPI | 'iupiupl'hpkgstpi | 未知文字 | 0x13 | ✅ |
-| K_RPMT_HLPIGUHKD_H_TSUSGH | 'k!rpmt!hlpiguhkd.h'tsusghrak'ts | 未知文字 | 0x13 | ✅ |
 | OBC_ABYYOU_MAY_CHOOSE | 'obc abyYou may choose | 你可以選擇 | 0x13 | ✅ |
 | SCRIPT0_FOREVER | (name) will be gone forever. Have mercy. | （名字）將永遠消失。請大發慈悲。 | 0x13 | ✅ |
-| **總計** | **3926** | **~150** | 0x13 | ✅ |
 | UI_MOUSE_ON | 1. Mouse On | 1. 滑鼠開啟 | 0x13 | ✅ |
-| 0x04（UI） | 10 | 0 | 0x13 | ✅ |
-| 0x09（地圖/關卡） | 112 | 5 | 0x13 | ✅ |
-| 0x08（法術） | 134 | 17 | 0x13 | ✅ |
-| 0x0B（商店/交易） | 137 | 10 | 0x13 | ✅ |
-| 0x15（技能名稱） | 15 | 6 | 0x13 | ✅ |
-| 0x0C（戰鬥訊息） | 151 | 0 | 0x13 | ✅ |
-| 0x0F（隨機事件） | 156 | 0 | 0x13 | ✅ |
 | UI_MOUSE_OFF | 2. Mouse Off | 2. 滑鼠關閉 | 0x13 | ✅ |
-| 0x02（遊戲狀態） | 20 | 6 | 0x13 | ✅ |
-| 0x12（劇情文字） | 215 | 0 | 0x13 | ✅ |
-| 0x0D（物品描述） | 228 | 15 | 0x13 | ✅ |
-| 0x00（主選單） | 241 | 20 | 0x13 | ✅ |
-| 0x16（其他） | 30 | 0 | 0x13 | ✅ |
-| 0x07（角色資料） | 34 | 0 | 0x13 | ✅ |
-| 0x01（角色初始化） | 4 | 0 | 0x13 | ✅ |
-| 0x06（戰鬥） | 481 | 15 | 0x13 | ✅ |
-| 0x0E（技能描述） | 59 | 5 | 0x13 | ✅ |
-| 0x05（物品/技能） | 62 | 20 | 0x13 | ✅ |
-| 0x13（對話選項） | 640 | 10 | 0x13 | ✅ |
-| 0x11（任務/目標） | 71 | 0 | 0x13 | ✅ |
-| 0x03（對話） | 859 | 50 | 0x13 | ✅ |
-| 0x14（戰鬥選項） | 86 | 5 | 0x13 | ✅ |
 | UI_CGA_RGB | A. CGA RGB monitor | A. CGA RGB 螢幕 | 0x13 | ✅ |
 | SCRIPT06_ANYONE_USE | Anyone can use it. | 任何人都可以使用。 | 0x13 | ✅ |
 | UI_CGA_COMP | B. CGA composite monitor | B. CGA 複合式螢幕 | 0x13 | ✅ |
-| BEAST_FROM_THE_PIT | Beast From The Pit. | 深淵魔獸。 | 0x13 | ✅ |
+| BEAST_FROM_THE_PIT | Beast From The Pit. | 深淵之獸。 | 0x13 | ✅ |
 | SCRIPT0_BEGIN_GAME | Begin the game | 開始遊戲 | 0x13 | ✅ |
 | SCRIPT0_BYE | Bye bye, (name). | 再見，（名字）。 | 0x13 | ✅ |
 | UI_TANDY | C. Tandy 16 color | C. Tandy 16 色 | 0x13 | ✅ |
-| CEM_DCIU_E | Cem!dciu.e | 未知文字 | 0x13 | ✅ |
 | SCRIPT13_COME_BACK | Come back when you are ready to face the challenge of combat! | 當您準備好面對戰鬥挑戰時再回來！ | 0x13 | ✅ |
 | UI_COPYRIGHT | Copyright 1989, 1990 Interplay | 版權 1989, 1990 Interplay | 0x13 | ✅ |
 | SCRIPT0_CREATE | Create character | 建立角色 | 0x13 | ✅ |
@@ -346,23 +288,20 @@
 | SCRIPT0_LOADING | Loading... | 載入中… | 0x13 | ✅ |
 | SCRIPT0_GENDER | Male or Female? | 男性或女性？ | 0x13 | ✅ |
 | SCRIPT0_NAME_NEW | Name your new character. | 為您的新角色命名。 | 0x13 | ✅ |
-| NBESLARALDEB_TG_ECED_B_CG | Nbeslaraldeb!tg'eced.b!cggm ebesvcap.iadcacbeWl!aNa4cdaciminpu,tc | 未知文字 | 0x13 | ✅ |
-| NO_ONE_ESCAPES_PURGATORY_ | No one escapes Purgatory alive, and few know the luxury to die in bed within her walls. | 沒有人能活著逃出煉獄，極少人能在她的城牆內安詳地死在床上。 | 0x13 | ✅ |
+| NO_ONE_ESCAPES_PURGATORY_ | No one escapes Purgatory alive, and few know the luxury to die in bed within her walls. | 沒有人能活著逃出波卡城，極少人能在她的城牆內安詳地死在床上。 | 0x13 | ✅ |
 | UI_MOUSE_HELP | Press 1 or 2 for enabling/disabling mouse support. | 按 1 或 2 啟用/停用滑鼠支援。 | 0x13 | ✅ |
 | UI_PRESS_KEY | Press [KEY] to begin the game or press "S" to save configuration | 按 [KEY] 開始遊戲或按 "S" 儲存設定 | 0x13 | ✅ |
-| PURGATORY_ALIVE_AND_FEW_K | Purgatory alive, and few know the luxury to die in bed within her walls. | 活著逃出煉獄，極少人能在城牆內安詳死去。 | 0x13 | ✅ |
+| PURGATORY_ALIVE_AND_FEW_K | Purgatory alive, and few know the luxury to die in bed within her walls. | 活著逃出波卡城，極少人能在城牆內安詳死去。 | 0x13 | ✅ |
 | SCRIPT0_RENAME | Rename (name) | 重新命名（名字） | 0x13 | ✅ |
 | UI_SAVING | Saving game state. | 儲存遊戲進度。 | 0x13 | ✅ |
-| SCCIEDIUHPDH_E_EO | Scciediuhpdh.e Eo | 未知文字 | 0x13 | ✅ |
-| SCEL_MCDG_E | Scel.'mcdg!e | 未知文字 | 0x13 | ✅ |
 | UI_SELECT_SCREEN | Select a screen format by typing its letter. | 輸入字母選擇螢幕格式。 | 0x13 | ✅ |
 | SCRIPT13_SEVERAL_GLADIATORS | Several gladiators bearing recent battle scars block your way. | 幾個帶著最近戰鬥傷痕的角鬥士擋住了您的去路。 | 0x13 | ✅ |
 | SCRIPT06_SORRY_DONT_BUY | Sorry, but I don't want to buy that. | 抱歉，我不想買那個。 | 0x13 | ✅ |
 | SCRIPT0_START_WARN | Starting a new game will destroy your last saved game. Do you still wish to start a new game? | 開始新遊戲會摧毀您最後儲存的遊戲。您仍然希望開始新遊戲嗎？ | 0x13 | ✅ |
-| STRIPPED_OF_ALL_POSSESSIO | Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit. | 你被深淵魔獸納姆塔下令剝奪所有財產和財富，赤身裸體、毫無防備地被丟進煉獄的貧民窟。 | 0x13 | ✅ |
+| STRIPPED_OF_ALL_POSSESSIO | Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit. | 你被深淵之獸納達下令剝奪所有財產和財富，赤身裸體、毫無防備地被丟進波卡城的貧民窟。 | 0x13 | ✅ |
 | SCRIPT06_TARGET | Target... | 目標... | 0x13 | ✅ |
 | SCRIPT03_PARTY_ADVANCES | The party advances. | 隊伍前進。 | 0x13 | ✅ |
-| THIS_IS_THE_MAIN_GATE_TO_ | This is the main gate to Purgatory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. | 這是煉獄的大門——你被粗魯地丟進這座城市時就是通過這道門。這裡有守衛駐守。 | 0x13 | ✅ |
+| THIS_IS_THE_MAIN_GATE_TO_ | This is the main gate to Purgatory -- the gate through which you were unceremoniously dumped following your arrival in port. Guards are posted here. | 這是波卡城的大門——你被粗魯地丟進這座城市時就是通過這道門。這裡有守衛駐守。 | 0x13 | ✅ |
 | THOSE_WORDS_HARDLY_FINISH | Those words hardly finish echoing in your ears as the gate slams shut behind you and the roar of the crowd raises to a cresendo. | 這些話在你耳中迴盪未已，身後的門已猛然關上，群眾的歡呼聲達到了高潮。 | 0x13 | ✅ |
 | SCRIPT0_VIEW | View (name) | 查看（名字） | 0x13 | ✅ |
 | SCRIPT0_NAME | What will (name)'s new name be? | （名字）的新名字是什麼？ | 0x13 | ✅ |
@@ -371,7 +310,7 @@
 | SCRIPT0_DELETE_WARN | You are about to delete (name). What has (name) done to deserve such a fate?? | 您即將刪除（名字）。（名字）做了什麼以至於落得如此下場？？ | 0x13 | ✅ |
 | YOU_MAY_CHOOSE | You may choose | 你可以選擇 | 0x13 | ✅ |
 | SCRIPT0_MUST_HAVE | You must have someone in the party to begin the game!! | 您的隊伍中必須有人才能開始遊戲！！ | 0x13 | ✅ |
-| YOU_MUST_THEN_PROVE_YOURS | You must then prove yourselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm. | 那麼你們必須向我證明自己！擊敗可怕的亨巴巴，你們將在我的宮廷中獲得榮譽。他就在我領土的東北角。 | 0x13 | ✅ |
+| YOU_MUST_THEN_PROVE_YOURS | You must then prove yourselves to me! Defeat the dreaded Humbaba and you will know honor in my court. You will find him at the northeast corner of my realm. | 那麼你們必須向我證明自己！擊敗可怕的胡姆巴巴，你們將在我的宮廷中獲得榮譽。他就在我領土的東北角。 | 0x13 | ✅ |
 | SCRIPT03_STILL_FACE | You still face | 您仍然面對 | 0x13 | ✅ |
 | SCRIPT0_POINTS | You still have (N) points left to distribute, do you wish to go back and distribute them? | 您還有（N）點可以分配，您希望回去分配它們嗎？ | 0x13 | ✅ |
 | YOU_WILL_FIND_HIM_AT_THE_ | You will find him at the northeast corner of my realm. | 你將在我領土的東北角找到他。 | 0x13 | ✅ |
@@ -397,14 +336,9 @@
 | SCRIPT03_RUNS_AWAY | runs away! | 逃跑了！ | 0x13 | ✅ |
 | SCRIPT03_TIME_FOR | time for | 時間用於 | 0x13 | ✅ |
 | SCRIPT06_TO_USE | to use it. | 才能使用它。 | 0x13 | ✅ |
-| 英文 | 中文 | 職業 | 0x13 | ✅ |
-| 待確認 | 待確認 | 術士 | 0x13 | ✅ |
-| Fight | 戰鬥 | DATA1 Section 0x13 | 0x13 | ✅ |
-| Section | 文字數 | 已翻譯 | 0x13 | ✅ |
 
 ## 技能列表 (Skill List) — Section 0x14
 
-| L_CRGMSU_AAU | 'l  crgmsu aau,! | 未知文字 | 0x14 | ✅ |
 | AMOUNT_COST | Amount Cost | 數量 費用 | 0x14 | ✅ |
 | SKILL_AMOUNT_COST | Skill Amount Cost | 技能 數量 費用 | 0x14 | ✅ |
 
@@ -444,7 +378,7 @@
 | T1010 | Have mercy。 | 請大發慈悲。 | SCRIPT | ✅ |
 | HOW_MUCH_GOLD_DOES | How much gold does | 多少金幣 | SCRIPT | ✅ |
 | IRKALLA_IS | Irkalla is | 伊爾卡拉 | SCRIPT | ✅ |
-| IS_FREEDOM_FROM_PURGATORY | Is freedom from Purgatory worth a long dive into what might be shallow water, then a desperate swim through the harbor? | 從煉獄自由值得你跳入可能很淺的水中，然後絕望地游過港灣嗎？ | SCRIPT | ✅ |
+| IS_FREEDOM_FROM_PURGATORY | Is freedom from Purgatory worth a long dive into what might be shallow water, then a desperate swim through the harbor? | 從波卡城脫身，值得你跳入可能很淺的水中，然後絕望地游過港灣嗎？ | SCRIPT | ✅ |
 | T1011 | Magic spells... | 法術… | SCRIPT | ✅ |
 | MALE_OR | Male or | 男性或 | SCRIPT | ✅ |
 | T1012 | Nothing happens. | 什麼都沒發生。 | SCRIPT | ✅ |
@@ -462,7 +396,7 @@
 | THE_GUARDS_TAKE_YOUR_GOLD | The guards take your gold as a penalty for losing the combat. | 守衛奪走你的金幣作為戰鬥失敗的懲罰。 | SCRIPT | ✅ |
 | THE_PARTY_CLIMBS_THROUGH_ | The party climbs through the wall and dives into the cold waters of the sea. | 隊伍翻過城牆，跳入冰冷的海水中。 | SCRIPT | ✅ |
 | THE_SEA_IS_COLD_AND_ROUGH | The sea is cold and rough. Only a good swimmer has a chance out here. | 大海寒冷而波濤洶湧。只有优秀的泳者才有機會在這裡生存。 | SCRIPT | ✅ |
-| THE_STONE_WALLS_OF_PURGAT | The stone walls of Purgatory stand as a monument to shattered lives and broken dreams. | 煉獄的石牆是破碎生命與破碎夢想的紀念碑。 | SCRIPT | ✅ |
+| THE_STONE_WALLS_OF_PURGAT | The stone walls of Purgatory stand as a monument to shattered lives and broken dreams. | 波卡城的石牆是破碎生命與破碎夢想的紀念碑。 | SCRIPT | ✅ |
 | THERE_S_A_GAP_IN_THE_CITY | There's a gap in the city wall. Far below, you see the water of the harbor through which you entered this dreaded isle. | 城牆上有個缺口。遠遠下方，你看到了你進入這座可怕島嶼時通過的港灣水域。 | SCRIPT | ✅ |
 | TRADE_GOLD | Trade gold | 交易金幣 | SCRIPT | ✅ |
 | TRADE_THE | Trade the | 交換 | SCRIPT | ✅ |

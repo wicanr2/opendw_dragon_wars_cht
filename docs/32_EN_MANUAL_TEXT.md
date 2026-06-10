@@ -1,5 +1,8 @@
 # Dragon Wars 英文手冊 OCR 文字
 
+> ℹ️ **註**:本檔為 tesseract OCR 初稿,品質粗糙、需人工校對;但仍是**英文手冊段落文字的唯一來源**,故保留。
+> 中文手冊精確轉寫請見 `33_MANUAL_TRANSCRIPTION.md` / `34_READ_PARAGRAPHS.md`。
+
 > **來源**: `docs/en_manual_images/` (48 頁掃描影像)
 > **OCR 引擎**: tesseract 4.1.1, 語言: `eng`, 預處理: 灰階 + 二值化 + 1.5x 放大
 > **狀態**: OCR 初稿，需人工校對
@@ -3398,6 +3401,6 @@ Dragon Wars 使用「Read Paragraph」防拷機制：
 ### 備註
 
 - 由於掃描品質與 OCR 的英文識別限制，部分段落編號可能識別有誤
-- 中文手冊（`31_CHINESE_MANUAL_TEXT.md`）的第二冊（2F3_SCAN1239）
+- 中文手冊(精確轉寫見 `34_READ_PARAGRAPHS.md` / `33_MANUAL_TRANSCRIPTION.md`;舊 OCR `_deprecated/31_CHINESE_MANUAL_TEXT.md`)的第二冊（2F3_SCAN1239）
   頁面 002–020 對應中文版的段落文字，段落編號約 1～147+
 - 中英文段落對應：中文手冊段落 ≈ 英文段落（同一遊戲，不同語言版本）

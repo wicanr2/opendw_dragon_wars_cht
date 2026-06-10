@@ -106,15 +106,19 @@
 
 ## 三、怪物資料 (monsters.txt)
 
-### 3.1 怪物圖像資源
+### 3.1 怪物 sprite 圖形資源編號
 
-| 資源編號 | 怪物名稱 | 備註 |
+> ⚠️ **修正(2026-06-10)**:下表的 168/196/200/210/222 是怪物 **sprite 圖形資源編號**,**不是怪物名稱清單**。
+> 真正的怪物名稱在 **resource 31**(壓縮,偏移表 + 5-bit 解碼),共 20+ 隻。
+> 正解見 `26_MONSTERS_AND_SPRITES.md`。下表「怪物名稱」欄僅為 opendw 原始 `monsters.txt` 對該 sprite 的標註,僅供對照。
+
+| sprite 資源編號 | monsters.txt 標註 | 備註 |
 |----------|----------|------|
-| 168 (0xA8) | Wolf | 野狗？ |
-| 196 (0xC4) | Spider / Rock Spiders | 岩石蜘蛛 |
-| 200 (0xC8) | Innocent Man | 人類敵人 |
-| 210 (0xD2) | Pikeman | 使用長矛的敵人 |
-| 222 (0xDE) | Fanatic / Loon | 狂熱者 |
+| 168 (0xA8) | Wolf | 野狗？(sprite 圖編號) |
+| 196 (0xC4) | Spider / Rock Spiders | 岩石蜘蛛(sprite 圖編號) |
+| 200 (0xC8) | Innocent Man | 人類敵人(sprite 圖編號) |
+| 210 (0xD2) | Pikeman | 使用長矛的敵人(sprite 圖編號) |
+| 222 (0xDE) | Fanatic / Loon | 狂熱者(sprite 圖編號) |
 
 ### 3.2 怪物字串資源
 

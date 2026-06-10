@@ -1,5 +1,9 @@
 # 遊戲腳本與 DATA1 文字對應
 
+> ℹ️ **註(2026-06-10)**:本檔右側對照的 `ALL_TEXT_FROM_DATA1.txt` 已知為雜訊(見 `07_REVISED_PLAN.md`),
+> 對照到該檔的「文字內容」不可信;但「腳本檔 ↔ load_resource ↔ 資源編號」的映射邏輯仍有參考價值。
+> 乾淨文字請對 `ALL_TEXT_FROM_SCRIPTS.txt`。
+
 > **日期**：2026-06-09
 > **來源**：`/home/anr2/tmp/longcat/opendw/script/*.scr`、`docs/ALL_TEXT_FROM_DATA1.txt`
 > **目的**：建立遊戲腳本指令與 DATA1 區段文字的交叉對照表
