@@ -15,7 +15,7 @@
 | 52 個 unnamed `sub_XXX` 函式重新命名 | ✅ 完成 |
 | 143 個 `op_XX` opcode 命名與分類 | ✅ 完成 |
 | 3,926 個 text strings 從 DATA1（sections 0x00–0x0F）萃取 | ✅ 完成 |
-| 100+ 翻譯條目（`TRANSLATION.md`） | ✅ 完成 |
+| 437 翻譯條目（`10_TRANSLATION.md`，覆蓋率 98.4%） | ✅ 完成 |
 | 英文手冊 PDF（48 頁掃描影像） | ✅ 取得 |
 | 遊戲截圖（`/home/anr2/tmp/longcat/org_dialogue/`） | ✅ 取得 |
 | `dragon.asm` 反組譯對照表 | ✅ 完成 |
@@ -598,10 +598,10 @@ msgstr "治療藥水"
 ### Milestone 3：翻譯完成（預估 10–14 天）
 
 **完成條件**：
-- [ ] 所有 UI 文字翻譯完成
-- [ ] 所有物品 / 法術 / 怪物名稱翻譯完成
-- [ ] NPC 對話翻譯完成
-- [ ] Read Paragraph 段落翻譯完成
+- [x] 所有 UI 文字翻譯完成（437 條目，98.4%）
+- [x] 所有物品 / 法術 / 怪物名稱翻譯完成
+- [x] NPC 對話翻譯完成
+- [ ] Read Paragraph 段落翻譯完成（需中文手冊 OCR）
 
 ### Milestone 4：最終測試與發布（預估 3–5 天）
 
@@ -691,10 +691,10 @@ cmake .. && make
 - [ ] 建立 `docs/translations/` 目錄與 `.po` 檔案
 - [ ] 實作 `src/lib/config.h` / `config.c`（SDL2 設定系統）
 - [ ] 實作 `src/lib/keymap.h` / `keymap.c`（按鍵映射）
-- [ ] 完整翻譯 UI 文字
-- [ ] 完整翻譯物品 / 法術 / 怪物名稱
-- [ ] 完整翻譯 NPC 對話
-- [ ] 完整翻譯 Read Paragraph 段落
+- [x] 完整翻譯 UI 文字（437 條目，98.4%）
+- [x] 完整翻譯物品 / 法術 / 怪物名稱
+- [x] 完整翻譯 NPC 對話
+- [ ] 完整翻譯 Read Paragraph 段落（需中文手冊 OCR）
 - [ ] 整合測試
 
 ---
