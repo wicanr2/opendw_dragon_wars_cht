@@ -1,12 +1,12 @@
 ---
 name: dragon-wars-cht-remake
-description: 推進《火龍之戰》(Dragon Wars, Interplay 1989)的繁體中文化 + C++20/SDL2 現代重寫(opendw_remake)。涵蓋:用 opendw(Devin Smith 的 C 反組譯)當正確性 oracle 做 byte-for-byte / 逐指令差異測試;從 DATA1/DATA2 萃取資產(5-bit 文字、Huffman 解壓、res31 怪物名、sprite、全螢幕場景圖 title_adjust 去交錯);Read Paragraph 防拷段落內嵌顯示;CJK 24×24 渲染進 320×200 framebuffer;手冊/軟體世界攻略以視覺轉寫 OCR;docker 工具鏈。觸發條件:使用者提到「火龍之戰」「Dragon Wars」「opendw」「opendw_remake」「龍之戰中文化」,或要求接續萃取/翻譯/重寫/驗證該遊戲。repo:github.com/wicanr2/opendw_dragon_wars_cht。
+description: 推進《火龍之戰》(Dragon Wars, Interplay 1989)的繁體中文化 + C++20/SDL2 現代重寫(opendw_remake)。涵蓋:用 opendw(Devin Smith 的 C 反組譯)當正確性 oracle 做 byte-for-byte / 逐指令差異測試;從 DATA1/DATA2 萃取資產(5-bit 文字、Huffman 解壓、res31 怪物名、sprite、全螢幕場景圖 title_adjust 去交錯);Read Paragraph 防拷段落內嵌顯示;CJK 24×24 渲染進 320×200 framebuffer;手冊/軟體世界攻略以視覺轉寫 OCR;docker 工具鏈。觸發條件:使用者提到「火龍之戰」「Dragon Wars」「opendw」「opendw_remake」「火龍之戰中文化」,或要求接續萃取/翻譯/重寫/驗證該遊戲。repo:github.com/wicanr2/opendw_dragon_wars_cht。
 ---
 
 # 火龍之戰 (Dragon Wars) 中文化 + Remake Skill
 
 ## 何時啟用
-使用者提到「火龍之戰 / Dragon Wars / opendw / opendw_remake / 龍之戰中文化」,或要接續該專案的萃取、翻譯、重寫、驗證。
+使用者提到「火龍之戰 / Dragon Wars / opendw / opendw_remake / 火龍之戰中文化」,或要接續該專案的萃取、翻譯、重寫、驗證。
 
 ## 專案座標
 - **Repo**:`github.com/wicanr2/opendw_dragon_wars_cht`(本機 `/home/anr2/tmp/longcat/opendw_dragon_wars_cht/`)

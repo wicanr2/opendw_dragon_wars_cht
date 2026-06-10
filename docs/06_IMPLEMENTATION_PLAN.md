@@ -86,7 +86,7 @@ int is_cjk_char(uint8_t first_byte);
 ```
 
 ### 驗證方式
-- 顯示「龍之戰」標題
+- 顯示「火龍之戰」標題
 - 顯示中英混合字串
 - 確認 24×24 glyph blit 正確
 
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
 ## Phase 3: SDL2 優化
 
 ### 目標
-- 視窗標題改為「OpenDW - 龍之戰中文版」
+- 視窗標題改為「OpenDW - 火龍之戰中文版」
 - 使用 `SDL_UpdateTexture` 提升渲染效率
 - 命令列參數支援
 
@@ -266,7 +266,7 @@ msgstr "治療藥水"
 ### Milestone 1：可顯示中文（5-7 天）
 - [ ] Phase 0 完成
 - [ ] Phase 1 完成
-- [ ] 顯示「龍之戰」標題
+- [ ] 顯示「火龍之戰」標題
 - [ ] 顯示中英混合字串
 
 ### Milestone 2：可執行中文版（7-10 天）

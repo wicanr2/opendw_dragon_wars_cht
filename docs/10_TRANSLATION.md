@@ -11,11 +11,12 @@
 
 ## 概述
 
-| ID | 英文 | 中文 | 來源 | 狀態 |
-|----|------|------|------|------|
+本表為遊戲文字英中對照(依 CONTEXT.md 譯名)。
 
 ## 主選單 (Main Menu) — Section 0x00
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | ONTINUE_AN_OLD_GAME | 'ontinue an old game | 載入舊遊戲 | 0x00 | ✅ |
 | S_NEW_NAME_BE | 's new name be? | 的新名字是？ | 0x00 | ✅ |
 | MENU_FOREVER | (name) will be gone forever. Have mercy. | （名字）將永遠消失。請大發慈悲。 | 0x00 | ✅ |
@@ -46,6 +47,8 @@
 
 ## 狀態文字 (Status Text) — Section 0x02
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | T_HAVE_ENOUGH_GOLD | 't have enough gold. | 金額不足。 | 0x02 | ✅ |
 | STATUS_DEAD_FULL | That character is dead. | 該角色已死亡。 | 0x02 | ✅ |
 | STATUS_OUT_OF_COMMISSION | That character is out of commission. | 該角色已無法行動。 | 0x02 | ✅ |
@@ -56,6 +59,8 @@
 
 ## 對話/劇情 (Dialogue) — Section 0x03
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | DIALOG_YOU_MAY_ONLY | "You may only enter once!" | "您只能進入一次！" | 0x03 | ✅ |
 | DIALOG_ASK_VOLUNTEERS | Ask for volunteers | 請求志願者 | 0x03 | ✅ |
 | DIALOG_COME_BACK | Come back when you are ready to face the challenge of combat! | 當您準備好面對戰鬥挑戰時再回來！ | 0x03 | ✅ |
@@ -74,6 +79,8 @@
 
 ## 物品/角色 (Item/Character) — Section 0x05
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | ITEM_DISCARD | Discard the | 丟棄 | 0x05 | ✅ |
 | DO_YOU_WISH_TO_TAKE_THEM | Do you wish to take them? | 你要拿走它們嗎？ | 0x05 | ✅ |
 | ITEM_LOAD_WEAPON | Load weapon | 裝填武器 | 0x05 | ✅ |
@@ -109,6 +116,8 @@
 
 ## 戰鬥 (Combat) — Section 0x06
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | T_RECHARGE_THAT | 't recharge that. | 無法充值那個物品。 | 0x06 | ✅ |
 | NOTHING_HAPPENS | Nothing happens. | 什麼都沒發生。 | 0x06 | ✅ |
 | THAT_DIDN_T_DO_ANY_GOOD | That didn't do any good. | 那沒有起任何作用。 | 0x06 | ✅ |
@@ -130,6 +139,8 @@
 
 ## 物品描述 (Item Desc) — Section 0x06/0x0D
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | dagger | 匕首 | DATA1 Section 0x06 | 0x06/0x0D | ✅ |
 | bow | 弓 | DATA1 Section 0x06 | 0x06/0x0D | ✅ |
 | axe | 斧 | DATA1 Section 0x06 | 0x06/0x0D | ✅ |
@@ -146,6 +157,8 @@
 
 ## 法術 (Spells) — Section 0x08
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | SPELL_BATTLE_POWER | Battle Power | 戰鬥之力 | 0x08 | ✅ |
 | SPELL_CLOAK_ARCANE | Cloak Arcane | 隱匿奧秘 | 0x08 | ✅ |
 | SPELL_CREATE_WALL | Create Wall | 創造牆壁 | 0x08 | ✅ |
@@ -171,6 +184,8 @@
 
 ## 招募 (Recruitment) — Section 0x09
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | NO_ONE_WANTS_TO_JOIN_UP | No one wants to join up. | 沒有人想加入。 | 0x09 | ✅ |
 | THE_PARTY_HAS_7_CHARACTER | The party has 7 characters already. | 隊伍已有 7 名角色。 | 0x09 | ✅ |
 | THESE_BRAVE_SOULS_WISH | These brave souls wish | 這些勇者希望 | 0x09 | ✅ |
@@ -178,6 +193,8 @@
 
 ## 商店 (Shop) — Section 0x0A
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | BUY_AN_ITEM | Buy an item | 購買物品 | 0x0A | ✅ |
 | BUY_WHICH_ITEM | Buy which item? | 要購買哪個物品？ | 0x0A | ✅ |
 | EXAMINE_WHICH_ITEM | Examine which item? | 要察看哪個物品？ | 0x0A | ✅ |
@@ -186,6 +203,8 @@
 
 ## 寶箱 (Chest) — Section 0x0B
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | GWLIAGSMDFP_ABYWHO_WILL_U | Gwliagsmdfp abyWho will unlock the chest? | 誰要打開寶箱？ | 0x0B | ✅ |
 | THE_CHEST_REMAINS_LOCKED | The chest remains locked! | 寶箱仍然上鎖！ | 0x0B | ✅ |
 | WHICH_ITEM | Which item... | 哪個物品… | 0x0B | ✅ |
@@ -194,6 +213,8 @@
 
 ## 技能/法術選擇 (Skill/Spell) — Section 0x0C
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | WHICH_ATTRIBUTE | Which attribute... | 哪項屬性… | 0x0C | ✅ |
 | WHICH_MAGIC | Which magic... | 哪種法術… | 0x0C | ✅ |
 | WHICH_SKILL | Which skill... | 哪個技能… | 0x0C | ✅ |
@@ -202,6 +223,8 @@
 
 ## 物品欄 (Inventory) — Section 0x0D
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | ARE_YOU_SURE_YOU_WANT_TO_ | Are you sure you want to throw away the | 你確定要丟掉 | 0x0D | ✅ |
 | CARRIED_ITEMS | Carried items | 攜帶物品 | 0x0D | ✅ |
 | GENERAL_OVERVIEW | General overview | 總覽 | 0x0D | ✅ |
@@ -211,6 +234,8 @@
 
 ## 法術名稱 (Spell Names) — Section 0x0E
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | ARMOR_OF_LIGHT | Armor of Light | 光明之鎧 | 0x0E | ✅ |
 | COLUMN_OF_FIRE | Column of Fire | 火柱 | 0x0E | ✅ |
 | EARTH_SUMMON | Earth Summon | 召喚大地 | 0x0E | ✅ |
@@ -229,12 +254,16 @@
 
 ## 遊戲控制 (Game Control) — Section 0x0F
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | ARE_YOU_SURE_YOU_WISH_TO_ | Are you sure you wish to dismiss | 你確定要解雇 | 0x0F | ✅ |
 | SAVING_GAME | Saving game... | 儲存中… | 0x0F | ✅ |
 | YOU_CANNOT_DISMISS_THE_LA | You cannot dismiss the last party member. | 你不能解雇最後一名隊員。 | 0x0F | ✅ |
 
 ## 神殿 (Temple) — Section 0x11
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | HOW_MUCH_HEALING_DO_YOU_W | How much healing do you wish? | 你希望治療多少？ | 0x11 | ✅ |
 | I_M_SORRY_BUT | I'm sorry but | 抱歉，但 | 0x11 | ✅ |
 | THAT_WILL_COST | That will cost | 這將花費 | 0x11 | ✅ |
@@ -242,6 +271,8 @@
 
 ## 戰鬥指令 (Combat Commands) — Section 0x12
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | DAIW_BYATTACK_STYLE | 'daiw byAttack style... | 攻擊風格…… | 0x12 | ✅ |
 | ATTACK_STYLE | Attack style... | 攻擊風格…… | 0x12 | ✅ |
 | BLOCK_ATTACK | Block attack | 格擋攻擊 | 0x12 | ✅ |
@@ -255,6 +286,8 @@
 
 ## 對話選項 (Dialogue Options) — Section 0x13
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | SCRIPT13_EXCELLENT | "Excellent!" says the guard, "And I see that you | "太好了！"守衛說，"我看到您 | 0x13 | ✅ |
 | SCRIPT13_YOU_MAY_ONLY | "You may only enter once!" | "您只能進入一次！" | 0x13 | ✅ |
 | OBC_ABYYOU_MAY_CHOOSE | 'obc abyYou may choose | 你可以選擇 | 0x13 | ✅ |
@@ -277,7 +310,7 @@
 | SCRIPT13_ENTER_ARENA | Do you wish to enter the arena? | 您希望進入競技場嗎？ | 0x13 | ✅ |
 | SCRIPT0_BEGIN_NEW | Do you wish to..\n\nBegin a new game\nContinue an old game | 您希望..\n\n開始新遊戲\n繼續舊遊戲 | 0x13 | ✅ |
 | SCRIPT0_DELETE | Do you wish to..\n\nDelete (name) | 您希望..\n\n刪除（名字） | 0x13 | ✅ |
-| UI_CONFIG_TITLE | Dragon Wars Configure Menu V1.1 | 龍之戰設定選單 V1.1 | 0x13 | ✅ |
+| UI_CONFIG_TITLE | Dragon Wars Configure Menu V1.1 | 火龍之戰設定選單 V1.1 | 0x13 | ✅ |
 | UI_DRIVE_ERR | Drive error. | 磁碟錯誤。 | 0x13 | ✅ |
 | SCRIPT03_EACH_MEMBER | Each member gets | 每位成員獲得 | 0x13 | ✅ |
 | UI_FATAL | Fatal error : Out of memory.$ | 嚴重錯誤：記憶體不足。$ | 0x13 | ✅ |
@@ -339,20 +372,28 @@
 
 ## 技能列表 (Skill List) — Section 0x14
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | AMOUNT_COST | Amount Cost | 數量 費用 | 0x14 | ✅ |
 | SKILL_AMOUNT_COST | Skill Amount Cost | 技能 數量 費用 | 0x14 | ✅ |
 
 ## 技能名稱 (Skill Names) — Section 0x15
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | MOUNTAIN_LORE | Mountain Lore | 山地知識 | 0x15 | ✅ |
 | THROWN_WEAPONS | Thrown weapons | 投擲武器 | 0x15 | ✅ |
 
 ## 遊戲結束 (Game Over) — Section 0x16
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | ALAS_YOUR_BRAVE_PARTY_HAS | Alas, your brave party has met its match! Your current adventure is over. | 哀哉，你的勇敢隊伍遇到了勢均力敵的對手！你目前的冒險結束了。 | 0x16 | ✅ |
 
 ## 腳本文字 (Script Text) — Section SCRIPT
 
+| ID | 英文 | 中文 | 來源 | 狀態 |
+|----|------|------|------|------|
 | T1016 | 's new name be? | 的新名字是？ | SCRIPT | ✅ |
 | A_BREEZE_CRAWLS_IN_FROM_T | A breeze crawls in from the harbor, bearing a sickly stench. | 一陣微風從港灣吹來，帶著刺鼻的惡臭。 | SCRIPT | ✅ |
 | A_GREAT_CHORUS_OF_VOICES_ | A great chorus of voices issues up from the west. | 一陣宏大的合唱聲從西方傳來。 | SCRIPT | ✅ |

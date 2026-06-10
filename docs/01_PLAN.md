@@ -489,7 +489,7 @@ data1 resources → extract_strings → .po 檔 → 人工翻譯 → patch_resou
 
 #### 視窗標題
 ```c
-SDL_CreateWindow("OpenDW - 龍之戰中文版", ...)
+SDL_CreateWindow("OpenDW - 火龍之戰中文版", ...)
 ```
 
 #### 渲染最佳化
