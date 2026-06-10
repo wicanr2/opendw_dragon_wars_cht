@@ -119,6 +119,8 @@ docker build -t dwtools -f tools_build/Dockerfile.dwtools tools_build/
 
 存於 `docs/scene_pictures/fullscreen_NN.png`。**DOS 版只有這 6 張全螢幕圖,全是片頭/結局過場。**
 
+> **渲染關鍵(2026-06-10 修正)**:全螢幕圖為**垂直 XOR delta 交錯格式**,渲染前必須先做 `title_adjust` 還原(對照 opendw `main.c`),否則出現紅/青交錯條紋、配色錯亂。已用 `tools_build/scene_render.py` 重渲染並與玩家提供的參考圖核對一致(Namtar 結局:青天背景 + 紅色 Namtar)。
+
 ## 七、關於「Magan Underworld」場景圖(使用者回報缺失)
 
 使用者提供的 `org_dialogue/images.jpeg`(坐姿紅衣人物 + Read paragraph 137)**不屬於上述任一類**:
