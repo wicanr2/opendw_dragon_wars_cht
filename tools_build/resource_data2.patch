@@ -1,0 +1,83 @@
+diff --git a/home/anr2/tmp/longcat/opendw/src/lib/resource.c b/src/lib/resource.c
+index 54b1a25..7a59e54 100644
+--- a/home/anr2/tmp/longcat/opendw/src/lib/resource.c
++++ b/src/lib/resource.c
+@@ -29,6 +29,8 @@
+ // 0xBC52
+ static unsigned char data1_hdr[768];
+ static struct buf_rdr *header_rdr = NULL;
++static unsigned char data2_hdr[768];
++static struct buf_rdr *header_rdr2 = NULL;
+ 
+ static struct resource allocations[128] = { 0 };
+ static struct resource *resource_load_cache_miss(enum resource_section sec);
+@@ -39,6 +41,16 @@ static unsigned char *ptr3; // 0x313E
+ #define nitems(_a) (sizeof((_a)) / sizeof((_a)[0]))
+ #endif /* nitems */
+ 
++static void load_data2_header(void)
++{
++  FILE *fp = fopen("data2", "rb");
++  if (fp == NULL) return;
++  size_t n = fread(data2_hdr, 1, sizeof(data2_hdr), fp);
++  fclose(fp);
++  if (n == sizeof(data2_hdr))
++    header_rdr2 = buf_rdr_init(data2_hdr, sizeof(data2_hdr));
++}
++
+ static int
+ load_data1_header(void)
+ {
+@@ -134,7 +146,7 @@ rm_init(void)
+   }
+ 
+   // first allocation will be saved at 0x02.
+-  return load_data1_header();
++  { int rc = load_data1_header(); load_data2_header(); return rc; }
+ }
+ 
+ void
+@@ -222,15 +234,28 @@ resource_load_cache_miss(enum resource_section sec)
+   uint16_t len;
+   int needs_decompression = 0;
+ 
++  // 判斷此 resource 在 data1 還是 data2: 讀 data1 header[sec]
+   buf_reset(header_rdr);
++  uint16_t d1val = 0xFFFF;
++  for (i = 0; i <= sec; i++) { d1val = buf_get16le(header_rdr); }
++
++  const char *fname = "data1";
++  struct buf_rdr *hdr = header_rdr;
++  if (d1val >= 0xFF00 && header_rdr2 != NULL) {
++    fname = "data2"; hdr = header_rdr2;   // 只存在 data2 的資源
++  }
++
++  // 用選定檔的 header 重新累加 offset
++  offset = sizeof(data1_hdr);
++  buf_reset(hdr);
+   for (i = 0; i < sec; i++) {
+-    uint16_t header_val = buf_get16le(header_rdr);
++    uint16_t header_val = buf_get16le(hdr);
+     if (header_val < 0xFF00) {
+       offset += header_val;
+     }
+   }
+-  len = buf_get16le(header_rdr);
+-  printf("Section (0x%02x), Offset: 0x%04x Size: 0x%04x\n", sec, offset,
++  len = buf_get16le(hdr);
++  printf("Section (0x%02x) from %s, Offset: 0x%04x Size: 0x%04x\n", sec, fname, offset,
+     (unsigned int)len);
+ 
+   struct resource* res = game_memory_alloc(len, 1, sec);
+@@ -238,9 +263,9 @@ resource_load_cache_miss(enum resource_section sec)
+     needs_decompression = 1;
+   }
+ 
+-  fp = fopen("data1", "rb");
++  fp = fopen(fname, "rb");
+   if (fp == NULL) {
+-    fprintf(stderr, "Failed to open data1 file.\n");
++    fprintf(stderr, "Failed to open %s file.\n", fname);
+     return NULL;
+   }
+ 

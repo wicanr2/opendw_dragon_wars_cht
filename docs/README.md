@@ -27,14 +27,26 @@
 | [13_TRANSLATION_SKILLS.md](13_TRANSLATION_SKILLS.md) | 技能名稱翻譯 |
 | [14_TRANSLATION_MONSTERS.md](14_TRANSLATION_MONSTERS.md) | 怪物名稱翻譯 |
 
-### 資料分析（20-24）
+### 資料分析（20-26）
 | 檔案 | 說明 |
 |------|------|
-| [20_ALL_TEXT_FROM_DATA1.txt](20_ALL_TEXT_FROM_DATA1.txt) | DATA1 所有提取文字（3926 條） |
+| [07_REVISED_PLAN.md](07_REVISED_PLAN.md) | **修正版計畫 v2**（萃取方法修正，現行計畫） |
+| [20_ALL_TEXT_FROM_DATA1.txt](20_ALL_TEXT_FROM_DATA1.txt) | ⚠️ 作廢：暴力萃取產生的雜訊（見 07） |
+| [ALL_TEXT_FROM_SCRIPTS.txt](ALL_TEXT_FROM_SCRIPTS.txt) | ✅ 乾淨的真實遊戲文字（disasm 解出） |
 | [21_DATA1_RESOURCE_INDEX.md](21_DATA1_RESOURCE_INDEX.md) | DATA1 資源索引 |
 | [22_DATA1_SECTION_DETAILS.md](22_DATA1_SECTION_DETAILS.md) | DATA1 區段詳細分析 |
 | [23_SOURCE_CODE_MAP.md](23_SOURCE_CODE_MAP.md) | 原始碼地圖（22 個檔案） |
 | [24_SCRIPT_TEXT_MAPPING.md](24_SCRIPT_TEXT_MAPPING.md) | 腳本文字映射 |
+| [25_OPCODE_INTERPRETATION.md](25_OPCODE_INTERPRETATION.md) | 虛擬 CPU opcode 判讀（繁中詳細版） |
+| [OPCODE_REFERENCE.md](OPCODE_REFERENCE.md) | **Opcode 參考（中英雙語，對外發佈版）** |
+| [26_MONSTERS_AND_SPRITES.md](26_MONSTERS_AND_SPRITES.md) | 怪物名稱 + sprite 抽取（含 DATA2 修正） |
+
+### 手冊與資產
+| 檔案 | 說明 |
+|------|------|
+| [32_EN_MANUAL_TEXT.md](32_EN_MANUAL_TEXT.md) | 英文手冊 OCR（48 頁） |
+| [monster_sprites/](monster_sprites/) | 怪物 sprite PNG（59 張，含總覽圖） |
+| [scene_pictures/](scene_pictures/) | 6 張全螢幕過場圖（片頭/結局，res 24–29） |
 
 ### 手冊與參考（30-41）
 | 檔案 | 說明 |
@@ -78,16 +90,35 @@
 
 ---
 
+## Opcode 判讀摘要 / Opcode Interpretation Summary
+
+Dragon Wars 遊戲邏輯跑在一個 256-opcode 的 script 虛擬 CPU（`engine.c` 的 `targets[]`）。判讀結果：
+
+| 項目 | 數值 |
+|------|------|
+| 總 opcode | 256（0x00–0xFF） |
+| 已實作 | 139 |
+| 未實作（NULL handler） | 117 |
+| **真正有效的未實作 opcode** | 約 **22 個**（集中在 0x02–0x9F） |
+| 文字/UI 類未實作（中文化高優先） | **4 個**：`0x79`、`0x7E`、`0x7F`、`0x8F` |
+| 原始碼殘留、非真 opcode | 0xA0–0xFF 的 ~95 個（ASM 位址呈 x86 機器碼特徵） |
+
+**關鍵結論**：先前「113 個未實作 opcode 是大工程」被高估。真正要處理的只有 ~22 個，其中與字串顯示直接相關的只有 4 個（`set_msg` 變體 0x79、角色名/格式化 0x7E/0x7F、`read_string` 變體 0x8F）。詳見 [25_OPCODE_INTERPRETATION.md](25_OPCODE_INTERPRETATION.md)（繁中）與 [OPCODE_REFERENCE.md](OPCODE_REFERENCE.md)（中英雙語對外版）。
+
+---
+
 ## 目前進度
 
 | 項目 | 狀態 |
 |------|------|
-| 反組譯還原 | ✅ 完成（52 個函式） |
-| DATA1 文字提取 | ✅ 完成（3926 條） |
-| 翻譯對照表 | ✅ 完成（437 條目，覆蓋率 98.4%） |
-| 中文手冊提取 | ⚠️ 部分完成（OCR + 索引） |
-| 實作 | ❌ 未開始 |
-| 測試 | ❌ 未開始 |
+| 反組譯還原 | ✅ 完成（52 個函式 / 139 opcode） |
+| 遊戲文字萃取 | ⚠️ 修正中：3926 條為雜訊，改以 disasm 跟 bytecode 萃取（見 07） |
+| 怪物名稱（res31） | ✅ 22 個（見 26） |
+| 怪物 sprite 抽取 | ✅ 工具完成（修正 DATA2 讀取 bug，59 張） |
+| 全螢幕過場圖 | ✅ 6 張（res 24–29） |
+| 手冊 OCR | ✅ 中文 44 頁 + 英文 48 頁；Read Paragraph 段落已定位 |
+| opcode 判讀 | ✅ 完成（25 / OPCODE_REFERENCE） |
+| CJK 渲染 / SDL2 實作 | ❌ 未開始 |
 
 ---
 
