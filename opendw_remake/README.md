@@ -22,6 +22,10 @@
 
 **R0(資產層)完成**:archive + text_codec + decompress 全數對拍 opendw 一致。
 
+| `vm/`(script 虛擬 CPU) | 🚧 R1 batch 1:VmState + dispatch + trace + 15 個純 opcode(模式/算術/旗標/jmp/call-ret/test),自測通過 |
+
+**R1 進行中**:VM 核心已立,逐 batch 補齊 256 opcode 並對拍 opendw trace(差異測試)。
+
 ## 建置(docker first)
 
 ```bash
