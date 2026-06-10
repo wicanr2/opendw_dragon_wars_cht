@@ -1,5 +1,12 @@
 # 怪物翻譯對照表
 
+> ⚠️ **大幅修正(2026-06-10)**:本檔有兩類問題,使用前務必注意:
+> 1. **§1/§4.1/§6 的 168/196/200/210/222「怪物名稱」是錯的** —— 那是 **sprite 圖形資源編號**,不是名字。
+>    真正怪物名在 **resource 31**(20+ 隻:Robber/King's Guard/Soldier/Bandit/Loon/Fanatic/Wild Dog/Giant Spider/Humbaba…)。
+>    **正解請見 `26_MONSTERS_AND_SPRITES.md`**。
+> 2. **§4.2「待確認怪物」(Skeleton/Zombie/Goblin/Dragon/Slime…)整段是 LLM 依 RPG 慣例臆測**,Dragon Wars 並無這些怪物,請忽略。
+> 譯名對齊請以 `../CONTEXT.md` 怪物表為準。
+
 ## 概述
 
 本檔案包含從 DATA1 和資源中提取的怪物名稱，以及中文翻譯。

@@ -1,5 +1,11 @@
 # DATA1 區段詳細分析
 
+> ⚠️ **部分結論錯誤(已修正)**:本檔將 section 0x08–0x16 描述為「各含上百條 text」(如 0x12=215 條、0x13=640 條),
+> 這是「逐 byte 暴力解 5-bit 壓縮」造成的滑動重複 + 亂碼假象,**非真實文字表**。
+> 真實情況:文字主體內嵌在 script bytecode(op_77/78/7b 之後),資源字串(怪物名等)在壓縮 res(如 res31)。
+> 區段地圖/壓縮機制(LZSS、offset 表)等結構性描述仍有參考價值;但**「文字數」欄一律不可信**。
+> 正解見 `26_MONSTERS_AND_SPRITES.md`、`07_REVISED_PLAN.md`。
+
 > **日期**：2026-06-09
 > **來源**：`/tmp/dw_disk1/data1`（296,439 bytes）
 > **工具**：`section_dump.cpp`（待建置）、Python `extract_sections.py`
