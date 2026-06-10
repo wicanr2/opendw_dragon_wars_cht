@@ -76,7 +76,7 @@
 
 | English | 中文(暫定) |
 |---------|-----------|
-| Wolf / Wild Dog | 野狼 / 野狗 |
+| Wolf / Wild Dog / Big Dog / Wild hound | 野狼 / 野狗 / 大狗 / 野獵犬 |
 | Spider / Rock Spider / Giant Spider | 蜘蛛 / 岩蜘蛛 / 巨蜘蛛 |
 | Guard / King's Guard / Soldier | 守衛 / 國王守衛 / 士兵 |
 | Robber / Bandit / Cannibal | 強盜 / 盜匪 / 食人者 |
