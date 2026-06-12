@@ -67,6 +67,7 @@
 | [35_SOFTWORLD_25.md](35_SOFTWORLD_25.md) | ✅ | 《軟體世界》25 期攻略轉寫 |
 | [36_SOFTWORLD_26.md](36_SOFTWORLD_26.md) | ✅ | 《軟體世界》26 期攻略轉寫 |
 | [37_SOFTWORLD_27.md](37_SOFTWORLD_27.md) | ✅ | 《軟體世界》27 期攻略轉寫 |
+| [38_SOFTWORLD_WALKTHROUGH.md](38_SOFTWORLD_WALKTHROUGH.md) | ✅ | **《軟體世界》三期攻略 · 圖文整合版**(21 掃描頁 + 逐地點事件表 + 訊息↔手冊段落擴充) |
 
 ## 參考 / 建置 / 測試 (40–60)
 
