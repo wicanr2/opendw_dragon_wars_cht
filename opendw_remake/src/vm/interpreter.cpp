@@ -53,23 +53,23 @@ void Interpreter::op3D_cmp_gs() {  // 比較 r2 vs game_state[arg],設旗標
   s_.bx = s_.ax;
   s_.cx = s_.r2;
   std::uint8_t ah = (s_.ax & 0xFF00) >> 8;
-  int cf = 0, zf = 0, sf = 0;
+  s_.cf = 0; s_.zf = 0;  // op_3D 設 cpu.cf/zf(不動 sf,故 sf 為 sticky)
   if (s_.mode != ah) {  // word 比較
     std::uint16_t cv = s_.game_state[s_.bx & 0xFF];
     cv += s_.game_state[(s_.bx + 1) & 0xFF] << 8;
-    if (s_.cx < cv) cf = 1;
-    if (s_.cx == cv) zf = 1;
+    if (s_.cx < cv) s_.cf = 1;
+    if (s_.cx == cv) s_.zf = 1;
   } else {  // byte 比較
     std::uint8_t cl = s_.cx & 0xFF;
-    if (cl < s_.game_state[s_.bx & 0xFF]) cf = 1;
-    if (cl == s_.game_state[s_.bx & 0xFF]) zf = 1;
+    if (cl < s_.game_state[s_.bx & 0xFF]) s_.cf = 1;
+    if (cl == s_.game_state[s_.bx & 0xFF]) s_.zf = 1;
   }
-  cf = !cf;  // 對照 engine.c:cpu.cf = !cpu.cf
+  s_.cf = !s_.cf;
   std::uint16_t flags = 0;
-  flags |= sf << 7;
-  flags |= zf << 6;
+  flags |= s_.sf << 7;  // sticky sf(對照 opendw)
+  flags |= s_.zf << 6;
   flags |= kReserved;
-  flags |= cf << 0;
+  flags |= s_.cf << 0;
   s_.flags = flags;
 }
 
@@ -377,17 +377,175 @@ void Interpreter::op4F_clr_gs_bit() {
 void Interpreter::op50_test_gs_bit() {
   get_bit_mask(s_.r2 & 0xFF);
   std::uint8_t al = s_.ax & 0xFF;
-  int zf = (s_.game_state[s_.bx] & al) == 0;
-  int cf = 0;
-  int sf = (s_.game_state[s_.bx] & al) >= 0x80;
+  s_.zf = (s_.game_state[s_.bx] & al) == 0;
+  s_.cf = 0;
+  s_.sf = (s_.game_state[s_.bx] & al) >= 0x80;
   std::uint16_t flags = 0;
-  flags |= sf << 7;
-  flags |= zf << 6;
+  flags |= s_.sf << 7;
+  flags |= s_.zf << 6;
   flags |= kReserved;
-  flags |= cf << 0;
+  flags |= s_.cf << 0;
   flags &= 0xFFFE;
   s_.flags &= kCarry;
   s_.flags |= flags;
+}
+
+// --- batch 3 ---
+void Interpreter::set_flags() {  // 對照 opendw set_flags(讀持久 cf/zf/sf)
+  s_.ax = (s_.sf << 7) | (s_.zf << 6) | kReserved | (s_.cf << 0);
+  s_.ax &= 0xFFFE;        // 清新旗標的 carry
+  s_.flags &= 0x0001;     // 保留舊 carry
+  s_.flags |= s_.ax;
+}
+
+void Interpreter::op2F_rcr_add_gs() {
+  s_.cf = s_.flags & kCarry;
+  s_.flags = s_.flags >> 1;
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al; s_.bx = s_.ax;
+  s_.cx = s_.game_state[s_.bx];
+  s_.cx += (s_.game_state[(s_.bx + 1) & 0xFF] << 8);
+  if (s_.mode != (s_.ax >> 8)) {
+    std::uint16_t tmp = s_.r2 + s_.cx;
+    s_.cf = (std::uint8_t)((unsigned)tmp << 16);  // opendw quirk:恆 0
+    s_.r2 = tmp;
+  } else {
+    std::uint8_t b2 = s_.r2 & 0xFF;
+    std::uint8_t tmp = b2 + (s_.cx & 0xFF);
+    s_.cf = (std::uint8_t)((unsigned)tmp << 8);    // 恆 0
+    s_.r2 = (s_.r2 & 0xFF00) | tmp;
+  }
+  s_.flags = (s_.flags & 0xFF00) | (((s_.flags & 0xFF) << 1) | s_.cf);
+}
+
+void Interpreter::op30_rcr_add_imm() {
+  std::uint8_t cf = s_.flags & kCarry;
+  s_.flags = (s_.flags & 0xFF00) | ((s_.flags & 0xFF) >> 1);
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;
+  if (s_.mode != ah) {
+    std::uint16_t ax = s_.fetch8(); ax += s_.fetch8() << 8; s_.ax = ax;
+    s_.r2 += ax;
+  } else {
+    std::uint8_t al = s_.fetch8(); s_.ax = (s_.ax & 0xFF00) | al;
+    s_.r2 += al;
+  }
+  s_.flags = (s_.flags & 0xFF00) | (((s_.flags & 0xFF) << 1) | cf);
+}
+
+void Interpreter::op31_rcr_sub_gs() {
+  s_.cf = s_.flags & kCarry;
+  s_.flags = (s_.flags & 0xFF00) | ((s_.flags & 0xFF) >> 1);
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al; s_.bx = s_.ax;
+  s_.cx = s_.game_state[s_.bx];
+  s_.cx += s_.game_state[(s_.bx + 1) & 0xFF] << 8;
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;
+  unsigned int tmp;
+  if (s_.mode != ah) {
+    tmp = (unsigned int)(s_.r2 - s_.cx);
+    s_.cf = (tmp & 0x10000) == 0x10000;
+    s_.r2 -= s_.cx;
+  } else {
+    tmp = (unsigned int)(s_.r2 - (s_.cx & 0xFF));
+    s_.cf = (tmp & 0x100) == 0x100;
+    s_.r2 -= (s_.cx & 0xFF);
+  }
+  s_.cf = !s_.cf;
+  s_.flags = (s_.flags & 0xFF00) | (((s_.flags & 0xFF) << 1) | s_.cf);
+}
+
+void Interpreter::op32_rcr_sub_imm() {
+  s_.cf = s_.flags & kCarry;
+  s_.flags = (s_.flags & 0xFF00) | ((s_.flags & 0xFF) >> 1);
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;
+  unsigned int tmp;
+  if (s_.mode != ah) {
+    std::uint16_t ax = s_.fetch8(); ax += s_.fetch8() << 8; s_.ax = ax;
+    tmp = (unsigned int)(s_.r2 - s_.ax);
+    s_.cf = (tmp & 0x10000) == 0x10000;
+    s_.r2 -= ax;
+    s_.cf = !s_.cf;
+    s_.flags = (s_.flags & 0xFF00) | (((s_.flags & 0xFF) << 1) | s_.cf);
+  } else {
+    std::uint8_t al = s_.fetch8(); s_.ax = (s_.ax & 0xFF00) | al;
+    std::uint8_t b2 = s_.r2 & 0xFF;
+    tmp = (unsigned int)(b2 - al);
+    s_.cf = (tmp & 0x100) == 0x100;
+    s_.cf = !s_.cf;
+    b2 -= al;
+    s_.r2 = (s_.r2 & 0xFF00) | b2;
+    s_.flags = (s_.flags & 0xFF00) | (((s_.flags & 0xFF) << 1) | s_.cf);
+  }
+}
+
+void Interpreter::op48_set_gs_msb() {
+  s_.flags &= 0xBF;  // clear_sign_flag()(opendw 實際清 0x40)
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al; s_.bx = s_.ax;
+  if (s_.game_state[s_.bx] < 0x80) {
+    set_gs(s_.bx, s_.game_state[s_.bx] | 0x80);
+    s_.flags |= 0x40;  // set_sign_flag()(實際設 0x40)
+  }
+}
+
+void Interpreter::op49_loop() {
+  std::uint8_t b = (s_.r4 & 0xFF) - 1;
+  s_.r4 = (s_.r4 & 0xFF00) | b;
+  if (b != 0xFF) { std::uint16_t a = s_.fetch16(); s_.pc = a; }
+  else { s_.fetch8(); s_.fetch8(); }
+}
+
+void Interpreter::op4A_loop_eq() {
+  std::uint8_t b = (s_.r4 & 0xFF) + 1;
+  s_.r4 = (s_.r4 & 0xFF00) | b;
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al;
+  if (al == b) { s_.fetch8(); s_.fetch8(); }
+  else { std::uint16_t a = s_.fetch16(); s_.ax = a; s_.pc = a; }
+}
+
+void Interpreter::op66_test_gs() {
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al; s_.bx = s_.ax;
+  s_.zf = 0; s_.cf = 0; s_.sf = 0;
+  s_.cx = s_.game_state[s_.bx];
+  s_.cx += (s_.game_state[(s_.bx + 1) & 0xFF] << 8);
+  if (s_.mode == (s_.ax >> 8)) {
+    std::uint8_t cl = s_.cx & 0xFF;
+    if (cl == 0) s_.zf = 1;
+    if (cl >= 0x80) s_.sf = 1;
+  } else {
+    if (s_.cx == 0) s_.zf = 1;
+    if (s_.cx >= 0x8000) s_.sf = 1;
+  }
+  std::uint16_t flags = (s_.sf << 7) | (s_.zf << 6) | kReserved | (s_.cf << 0);
+  flags &= 0xFFFE;
+  s_.flags &= 0x0001;
+  s_.flags |= flags;
+  s_.ax = flags;
+}
+
+void Interpreter::op9A_set_gs_ff() {
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al; s_.bx = s_.ax;
+  al = 0xFF; s_.ax = (s_.ax & 0xFF00) | al;
+  set_gs(s_.bx, al);
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;
+  if (s_.mode != ah) set_gs(s_.bx + 1, al);
+}
+
+void Interpreter::op9B_set_gs_bit() {
+  std::uint8_t al = s_.fetch8();
+  get_bit_mask(al);
+  set_gs(s_.bx, s_.game_state[s_.bx] | (s_.ax & 0xFF));
+}
+
+void Interpreter::op9D_test_gs_bit() {
+  std::uint8_t al = s_.fetch8();
+  get_bit_mask(al);
+  s_.cf = 0;
+  s_.zf = (s_.game_state[s_.bx] & s_.ax) == 0 ? 1 : 0;
+  set_flags();
 }
 
 // --- dispatch 表 ---
@@ -440,6 +598,18 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x4E] = &Interpreter::op4E_set_gs_bit;
   t[0x4F] = &Interpreter::op4F_clr_gs_bit;
   t[0x50] = &Interpreter::op50_test_gs_bit;
+  // batch 3
+  t[0x2F] = &Interpreter::op2F_rcr_add_gs;
+  t[0x30] = &Interpreter::op30_rcr_add_imm;
+  t[0x31] = &Interpreter::op31_rcr_sub_gs;
+  t[0x32] = &Interpreter::op32_rcr_sub_imm;
+  t[0x48] = &Interpreter::op48_set_gs_msb;
+  t[0x49] = &Interpreter::op49_loop;
+  t[0x4A] = &Interpreter::op4A_loop_eq;
+  t[0x66] = &Interpreter::op66_test_gs;
+  t[0x9A] = &Interpreter::op9A_set_gs_ff;
+  t[0x9B] = &Interpreter::op9B_set_gs_bit;
+  t[0x9D] = &Interpreter::op9D_test_gs_bit;
   return t;
 }();
 #undef OP

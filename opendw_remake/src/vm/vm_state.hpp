@@ -24,6 +24,8 @@ struct VmState {
   std::uint16_t r2 = 0;     // word_3AE2 主運算暫存器
   std::uint16_t r4 = 0;     // word_3AE4 次暫存器/迴圈計數
   std::uint16_t flags = 0;  // word_3AE6(見 kCarry/kZero/kSign)
+  // 持久旗標(對照 cpu.cf/zf/sf):set_flags 等會讀取上一次的值
+  std::uint8_t cf = 0, zf = 0, sf = 0;
   std::uint8_t mode = 0;    // byte_3AE1:0=8-bit,0xFF=16-bit
 
   // 256-byte 遊戲狀態(對照 game_state.unknown[])
