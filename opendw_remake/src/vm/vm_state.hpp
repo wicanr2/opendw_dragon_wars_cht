@@ -17,8 +17,8 @@ inline constexpr std::uint16_t kZero = 1u << 6;
 inline constexpr std::uint16_t kSign = 1u << 7;
 
 struct VmState {
-  // 通用 scratch(對照 cpu.ax/bx/cx/dx)
-  std::uint16_t ax = 0, bx = 0, cx = 0, dx = 0;
+  // 通用 scratch(對照 cpu.ax/bx/cx/dx/di/si)
+  std::uint16_t ax = 0, bx = 0, cx = 0, dx = 0, di = 0, si = 0;
 
   // VM 真正的暫存器
   std::uint16_t r2 = 0;     // word_3AE2 主運算暫存器
