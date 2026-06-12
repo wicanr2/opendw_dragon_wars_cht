@@ -1,15 +1,28 @@
-// trace_remake — 用 remake VM 跑與 opendw trace_harness 相同的 bytecode,輸出相同格式 trace。
-// 與 opendw 的輸出 diff = 差異測試(逐指令對拍 oracle)。
+// trace_remake — remake 側,跑與 trace_harness.cpp 相同 bytecode,輸出相同格式。
 #include <cstdio>
 #include "../../src/vm/interpreter.hpp"
 using namespace dw::vm;
 static const unsigned char prog[] = {
-  0x00, 0x09,0x2A,0x00, 0x21, 0x22, 0x4B, 0x4C, 0x99, 0x53,0x14,0x00,
-  0x09,0x63,0x00, 0x52,0x1A,0x00, 0x00,0x00, 0x09,0x07,0x00, 0x54, 0x00,0x00
+/*00*/ 0x00,              /* set_word_mode */
+/*01*/ 0x09,0x05,0x00,    /* r2=5 */
+/*04*/ 0x12,0x10,         /* gs[10]=r2 */
+/*06*/ 0x0A,0x10,         /* r2=gs[10] */
+/*08*/ 0x24,              /* r2++ =6 */
+/*09*/ 0x2A,              /* r2<<1 =0x0C */
+/*0A*/ 0x27,              /* r2-- =0x0B */
+/*0B*/ 0x38,0x0E,0x00,    /* r2&=0x0E =0x0A */
+/*0E*/ 0x3A,0x01,0x00,    /* r2|=1 =0x0B */
+/*11*/ 0x3C,0x03,0x00,    /* r2^=3 =0x08 */
+/*14*/ 0x3E,0x08,0x00,    /* cmp r2,8 -> zf=1 */
+/*17*/ 0x45,0x25,0x00,    /* jnz 0x25 (ZF set -> no jump) */
+/*1A*/ 0x4B,              /* stc */
+/*1B*/ 0x41,0x25,0x00,    /* jnc 0x25 (carry set -> no jump) */
+/*1E*/ 0x4C,              /* clc */
+/*1F*/ 0x41,0x25,0x00,    /* jnc 0x25 (carry clear -> JUMP) */
+/*22*/ 0x00,0x00,0x00,    /* skipped */
+/*25*/ 0x06,0x07,         /* r4=7 */
+/*27*/ 0x25,              /* r4++ =8 */
+/*28*/ 0x52,0x2C,0x00,    /* jmp 0x2C (end) */
+/*2B*/ 0x00               /* pad */
 };
-int main(){
-  VmState s; s.script.assign(prog, prog+sizeof(prog));
-  Trace tr; Interpreter ip(s,&tr); ip.run();
-  tr.dump(stdout);
-  return 0;
-}
+int main(){ VmState s; s.script.assign(prog,prog+sizeof(prog)); Trace tr; Interpreter ip(s,&tr); ip.run(); tr.dump(stdout); return 0; }
