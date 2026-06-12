@@ -32,7 +32,10 @@ enable_testing()
 add_executable(vm_selftest tests/vm_selftest.cpp)
 target_link_libraries(vm_selftest PRIVATE dwr_vm)
 add_test(NAME vm_selftest COMMAND vm_selftest)
-# 差異測試(對拍 opendw trace)於後續 R1 batch 接入。
+
+# 差異測試:remake VM trace,與 opendw oracle 對拍(見 tools_build/diff_trace.sh)。
+add_executable(trace_remake tools/verify/trace_remake.cpp)
+target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # 後續階段(R2+)再加入 SDL2 / freetype:
 #   find_package(SDL2 REQUIRED); find_package(Freetype REQUIRED)

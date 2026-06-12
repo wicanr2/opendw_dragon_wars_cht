@@ -74,11 +74,14 @@ s=open(eng).read()
 marker='struct op_call_table targets[] = {'
 assert s.count(marker)>=1, "engine.c marker 不存在"
 if 'static void sub_2AEE' not in s:
+    # targets[] 引用裸名 op_XX,但真實實作用不同名(opendw 半重構殘留)。
+    # 有真實實作者→別名;opendw 未實作者(43/5F/60/63)→空 stub(無 oracle)。
     shim=('// build shim\n'
       'static void sub_2AEE(){}\n'
+      '#define op_4C op_clc\n#define op_4D op_prng\n#define op_55 op_peek_and_pop\n'
+      '#define op_5B op_5B_unused\n#define op_62 op_scan_for_char\n'
       'static void op_56(void); static void op_59(void); static void op_5C(void); static void op_72(void);\n'
-      'static void op_43(void){} static void op_4C(void){} static void op_4D(void){} static void op_55(void){}\n'
-      'static void op_5B(void){} static void op_5F(void){} static void op_60(void){} static void op_62(void){} static void op_63(void){}\n')
+      'static void op_43(void){} static void op_5F(void){} static void op_60(void){} static void op_63(void){}\n')
     s=s.replace(marker, shim+marker, 1)
     open(eng,'w').write(s)
 print("shim 套用完成")
