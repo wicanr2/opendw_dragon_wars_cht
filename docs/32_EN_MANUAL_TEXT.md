@@ -1,3406 +1,1423 @@
-# Dragon Wars 英文手冊 OCR 文字
+# Dragon Wars 英文手冊文字(視覺轉寫)
 
-> ℹ️ **註**:本檔為 tesseract OCR 初稿,品質粗糙、需人工校對;但仍是**英文手冊段落文字的唯一來源**,故保留。
-> 中文手冊精確轉寫請見 `33_MANUAL_TRANSCRIPTION.md` / `34_READ_PARAGRAPHS.md`。
-
-> **來源**: `docs/en_manual_images/` (48 頁掃描影像)
-> **OCR 引擎**: tesseract 4.1.1, 語言: `eng`, 預處理: 灰階 + 二值化 + 1.5x 放大
-> **狀態**: OCR 初稿，需人工校對
-
----
-
-## Page 01
-
-- **掃描檔**: `docs/en_manual_images/page-01.png`
-- **內容**: （空白頁或圖片頁）
-
-（OCR 無有效輸出）[OCR 待校對]
+> ℹ️ **本檔已由視覺轉寫取代舊版 tesseract OCR。**
+> 由 Claude 直接「看圖」(Read 工具讀 PNG)逐頁精確重新轉寫,取代先前粗糙、含亂碼的 tesseract 輸出。
+>
+> **來源**:`docs/en_manual_images/page-01.png` ~ `page-48.png`(48 頁掃描影像)。
+> **方法**:視覺逐頁轉寫(非 OCR)。看不清的字以 `[?]` 標記,不臆造。
+> **日期**:2026-06-12。
+> **用途**:作為英文原文 oracle,與中文「Read Paragraph 段落書」`34_READ_PARAGRAPHS.md`(段落 1–147)交叉對照。
+>
+> 段落區(`## Page 20`–`## Page 42`)為遊戲防拷機制「Read paragraph N」對應的編號段落,逐段含原始編號 1–147。
 
 ---
 
-## Page 02
+## Page 1
 
-- **掃描檔**: `docs/en_manual_images/page-02.png`
-- **內容**: 說明文字頁
+(封面圖)
 
-We're very proud to present Interplay’s third game in a line of quality prod-
-ucts. Getring it right on every game is very important to us. In tact, each
-new producr we create takes | to? years to complete.
+> **Dragon Wars** ™
+> (封面繪圖:一名持斧戰士與蜥蜴龍人/龍纏鬥,女性角色在前。Boris Vallejo 繪。)
+> **Interplay** ™
 
-Our tirst game we released was entitled Neuromancer, where you assume
-the role of a computer hacker in a run-down, hi-tech city of the future.
-Neuromancer was received very well, winning numerous awards, such as
-“Best Adventure Game of the Year” from Computer Gaming World.
+---
 
- 
+## Page 2
 
-Our second release was a completely animated version of the ancient game
-ot chess, appropriately entitled Battle Chess. Battle Chess was the most
-graphic product Interplay had done, and we were quite pleased when the
-SPA awarded Battle Chess the “Best Graphics Achievement” award for 1989.
+We're very proud to present Interplay's third game in a line of quality products. Getting it right on every game is very important to us. In fact, each new product we create takes 1 to 2 years to complete.
 
-We hope Dragon Wars brings you many hours of enjoyment.
+Our first game we released was entitled *Neuromancer*, where you assume the role of a computer hacker in a run-down, hi-tech city of the future. Neuromancer was received very well, winning numerous awards, such as "Best Adventure Game of the Year" from Computer Gaming World.
+
+Our second release was a completely animated version of the ancient game of chess, appropriately entitled **Battle Chess**. Battle Chess was the most graphic product Interplay had done, and we were quite pleased when the SPA awarded Battle Chess the "Best Graphics Achievement" award for 1989.
+
+We hope **Dragon Wars** brings you many hours of enjoyment.
 
 Please write us at: Interplay Productions
 17922 Fitch Ave.
 Irvine, CA 92714
 
-Should you have any problems you can reach us al (714) 553-6678
+Should you have any problems you can reach us at **(714) 553-6678**.
 
-Rattle Chess and Dragon Wars are trademarks at Interplay Productians.
-Nevromancer ts a trademark of Cabana Boy Producttons,
-
----
-
-## Page 03
-
-- **掃描檔**: `docs/en_manual_images/page-03.png`
-- **內容**: 說明文字頁
-
-Dragon Wars
-Program: “Burger” Bill Heineman
-Designed by: | Paul Ryan O’Connor
-Brian Fargo
-Artwork by: Todd J. Camasta
-Produced by: — Brian Fargo
-Assistant Producer: — Bruce Schlickbernd
-Music by: Kurt Heiden
-Coverart: Boris Vallejo
-Design Consultant: © Steve Peterson
-Manual by: = Paul Ryan O’Connor
-
-Bill “Weezmonster” Dugan
+Battle Chess and Dragon Wars are trademarks of Interplay Productions.
+Neuromancer is a trademark of Cabana Boy Productions.
 
 ---
 
-## Page 04
+## Page 3
 
-- **掃描檔**: `docs/en_manual_images/page-04.png`
-- **內容**: 說明文字頁
+**Dragon Wars**
 
-Table of Contents
-
-INtrOdUCtiON ....cccscescestssctecetcesssessersssnesenesesses |
-ODJOCHIVE oo... cece cece ccceceerseesereceesercsrensrraneas 2
-Creating Characters ....cccccsssccccssenscesstesenessseees 2
-Character protile occ eeetceeeeeeeeeseeneees 3
-SKGLIS wc cccecsestesssscensensserscesssenssenseerseenteaesesseeee: 5
-Skill Deseriptions ....0 cocceeees ares
-Skill Use oo... cob cce cece seed eceeeeeeadeeeeessetaeeeeseees 7
-MAIC cscccscerssssssecscessssssssatseessesseseresseersrereneseess 7
-Low Magne 00 cove cece ee eeceeeeeees Y
-High Mage ....cceecccccecceesssessesserteeereeerees 10
-SUI MAXI .o...ccccceceeeceeeeeectneeeeeeeeeeetnereeeeeeea 12
-Druid Magic... cov veeeeeseeeeess 14
-Miscellaneous Magic ...ccccccceseeeerrereeees ls
-Combat oe. eeceeccseeeeeeeeeenseneacaeeetenenaneneeees 16
-Getting Around 2.0... eee csseeeseereeree besveeeeees 1?
-Paragraph Explanation ........cccseceeseeeeeeetceees 17
-TROIS 000. cecceeeceee cece eecsecneaaueeeeeeeeeesenasuanenees 18
-Dilmun Map... ceccseseseesenees secteeneees veaee LY
-
-Dragon Wars Paragraphs .....0.......: eects 20
+| | |
+|---|---|
+| Program: | "Burger" Bill Heineman |
+| Designed by: | Paul Ryan O'Connor |
+| | Brian Fargo |
+| Artwork by: | Todd J. Camasta |
+| Produced by: | Brian Fargo |
+| Assistant Producer: | Bruce Schlickbernd |
+| Music by: | Kurt Heiden |
+| Cover art: | Boris Vallejo |
+| Design Consultant: | Steve Peterson |
+| Manual by: | Paul Ryan O'Connor |
+| | Bill "Weezmonster" Dugan |
 
 ---
 
-## Page 05
+## Page 4
 
-- **掃描檔**: `docs/en_manual_images/page-05.png`
-- **內容**: 說明文字頁
+**Table of Contents**
 
-Dragon Wars
-
-INTRODUCTION
-
-Orbiany the star Sirius, millions of miles away trom any other intelligent life. a tiny ball of hot
-waters home to amacmig adventure. Sirius is three dimes the mass of our own star, and sixty
-uumes brighter; its huge bloated mass spans the cutie horizon or the humid world of Occana.
-
-Oceana is a world 85% of water and petting wetter, as the baleful fury of Simus erodes her diminu-
-uve polar ice caps vear by vear. Oceana isa warld younyer than aurown, wedded toa star with
-but a traction of the Hite exspectaney of Sol. [tis a world burning the candle ar both ends, enioving
-twice the bght in half the time, and spiiming all the taster toward annihilation and the Voud.
-
-Her surtace is dotted with ten thousand islands Some are home to thriving envilication, while
-others are all that remain of greater achievements lonp since sunk beneath the waves. Oceana is a
-violent world of capricious storms, where natural geographic harriers and hostile sea life hold
-people and cmipites apart. Inno time ot her history has Oceana known unified rule
-
-Otall the lands of Oceana, the most tabled by faras Dilimun, °The Land Where The Sun Sets”.
-Located on a score of nautical charts, cach tame ina different place, Dilmur is alwavs just over the
-horizon. [tis the home to all that ts best of Oeeana—the home of her eldest emprre: the seat of her
-finest culture; the lair orher most terrible beasts. It ts an iste ot dragons and a destinarian of
-pilgrims. Beneath Nasir, “The Mountain of Salvation”, is the secret heart or Magan, the Under:
-world
-
-As vour ddventure begins. you tind yourself aboard an armeared pilgrim ’s barge, nosiy through the
-sal! waters of a silent ford, nearing the moment you will drop the plank on an isle vou believe to
-be Dilmui. Perhaps vou are a pilgrim in search ot peace and enlightenment, or an adventurer on
-the tra ot tabled treasure, of a weary mercenary seeking retirement and eternal slumber in vaults
-held high above the waves. Hopes are high as the incredibly ancient architecture of this isle’s lone
-port swims into view. Rapture is lust atf the haw
-
-Asscturns out, Purgaton os tust oft the bow..rapture may or may not lay beyond the walls ot the
-pertcity No sooner does the pilgrim's barge enter the harbor than she is boarded by city officials.
-who quickly put all crew and passengers under arrest. Strepped ot all possessions and wealth, one
-Pilgrim in every ten is separated trom the pack for sacrifice to the Dragons. Your party among
-the tortunate remainder dropped naked and defenseless into the slums ot Purgatory, there to lare
-as sou will, The armored barge is confiscated and made a part of Dilmun’s rapidly growing navy——
-anavy that will one day sally out across the seas of Oceana, at long last bringing her beneath rhe
-heebofastngle ruler: Namtar, the Beast From The Pit.
+| | |
+|---|---|
+| Introduction | 1 |
+| Objective | 2 |
+| The party | 2 |
+| Creating characters | 2 |
+| Character profile | 3 |
+| Skills | 5 |
+| &nbsp;&nbsp;Skill Descriptions | 5 |
+| &nbsp;&nbsp;Skill Use | 7 |
+| Magic | 7 |
+| &nbsp;&nbsp;Low Magic | 9 |
+| &nbsp;&nbsp;High Magic | 10 |
+| &nbsp;&nbsp;Sun Magic | 12 |
+| &nbsp;&nbsp;Druid Magic | 14 |
+| &nbsp;&nbsp;Miscellaneous Magic | 15 |
+| Combat | 16 |
+| Getting Around | 17 |
+| Paragraph Explanation | 17 |
+| Items | 18 |
+| Dilmun Map | 19 |
+| Dragon Wars Paragraphs | 20 |
 
 ---
 
-## Page 06
+## Page 5
 
-- **掃描檔**: `docs/en_manual_images/page-06.png`
-- **內容**: 說明文字頁
+**Dragon Wars**
 
-x EYP . -
+**INTRODUCTION**
 
-Back to hasies one ot the most dangerous neighborhoods anywhere, you know only veu've been
-hak A wellontentionced raveller, you've been treated like a beast by Namrar, and consigned toa
-lite ob perpetual poverty co Purgatory. Nerone escapes Purgatory alive, and tew know the luxury to
-dig an bed wathin her walls. Starting hip-deep in nud. you must use every trek just to stay alive.
-much less worry about sacking ite The Beast From The i
+Orbiting the star Sirius, millions of miles away from any other intelligent life, a tiny ball of hot water is home to amazing adventure. Sirius is three times the mass of our own star, and sixty times brighter; its huge bloated mass spans the entire horizon of the humid world of Oceana.
 
-OBJECTIVE
+Oceana is a world 85% of water and getting wetter, as the baleful fury of Sirius erodes her diminutive polar ice caps year by year. Oceana is a world younger than our own, wedded to a star with but a fraction of the life expectancy of Sol. It is a world burning the candle at both ends, enjoying twice the light in half the time, and spinning all the faster toward annihilation and the Void.
 
-You and sour party ate adventurers i the magical land of Dtbaiua. an ostand of salvation perverted
-into warklot horror hy Namtar. You begin the game armed enty with vaur wits in the savage
-streers at Purgatory You must tind a way to survive in Qeeunas most dangerous shim, locare a
-way outobthe same. and aceept the mmpossible task of toppling Namtar. Vengeance must be
-Yours!
+Her surface is dotted with ten thousand islands. Some are home to thriving civilization, while others are all that remain of greater achievements long since sunk beneath the waves. Oceana is a violent world of capricious storms, where natural geographic barriers and hostile sea life hold people and empires apart. In no time of her history has Oceana known unified rule.
 
-Examine Vout telerence card to determine how vour mundane computer becomes a portal to the
-movstic world of Oceana Phe card will show you both how to hoot up vour game and what kevs to
-press To execute pame commands and summon various Menus. Onee the game is up and ronning,
-vou ll find a party waiting to begin the adventure en the middle of the sunking city of Purgatory.
-We'd tell vou to watch your purse but vou don't have one! Nar do vou have a belt rrom which to
-hang a purse, or pants trom which to hay a belt or.vou get the idea,
+Of all the islands of Oceana, none is more fabled by far than Dilmun, "The Land Where The Sun Sets". Located on a scene of nautical charts, each time in a different place, Dilmun is always just over the horizon. It is the home to all that is best of Oceana—the home of her oldest empire, the seat of her finest culture; the lair of her most terrible beasts. It is an isle of dragons and a destination of pilgrims. Beneath Nisir, "The Mountain of Salvation", is the secret heart of Magan, the Underworld.
 
-THE PARTY
+As your adventure begins, you find yourself aboard an armored pilgrim's barge, coursing through the still waters of a silent fiord, nearing the moment you will drop the plank on an isle you believe to be Dilmun. Perhaps you are a pilgrim in search of peace and enlightenment, or an adventurer on the trail of fabled treasure, or a weary mercenary seeking retirement and eternal slumber in vaults held high above the waves. Hopes are high as the incredibly ancient architecture of this isle's lone port swims into view. Rapture is just off the bow.
 
-Aperty can have up te tau: characters. plus up te three non-plaver characters Normplaver charac:
-ters are summoned creatives or hero individuads vou may meetin vourtraveds Fvervone else is
-one of your awn people.
+As it turns out, Purgatory is just off the bow...rapture may or may not lie beyond the walls of the port city. No sooner does the pilgrim's barge enter the harbor than she is boarded by city officials, who quickly put all crew and passengers under arrest. Stripped of all possessions and wealth, one pilgrim in every ten is separated from the pack for sacrifice to the Dragons. Your party is among the fortunate remainder dropped naked and penniless into the slums of Purgatory, there to fare as you will. The armored barge is confiscated and made a part of Dilmun's rapidly growing navy—a navy that will one day sally out across the seas of Oceana, at long last bringing her beneath the heel of a single ruler: Namtar, the Beast From The Pit.
 
-The game provides a4 begraing batch of characters for vourt use should vou wish to pump directly
-inte the adventure AU characters are able-bodied and have no brain damage: use them, or create
-vourawn Te vord ike to create vour own characters, read the “Creating Characters acetion.
-
-It may also be possible to transter characters trem other computer games into DRAGON WARS —
-check the reterence card tor deuuds. Be warned that such teaishatien is Headct. Characters seriy:
-mga thes game trom other worlds” wilh find none of ther maggie obieets and few ot their spells
-make the wourney with them,
-
-CREATING CHARACTERS
-
-When the game tires up you Tl see the names ot the detault characters displayed on the screen. It
-vou Want to create vour own characters, youll have to delete those already present to make room,
-Type the number ot the character vou want to delete and follow the screen prompts — when vou
-
-Opera space rn the pay, Che computer will offer vou the chance to create a Qew Character
+[頁碼 1]
 
 ---
 
-## Page 07
+## Page 6
 
-- **掃描檔**: `docs/en_manual_images/page-07.png`
-- **內容**: 說明文字頁
+Back to basics in one of the most dangerous neighborhoods anywhere, you know only you've been had. A well-intentioned traveller, you've been treated like a beast by Namtar, and consigned to a life of perpetual poverty in Purgatory. No one escapes Purgatory alive, and few know the luxury to die in bed within her walls. Standing hip-deep in mud, you must use every trick just to stay alive, much less worry about sticking it to The Beast From The Pit.
 
-SAI ae SAR LIAL ORF
+**OBJECTIVE**
 
-There's also an option to rename the default characters, which allows you to personalize your
-party without having to create a whole new batch of heroes.
+You and your party are adventurers in the magical land of Dilmun, an island of salvation perverted into a world of horror by Namtar. You begin the game armed only with your wits in the savage streets of Purgatory. You must find a way to survive in Oceana's most dangerous slum, locate a way out of the same, and accept the impossible task of toppling Namtar. Vengeance must be yours!
 
-The process of character creation requires yeu fo spend points to custom-design your character.
-You are provided tifty character points to spend on attributes and skills. C haracters begin with a
-default value of ten in all attributes, and have no skills. By tollowing the prompts, vou can page
-through the character creation menus to modity attributes and purchase skills.
+Examine your reference card to determine how your mundane computer becomes a portal to the mystic world of Oceana. The card will show you both how to boot up your game and what keys to press to execute game commands and summon various menus. Once the game is up and running, you'll find a party waiting to begin the adventure in the middle of the stinking city of Purgatory. We'd tell you to watch your purse—but you don't have one! Nor do you have a belt from which to hang a purse, or pants from which to hang a belt, or...you get the idea.
 
-Character creation is an art, and you'll have to experiment if you want to arrive at the “perfec”
-design [if such a thing exists! To get you started in the right direction, consider the following
-design guidelines.
+**THE PARTY**
 
-* Noone character can do it all...nor should they. While evervone will benetit trom weapon and
-magic skills, it helps it your characters specialize. It’s better ta have a character who is very good
-at samething and useless in other fields than to have one who can dea little bit of everything.
+A party can have up to four characters, plus up to three non-player characters. Non-player characters are summoned creatures or heroic individuals you may meet in your travels. Everyone else is one of your own people.
 
-@ This isa game of slow character growth. Don’t expect your characters to change very much,
-even if they earn vast amounts of experience.
+The game provides a beginning batch of characters for your use should you wish to jump directly into the adventure. All characters are able-bodied and have no brain damage—use them, or create your own. If you'd like to create your own characters, read the "Creating Characters" section.
 
-=» When buying skills tor beginning characters, it is rarely wise to purchase more than one level.
-Situations requiring skill levels of two or hagher are rare in the wane, and you'll know them when
-vou find them. If you find an instance where your skills are insufficient, vou can always pursue
-another path, then return later when you've improved the relevant skill through experience.
+It may also be possible to transfer characters from other computer games into DRAGON WARS — check the reference card for details. Be warned that such translation is inexact...characters arriving in this game from other "worlds" will find none of their magic objects and few of their spells make the journey with them.
 
-@ Finally, be aware that a character must master Low Magic before any other variety of magre
-can be learned.
+**CREATING CHARACTERS**
 
-CHARACTER PROFILE
+When the game fires up, you'll see the names of the default characters displayed on the screen. If you want to create your own characters, you'll have to delete those already present to make room. Type the number of the character you want to delete and follow the screen prompts — when you open a space in the party, the computer will offer you the chance to create a new character.
 
-See your reference card on how to view a character's profile. After a character is called up, you can
-perform a variety of functions, such as viewing statistics and managing your inventory ot gold and
-items. As with character creation, just tollow the prompts. A few minutes of hands-on experi
-menuny will show vou everything vou need to know about the character protile.
-
-Characters are represented by a series of words and numbers, the significance of which are illumi.
-nated below:
-
-STRENGTH (STRI: The most immediate ctfeet of great strength is the ability to cause additional
-damage to foes. Strength is also useful for breaking things, lifting heavy objcets, and opening
-stubborn pop botudes. High strength is required to use certain weapons: strength in excess of a
-what a weapon requires provides additional damage. Inquiring ata weapons shop will sometimes
-tell you the strength reguired to use certain weapons.
-
-DEXTLRIT Y (DEX!: A high dexterity makes vou light on your feet, Improves your chance ul
-hitting the bad guys, and diminishes the chance of getting nailed vourself. Dexterity also deter-
-mines the order in which a character acts in combat, starting with the highest dexterity and
-moving down to the lowest. Consider designing some magic-users with low dexterity, so they can
-cast healing spells at the end of a combat round.
+[頁碼 2]
 
 ---
 
-## Page 08
+## Page 7
 
-- **掃描檔**: `docs/en_manual_images/page-08.png`
-- **內容**: 說明文字頁
+There's also an option to rename the default characters, which allows you to personalize your party without having to create a whole new batch of heroes.
 
-INTELLIGENCE INT!) Ultimately, vour characters are only as intelligent as are you. This
-statistic Measures a character's abstract mmtelivence; Was important tor fearing spells and sulving
-puzzles. Intelligence also attects your chance of suceesstully hitting an opponent wath a spell.
+The process of character creation requires you to spend points to custom-design your character. You are provided fifty character points to spend on attributes and skills. Characters begin with a default value of ten in all attributes, and have no skills. By following the prompts, you can page through the character creation menus to modify attributes and purchase skills.
 
-SPIRIT SPR! On Oceana, the mundane realm is just one partot lite. Spit rethects the strength
-ofa person’s soul, and is important for casting spells and resisting evil sparits. Spirit alse deter-
-mines the number ot power points retamed by magic-users.
+Character creation is an art, and you'll have to experiment if you want to arrive at the "perfect" design (if such a thing exists). To get you started in the right direction, consider the following design guidelines.
 
-POWER ;POW) Power is dertved trom spirit, and represents spell points used for energizing magic
-spells. Once spent ona spell. power points do not naturally regenerate... you will necd to use a
-Dragonstone or tind some other means of regeneraung Power. For dis reason, power points
-should be uscd wath discretion. Power as nwice your Spurit.
+☞ No one character can do it all...nor should they. While everyone will benefit from weapon and magic skills, it helps if your characters specialize. It's better to have a character who is very good at something and useless in other fields than to have one who can do a little bit of everything.
 
-HEALTH: Health ws terntically important, tor when health 1s reduced to cero, the character dies.
-Health ean be restored onty by certain spells, recaining the services of a healer, or through use ot
-the BANDAGE skill. Death is usually permanence on Oceana, but legend holds that somewhere on
-the depths of dhe Magan Underworld can be lound the Well of Souls, within which resurreetion ts
-possible.
+☞ This is a game of slow character growth. Don't expect your characters to change very much, even if they earn vast amounts of experience.
 
-STUN: Stun is dertved trom health, and represents the ability to resist damage before a character
-tally unconscious at a stun Value of zero. Characters generally run out of stun before they run out
-ot healdh. Stun tully regenerates toHowing every melee — vou’) find yourself taking a lot of stun
-damage in the game, but it isn’t really serious untess the whole party gets stunned all at once
+☞ When buying skills for beginning characters, it is rarely wise to purchase more than one level. Situations requiring skill levels of two or higher are rare in the game, and you'll know them when you find them. If you find an instance where your skills are insufficient, you can always pursue another path, then return later when you've improved the relevant skill through experience.
 
-SEX: Male, temale, sometimes, or never.
+☞ Finally, be aware that a character must master Low Magic before any other variety of magic can be learned.
 
-EXPERIENCE: Experience points are an abstract measure of a character's activity. The more
-this a character does — the more musturs he slays, Che more secrets he discovers—the more
-expernenee pomts will be earned. Experience points translate into levels.
+**CHARACTER PROFILE**
 
-LEVEL: Levels are gained automatically as a character earns experience points. The computer
-will let you know when a character attains a new level. Initially your characters will rapidly gain
-levels, but after the fourth or fitth: level youl notice character growth is considerably sluwed.
-This is because rt requires progressively greater and greater amounts of experience to reach the
-higher levels. When vour character reaches a new level, be reccives two new character points that
-ean cither be saved or spent on skills and ateributes.
+See your reference card on how to view a character's profile. After a character is called up, you can perform a variety of functions, such as viewing statistics and managing your inventory of gold and items. As with character creation, just follow the prompts. A few minutes of hands-on experimenting will show you everything you need to know about the character profile.
 
-ARMOR CLASS |AC! This rating indicates the quality of your armor. The more and better!
-armor you wear, the more damage i can absorb betore it starts counting agaist your health and
-stun. Armor does nee make it harder tor opponents to hit vou Tt does inerease your lite expec:
-taney hy taking damage that would otherwise be taken by your skull, ribs, ete. Remember, armor
-does not contribute to your DV — it may actually reduce AV. But your AC will rise if you wear
-armor, and it will help vou survive.
+Characters are represented by a series of words and numbers, the significance of which are illuminated below:
+
+STRENGTH (**STR**): The most immediate effect of great strength is the ability to cause additional damage to foes. Strength is also useful for breaking things, lifting heavy objects, and opening stubborn pop bottles. High strength is required to use certain weapons; strength in excess of a what a weapon requires provides additional damage. Inquiring at a weapons shop will sometimes tell you the strength required to use certain weapons.
+
+DEXTERITY (**DEX**): A high dexterity makes you light on your feet, improves your chance of hitting the bad guys, and diminishes the chance of getting nailed yourself. Dexterity also determines the order in which a character acts in combat, starting with the highest dexterity and moving down to the lowest. Consider designing some magic users with low dexterity, so they can cast healing spells at the end of a combat round.
+
+[頁碼 3]
 
 ---
 
-## Page 09
+## Page 8
 
-- **掃描檔**: `docs/en_manual_images/page-09.png`
-- **內容**: 說明文字頁
+INTELLIGENCE (**INT**): Ultimately, your characters are only as intelligent as you are. This statistic measures your character's abstract intelligence; it is important for learning spells and solving puzzles. Intelligence also affects your chance of successfully hitting an opponent with a spell.
 
-ATTACK VALUE [AVI AS DEFENSE VALUE ,DV): These tactors are based on vour dexterity value
-divided by tour, and are the baste statistics mtlucncing combat. You'll want these numbers to be
-as high as possible, as they determine how often vou wall hit vour enemies with weapons and
-spells, and how often vou will be hit by the same. Some items increase or decrease AV andlor DV,
-Weapons ustially improve AV. while armor actually decreases vou combar values -- armear will
-encumber you and may impair your pertormace slightly.
+SPIRIT (**SPR**): On Oceana, the mundane realm is just one part of life. Spirit reflects the strength of a person's soul, and is important for casting spells and resisting evil spirits. Spirit also determines the number of power points retained by magic-users.
 
-Your AV as different for magical combat and weapon combat, depending on vour magical skills and
-weapon skills. These skills do amprove vour AV but the improvement is not shawn on the AV
-gauge. Forexample, Kaygletok has a Dexterity of loand a crossbow skill of band no other weapon
-skills. His base AV is 4, that’s his Dexterity divided by tour, When using a mace in combat,
-Raggletok’s AV ts 4. since he has no weapon skills to increase his combat proticiency. However,
-when using a crossbow, lis AV is 3 because of the inthuence ot the crossbow skill, Remember,
-whichever skills he may be using at the time, Dragon Wars will display only his base AV without
-skill modkfieations - modifications tor actual weapons or armor will be retlected.
+POWER (**POW**): Power is derived from spirit, and represents spell points used for energizing magic spells. Once spent on a spell, power points do not naturally regenerate...you will need to use a Dragonstone or find some other means of regenerating Power. For this reason, power points should be used with discretion. Power is twice your Spirit.
 
-SKILLS
+HEALTH: Health is terrifically important, for when health is reduced to zero, the character dies. Health can be restored only by certain spells, retaining the services of a healer, or through use of the BANDAGE skill. Death is usually permanent on Oceana, but legend holds that somewhere in the depths of the Magan Underworld can be found the Well of Souls, within which resurrection is possible.
 
-Skills reflect a character's areas ot experuse. Correct selection and use of skills is the key to
-completing the DRAGON WARS adventure.
+STUN: Stun is derived from health, and represents the ability to resist damage before a character falls unconscious at a stun value of zero. Characters generally run out of stun before they run out of health. Stun fully regenerates following every melee — you'll find yourself taking a lot of stun damage in the game, but it isn't really serious unless the whole party gets stunned all at once.
 
-Skills are detined by type and level. In mast cases a skill need not exceed level one to be usetul,
-but to complete the game certain skills will have to be higher. For instance. a single level of skall
-is pertectly adequate for most of the LORE skills. Eventually attaining two or three levels of skill
-in LOCKPICK, BANDAGE, CLIMB, and the weapons and magic skills is recommended. Skills
-alwavs begin at level one, but can be initially purchased at higher levels. or pmproved durmny play
-by the accumulauion of experienee points,
+SEX: Male, female, sometimes, or never.
 
-Teast necessary tor every Chargetor Go have eves skill) You cao divide the labor to vour advan-
-tage vou decide to have one LOCKIMICK specialise, for example, a couple of characters with
-BANDAGE skill, anda ChiMBer As long as you work asa team, specialization will help veu
-SUPVIVE.
+EXPERIENCE: Experience points are an abstract measure of a character's activity. The more things a character does — the more monsters he slays, the more secrets he discovers—the more experience points will be earned. Experience points translate into levels.
 
-SKILL DESCRIPTIONS
+LEVEL: Levels are gained automatically as a character earns experience points. The computer will let you know when a character attains a new level. Initially your characters will rapidly gain levels, but after the fourth or fifth level you'll notice character growth is considerably slowed. This is because it requires progressively greater and greater amounts of experience to reach the higher levels. When your character reaches a new level, he receives two new character points that can either be saved or spent on skills and attributes.
 
-BANDAGE: A very important skill, as healing services are scarce in Dilmun With greater skill,
-more health can be restored to an injured character.
+ARMOR CLASS (**AC**): This rating indicates the quality of your armor. The more (and better) armor you wear, the more damage it can absorb before it starts counting against your health and stun. Armor does *not* make it harder for opponents to hit you. It *does* increase your life expectancy by taking damage that would otherwise be taken by your skull, ribs, etc. Remember, armor does not contribute to your DV — it may actually reduce AV. But your AC will rise if you wear armor, and it will help you survive.
 
-CAVE LORE. Many of Dilanun’s dangerous and excsting places are found underground, and having
-thes skill may yield important information at appropriate maments.
+[頁碼 4]
 
-CLIMB: Use this skill to clamb over rocks, up into trees, and down to certain doam. Same ab-
-stacles require bigh devels ot skill to overcome,
+---
+
+## Page 9
+
+ATTACK VALUE (**AV**) & DEFENSE VALUE (**DV**): These factors are based on your dexterity value divided by four, and are the basic statistics influencing combat. You'll want these numbers to be as high as possible, as they determine how often you will hit your enemies with weapons and spells, and how often you will be hit by the same. Some items increase or decrease AV and/or DV. Weapons usually improve AV, while armor actually decreases your combat values — armor will encumber you and may impair your performance slightly.
+
+Your AV is different for magical combat and weapon combat, depending on your magical skills and weapon skills. These skills do improve your AV but the improvement is not shown on the AV gauge. For example, Raggletok has a Dexterity of 16 and a crossbow skill of 1, and no other weapon skills. His base AV is 4, that's his Dexterity divided by four. When using a mace in combat, Raggletok's AV is 4, because he has no weapon skills to increase his combat proficiency. However, when using a crossbow, his AV is 5 because of the influence of the crossbow skill. Remember, whichever skills he may be using at the time, Dragon Wars will display only his base AV without skill modifications - modifications for actual weapons or armor will be reflected.
+
+**SKILLS**
+
+Skills reflect a character's areas of expertise. Correct selection and use of skills is the key to completing the DRAGON WARS adventure.
+
+Skills are defined by type and level. In most cases a skill need not exceed level one to be useful, but to complete the game certain skills will have to be higher. For instance, a single level of skill is perfectly adequate for most of the LORE skills. Eventually attaining two or three levels of skill in LOCKPICK, BANDAGE, CLIMB, and the weapons and magic skills is recommended. Skills always begin at level one, but can be initially purchased at higher levels, or improved during play by the accumulation of experience points.
+
+It isn't necessary for every character to have every skill. You can divide the labor to your advantage if you decide to have one LOCKPICK specialist, for example, a couple of characters with BANDAGE skill, and a CLIMBer. As long as you work as a team, specialization will help you survive.
+
+**SKILL DESCRIPTIONS**
+
+**BANDAGE**: A very important skill, as healing services are scarce in Dilmun. With greater skill, more health can be restored to an injured character.
+
+**CAVE LORE**: Many of Dilmun's dangerous and exciting places are found underground, and having this skill may yield important information at appropriate moments.
+
+**CLIMB**: Use this skill to climb over rocks, up into trees, and down to certain doom. Some obstacles require high levels of skill to overcome.
+
+[頁碼 5]
 
 ---
 
 ## Page 10
 
-- **掃描檔**: `docs/en_manual_images/page-10.png`
-- **內容**: 說明文字頁
+**FOREST LORE**: Dilmun is largely a wild place, and this skill yields knowledge of how to operate in a wooded environment. This skill is important to the Druids, who inhabit the forest lands of Dilmun's wilderness.
 
-FOREST LORE. Dilmun ts largely a wild place, and thus skill vields knowledge ot how to operate
-Ina wooded environment. Lhis skill as important te the Druids, who iniabre the torest lands al
-Dilmun’s wilderness
+**HIDING**: If you can't kill something, and you can't outrun it, your only hope is to hide. Note that once you're in combat, it's too late.
 
-HIDING: It vou can't kill something, and you can’t outrun it. your only hope ts te hide. Note
-that once vou're ai combat, it’s too late,
+**TRACKER**: While your characters' mundane eating and sleeping concerns are invisibly maintained by the game, you might find it useful to hunt every now and then. Using this skill allows you to track various creatures, be they men or beasts.
 
-TRACKER: While your characters’ mundane cating, and sleepmy concerns are invisibly main.
-tained by the game, vou might find it useful to hunt every now and then. Using this skill allows
-vou to track various creatures, be they men or beasts.
+**LOCKPICK**: Valuable objects are usually locked within chests or behind doors. Seeing as how Namtar robbed you of all your worldly goods, you'll doubtless want to engage in a little first hand social reform by robbing from the rich (everyone else) to give to the poor (yourself). Knowing how to pick a lock is important to resolving your quest.
 
-LOCKPICK: Valuable ohicets are usually Jogked within chests or behind doors. Seeiy as tow
-Namtar robbed vou at all your world)ly woods, you'l} doubtless want to engage ina fietle first hand
-social retorm by robbing tram the rich jevervone cise! to give te the poor (yourself! Knowing how
-ro pick a tock is ampartant to resolving vour quest,
+**MAGIC SKILLS**: The skills of LOW MAGIC, HIGH MAGIC, DRUID MAGIC, & SUN MAGIC are required to learn spells of a specific type. Furthermore, you must have the LOW MAGIC skill before you can learn any of the others. High levels of magic skill are useful, as they determine the maximum number of power points you can invest when casting a spell — the higher your applicable magic skill level, the greater the potential of your spells. A higher level of magic skill also increases the chance your spells will accurately hit their targets.
 
-MAGIC SKILLS. The skills of LOW MAGIC, HIGH MAGIC, DRUID MAGIC, ~ SUN MAGIC
-are required te learn spells of a specahie twpe. Furthermore, you must have the LOW MAGIC skill
-hetore you ean learn any of the orhers Fliph levels af magic skill are useful, as they determine the
-maximum number of power points you can invest when casting a spell — the higher your apph-
-cable magie skill level, the greater the potential of your spells. A higher Jevel of magic skill also
-increases the chance vour spells will accurately hit cheir targets.
+**MOUNTAIN LORE**: Fabulous treasures and fearsome beasts reside in Oceana's mountainous climbs. Knowledge of the world's high mountain places might save your life.
 
-MOUNTAIN LORE: Labulous treasures and fearsome beasts reside in Oceana’s mountainous
-climbs. Knowledge ot the world’s high mountain places might save your lite.
+**FISTFIGHTING**: Adds to your ability to hit when using fists.
 
-FISTFIGHTING: Adds to vour ability to hit when using fists.
+**ARCANE LORE**: Dilmun is a magical place, and it's important to know about the world's magic, mysticism, and gods. A well-rounded sorcerer will combine magical might with arcane lore.
 
-ARCANE LORE: thilmunits a magical place, and it’s emportane te know ahout the world's magic,
-mysticism, and gads A well-rounded sorcerer will combine magical might with arcane lore.
+**BUREAUCRACY**: To liberate Dilmun from Namtar's foul grip, you will need to sway hearts and minds. To this end, skill in public speaking is important, as represented by the BUREAUCRACY skill. You might also have success using this skill on stubborn guards and petty officials.
 
-BUREAUCRACY: To liberate Dilmun trom Namntar’s foul grip, you will need to sway hearts and
-minds. To this end. skill in pubhe speaking is important, as represented by the BUREAUCRACY
-skill, You mughe also have success using this skill an stubborn guards and petty otticials.
+**SWIM**: While it is generally not possible to swim between the islands of Dilmun, this skill will help you should you find yourself unexpectedly underwater. A character who can't swim could find himself in deep water.
 
-SWIM: While itis generally not possible ra swim between the islands of Dilmun, this skill wall
-help you should vou find yaursclt unexpectedly underwater. A character who can't swim could
-nnd himself in deep water.
+**TOWN LORE**: You will visit many of the towns of Dilmun in the course of your adventures — this skill will provide you with local legends and history.
 
-TOWN LORE. You will visit many of the towns of Dilmun in the course of your adventures —
-this skill wall provide vou wath local legends and histary
+**PICKPOCKET**: Times are hard in Dilmun, but there may still be a few unwary folk that you can practice this age-old skill on.
 
-PICKPOCKET: Times are hard in Dilmun, but there may still be a tew unwary tolk that you can
-practice this age-old skill on,
-
- 
-
-fy
+[頁碼 6]
 
 ---
 
 ## Page 11
 
-- **掃描檔**: `docs/en_manual_images/page-11.png`
-- **內容**: 說明文字頁
+**WEAPON SKILLS**: You need not have the relevant skill to use a weapon, but doing so will improve your performance with the weapon in question. Each level of weapon skill adds 1 to your AV when you use that type of weapon. Note that the effects of weapon skill are not shown on the display of your AV, but rest assured the additional effects of your weapon skills are invisibly maintained by the computer.
 
-SRI FRE ICRF
+For example, if Muskela the Barbarian has a 20 Dexterity, he'll have a base AV of 5. Armed with a flail and a Flail skill of 1, his AV with the flail will be 6, but Dragon Wars will only display his AV as 5, because the effects of weapon skills are not shown on the display.
 
-WEAPON SKILLS: You need not have the relevant skill to use a weapon, but doing so will im-
-prove your performance with the weapon in question. Each level of weapon skill adds 1 to your
-AV when you use that type of weapon. Note that the effects of weapon skills are not shown on
-the display of your AV, but rest assured the additional effects of your weapons skills are invisibly
-maintained by the computer.
+When creating characters, there are several ways to get your AV up. You can either have a high Dexterity, which will increase both your AV and DV, or you can choose to add to your weapon skills, which will increase only your AV at a cheaper cost. Adding to weapon skills also restricts you to a certain weapon if you want the additional AV.
 
-For example, if Muskels the Barbarian has a 20 Dexterity, hell have a base AV of 5. Armed with a
-thail and a Flail skill of 1, his AV with the flail will be 6, but Dragon Wars will only display his AV
-as 5, hecause the effects of weapon skills are not shown on the display.
+**SKILL USE**
 
-When creating characters, there are several ways to get your AV up. You can either have a high
-Dexterity, which will increase both your AV and DV, or you can choose to add to your weapan
-skills, which will increase only your AV ata cheaper cost. Adding to weapon skills also restricts
-you toa certain weapon if you want the additonal AV.
+In some cases, merely knowing a skill will be enough to benefit from it. This is sometimes the case with the Lore skills, which yield useful bits of knowledge at the appropriate time if a sufficient level of Lore knowledge is present. If one of your characters suddenly notices an odd detail and you didn't select the USE command, then a Lore skill has been kicked in.
 
-SKILL USE
+Other skills will require that you actually use them to be effective. If you're confronted by a puzzle or obstacle which you think can be solved by skill use, select the skill you want (see the reference card) and follow the prompts. You can use items and attributes using the same prompts. If you fail, but are still convinced you've used the proper skill, you probably need a higher proficiency level in the skill in question—come back and try again after you've learned a thing or two.
 
-In some cases, merely knowing a skill will be enough to benefit from it. This is sometimes the
-case with the Lore skills, which yield useful bits of knowledge at the appropriate time if a sufti-
-crent level of Lore knowledge is present. [hone of your characters suddenly notes an add detail and
-vou didn't select the USE command, then a Lore skill has kicked in.
+**MAGIC**
 
-Other skills will require that you actually use them to be effective. If you're contronted by a
-puzzle or obstacle which you think can be solved by skill use, select the skill you want (see the
-Teterence card) and tollow the prompts. You can use items and attributes using the same prompts.
-It you fail, but are still convinced you've used the proper skill, you probably need a higher proti-
-ciency level in the skill in guestion—come back and try again after you've learned a thing or two.
+Namtar, the Beast From the Pit, is the mightiest sorcerer of Dilmun. Smart boy that he is, Namtar has manipulated King Drake of Kingshome into declaring a general ban on magic, thus giving Namtar a monopoly on this world's true power. The City States of Dilmun, none too closely allied to begin with, did not take kindly to this decree, and open warfare resulted. Spellcasting legions were chewed up in the opening weeks of the war, while conventional forces continue the struggle to this day. Namtar's Stosstrupen, a sort of magical secret police, eliminated most of Dilmun's top individual sorcerers before an effective resistance could be organized.
 
-MAGIC
+Namtar has all but won the war, and the formal practice of magic has been outlawed in Dilmun. Rumors persist that magic is still taught in secret out-of-the-way places, and it is one of your tasks to recover the world's lost magical knowledge.
 
-Namtar, the Beast From the Pit, is the mightiest sarcerer of Dilmun. Smart hoy that he is, Namtar
-has manipulated King Drake of Kingshome into declaring a yeneral ban on magic, thus giving
-Namtar a monopoly on this world’s true power. The City States of Dilmun, none too closely
-allied to begin with, did not take kindly to this decree, and open warfare resulted. Spelleasting
-legions were chewed up in the opening weeks of the war, while conventional forces conunue the
-struggle to this day. Namitar's Stosstrupen, a sort of magical secret police, eliminated most of
-Dilmun’s top individual sorcerers before an effective resistance could be orgamized
-
-Namtar has all but won the war, and the formal practice of magic has been outlawed in Dilmun.
-Ruinors persist that magic is still taught in secret out-of-the-way places, and itis one ot your tasks
-to recover the world’s lost magical knowledge.
+[頁碼 7]
 
 ---
 
 ## Page 12
 
-- **掃描檔**: `docs/en_manual_images/page-12.png`
-- **內容**: 說明文字頁
+Learning a spell always entails using magic scrolls. After a scroll is used, it vanishes forever, although the character reading the scroll will remember the spell for the rest of his life. Using scrolls is easy — finding them is the difficult part, but no one said the life of a hero was simple.
 
-Learning a spell always entails using magic scrolls. After a scroll is used, it vanishes forever,
-although the character reading the scroll will remember the spell tor the rest of his life. Using
-scrolls is easy — finding them ts the difficult part, but no one said the life of a hero was simple.
+There are four branches of magic in DRAGON WARS. All wizards must begin with Low Magic. There is no established school of Low Magic; teaching chores are handled by assorted busy wizards and holy men. Because teaching of Low Magic is so widespread — and because Low Magic is relatively mundane — Namtar has done little to shut it down. There's actually a functioning Low Magic shop in Purgatory.
 
-There are tour branches of magic in DRAGON WARS. All wizards must begin with Low Magic.
-There is no established school of Low Magic; teaching chores are handled by assorted bush wizards
-and holy men. Because teaching of Low Magic is so widespread — and because Low Magic is
-relauvely mundane — Namtar has done hte to shut it down. There's actually a tunctioning Low
-Mame shop in Purgatory.
+The acknowledged master of High Magic was Lanac'toor, a dangerously unstable being formerly in residence in the City of the Yellow Mud Toad. Lanac'toor was the Stosstrupen's first target — he was ambushed while torpid following an excessive feast of lampreys. Lanac'toor's body was first turned to stone and then smashed to pieces. With Lanac'toor's demise, the practice of High Magic all but vanished from Dilmun, but rumors persist Lanac'toor himself had a teacher, and that the teacher resides somewhere in the Eastern Isles.
 
-The acknowledged master ot High Magic was Lanac‘toor, a dangerously unstable being formerly in
-residence in the City ot the Yellow Mud Toad. Lanac’toor was the Stosstrupen’s first target — he
-wis atubushed while torpid following an excessive teast of lampreys. Lanac‘toor's body was first
-turned to stone and then smashed te pieces. With Lanae’toor’s demise, the practice ot High Magic
-al but vanished from Dalmun, but rumors persist Lanac’toor himself had a teacher, and that the
-teacher resides somewhere in the Eastern Isles.
+Oddly, Sun Magic remains public and legal. The Master of Sun Magic is Mystalvision, a great public hero in residence at the Temple of the Sun in Phoebus. Sun Magic has gained popularity in recent years as the great star Sirius gradually drowns the planet by melting the polar icecaps. Sun Magic combat spells are the most potent in the game.
 
-Qddly, Sun Magic remains public and legal. The Master of Sun Magic is Mystalvision, a great
-public hero in residence at the Temple of the Sun in Phoebus. San Magic has gained popularity in
-recent years as the great star Sinus gradually drowns the planet by melting the polar icecaps. Sun
-Magic combat spells are the mast potent in the game.
+Druid Magic is the way of the elements and the beasts, and is the purest of all magic, although not nearly so powerful as High Magic. The most skillful druid is Zaton the Displaced, of which the current whereabouts are unknown. The Druid Magic cult has been driven underground by Namtar's persecution, but worship of the cult's patron deity, the beast-man Enkidu, continues at the various Druid shrines.
 
-Druid Magic is the way of the elements and the beasts, and 1s the purest of all magic, although not
-nearly so powerful as High Magic. The most skillful druid is Zaton the Displaced, of which the
-current whereabouts are unknown. The Druid Magic cult has been driven underground by
-Namtar’s persecution, but worship af the cult’s patron deity, the heast-man Enkidu, continues at
-the various Druid shrines.
+There is one further "class" of magic in Dragon Wars; that which is called "Miscellaneous Magic." These three spells are usable by anyone who has skill in any of the four standard classes of magic.
 
-There is one further “class” of magic in Dragon Wars: that which is called “Miscellaneous Magic.”
-These three spells are usable by anyone who has skill in any of the tour standard classes of magic.
+When you cast a spell, the computer always deducts a certain number of Power points from the caster. In some cases, you'll be prompted to indicate the number of points you want to invest in a spell. In such cases, the extra points will increase the duration of the spell or its damage or effectiveness. The number of points you can invest in these spells is limited to twice your current skill level in that area of magic.
 
-When you cast a spell, the computer always deducts a certain number of Power points from the
-caster. In some cases, you'll be prompted to indicate the number of points you want ta invest ina
-spell. In such cases, the extra points will increase the duration of the spell or its damage or effec-
-tiveness. The number of points you can invese in these spells is limited to twice your current skill
-fevel in that arca of mayic.
+The following few pages contain descriptions of all the world's known spells. Although many spells are undiscovered through centuries of use, some descriptions are incomplete; because of the spells' experimental or foreign nature. And, perhaps, because some spellcasters have placed themselves in great peril by playing with forces they do not know.... Because of this, you will have to experiment with spell use to learn the best application of magic to each situation. In fact, creative use of spells may be a vital element necessary to solve the game.
 
-The following tew pages contain descriptions of all the world’s known spells. Although many
-spells are well-documented through centuries of use, some descriptions are incomplete hecanse of
-the spells’ experimental or foreign nature. And, perhaps, because some spellcasters have placed
-themselves in great peril by playing with forces they do not know.... Because of this, you will have
-to experiment with spell use to learn the best application of mnagic cach situation, In tact,
-creative use of spells may be a vital clement necessary to salve the game.
+[頁碼 8]
 
 ---
 
 ## Page 13
 
-- **掃描檔**: `docs/en_manual_images/page-13.png`
-- **內容**: 說明文字頁
+**List of Magic Spells**
+*Key to spells*
 
-Qe SF 6 OOS ROS
-List of Magic Spells
+> **SPELL NAME** — Description of the spell, miscellaneous notes, and tips on casting.
+> - Effect: Damage or other effects
+> - Range: Distance the spell can be cast
+> - Target: Who is affected by spell
+> - Time: Duration of spell
+> - Power: Power points taken
 
-Kev to spells
+Target abbreviations:
+- **Char** — 1 character
+- **Group** — 1 group of monsters
+- **Party** — Every character in your party
+- **Var** — Variable. The more points you expend, the more damage or extended time. Maximum equals 2 times your skill in that magic class.
+- **1-6 x P** — Damage shown multiplied by power points expended
+- **hr.** — Hour in the game (not real time)
+- **Combat** — Duration of entire encounter. Once one side or the other is defeated or flees, the spell ends.
 
- 
+### Low Magic
 
- 
+**MAGE FIRE** — The beginning zap spell, and always worth falling back on if nothing more powerful is at hand.
+Effect: 1-8 pts / Range: 30' / Target: 1 foe / Time: -- / Power: 2
 
-SPELL NAME
+**CHARM** — This simple enchantment offers a small bonus to a character's ability in combat, and will heal 1-2 points of damage.
+Effect: +1 AV / Range: Heal / Target: Char / Time: Combat / Power: 3
 
-Deseription of the spell.
-miscellancous notes, and
-Ups on casting
+**LESSER HEAL** — A simple heal spell, restoring up to four points of health. Heal spells are very important, because you can't use the Bandage skill in combat. Learn a heal spell if you want to survive!
+Effect: 1-4 pts / Range: Heal / Target: Char / Time: -- / Power: 2
 
-Leflect: Damage or other effects
-Range: Distance the spell can be cast
-Target: Who is affected by spell
+**DISARM** — This incantation disarms one foe--that is, if it carries a weapon. Dragons' claws not affected.
+Effect: Disarm / Range: 30' / Target: 1 foe / Time: -- / Power: 4
 
-Time: Duration of spell
+**LUCK** — If you'd rather be lucky than good, cast this spell on yourself or a friend. It improves your DV for the duration of the combat.
+Effect: +2 DV / Range: -- / Target: Char / Time: Combat / Power: 3
 
-Power: Power points taken
-
- 
-
- 
-
-Char d charactes
-
-Group oo] greupoot monsters
-
-Party Pvrry character in vou pare
-
-Var Vanable. The more paints veu expend.
-the more dantore on extended tame
-
-Maximum equals J umes vour skill in
-
-that annie class
-
-MAGE FIRE
-
-The begining zap spell ind
-dlways worth falling buck on
-nothing More powerful ts
-wand,
-
-CHARM
-
-This simple enchantinent
-offers a small bonus to a
-Characters abihits ai combat.
-and will heal 1-7 ports at
-damage.
-
-LESSER HEAL
-
-Nsumple lieal spell. restore up
-
-to four pounts of health Heal
-
-spells are vers important, because
-soucamtuse Ihe Bandage skill
-wecamabat Lean heal spell it
-
-Vu want boosuirsave!
-
-Elfect:
-Ranee:
-
-Target:
-
-‘Vime:
-Power:
-
-feltcet:
-Retenae:
-
-Target.
-
-Time:
-Power:
-
-Mifect:
-Range:
-larect’
-
-Time:
-
-Power,
-
-leOx PP Damaue shown mutophed by power
-paints expended
-he. Hour ta the sane etal crime:
-Combat Duration ubentire encounter, Onee one
-side or the other is deteated or tices. che
-spell ends
-
-Low Magic
-
-1-8 pts
-a0
-1 foe
-
->
-
-+1 AN
-Heal
-Char
-Combat
-z
-
-1-4 pts
-Heal
-Char
-
-tw
-
-DISARM
-
-This tneantation disumis ane Effect: Disarm
-toc--thatas. ait aaides a Range: 30
-Weapon. Drage claws ‘Target: 1 foe
-
-nor whected Time. --
-
-Power: 4
-
-LUCK
-
-Ho sou'd rather he lucky than Fleet: «#2 NV
-wood, cast ths spell on Range: +
-voursel ora foie lh Target. Char
-
-improves saur DN tor the Time: Combat
-
-duration of the combat Power: 3
-
-MAGE LIGHT
-
-Useful Yor exploring dark Effect: Light
-places when a mundane source Range: --
-of ightis notusandable. Tarpet: Party
-
-A toreh® toon wall appear lor
-the duration af the spell.
-
-Hime: Sariable
-Power: DP=3hr
-
- 
-
- 
-
-\)
+**MAGE LIGHT** — Useful for exploring dark places when a mundane source of light is not available. A "torch" icon will appear for the duration of the spell.
+Effect: Light / Range: -- / Target: Party / Time: Variable / Power: 1 = 3 hr
 
 ---
 
 ## Page 14
 
-- **掃描檔**: `docs/en_manual_images/page-14.png`
-- **內容**: 段落文字頁（Paragraphs）
+**High Magic**
 
-```
-AAI SS er ARLEN ESP
+#### COMBAT SPELLS
 
-High Magic
+**FIRE LIGHT** — An improved zap spell. The greater the power of the caster, the more damage this spell will do.
+Effect: 1-6 x P / Range: 30' / Target: 1 foe / Time: -- / Power: Var
 
- 
+**POOG'S VORTEX** — An improved version of Elvar's Fire, created by the arch-wizard Poog to swat away the life force of his foes.
+Effect: 4-24 pts / Range: 20' / Target: Group / Time: -- / Power: 11
 
-FIRE LIGHT
+**BIG CHILL** — An area-effect version of Ice Chill that will inflict up to 24 points of damage to all opponents within range.
+Effect: 4-24 pts / Range: 30' / Target: All / Time: -- / Power: 15
 
-Anaumproved zap spell blie fleet.
-ereater the Power ofthe Rat ee,
-easter, the more damage thts Tureet:
+**MYSTIC MIGHT** — Instant muscles for the friend of your choice, lasting for the entire combat.
+Effect: +15 Str / Range: -- / Target: Char / Time: Combat / Power: 4
 
-spell etl do.
+**COWARDICE** — Fearsome foes suddenly fear you. They will either run away, or continue to stand and fight if they resist the spell. Works best against weaker opponents.
+Effect: Foes run / Range: 60' / Target: Group / Time: -- / Power: 8
 
-POOG’S VORTEX
+**ELVAR'S FIRE** — This was Lanac'toor's favorite method of dispersing autograph seekers. While this spell doesn't pack much punch, it is an area-effect weapon, and can sometimes take out whole groups of lesser foes.
+Effect: 2-12 pts / Range: 30' / Target: Group / Time: -- / Power: 6
 
-An improved scpsion at Etlect:
-fifa ’s Bre. created ba thy Rative.
-role way d Poe tesa k Target:
-was the ie farce of firs Time:
-Haws. Power:
+**ICE CHILL** — A precise spell that usually results in a frigid death for the victim. Like the Fire Light spell, Ice Chill is power-based, and while not so potent as Fire Light for beginners, it works at greater range.
+Effect: 1-4 x P / Range: 50' / Target: 1 foe / Time: -- / Power: Var
 
-BIG CHILL
+**DAZZLE** — Use this spell to befuddle simple foes, but make sure someone is on hand to exploit your enemy's hesitation.
+Effect: Miss turn / Range: 30' / Target: 1 foe / Time: -- / Power: 3
 
-An area-etfeur version al Lifeet
-ee Chall thats tlh intiice ap Range:
-y 2} pomts of damage to all Target:
-opponent. Wathia rane. Time:
-Power:
+**REVEAL GLAMOUR** — A very important spell that will (usually) dispel illusions. All is not as it seems, especially in the Eastern Isles.
+Effect: Dispel / Range: 40' / Target: Group / Time: -- / Power: 2
 
-MYSTIC MIGHT
-
-Instant muscles forthe tren E:fect:
-Of Maur cherer. histine for Ranpe:
-the entire combat. Target,
-
-Tine:
-
-Power:
-
-COWARDICE
-
-Pearson toes suddenly tear sou. Etteet:
-
-Phos wablcrther run away. of Ieinate:
-eentinue bo stand and nghe it Tareet:
-Thes resast the spell. Warks Time.
-
-best deans Weaker apponerts,
-
-la
-
-‘Time:
-Power:
-
-Power:
-
-COMBAT SPELLS —
-
-1-6. P
-ay
-1 foe
-
-Var
-
-4-24 pis
-20)
-Group
-
-4-24 pis
-Jil
-AMl
-
-+15 Str
-Char
-Combat
-4
-
-Foes run
-ov
-Group
-
-8
-
- 
-
-ELVAR'S FIRE
-
-This was Laan tesa s Favorite fEttect.
-method ol dispersiig autog rapt Reuive,
-sevhers, While this spell dows Taruet:
-puck ead) purnode was aap rest Time:
-cheat weap and ai sormetinnes Power:
-fake ont w hole yPOHUpS ot desscr tons
-
-ICE CHILL
-
-precise spell thai usual hy pesudis Effect:
-wit forge die tth ter the wrctiny Range:
-
-torks the Fire Tasht spell tee © hall Tarset:
-
-ty power based. and while not se
-
-tentar bare Light fort Hime:
-YOLEN as Paire Lebat vr Deginers. De sagep ee
-; works at grealer many Power,
-DAZZLE
-
-Use this spell to betudale effect
-simple toes. but utake sare Kangr:
-somcone is ot lind to Target:
-eaphor SOUr ‘ He x Tine:
-
-hesttatian
-
-REVEAL GLAMOUR
-
-\veryomportant spell that Ettect;
-will tusualls } dispel illusions. Raniue:
-AID Is notas ih seems, Target:
-
-espes tilly in thy Eastern
-
-Istes
-
-VORN’S GUARD
-
-Originally deseloped te protect a Elleet:
-hint and Ins cntourage. his spell Range
-Iscvcetcnt tor parties desirmy a larget:
-blanket of magical proteetion, Time
-linproves armor class Che. damage Powe :
-
-OWT:
-
-absorhedd, but has an eftecton DV,
-
-Power:
-
-Time:
-Power:
-
-2-12 pls
-34)’
-Group
-
-h
-
-14.P
-ay’
-1 foe
-
-Var
-
-Viiss turn
-an"
-I foe
-
-3
-
-Dispel
-40
-Group
-
-Party
-Combat
-6
-```
+**VORN'S GUARD** — Originally developed to protect a king and his entourage, this spell is excellent for parties desiring a blanket of magical protection. Improves armor class (i.e. damage absorbed), but has no effect on DV.
+Effect: +2 AC / Range: -- / Target: Party / Time: Combat / Power: 6
 
 ---
 
 ## Page 15
 
-- **掃描檔**: `docs/en_manual_images/page-15.png`
-- **內容**: 說明文字頁
+**High Magic (continued)**
 
-High Magic (continued)
+#### COMBAT SPELLS
 
-COMBAT SPELLS
+**SALA'S SWIFT** — Improves the dexterity of a single character, for the duration of an entire combat. This will improve the target's AV and DV.
+Effect: +8 Dex / Range: -- / Target: Char / Time: Combat / Power: 5
 
-SALA’'S SWIFT
+#### OTHER SPELLS
 
-Iraproves the dextenins of
+**AIR SUMMON** — Conjures an air elemental for whatever lofty goal you pursue. See the "Summoning" notes in the spell listing for further information.
+Effect: Summon / Range: -- / Target: -- / Time: -- / Power: 1 = 4 hr
 
- 
+**EARTH SUMMON** — Creates a potent creature from stone and soil, under your command. The earth elemental is somewhat stronger and more durable than the air elemental.
+Effect: Summon / Range: -- / Target: -- / Time: Var / Power: 1 = 4 hr
 
-Ee ftect:
+**WATER SUMMON** — Allies a spirit of the water for a time. Water elementals are a bit more powerful and strong than earth elementals.
+Effect: Summon / Range: -- / Target: -- / Time: Var / Power: 1 = 4 hr
 
-stele character for thie Range:
-duration ef an entire combat Tarvet:
-This sathamprose the target's Time:
+**FIRE SUMMON** — Summons a fire elemental. Guaranteed to brighten up a party. The fire elemental is the most powerful known.
+Effect: Summon / Range: -- / Target: -- / Time: Var / Power: 1 = 4 hr
 
-WW oamd DV, P spope
-OWCL:
+#### HEALING SPELLS
 
-—— OTHER SPELLS
+**HEALING** — More potent than the Low Magic 'Lesser Heal' spell, this enchantment can set broken bones and stop internal bleeding.
+Effect: 1-6 pts / Range: -- / Target: Char / Time: -- / Power: 3
 
-AIR SUMMON
+**GROUP HEAL** — A group medical plan the entire party will appreciate. Restores up to six points of health to each character.
+Effect: 1-6 pts / Range: -- / Target: Party / Time: -- / Power: 6
 
-Compares an ue elemental for
-whutever lofts goal vou
-See the “Summenin”
+#### OTHER SPELLS
 
-rides atten the spell fstuaye ter
+**SENSE TRAPS** — Safely guides you past dangerous deadfalls without tripping the traps.
+Effect: Sense / Range: -- / Target: Party / Time: Var / Power: 1 = 2 hr
 
-F.lteer:
-Rane:
-pursue Tarver:
-
-Time:
-Power:
-
-EARTH SUMMON
-
-Elfect:
-
-farther nfarnighon
-
-Creates a potent creature from
-
-stone apd sort under your Range:
-command. The earth elemental Targer:
-Issomes hat songer and mor bine:
-cluntble than the ait chemeritel Power
-
-WATER SUMMON
-
-VMhtes a spirited dhe water Eeteet
-for ate Water elementals Reanec:
-wre a bib mare powerful ana Vearcet
-strong than curth elementals, Time:
-
-Power:
-Summers a tire elemental, Het:
-Guaranteed te brighter ap Reigie.
-apanty. The tire gbomental ‘Target:
-mothe most powerhal Kiwi Time:
-
-Power:
-
-+8 Dev
-Char
-Combat
-
-5
-
-Simmimen
-
-Sunimen
-
-Var
-1- 4hr
-
-Sumo
-
-Nar
-1 rT 4 hu
-
-Simmer
-
- 
-
- 
-
-~__HEALING SPELLS
-HEALING
-
-More potent than the Laws Effect:
-Miasie Lesser Heal’ spell. Rane:
-this caw bantment ean set Yareet:
-os
-
-hroken bones apd slop Time:
-
-rrnal Blegding. :
-internal blegding Power.
-A group medieal plan the Eifeet:
-
-entire paris wall appres bate,
-Restores Ape SER PES
-
-KReanige:
-Taret.
-Time:
-Power:
-
-Wd health to cach obec ter
-
-OTHER SPELLS
-SENSE TRAPS
-
- 
-
-Safely vuldes sou pitst [ctteet
-duterous deadhulbs ss ithout Range:
-
-Toppy the traps, Target
-
-Tine:
-
-Power:
-
-Renders the party partials Effect:
-invisible. diverting both Rane
-
-the lieht around vow ane larect:
-the Darce of your opponents Time:
-hha “
-
-Power.
-
-1-6 pts
-
-Char
-
-3
-
-[-6 pts
-
-.
-
-Parts
-
-b
-
-Nense
-
-Parts
-Var
-1=2hr
-
-Parts
-Nar
-}-ihr
+**CLOAK ARCANE** — Renders the party partially invisible, diverting both the light around you and the force of your opponents' blows.
+Effect: +2 AC / Range: -- / Target: Party / Time: Var / Power: 1 = 1 hr
 
 ---
 
 ## Page 16
 
-- **掃描檔**: `docs/en_manual_images/page-16.png`
-- **內容**: 說明文字頁
+**Sun Magic**
 
-PP SPILERSL AOE EES
-Sun Magic
+#### COMBAT SPELLS
 
-- ~ -——— Le
+**SUN STROKE** — The Sun Magic version of 'Fire Light.' Subtle distinctions are claimed by those familiar with both spells.
+Effect: 1-8 x P / Range: 20' / Target: 1 foe / Time: -- / Power: Var
 
-| COMBAT SPELLS:
+**RAGE OF MITHRAS** — A hideously powerful spell thankfully restricted in that it can only harm one victim at a time. Can hit an enemy up to 70 feet away.
+Effect: 1-6 x P / Range: 70' / Target: 1 foe / Time: -- / Power: Var
 
- 
+**FIRE STORM** — Simply the most hideous spell known to man.
+Effect: 6-36 pts / Range: 60' / Target: All / Time: -- / Power: 20
 
-|
-—s
+**HOLY AIM** — Sheds divine light on a melee, and guides a righteous group in smiting their foes.
+Effect: +2 AV / Range: -- / Target: Party / Time: Combat / Power: 5
 
-SUN STROKE EXORCISM
+**COLUMN OF FIRE** — Sheets of flame fall from the heavens, preventing a group of opponents from advancing during their turn in combat.
+Effect: Stops / Range: 40' / Target: Group / Time: -- / Power: 5
 
-The Sun Magig version of iHeet: T80P The undead cunnet abide Effect: 6-36 pts
-Ture bight. Subtle Runge: 20! Ihe light the sun. Range 30
-disanetiens are claimed Usual Notetle uve
+**EXORCISM** — The undead cannot abide the light of the sun. Usually. Not effective against the living.
+Effect: 6-36 pts / Range: 50' / Target: Group / Time: -- / Power: 5
 
-Target: Group
-by those Varmilia with awainst the [yas
+**WRATH OF MITHRAS** — An even more hideously powerful spell, featuring a small blast radius. Damage is lower than the Rage of Mithras, but affects a group.
+Effect: 1-4 x P / Range: 90' / Target: Group / Time: -- / Power: Var
 
-Turget: 1 foe
+**INFERNO** — An underpowered version of Fire Storm. In the hands of an experienced character, it can actually cause more damage while less power.
+Effect: 1-4 x P / Range: 40' / Target: All / Time: -- / Power: Var
 
-both M1 Time: Time: --
+**BATTLE POWER** — Significantly improves the muscle ability of any band of heroes.
+Effect: +10 Str / Range: -- / Target: Party / Time: Combat / Power: 8
 
-Wd 2 . S
-
-with spells Power: Var Powers 5S
-
-\ bideousty powertal spell Effect: l-ox1P Ag even more hideousts Etleet: f-40P
-Thank Gilly cestrrectee ra that Range: 70 powertill spell) featurine Range: 9
-Ibeanonds ham ene steum Tarpet: 1 foe aamall bhist radius. Damage Target: Group
-
-Time: dower than the Rize at hime:
-
-x | ne x ‘ ‘ vo . Tri?
-Power: Var AMlihras, but adtects a group,
-
-FIRE STORM INFERNO
-
-wa time. Can hit an enemas
-
-up to TO feet cans,
-j : Power: Var
-
-Simply the most hideous effect: 6-36 pts Anounderpos ered version al Effect: 1-40 P
-spell known do tina, Range: 60 Pires Starmy Inthe hands of Ranee: 40°
-Target: AN ad expenenced charivder tf Farset: All
-Time. ee eat actually cise mere Time: +
-
-damage while ans less paswer,
-
-Power: 20 Power. Var
-
-HOLY AIM BATTLE POWER
-
-Sheds divine Lehton a melee, Elfect. +2 4 Sienificands improves the Iffeet: +10Str
-dnd curdes a rin bloous eroup Range: - niuscie abil of anes band Range: +
-Insmuting their foes. Target: Party of heroes. Taurvet. Party
-Time: Combat Tithe. Combat
-Bower: oS Power: 8
-’
-
-COLUMN OF FIRE MITHRA’S BLESS
-Sheets of flame fall from effect: Staps Shields a group tro has Effect: 43 0)5
-the heavens, presentins Rane: 40" with a blanket blessing, Range: +
-
-a roup of Opponents fron courtess af ant dine rod.
-ad nce dure then
-
-HIM in combat.
-
-Tarect. Group Target: Party
-Time: -- Titne: Combat
-Power: & Power: 3
+**MITHRA'S BLESS** — Shields a group from harm with a blanket blessing, courtesy of an alien god.
+Effect: +3 DV / Range: -- / Target: Party / Time: Combat / Power: 5
 
 ---
 
 ## Page 17
 
-- **掃描檔**: `docs/en_manual_images/page-17.png`
-- **內容**: 說明文字頁
+**Sun Magic (continued)**
 
-Sun Mavic (continued)
+#### COMBAT SPELLS
 
-— + COMBAT SPELLS — -
+**LIGHT FLASH** — Produces a blinding flash that might disorient foes. Especially useful against underground enemies and creatures unaccustomed to the light.
+Effect: lose turn / Range: 50' / Target: Group / Time: -- / Power: 6
 
- 
+**ARMOR OF LIGHT** — Cloaks a character in gleaming magic armor proof against most attacks.
+Effect: +2 AC / Range: -- / Target: Char / Time: Combat / Power: 6
 
-LIGHT FLASH
+#### HEALING SPELLS
 
-Produees a blinding (lash that
-mivht disorient foes, Especially
-uselul against under oustd
-enemies abel oresutares
-undecustamed to the tet.
+**SUN LIGHT** — Improves the health of any one character. A simple sun light will never hurt anyone.
+Effect: 1-6 pts / Range: -- / Target: Char / Time: -- / Power: 3
 
-F:tfeor
-Range:
-Target:
-Time:
-Power:
+**HEAL** — A potent heal spell which affects one character.
+Effect: 2-8 pts / Range: -- / Target: Char / Time: -- / Power: 4
 
-ARMOR OF LIGHT
+**MAJOR HEAL** — The best value in Sun Magic heal spells works more than one character is injured. Dispenses one 'Sun Light' spell on each party member.
+Effect: 1-6 pts / Range: -- / Target: Party / Time: -- / Power: 6
 
-Cloaks a character ia
-gleaming magie armor proor
-AgaMIst most attiteks.
+#### OTHER SPELLS
 
-Elfect:
-Range:
-Target:
+**CHARGER** — The perfect pick-me-up for depleted magic items. Non-addictive.
+Effect: Charge / Range: -- / Target: 1 item / Time: -- / Power: 8
 
-Time:
+**DISARM TRAP** — Will safely trigger a trap. All you have to do is walk into a trap, and it'll safely be sprung.
+Effect: disarm / Range: -- / Target: -- / Time: Var / Power: 1 = 2 hr
 
-Power:
+**GUIDANCE** — Accurately tells you the direction you face. Very useful underground, where your friendly direction gauge is useless.
+Effect: Compass / Range: -- / Target: -- / Time: Var / Power: 1 = 3 hr
 
- 
+**RADIANCE** — The best light spell known to wizardry.
+Effect: Light / Range: 40' / Target: Party / Time: Var / Power: 1 = 2 hr
 
-HEALING SPELLS
-
- 
-
-SUN LIGHT
-
-Improves thy beulth of anys
-one Charecten A tude
-
-sun heh mes er tut
-HVE,
-
-HEAL
-
-A potent heal spell wien
-atlects one character.
-
-MAJOR HEAL
-
-Lhe best value in Sun Margie
-heal spedhs When more thinone
-Character is infured. Disperses
-one Sun Laight spell on each
-parle magmbet.
-
-ietfect:
-Rane:
-Taruet.
-Time:
-Power:
-
-Etlect:
-Raaiee:
-Tareet:
-Time:
-Power:
-
-Effect:
-Ranee:
-Tarset
-
-Hime:
-
-Power:
-
-lose turn
-x0"
-
-Group
-
-6
-
-+2 AC
-Char
-
-Combat
-6
-
-1-6 pts
-
-Char
-
-2-8 pts
-
-Char
-
-4
-
-1-6 pls
-
-Parts
-
-o
-
-OTHER SPELLS: -—
-CHARGER
-
-—
-
- 
-
- 
-
-The portect piokane-up toi Effect: Charge
-
-depleted magic itenis, Runge: --
-
-Non-agddichve Target: 1 item
-
-Time: --
-
-Power: 8
-
-Will satels trigger a trap. Eftect: disarm
-
-Albvou have to dots witlk Range. =
-
-Into we irap. und POH satels Target:
-
-he sprung Time: Var
-Power: 1=2 hr
-
-Accuratels tells you the E.tfeet: Compass
-
-direcuon vou face. Very Range: -
-
-useful undereround. where Target: +
-
-your Prendly direction eauge Time: Var
-
-Is Useless.
-
-sae Power: [= 3hr
-
-The best Lieht spell Known Ettect: Light
-
-fo wizanthind. Rane: 40°
-Target: Parts
-
-Time: Var
-
-Power: [2 hr
-
-SUMMON SALAMANDER
-
-Ether this spell eanrures it
-PUCHE ete CREEP, On I
-Wows the caster ’s skull ott
-Crsvesaicall andl feris know
-
-Effect:
-Range:
-
-Target:
-
-Time:
-Power:
-
-Summon
-
-Var
-l=4hr
-
-wo
+**SUMMON SALAMANDER** — Either this spell conjures a potent magical creature, or it blows the caster's skull off. Give us a call and let us know.
+Effect: Summon / Range: -- / Target: -- / Time: Var / Power: 1 = 4 hr
 
 ---
 
 ## Page 18
 
-- **掃描檔**: `docs/en_manual_images/page-18.png`
-- **內容**: 段落文字頁（Paragraphs）
+**Druid Magic**
 
-```
-PLIIN SS OL BEN GOEO
+#### COMBAT SPELLS
 
- 
+**DEATH CURSE** — A savage spell left over from the bad old days, designed to punch the ticket of someone you hate. Causes up to 18 points of damage to the target.
+Effect: 3-18 pts / Range: 40' / Target: 1 foe / Time: -- / Power: 6
 
-Druid Magic
+**INSECT PLAGUE** — A formidable way to weaken some monsters' defenses, and a real drag at picnics. Reduces a group's AV and DV, making them vulnerable.
+Effect: -2 AV, DV / Range: 60' / Target: Group / Time: Combat / Power: 4
 
- 
+**SCARE** — If cast at the right time, can improve your party's ability in the eyes of your foes.
+Effect: +2 AV / Range: -- / Target: Party / Time: Combat / Power: 4
 
- 
+**FIRE BLAST** — This potent spell unleashes a minor fire storm on one group of foes. Use with discretion.
+Effect: 4-24 pts / Range: 40' / Target: group / Time: -- / Power: 12
 
-DEATH CURSE
+**WHIRL WIND** — Possibly transports one or more foes away from you on a twisting cone of howling winds.
+Effect: Push 30' / Range: 40' / Target: Group / Time: -- / Power: 4
 
-Sosavage spell leftover from
-the bad old diss. desamed te
-punch the Geket of someon:
-vou tite. Causes up to bs
+**BRAMBLES** — Erects a temporary barrier of thorns between your party and a group of opponents. Use the time this gained to plan an effective attack.
+Effect: Miss turn / Range: 60' / Target: group / Time: 1 round / Power: 5
 
-Ranve:
+#### OTHER SPELLS
 
-potty at damave tothe tirect
+**CREATE WALL** — Erects a barrier of stone before the party. Also of use in repairing old buildings.
+Effect: Create / Range: -- / Target: -- / Time: -- / Power: 5
 
-INSECT PLAGUE
+**BEAST CALL** — This holy spell of Enkidu is used in secret Druid rituals.
+Effect: Summon / Range: -- / Target: -- / Time: Var / Power: 1 = 4 hr
 
-A tormidable way to weaker! Effect
-SOME Monsters de lenses, Range:
-und a read) dru tL pHenics, Target:
-Reduces a group’s AN anid Time:
-DSN. making them sudnerable Peeceesaee
+**SOFTEN STONE** — A very powerful spell popular with civil engineers. Useful for underground construction and removing certain walls.
+Effect: Remove / Range: -- / Target: -- / Time: -- / Power: 6
 
-- Power:
-[TP cast atthe fight time. can iEetfeet:
-
-\ , ‘ . ’ :. 7
-HMprese Vour parte s ability Ranet
-
-ithe eves ad var tues. Target:
-
-apeet:
-
-The.
-
-Power:
--
-
-Hiteer:
-
-Taruer:
-Tite:
-Power:
-
-318 pts
-4t)'
-I foe
-
-6
-
--2ANLDS
-60'
-Group
-Combat
-
-4
-
-+2 AV
-Parts
-Combat
-4
-
-- COMBAT SPELLS —
-
-]
-
-FIRE BLAST
-
-This potent spell unleashes
-Amnon fire ston on ang
-
-Fifer:
-Range:
-wrouprot foes. (sg wath Target:
-
-Tirne:
-Power:
-
-lise veto
-
-WHIRL WIND
-
-Possibly transports one ar
-
-Eifean,
-
-more toss awas fre you Range:
-Ont wishing cane of Target:
-
-. ~ .
-howling winds. Time:
-
-Power:
-
-BRAMBLES
-
-Breeds a temporary barrier ol Eltect:
-
-thoens between sein parts Range:
-vind sronp at opponents ‘Vareect
-Cesc the fame thins sained ta Tine:
-phin an etleetise athick, Power:
-
-OTHER SPELLS |
-
- 
-
-CREATE WALL
-
-Ereots a barr ad stone Keifeen
-
-befene the party. Alo ot use Range:
-mi tepamimy old burkdings Varese:
-Time:
-
-Power:
-
-Vhis holy spellor Enktdu is Effect:
-used ae secret Drurd rituals, Range:
-‘Varvet:
-
-Time:
-
-Power:
-
-Create
-
-Summon
-
-Var
-J=4hr
-
- 
-
-SOFTEN STONE
-
-Aver. powerlul spell popular Effect:
-wath oaibeneineers. Csehul Range:
-for underground construction Taree:
-and femes ing ceria wah. Time:
-
-Power:
-
-WOOD SPIRIT
-
-Creates ahelphulalfs fom Effect:
-wood and bramble: Range:
-Target:
-
-Tinie:
-
-Power:
-
-4-24 pts
-uy
-group
-
-12
-
-Push 30'
-4)
-Group
-
-4
-
-Miss turn
-fol)’
-
-group
-
-I round
-
-s
-
-Remove
-
-Summon
-```
+**WOOD SPIRIT** — Creates a helpful ally from wood and bramble.
+Effect: Summon / Range: -- / Target: -- / Time: Var / Power: 1 = 4 hr
 
 ---
 
 ## Page 19
 
-- **掃描檔**: `docs/en_manual_images/page-19.png`
-- **內容**: 說明文字頁
+**Druid Magic (continued)**
 
-AeeFe2 LBP OPE ey IRL RIF
+#### HEALING SPELLS
 
-Druid Mavic (continued)
+**GREATER HEALING** — Uses natural energies to rejuvenate and heal the wounds of any one character.
+Effect: 1-6 pts / Range: -- / Target: Char / Time: -- / Power: 4
 
--| HEALING SPELLS + — - | OTHERSPELLS - -
+**CURE ALL** — The most powerful and efficient healing spell that ancient Druid learning has devised.
+Effect: 1-8 pts / Range: -- / Target: Party / Time: -- / Power: 6
 
-GREATER HEALING INVOKE SPIRIT
+#### OTHER SPELLS
 
-Lives natural energies te Etlect: 1-6 pts Supimoas a tricnd)s spurit i Etfeet: Summon
-rejuvenate and heal the Range: + and sedi bathe See the Ranee:
-wounds of ans one character, Tareet: Char restrictions and features Tarvet: +
-Time: deseribed in the Sumimenimng hime: Var
-Spells section.
-Mower: pelle sector Power, |= 44ir
+**INVOKE SPIRIT** — Summons a friendly spirit to aid you in battle. See the restrictions and features described in the "Summoning Spells" section.
+Effect: Summon / Range: -- / Target: -- / Time: Var / Power: 1 = 4 hr
 
-CURE ALL
+---
 
-The nest powerful ind Etleet. 1-8 pts
-efficent healing spell that Rane: --
+**Miscellaneous Magic**
 
-anecrnt Druid learning has.
+**ZAK'S SPEED** — Named for a sorcerer of long ago, a nifty spell that improves the Dexterity of all characters in the party.
+Effect: +15 Dex / Range: -- / Target: Party / Time: Combat / Power: 10
 
-Target Party
-devised.
+**PRISON** — Pins a group of foes beneath the weight of a magical barrier, preventing them from advancing or running away.
+Effect: Halt / Range: 60' / Target: Group / Time: Combat / Power: 8
 
-Time:
-Power: 6
-
- 
-
-Miscellaneous Magic
-ZAK'S SPEED KILL RAY
-
-Named fora sorcerer of long Effect: +148 Dex Courtesy of the demented Etlect: 10-80 pts
-
-wee. nls spell that auproses Rane - Cran Stratikenhor out ol Range: 30"
-
-the Durxterin of all chiang ters Target: Party centunies past, dis deadls Target: 1 foe
-
-mm the parts. Tine: Combat beam WH waste any thing ut Time:
-Power. 10 strikes. Beware the terrible Power: 13
-
-costol this spell. is ie gan
-
-quigkts diana weak a
-PRISON wean wrsard
-
-Pins a sroup of foes beneath Etlect: Halt
-the weight of a magical Rane. 60°
-
-humier, presenting them fren
-
-Tareet. Group
-ads APSE OT TUPI ASS IN,
-
-Tune: Combat
-Power: &
+**KILL RAY** — Courtesy of the demented Czar Strakhenhov; out of centuries past, this deadly beam will waste anything it strikes. Beware the terrible cost of this spell, as it can quickly drain a weak or weary wizard.
+Effect: 10-80 pts / Range: 50' / Target: 1 foe / Time: -- / Power: 15
 
 ---
 
 ## Page 20
 
-- **掃描檔**: `docs/en_manual_images/page-20.png`
-- **內容**: 說明文字頁
+A note on spell icons: The computer shows you that certain spells (most notably the light spells) are active by displaying an appropriate icon on the screen. When the icon vanishes, the spell has run out of juice and is no longer active. In the case of light spells, this usually results in the sudden onset of darkness. In the case of detect spells, it means you're no longer likely to detect danger at a distance.
 
-A note on spell icons) The computer shows you that certain spells (most notably the light spells!
-are active by displaving an appropriate icon on the screen. When the icon vanishes, the spell has
-run out of juice and is no longer active. Inthe case of Light spells, diis usually resules in the
-sudden onset of darkness Por the detect spells, ip means you're no danger bkely to deteet danger
-ata distance
+Monster Summoning: A word is warranted on the subject of conjuring up creatures from other locales or dimensions for use in combat. Several High Magic and Druid Magic incantations bring forth creatures of this sort to do your bidding. All of these spells have some things in common: you must have an open character slot in your party to accommodate the summoned creature. You should also be aware that summoned creatures do not last forever, and will eventually return to the magic worlds from which they appeared, leaving a lifeless husk behind. The more Power points you invest in summoning a creature, the longer you can expect it to stick around. Finally, the lengthy and precise summoning spells cannot be cast in combat. Although summoned creatures come complete with their own armor and weaponry, you may be able to equip them with any items you choose.
 
-Monster Summoning: A word is warranted on the subiect of conjuring up creatures trom other
-Jocales or dimensions for use up combat. Several Hid) Masic and Druid Magic incantations bring
-torth creatures of this sort to do your bidding. Allot these spells have some things in commen:
-vou must have an open character slot in your party to aecammodate the summoned creature You
-should also be aware that summoned creatures do not last forever. and will eventually return to
-the magic worlds tram which they appeared, leaving a liteless husk behind. The more Power
-points vou invest i summoning a creature, the longer vou can eapect it to suck around. Finally,
-the lengthy and preeise summoning spells cannot be cast in combat. Although summoned crea-
-tures come complete with ther own armor and weaponry. you may be able ta equip them wath
-any items vou choose,
+**COMBAT**
 
-COMBAT
+Unless you're willing to roll over and die, you're going to have to fight. Fortunately, you have lots of options during combat, and if you exhibit the proper mix of prudence and courage you should emerge victorious more often than not.
 
-Unless vou're willing to rolbover and dic, you're going to have to dight. Fortunately, vou have lots
-of opuons durtay combat, and if you exhibit the proper mix of prudence and courage you should
-emerge Victorious more often than noc.
+You'll know a fight is brewing when a picture of some nasty being appears on the screen. The computer will tell you what you've encountered, and set the range at which the encounter begins. You'll have to close to within ten feet of the enemy before you can enter hand to hand combat, but spells and missile weapons can be used at varying ranges.
 
-You l) know a fight is brewing when a picture of some nasty being appears on the screen. The
-computer will call vou what vou've encountered, and set the range at which the encounter beyins.
-You'll have to close to within ten deect of che enemy betore vou can enter hand to hand combat, but
-spells and missile weapons can be used at varying ranges,
+When facing a battle you can always run away, but it's more fun to fight. The game offers you two types of combat: Quick Fight and Fight.
 
-When facing a batth: you can always run away, bucie’s more fun to tight. The game offers yeu two
-types of combat: Quick Fight, and Fight.
+Quick Fighting gives you more limited combat options to speed encounters along.
 
-Quick Fighung wives vou more limited combat options to speed encounters along.
+If you choose Fight, instead of Quick Fight, you have a few more options. First off, you'll have the option of striking a normal blow (just like the quick fight option), a mighty blow (reduced chance of hitting, but improves damage done to the target), or a disarm blow (try to knock your opponent's weapon away without doing much damage). You also have a chance to rearrange your party, which is important if one or more characters have been incapacitated or killed — only the first four characters in the party order can actually fight in hand-to-hand combat. Finally, you can attempt to block, which improves your DV against the attack of a single foe.
 
-Hf vou choose Fight. instead of Quick Fight, vou have a tew more options. First otf, you'll have the
-option of striking a normal biow jjust like the quick tight option), a mightly blow [reduced chance
-of hitting, but improves damage done to the target, or a disarm blow (try to knock vour
-opponent's Weapon away without doing much damagel. You also have a chance to rearrange your
-party, which 1s important if one or more characters have heen incapacitated or killed — only the
-first four characters in the party order can actually tight in hand-to-hand combat. Finally, you can
-attempt to block, which improves your DV against the attack of a single toe.
-
-In cither type of combat, you alwavs have the option to use an item, man jshame on yeu!!, dodge, or
-east a spell, Dodging is sumilar to blocking, but it works against all enemies in the combat and ts
-less effective.
-
- 
-
-16
+In either type of combat, you always have the option to use an item, run (shame on you!), dodge, or cast a spell. Dodging is similar to blocking, but it works against all enemies in the combat and is less effective.
 
 ---
 
 ## Page 21
 
-- **掃描檔**: `docs/en_manual_images/page-21.png`
-- **內容**: 說明文字頁
+Note that if you run from an encounter, the computer will actually run you across the map you are on for several moves. If you return to the scene of your battle, don't be surprised if you run into the same enemies again. Just because you turned tail doesn't mean the bad guys are going to pack it in!
 
-PSS ORI ROR FF
+**GETTING AROUND**
 
-Note that tt vou run from an encounter, che computer will actually run vou across the map vou
-are on for several moves it vou return to the scene of your defeat, don't be surprised if vou run
-into the same enemies again. fust because vou turned tat] doesn’t mean the bad guys are voing to
-pack wu!
+The computer simulates the perspective view available to your characters. Think of the computer as a window into the world of DRAGON WARS. Check your reference card for specifics on how navigate around the world.
 
-GETTING AROUND
+If you lose track of where you are, or want to develop a dangerous case of tunnel vision, try using the automap feature. (See your reference card for how to invoke automap.) You'll call up a top-down view of your character's present position, showing exactly where you are in relation to the local terrain. Black areas on the map represent areas you haven't explored yet — you must actually move through a square with your party to fill it in on the automap. Black areas that you cannot reach may indicate secret adventure areas worthy of further investigation. Then again, they may be solid rock.
 
-The computer simulates the perspective view availible to your eharacters. Think at the eompurer
-as a window to the world of DRAGON WARS. Check vour reference card tor specifics on how
-navigate around the world.
+Speaking of secret stuff, you'll find plenty of it in the game. Secret doors are indistinguishable from normal walls...until you walk through them. Clever use of the automap may reveal where secret doors "should" be. You'll know a locked door when you bump into it — try battering the door down with strength, or maybe use your lockpick skill. The game also features exotic and rare one-way doors, teleporters, spinners, and...well, find out for yourself.
 
-It vou lose rack of where vou are, or stare to develop a dangerous case of canned vision, uy
+**PARAGRAPHS EXPLAINED**
 
-using the Jutomap feature, See your reference card for how toinveke autemap.' You'll call up a
-top-down view af vour character's present position, showing exactly where vot are in relation te
-the local terrain. Black areas on the map represent areas you haven't explored yet — you must
-actually move through a square with sour party to Hil it in on the auramap. Black areas that you
-cannot reach may iaidiedte secret adventure areas worthy of turther rvestigadon. Then again,
-they May be solid rack.
+Frequently you will be instructed by the computer to read a certain numbered paragraph. The paragraphs are printed in the paragraph text section of this manual (see page 20), and supplement the briefer on-line text present in the program. Paragraphs frequently elaborate on the information provided by the computer, but are an important source of clues and are not to be overlooked.
 
-Speaking of seeret stuth you Tl) find plenty of iin the same Seeret doors are indistingaiishoble
-trom normal walls..unul vou walk through them. Clever use of the automap may reveal where
-secret doors “should” be. You'll know a locked door when vou bump into tt trv battermme the
-door dewa with serength, on unavbe use vour lockpick skill. The gate also teatures exatie and rare
-one-way doors, tedleparters, spinners, and. well, find out fer yourself.
+You'll greatly increase your enjoyment of the game by only reading those paragraphs to which you are specifically referred by the game. "Reading ahead" could spoil some of the surprises that await you in DRAGON WARS. Don't try to read the paragraphs consecutively, as they are printed out of order and will prove confusing.
 
-PARAGRAPHS EXPLAINED
-
-frequently you will be instructed by the computer to read a certam numbercd paragraph. he
-paragraphs are printed in the paragraph text seetion of this manual yee pase: TUL and supplement
-the beter on-line text present in the program. Paragraphs trequently claborate on the intormation
-provided by the computer, but are an important source ot clues and are not te be overlooked.
-
-You'H greathy mercase vou enjoviment of the game by only reading those paragraphs to which vou
-are specifically reterred by the game" Reading ahead’ could sporf some cd the surprises that await
-von DRAGON WARS. Don't try te read the paragraphs consecutively, as they are printed out
-at order and will prove contusing,
-
-Ultimately, vou put down vour tard carted cash for thas game, and you can of course de what vou
-damn well please with the paregraphs. Llowever, should vou use the paragraphs asa dree “cheat
-hook” beware the wrath of Namtar.and be advised cvertam paragraphs are pure va-va that wall da
-nothing to mmpreve your performance in the game. Intact. acting on all gotten information could
-prove hazardous to vour health. You have been warned.
-
- 
-
-J
+Ultimately, you put down your hard earned cash for this game, and you can of course do what you damn well please with the paragraphs. However, should you use the paragraphs as a free "cheat book", beware the wrath of Namtar...and be advised certain paragraphs are pure ya-ya that will do nothing to improve your performance in the game. In fact, acting on ill-gotten information could prove hazardous to your health. You have been warned.
 
 ---
 
 ## Page 22
 
-- **掃描檔**: `docs/en_manual_images/page-22.png`
-- **內容**: 說明文字頁
+**ITEMS**
 
-ITEMS
+Almost as important as your attributes, spells, and skills are the items you will discover during your quest. An item is anything you can pick up. A very few items are worthless, but everything else you find, buy, or steal in DRAGON WARS could be important to completing the game.
 
-Almost as important as your attributes. spells, and skills are the items vou wall discover during
-yourguest Anitemis anything you can pick up A very few items are worthless. bit everything
-else you tind, buy, or steal in DRAGON WARS could be impeartant to completing the game.
+Simple items are things like weapons (used to do mayhem to the bad guys) and armor (used to prevent the bad guys from doing the same to you). Magic armor and weapons can also be found in Dilmun — and there are no cursed magic items. Certain weapons could actually decrease your AV, but this means they're harder to use, not that they are imbued with evil magic. As Muskela the Barbarian said of his Crush Mace, "Yeah, it was harder to swing, but boy did it crack skulls!"
 
-Simple items are things ike weapons fused to do mayhem to the bad guys! and armor jused to
-prevent the bad guys trom doing the same ta vou. Magic armor and weapons can also be found in
-Dilmun — and there are no cursed mage items. Certain weapons could actually decrease your
-AV, but this apeans they re harder to use, not that they are uobucd with evil magic. As Muskels
-the Barbarian sard of his Crush Mace, "Yeah. it was harder te swing, but bow did it crack skulls!”
+The use of many items may not be immediately obvious. Sometimes you will need to discover secret knowledge or clues to determine what to do with an item. Other times an item may be useful only in some part of the world you have not discovered. Keep track of the items your party carries, and try to use them in novel ways. The secret to item use is to consider all the things an item can do...if you find a Key, it is probably used to open a lock. If you haven't yet found a lock, remember you have a key, and keep your eyes open for locked doors or chests as you explore. No character can carry more than twelve items.
 
-The usc of many items mav not be ammediately obvious. Sometumes you will need to discover
-seeret knowledge or clues to determine what te do with an item. Other times an item mav be
-usetul onty in some partot the workd vou have nor discavered Keep track of the items your party
-caries, aid tes boouse them ain novel ways. The secret to item use is ta consider all che chings an
-item can de.at you tind a kev, itis probably used to open a lock. Lf vou haven't vet found a lock,
-remember vou have a key, and keep your eves open for locked doors or chests as you explore No
-character can carry more than twelve items.
+IMPORTANT: If you "discard" an item, it is gone forever...and along with it may go your only hope of solving the game, so manage your items carefully.
 
-IMPORTANT: It vou ‘discard’ an trem, iis gone forever.and along with i¢may eo vour only
-hope of solving the game, se manage veur meas carefully.
+The various stores in Dilmun can only keep certain mundane, plentiful items in stock, there is high demand for the unusual. If you find unique items during your adventure and sell them to a store, they will be sold to other adventurers, and you cannot buy them back.
 
-The various stores in Dalmun can only keep certain mundane. plentitul ems in stock, there is
-high demand for the unusual. Hoyou tind unique items during your adventure and sell them toa
-store, they wall be sold to other adventurers, and vou cannot buy them back,
+To use an item, follow your reference card's instructions on the "Use" command, and follow the menus. Select the item you want to use and give it a try. The worst that will happen is you'll look silly, and most of the time no one is looking anyway. Actually, that's not exactly true. Some magic items have limited uses. Once you've shot up an item's charges it usually cannot be recharged, so a certain amount of resource management should be applied to item use.
 
-feuse anaitem, tollow vour reference card's instructions on the “Use” command, and tellew the
-menus Select the item: vou want to use and give ita try. The worst that will happen os you'll
-look silly, and most of the time no one is looking anyway. Actually, that’s not exactly truce. Some
-magic items have limited uses. Once you've shot up an item's charges it usually cannot be re
-charged, soa certain amount of resource management should be applied to teem use.
+**A FINAL NOTE**
 
-A FINAL NOTE
+DRAGON WARS is as much a story as a game. To complete your quest you must pay careful attention to your environment, and realize you are in the middle of a fully developed fantasy world. Very little happens in this game without a reason. Take note of details, consider what motivates your enemy, and keep your eyes open. Finally, don't be afraid to take control of your own life. You are the hero of this saga, and without you there is no adventure.
 
-DRAGON WARS is as much a story asa game. To complete your quest you must pay caretul
-attuntion te your environment, and realize you are im the middle ot a fully developed fantasy
-world. Very little happens in this game without a reason, Take note of details, consider what mo-
-livates your cnenty, ad Keep your eves open. Finally, doa’t be afraid to take contro! of vour own
-Inte. You are the hero of this saga, and without vou there is ne adventure,
-
-Good tuck.
-
-IX
+Good luck.
 
 ---
 
 ## Page 23
 
-- **掃描檔**: `docs/en_manual_images/page-23.png`
-- **內容**: 說明文字頁
+**HOLIDAY GUIDE TO OCEANA AND DILMUN, THE LAND WHERE THE SUN SETS**
 
-HOLIDAY GUIDE TO OCEANA AND DILMUN,
-THE LAND WHERE THE SUN SETS
+"Dilmun" is the name used to refer to the group of islands where the DRAGON WARS adventure is set. Collectively, Dilmun is viewed by the residents of the planet Oceana as a place of salvation and retirement. Under Namtar's foul rule, this formerly fair land has been twisted into a place of ruin and death. In better times, the Navigational Guild compiled this map of Dilmun for the benefit of pilgrims.
 
-“Dhilmun as the name used to reter to the group of ishinds where the DRAGON WARS adventure
-isset Collectively, Dilmun is viewed by the residents of the pliner Oceana as a place of sabvarron
-and retirement. Under Naimtars toul rule. this termerly tam land has been twisted inte a place at
-rum and death. [In better tunes. the Navigational Guild computed this map of Dilmun tor the
-bennett at pilvaiis,
+> (地圖,標示地名:Kingshome、Byzanople、Nisir、Lansk、Necropolis、Phoebus、Mud Toad、Purgatory、Ruins、Forlorn、Quag、Trust Island、Kings Island、Isle of the Sun)
+
+[頁碼 19]
 
 ---
 
 ## Page 24
 
-- **掃描檔**: `docs/en_manual_images/page-24.png`
-- **內容**: 說明文字頁
+**Dragon Wars Paragraphs**
 
-PSI ES a ORY, ESSE
-Dragon Wars Paragraphs
+1) In this dark chamber are warehoused several sculptures of decidedly inferior quality. Mostly they are crude attempts at busts, or full-figure nudes of decidedly pornographic intent. Whoever produced these disasters, it could not have been the same artist that created the rest of the artwork you've seen on the estate.
 
-Vodrettes dank Ghaenter ere were ftcuaecd scecng sculpiges at fecdedis untecnergiadins  Mschoorhes are crude arternpes
-wobusts or tull-nyure nudes ot dvcdedi pormovraphie ment Whoever produced these disaster. pt could noc have been
-the same artist that created the restat the artieark vesu ye secon che qstats
+2) Renewed by the fruit of your sacrifice, the vampire lord emerges from the tomb. "You have awakened me, and for this I am in your debt," he lisps. "Do not presume to command me, however. You have not obtained the Silver Wheel, and until you do, my soul is my own!"
 
-     
+The Lord of the Undead vanishes, leaving behind only an oily cloud of smoke, and the bucket of deep-fried jumbo shrimp. Back to the drawing board.
 
-2 Renewed by che tru of your sterttice the varnpre dont emerces trom the tomb You have awakened me and nea the
-Fomor ven: debt he laps coDoonet prosaume teeaeiunagd ai fewaver You diac met obtained the Suve: Wheel, and
+3) This is a shrine to the dark lady Irkalla, queen of Magan, the underworld of Oceana. Of all the structures in this area, this is the best preserved. Simple offerings of weeds and rocks lay before Irkalla, indicating some residents of this world worship the dark queen.
 
-SINT Satnkiade) my smubas my ooawn!
+Irkalla's image is blasted from bronze. She seems serene and confident, with a terrible sort of beauty lurking in her fierce countenance. The black pits of her eyes stare at you without emotion. Here is a deity to be feared — perhaps also to be loved.
 
- 
+4) You stand before the gate to Purgatory's great public arena. Bloodthirsty residents of the Dilmun interior come here to enjoy the spectacle of outlander scum such as yourselves fighting to the death on the floor of the arena.
 
-Pe hondatthe tiadied sanashes. Genoa Gebeadoah ag orly Cloud on snoke aad the nuckeropdeep raed rinebe shri
+A guard swaggers up to you. He is clad in the trappings of authority — fine armor, a weather-beaten harness, well-oiled weapons. "Oy there, you filthy street scum," the guard growls. "You look fit enough to hold a weapon. Why not haul your butt into the arena and make yourself useful?" Why fight for another man's pleasure when life in Purgatory is a daily struggle for survival? You're about to turn away when the guard lays a heavy hand on your shoulder and adds, "You'll get your choice of arms...and if you defeat your foe, which I doubt, you might win Papers of Citizenship. Namtar help me — heathen dogs like you living in Dilmun! I don't like it, but the law is the law."
 
-Bagh perio diswing bated
+5) With distance you discover the source of the foul odor. Before you is a low structure, not so much a building as an odd series of stone slabs leaning against one another. Some ancient stonemason identified this place with a legend carved into the rock: "Morgue." A more recent hand has added its own opinion: "The way out, chumps!"
 
- 
+The stench of the dead is overpowering, but sensing there's something important about this place, you hang around on the fringes and observe the routine. Sallow work gangs of malnourished slaves, themselves more dead than alive, slowly carry corpses from the building and stack them in sloppy piles. You dimly wonder what crime or heresy landed these poor souls a job as slaves in a city of criminals.
 
-Vo Thisaashrme tothe dark lads (hatha queen of Magan the underwerdldot Oceans ral) ths structures in this ares
-this ae the best preserved Spmipho etter et woods did rocks fas hetero drkalla ondieatiog same tesadents cf this weld
-wetship he dark qucen
+From time to time additional corpses are brought here by the more tidy citizens of Purgatory. These are deposited in the house or stacked in the piles without seeming purpose. After a time, several of the slaves bundle one or more corpses into a crude canvas sack and hurl the bundle over the wall. Distantly, you think you hear a splash. You judge you're near the harbor wall — are the dead of Purgatory hurled into the waters of the city's harbor?
 
- 
+It occurs to you a living man could lay with the dead, and journey with them in a sack over the wall and to freedom in the harbor beyond. How far do the sacks of corpses fall? Are they really tossed in the harbor, or do they tumble into a well? Could you escape from a bag of cadavers before it sank to the bottom of the sea, maybe forever mired in muck and weeds? Perhaps the overpowering smell of this place is starting to get to you. Or perhaps this is your ticket out.
 
- 
-
-tehellis pace us based toms pron Sdie sta sens Rend orden acti a terble semtot bots larkine ue ter tetas
-beskathle *Gailee The hha k puts es beat LGN Sth Qt Verbs 48 there rarmiabsamp Bases Sd aberty bee [ee toared perhiagis also cie te
-
-loved
-
-MYou stand betore the gute fe Pureaters screat publi grena Bloeddhirsty readent. ot the Diimun intern come here te
-entoy the epocticbe ot cutiander scum suchas vourselses tadhtting tethe dearkoon the floor ut the arena
-
-Sard swangersup de sea Pfeastadi phy tuppines opsurherity ore apa aowearher beater hartess we blethkd
-weapibs, "OX then vou iddasy stieet stump othe wuatd crewwds You dook ta crouch ce tiolda weapon Whos oot haul
-yotrema apd make vourrse bp uschal’ Whe tehtter another mans pleasure wher btu: Mursatury isa
-
-L
-
- 
-
-  
-
-vena burtoamties
-cheb Stross tea sursisl? Yours ahve teturcoss ay whe tin sid Less dices sy diateb ar veart stuauleber cond adds
-
-Youth ger vour chee at aams candar ven: derese veut coe bid Pdeube vouch wor Papers of Cionstip. Nuns
-Help ame -- heathen dew he vow diseme in Diloan? baden t like tr but the tay is the Liss
-
-    
-
-SO Wath distaste yeu discover the source et the toul odor Botere Sours a dow structure met oeomush a burda as an odd
-sortos Hf stone slabs damn against ome anothar. Same ancicaestopemasen idoncied this piace worh a legend carved pte
-
-thoverk OMurgee (A cmere recent hand hus added cava opioon: The was cat. t hagmps!”
-
-Tie stonchoor the dead is sverpowermng, bit sensing there s seaneching unportint abet this place, sau bang around on
-the tinges and observe the roueme  Sallow werk gangs of malnourished slaves, chemselves more dead chan alive study
-cate corpses trom die building and stack cheatin sfopps piles You dumiy wonder what enme or heress Landed these
-Powe sedis ateb as staves an a catscot criminals
-
-Prom tame teams additional compecs ar brought hor bs the mere tify crazens ef Purgatory Phuse are deposited im the
-house orstacxedin the mies wither scamming purpose. Atrora cine severab ob the shaves bundle one or more cotpscs nth
-Wovide cama sak and deebehe buadho over die sail Onsrcidy vou chink vou heard splash Yououdas voter pean che
-Tiatlyar wall we he lead ot Porgaiers baled sien the waters et dle cits’s harbor?
-
-Thoceam te vou living man could day with the dead. amd pumey wath them toa sack over che wall and te freed on the
-harber bevand How nde the sacks or comses fll Are chevy reatly tussed inthe barber, or do thew mimble ite a well’
-Could vou escape tremtabatit cadavers beter itsank te the bottom of the sea. maybe forever mired in muck and weeds
-Porhaps the overpowering smell op this place as starting fo get toyed Or perhaps this ts vour aeket cnt
-
- 
-
- 
-
-20
+[頁碼 20]
 
 ---
 
 ## Page 25
 
-- **掃描檔**: `docs/en_manual_images/page-25.png`
-- **內容**: 段落文字頁（Paragraphs）
+6) Here you find a simple wilderness shrine, tended by a lonely druid. He welcomes you to his temple, saying the place of worship is open to all.
 
-```
-—
+The shrine is earthen and natural. The walls seem rooted in the depths of the earth, the rock seems alive with animal spirit, the very air is crisp and sweet. You see that the patron deity of this shrine is the man-animal Enkidu. "He is the god of beast-men and man-beasts," the druid explains. "He respects only the strong and pure, to whom he will grant a powerful boon. Before Namtar's purge, the god was in residence in this forest, where he presided over a vast druid colony. Now Enkidu is gone, the brotherhood is broken, and knowledge of our magic is lost."
 
-6l Here you tind a simple wilderness shrine, tended by a lonely dnud. He welcomes you to his temple, saying the place
-ot worship ts open to all
+7) You secure yourself in a bag full of only slightly stinking corpses and wait patiently. Someone sews the bag up as you lie motionless. After some moments, you hear a throaty voice call, "Oy, new! Run yer sword throo them bogs, that! You 'membar wot hopp'nd last week! We don't want any mar escayps now, do we!" You are bound and helpless!
 
-The shrine ts earthy and natural The walls seem rooted in the depths of the earth. the rock seems alive with animal
-spint, the very airis crisp and sweet. You sce that the patron deity of this shrine 1s the man anima! Enkidu. “He us the
-god of heast-men and man-heasts,” the druid explains. “He respects only the strong and pure, to whom he will grant a
-powertul boon Refore Namtar’s purge, the god was in residence in this torest, where he presided over a vast druid colony.
-Now Frkidu is gone, che brotherhuod is broken, and knowledge of aur magic is Jost”
+8) A great cry of joy goes up as you debase yourself. In a city of criminals, what shame is there in going native! Just to make you feel at home, the beggars beat you steadily for a week. Properly initiated into the world of mendacity, you eventually are set free to wander the streets of Purgatory, better understanding if not entirely fond of the city's lowest class of citizens.
 
-7 You secure yourself in a bag tull uf only slightly stinking corpses and wait pauently. Someone sews the bag up as you
-lie mationless. After some moments, you hear a throaty voice call, “Oy, yew! Run yer sword throa them bogs, thar! You
-‘membar wot hopp’nd last week! We don’t wont any mar escayps now, do we?” You are bound and helpless!
+9) A statue of Namtar, the Beast From The Pit, dominates this dirty city square. You carefully examine the statue, trying to memorize the features of the villain who exiled you to Purgatory. You struggle in vain. The citizens of Purgatory, themselves no less fond of Namtar, have taken it out on his image—the nose is broken, limbs are chipped, and the mouth is deformed beyond all recognition.
 
-&' A great cry of joy goes up as you debasc yourself. In a city of criminals, what shame its there in going native? Just to
-make you teel at hame, the hegpars beat you steadily fer a week. Properly initiated into the world uf mendacity, you
-eventually are set iree co wander the streets of Purgatory, better understanding at not entirely fond of the caty’s lowest
-class ol Gruzens.
+As you watch, a wild beggar spits on the statue. "Filthy face of stone!," she mumbles. "Lay down with lizards he did, that stone face lies as much as he!" The poor mad creature wanders off, still spitting and mumbling, leading you to wonder if a similar fate awaits you in the months to come.
 
-o A statue of Namuar, the Beast From The Pit, dominates this dirty city square. You carefully examine the statue, trying
-to memorize the features of the villain who exiled you to Purgatory. You struggle in vain. The citizens of Purgatory,
-themselves no less fond of Namtar, have taken it out on hiss image—the nose is broken, limbs are chipped, and the mouth
-1s deformed dcyond all recogmtion.
+10) This back-alley building is in remarkably good repair. Curious, you enter, and recognize the interior of a modestly-appointed magic shop. A wizened gnome of a man springs from behind the counter and scurries up to you. "Mercy, mercy me...customers! Bless me, customers at last!"
 
-As you watch, a wild begpar spits va the statue. “Filthy face of stune!," she mumbles. “Layed dowu with Luards he did,
-that stune face lies as much as he!” The poor mad creature wander off, sull spitting and mumbling, leading you to
-wonder if a similar fate awaits you in the months to come.
+The old man is insane but friendly. He explains all high magic has been outlawed by order of Namtar, but instruction in the low arts is still permitted in isolated regions. He is eager to teach you what he knows, and will in fact refuse a fee, preferring to teach for the simple joy of it. Unfortunately, the old man knows little useful magic.
 
-{G1 Phas back-alley building 1s in remarkably good repair. Curious, you center, and recognize the interior of a modcstly-
-appointed magic shop. A wizened gnome of a man springs from behind the counter and scurmics up to you. "Mercy,
-merey me customers’ Bless me, customers at Laett”
+11) Try as you might, you just can't get your nose to remain on your face. That Namtar sure has an odd sense of humor.
 
-The old man as insane but trendly. He explains all high magic has been oudawed by order of Namear, but instruction in
-the low arts is sul permitted in isolated regions, He is eager to teach you what he knows, and will in fact refuse a fee,
-preferring to teach for the simple ‘ov of it. Unfortunately, the old man knows little useful magic.
+12) Just ahead you see a bridge. The bridge is covered and armored doors bar the way across. The bridge appears to be the only way to cross the water and reach the land beyond. A pack of guards lounge before the entrance to the bridge. As you appear, they snap to attention. A guard with a narrow forehead and small eyes approaches you.
 
-tl]! Sivas you might, vou nest can’t get your nose to remain on your face. hat Namtar sure has an odd sense of humor.
+13) You're in the middle of the bridge. Although the bridge is covered, you can hear water rushing beneath you. It is astonishingly loud.
 
-13! fuss ahead veu see a bridge The bridge is covered and armored doors bat the way across The bridge appears to be the
-only way tacross the water and reach the land beyond. A pack of guards lounge before che entrance to the bridge. As you
-appear, they snap to attention. A guard with a narrow forehead and small eyes approaches you.
+The bridge is longer than it appeared from the outside. You recognize now that even a good swimmer would find it impossible to swim from one strand to the next. This bridge is the only way across.
 
-13] Youre in the middie at the bridge. Although the bndge is covered, you can hear water rushing beneath you. [tis
-astonishingly loud
+14) Your knowledge of city lore serves you well. This place isn't so much a city as a prison. The streets are unpaved and evidently double as an open-air sewer system. Many of the city's structures are buildings only in the loosest sense of the word—several have holes in the roof (or no roof at all), others have been gutted by fire. Everything is damp, showing this city is little different from any other on Oceana...the thing on level is eroding the land upon which the city is located, and it is slowly sinking. Doubtless those buildings that have basements will be at least hip-deep in water. Graffiti is scrawled on walls everywhere, generally curses directed at Namtar and crude pornographic renderings of all the species of Oceana. In all, Purgatory is an ugly place you would do well to leave as soon as possible.
 
-The bridge ts Jonger than tc appeared from the outside, You recognize now that cycn a good swimmer would find it
-impossible te swim trom onc island to the next. This hridge is the only way across.
-
-14) Your knowledge of crty lore serves you well. This place isn't so much a city asa prison. The surcets are unpaved and
-evidently double as an open-air sewer system. Many of the city’s structures are buildings only in the loosest sense of the
-word—several have holes in the roof {or no roof at all}, others have heen gutted by fire. Everything is damp, showing this
-erty us little ditterent trom any other on Oceana...the rising »ea level is eroding che land upon which the city 1s located,
-and tis slowly sinking. Doubtless those buildings that have hasements will be at least hip-deep in water. Graffiti is
-scrawled on walls everywhere, generally curses directed at Namtar and crude pornographic renderings of all the species of
-Oceana In all) Purgatory is an ugly place you would do well to leave as soon as possible.
-```
+[頁碼 21]
 
 ---
 
 ## Page 26
 
-- **掃描檔**: `docs/en_manual_images/page-26.png`
-- **內容**: 段落文字頁（Paragraphs）
+15) The guards retire a few steps and converse in low tones when you show them the ring. One of them approaches nervously. "We're King's men, you know. We don't want any trouble." He shuffles his feet and won't look you in the eye. "We just went along with...with everyone else. You have seen the King!" He frowns when you answer. "That ring means you're on King's business, so you can pass...but if anyone asks, we never saw you. Understand?"
 
-```
-PASI OER ESE
+You pass into the city. The guards still won't look you in the eye.
 
-185) The guards retire a few steps and converse in low tones when you show them the ring. One of them approaches
-nervousdy. “We're King’s men, you know. We don’t want any trouble. He shuffles his feet and won't look you in the
-eve, “We just went along with...with evervene else. You have scen the King!” He trowns when vou answer. “That ing
-means you're on King’s business, so you can pass..but if anyone asks. we never saw you. Understand?”
+16) Before you is a tumble-down collection of huts. A group of ill-clad unfortunates are gathered around a fire. They see you approach and rush to your side. "We saw you swim across the bay", says a toothless man who seems to lead the group. "Any enemy of Purgatory is a friend of ours. C'mon in and sit by the fire."
 
-You pass inta the city The guards salf won't look you in che eve
+17) This is the temple of the Yellow Mud Toad, dedicated to the patron beast of this city. The temple is a run down and depressing as the rest of the city. The center of the temple is dominated by a huge statue of the Yellow Mud Toad, sunk fully a third of its height into the muddy floor of the building. "Everything sinks these days," a priest of the temple complains. "This whole city must be built on a lake. We'll all sink away to nothing if this keeps up!"
 
-16) Before you 1s a umble-down collection of huts. A group of ill-clad untorcunates are gathered around ante. They see
-you approach and rush to your side. “We saw you swim across the bay”, says a toothless man who seems to lead the
-group. “Anv enemy of Purgatory is a friend of ours. C’mon in and sit by the fire.”
+18) The camp is deserted. Apparently everyone who lived here was slain in your recent battle. You notice signs of habitation, but whoever lived here was dirt poor. It's unlikely you'll find anything of worth in the camp. Glancing back at the pile of bodies left in your wake, and then at the bucolic scene of the camp, you sense there was probably a better way of handling this situation. The man who confronted you seemed a lot like yourself. Maybe he mistook you for authority from Purgatory, and only sought to defend himself. This was probably a time for words, rather than swords.
 
-17) Uhisas the temple of the Yellow Mud Toad. dedicated to the patron heast of this city. Phe temple ts a run down and
-depressing as the rest of the city. The center ot the temple is dominated by a huge statue of the Yellow Mud Toad, sunk
+19) After about an hour, the sick man's fever breaks. He props himself up on one elbow and smiles. "I was dreaming," he says in a weak voice. "I imagined I floated on a vast black pool far beneath the earth. I think it was in the Underworld. I saw a goddess bound in chains. She was stranded on an island guarded by monsters." He laughs. "I guess I had a fever."
 
-july a third of its height into the nruddy thoor of the building. “Everything sinks these days,” 4 priest of the temple com-
-plains. “This whale city must be builtan a lake We'll all sink away to nothing it this keeps up!”
+The man tries to stand up but finds he's still weak. You help him sit up. "My name is Ulm," he says. "I guess I have you to thank for breaking my fever. The guards at the bridge beat me up, and I just can't seem to bounce back." Intrigued, you encourage Ulm to continue. "I escaped from Purgatory through a secret door in the wall. I tried to cross the bridge north of the city, but I didn't have the right papers, and the guards beat me. I've been coughing blood ever since."
 
-18} The camp is deserted. Apparently everyone who lived here was slain i your recent battle. You nouce signs ot
-habtration, but whoever lived here was dirt poor. It’s unlikely you'll find anything of worth in the camp. Glancing back
-at the pile of bodies left in vour wake, and then at the bucolic scene of the camp, vou sense there was probably a better
-way of handling this situation. |!he man who contronted vou seemed a tot like yourself, Maybe he mistook you for
-authority from Purgatory, and only sought to dctend hintsclf. This was prabably a ame for words, rather than swords.
+Ulm's eyelids begin to droop, and in minutes he's asleep again. A moment later his body stiffens, and Ulm dies. At least his final moments were pleasant ones.
 
-19) After about an hour, che sick aien's fever breaks He props himself up on one elbow and smiles “T was dreaming,”
-be says ina weak voice. “DT umagined | floated on a vase black pool far beneath the carth, | think it was ou the Under.
-world. {saw a goddess bound in chains. She was stranded on an island guarded by monsters.” He laughs. ‘I guess [ had a
-fever.”
+20) In the center of the ruined tower that occupies the heart of this city, you find a dais and what's left of a statue. The dais stands about four feet high, and, from the looks of things, appears to have been placed here since the tower was destroyed. A plaque on the dais reads, "This plaque marks the original location of Lanac'toor's Tower and Magic Academy. This statue commemorates his feats." There used to be a statue atop the dais, but it has been removed, leaving only Lanac'toor's swollen feet behind. The statue appears to have broken off clean at the ankles.
 
-The man tries to stund up but finds he s sull weak. You help him sit up. “My name its Ulm,” he savs. "1 guess I have
-you to thank tor breaking my fever. The guards at the bridge beat me up, and J just can’t sccm to bounce hack.” in-
-tngued, you encourage Wim re cannane "Lescaped trom Purgatory through a secrets door in the wall) Pred ro cross the
-bridge north of che city, bute I dido't have che right papers, and the guards beat me [ve been Cuughoug hload ever since ”
+21) You pick your way through the ruins and come upon a spy post maintained by the defenders of Byzanople. Several soldiers are gathered here. They are gaunt from months of isolation—you surmise that if the city does not fall by assault, it will soon succumb to hunger. The soldiers are led by a woman warrior dressed in white and red. As yet, you remain unobserved.
 
-Ulin's eyelids begin to droop, and in minutes he’s asleep again. A moment later his body stuffens, and Ulm dies. At least
-his tinal moments were pleasant ones.
+22) This shack has been set up as a universal shrine for Dilmun's many religions. A priest welcomes you and exhorts you around the shrine. The majority of the shrine is devoted to Irkalla, the Queen of the Underworld, and her consort Nergal. The priest explains worship of Underworld gods always increases during times of strife, perhaps because people come to view their own world as an extension of hell. Also represented is the man-animal Enkidu, patron of the Druids, and the obscene Reteck, god of things better left unsaid.
 
-201 In the center of the ruincd tower that occupies the heart of this city, you find a dais and what's Icft of a statue. Phe
-dats stands ahnut tour tect high, and, from the looks at things, appears ta have been placed here since the tower was
-destroyed. A plaque on the dais reads, ‘This plaque marks the original locatiun of Lanac'toor’s Tower aml Magic Acad-
-emy. This statue commemorates his feats.” There used to be a statue atop the dais, but wt has been removed, leaving
-only Lanac’toor’s swollen teet behind. The statue appears to have broken off clean at the ankles,
+The priest lets you worship or observe as you see fit, neither condemning nor encouraging your actions. "These are hard times," he says, "you had better pray to them all. We can use all the help we can get."
 
-21t You pick vour way through the nuns and come upen a spy post maintained by the defenders of Byzanople. Several
-soldiers are gathered here. They are gaunt from months of iolation—you surmtse that uf che city does not fall by assault.
-it will soon succumb tram hunger The soldiers are led by a woman warsor dressed in white and red. As yet, you remain
-unubserved
-
-22) This shack has been set up as a universal shrine for Dilmun’s many relynons. A priest welcomes you ad escorts you
-around the shine. The majority of the shrine 1s devoted to Irkalla, che Queen of the Underworld, and her consort Nergal.
-The pnest explains warship of Underworld gods always spreads during tames of strife, perhaps because people come to
-view their own world as an extension of hell, Also represented 1s the man-animal Enkidu, patron of the Druids, and the
-obscene Reteck, god of things beuter left unsaid,
-
-The priest Jets you worship or observe as you see tit neither condemning nor encouraging your acttans. “These are hand
-times," he saves, “you tad better pray to chen all We can use all the help we can gee”
-
- 
-
-qa
-```
+[頁碼 22]
 
 ---
 
 ## Page 27
 
-- **掃描檔**: `docs/en_manual_images/page-27.png`
-- **內容**: 段落文字頁（Paragraphs）
+23) You intently scrutinize the murals for several minutes, and are able to arrive at a few broad conclusions. It seems this city square was used to confine a dragon. You remember a legend of the cities of Dilmun holding dragons captive as defense against their neighbors. The murals depict blood sacrifice and obtuse ceremony being used to pacify the dragon. In one of the ceremonies, a priest is depicted aiming a short metal rod at a dragon, seemingly holding the beast under his sway. There is no rendering of the dragon in action. It seems the dragon demanded a terrible price for a purely defensive weapon. Furthermore, the ruins surrounding this square offer mute testimony to the effectiveness of a dragon for city defense.
 
-```
-PPS OSS ILO
+24) You board the ship as soon as it is anchored, eager to see what it was the thieves were so determined to defend. You see the ship's name is the PRAIRIE MADNESS, and that it seems to be fitted out for fast raiding missions. There isn't much of a cargo hold, so the ship won't serve for long journeys, but it looks very fast and dangerous.
 
-231 You untendy scrutinize the murals for several minutes, and are able to arrive at a few broad conclusians. It seems
-this city square was used to confine a dragon. You remember a legend of the cries of Dilmun holding dragons capave as
-detense against their neighhors The murals depice bload sacrifice and obtuse ceremony being used to pacity the dragon.
-noone at the ceremenies, a priest rs depicted aiming a short metal rod atadragon, secmingly holding che beast under bis
-sway There as no rendering of the dragon in action. It seems the dragon demanded a tertble pace tora parcly detensive
-weapon. Furthermore, the ruins surrounding chis square offer mute testimony to the etlecuveness of a dragon tor ciry
-detense
+25) "Welcome to Phoebus, City of the Sun!" chirps an odd mechanical voice. You stop in your tracks, trying to identify the source of the voice. After a few moments, you hear the message again, and determine it is coming from a raised stone dais and plaque directly in your path. Evidently the message is activated by your presence. "Welcome to Phoebus, City of the Sun!" the voice says again, this time a little slower than before. You examine the plaque and see it is a map of the city. "Wellloooome tooo Phoeceebussss, Ciiiityyy offff theeeee Sunnnnnnnn..." the voice intones, now perilously slow. Something's wrong with the device. A mechanical hand protrudes from the dais, frantically trying to shake your hand, but there's no juice you're getting near it. Two open hands gentlemen dressed all in black stare at you, making you nervous. Committing the details of the map to memory, you hurry away from the silly device. "Welllllllllllllllcoooooooooooommmmmmeeeeeee...!" [?]
 
-241 You hoard the ship as svon as the last of the pirates drops dead, eager to see what it was the thieves were so deter
-mined to detend. You see the ship’s name is the PRAIIUE MADNESS, and that it scems to be fitted aut for fast raiding
-missions. There isn’t much of a cargo hold, sa the ship won't serve for lang journeys, but 1 looks very fast and dangerous
+26) The walls of this city are of bright marble that seem to glow with an inner light. The streets are paved and clean, and there is no sign of poverty or disorder. The horse carts run on time. You can't shake the feeling something is about to go tragically wrong.
 
-25} “Welcome to Phochus, City of die Sun!” chirps an odd mechanical voice. You stup sn your tacks, trying (oe idenuly
-the source of the voice. After afew moments, you hear the message again, and determine it is coming from a raised stone
-dats and plague directly in your path. Evidently the message is activated by your presence. “Welcome to Phoebus, City
-of the Sun! the voice says again, this time a little slower than before. You examine the plaque and see it ts aa map of
-the city. ‘Welllcovuoome tooo Phaceeeebussss, Cuiityyy offff theeece Sunnnnnnonn...” the voice intones, now penlously
-slow. Something's wrong with the device. A mechanical hand protrudes from the dais. frantically trying tu shake your
-hand, bot there's an way you're getting ncar it) Two stem looking geatiemen dressed all in black stare at you, making
-you nervous. Conmardng the details of the map ta memory, you hurry away leon the silly device.
+27) You at last stand before the Sword of Freedom. The hilt of the fabled blade is just inches from your grasp. A hush comes over the city of Freeport. The furiously boiling waters previously surrounding this isle have subsided. You look up and see the citizens of Freeport have gathered all around the harbor, waiting to see what you will do next. Some of the citizens appear happy, others are proud, many just wear blank stares. One large man stands silent, but tears roll down his cheeks.
 
-“We IML cooveccuvccommmmmeee¢er...!”
+You smell a faint scent of ozone. Somewhere, a baby cries.
 
-26! The walls at this city are of bright marble that seem to glow with an inner fight) The streets are paved and clean, and
-there 1s no sign of paverty or disorder. [he horse carts ruanon time. You can’t shake the teeling something is about to go
-tragically wrong.
+28) Two officers occupy this building, evidently associated with the military force drilling on the parade grounds outside. The officers quickly shuffle aside the dice game they were playing when you entered, and snap to attention. They relax when they see who you are, and you sense a change in their attitude.
 
-27] You at last stand before the Sword of Freedom) The hilt of the fabled blade is just inches trom your grasp A hush
-comes aver the city of Freeport. The furiously boiling waters previously surrounding this isle have subsided You look up
-and see the citizens of Freeport have gathered all around the harbor, waiting to see what you will do next. Some of the
-ciuzens appear happy, others are proud, many just wear blank stares. One large man stands silent, but tears roll down his
-cheeks.
+The elder of the two officers gives you a close inspection. "Such a fine lot of patriotic types," he says. "It's about time someone from this feeble little burg enlisted in the army! Welcome to the service of King Drake. Hail Namtar!"
 
-You smell a faine scent of ozone. Somewhere, a baby cnes.
+29) Perilously weakened from your long journey through the swamp, you at last enter the City of the Yellow Mud Toad. The walls here are sagging and brown with grime. The city smells almost as bad as the swamp that surrounds it. Still pools of foul water and puddles of bubbling mud clog the streets. The people of this city shuffle about on their tasks, letting your greetings go unheeded and refusing to look you in the eye.
 
-28 Two officers occupy this building, evidently associated with the military terce dnlling on the parade grounds outside.
-The olteers quickly shuttle aside the dice game chey were playing when you entered, and snap to attention They relax
-when they see who you are, and you sense a change in their attitude.
-
-The elder of the two otficers gives you a close inspection, “Such a fine lot of patriotic types,” he says. “It’s about ume
-someone from this feeble little burg enlisted in the army! Welcome to the service of King Drake. Hail Namtar’”
-
-24) Pontousty weakened from your long journcy through the swamp, you at last enter the City of the Yellow Mud Load.
-The walls here are sagging and brown with grime. The city smells almost as had as the swamp that surrounds it. Still
-pools uf foul water nd puddles of bubbling mud clog the streets. The people of this city shutile about en their tasks,
-letting your greeungs go unheeded and refusing to look you un the eye.
-```
+[頁碼 23]
 
 ---
 
 ## Page 28
 
-- **掃描檔**: `docs/en_manual_images/page-28.png`
-- **內容**: 段落文字頁（Paragraphs）
+30) Sheltered at the base of the ruined city wall you find a funky little souvenir shop. A sign in the window identifies the place as "Your Lanac'toor memorabilia shop!" Intrigued, you enter. An unseen bell chimes an offensively sour note as you swing open the door to the shop. Inside you find a remarkable selection of Lanac'toor souvenirs. Images of the mad sorcerer are inscribed on mugs, bowls, plates, bookrolls, trophies, boxes, candles, and lanterns. Lanac'toor grinning face or family crest is embroidered on hats, ties, underwear, capes, and belts...a store clerk even offers to personalize any item you select, sewing or engraving your name on your purchase. A very small portion of the shop is given over to items unrelated to Lanac'toor. Most of it seems like junk—bits of masonry from the city wall, tiny images of the Yellow Mud Toad, and odd scraps of metal. You are amazed by the single-minded devotion this shop shows to an historical figure so insignificant outside the walls of the City of the Yellow Mud Toad.
 
-```
-JO) Sheltered at the base of the ruroed cry wall you find a funky little souverr shop A sen in the window identstics the
-phar ras “Your Lanac'toor meniorabilta shop!” Integucd, verenrer An unscen bell chimes an offensively sour nore as
-vou swing open the daar ie che shop Inside you find a remarkable selectsen ot Lanac ‘toot suuvenius. Laages of the mad
-sorcerer are uascobed on mugs, bowls, plates, bookends, iroplies, boxes, candles, and lamers. Lanag toon ginning tace
-or ftamuly crest & embroudered on hats, ges, underwear, capes, and belts...a store clerk even offers wo personalize any item
-Vou select, sewing or engraving your name on your purchase A very small portion ot the shop is gaven over to items
-unrelated to Lanae‘toor, Most oti seems hike junk - cs of masonry trom the city wall, ny images of the Yellow Mud
-Toad, and odd scraps of metal. You are amazed by the single: minded devotion this shop shows to an historical tgure so
-insiemiticant outside the walls ot the Crov at the Yellow Mud Toad
+31) On the far distant horizon you spot the menacing shape of a black sail. It seems these sea lanes are patrolled by pirates and other scurvy beasts. The enemy ship is down-wind from you—it is only a matter of time before you are caught!
 
-AV! On the tac distant haricon you spar the menacing, shape of a black sail It seems these sea lanes are patrelled by
-’ Snap t JK ' j
+32) Huddled in the shelter of the city's ill-repaired wall you find a militia of wild-eyed men. "Is the war over?" one of them asks. "Does Lanac'toor live?" wonders another.
 
-proites and other scurvy beasts. The enemy ship is dowa-wand fram you it is only a matter of time hetore you are
+You are able to piece together something of the history of this place. The patron of the City of the Yellow Mud Toad was a wizard named Lanac'toor. He occupied a tower that formerly stood in the center of town. Lanac'toor quarreled with Namtar when a general ban on magic was announced, and war broke out between the City of the Yellow Mud Toad and Namtar's city of Kingshome. As soon as the war began it was over. Kingshome legions summoned a dragon from the swamp to shatter the walls of the City of the Yellow Mud Toad. Lanac'toor's tower was destroyed and the wizard himself was turned to stone.
 
-caught!
+After Lanac'toor was killed, the enemy army withdrew, apparently unconcerned with the fate of the City of the Yellow Mud Toad. The citizens of the city are convinced the worst is yet to come, and thus maintain a feeble city militia as defense. It seems unlikely the city has anything worth defending. The men of the militia mutter to themselves as you leave.
 
-32) Headdled in the shelter of the city’s ul] repatred wall you tind a militia ot wild eved men. “Is the war over!” one of
-them asks. “Dees Lanac toor ive!” wonders another
+33) Ahead you see the walled city of Byzanople. The tattered banner of Byzanople still flies above the city's unbreached walls. The approaches to the city are occupied by the army of Kingshome. The besieging army is spread across the countryside, indicating it has been several months since Byzanople was invaded.
 
-You are able to ece together something of the history of this place. The patron of the City of che Yellow Mud Toad was
-a wizard named Lanac'toor, He occupied a tower that formerly stood in the center of town. Lanac’toor quarreled with
-Namtar when a general ban on magic was announced, and war broke out between the City of the Yellow Mud Toad and
-Namtar’s city of Kingshame. As soon as the war began it was over. Kingshome legions summoned a dragon from the
-swamp to shatcer the walls of the City of the Yellow Mud Load. Lanac'toor’s tower was destroyed and the wizard himscif
-was turned to stone.
+As you approach, several heavily armored soldiers launch an assault on the city. They scramble over rubble and rush the city's gate, waving their weapons and shouting war cries. A hail of arrows, stones, and boiling oil descends upon the attackers wherever they stray too near the wall. The defenders make short work of the Kingshome assault, and fewer than one in ten of the soldiers launching the assault make it back to their camp.
 
-Alter Lanac’twor was killed, the enemy army withdrew, apparently unconcerned with the fate of the Cicy of the Yellow
-Mud Toad. The citizens of the city are convinced the worst is vet to come, .ind thus maintain a feeble city militia as
-detense. It seems unlikely the city has anything worth defending. The men of the militia mutter to themselves as you
-leave.
+34) A rough pile of rubble marks the perimeter of the Kingshome advance siege camp. The cyclopean walls of Byzanople are just a few yards away. A twisted path leads through the rubble toward the gates of the city. The path passes beneath the walls of the city, forming a savage killing ground. The path is littered with broken arrow shafts, debris, and the bodies of others who have tried to take this city by storm.
 
-33} Abvad you sce the walled city of Byzanaple. The tattered hanner of By canuple sull flies above the city’s unbreacbed
-walls. The approaches to the city are occupied by the army of Kingshoine. The besieging army is spread across the
-countryside, indicating 1t has been scveral months since Byzanople was invaded.
+35) This massive central structure dominates the city of Lansk. Unlike the walls that surround this city, this structure is fortified and prepared for war. Armed Lansk guards patrol the battlements, looking stern and ill humored. Written warnings in a variety of languages advise passers-by to keep their distance. And not without reason, for within the structure, visible through a thick glass panel, you see a dragon. The beast is huge, completely filling the fortress that is its home. It must weigh at least eighty tons. The dragon is asleep, but no less fearsome for all of that.
 
-As vau approach, several heavily armored suldicrs launch an assaule on the city. [They scramble over rubble and rush the
-city’s gate, waving their weapons and shouting war crics. A hail of arrows, stones, and boiling oil descends upon the
-attackers wherever they stray too near the wall ‘Phe defenders make short work of the Kingshomer assault, and tewer
-than one inten of the suldiers launching the assault make it back to theit camp.
+A plaque explains the dragon is maintained by the city as its primary means of defense. Should disaster ever threaten the city, you read, the dragon will be set free, destroying both the city and the army that would conquer it. The dragon is maintained by expensive blood sacrifice—primarily by hurling criminals into the dragonbunker.
 
-34) A rough pile of rubble marks the perimeter of the Kingshome advance siege camp. The cyclopean walls of Byzanople
-are just a few yards away. A twisted path leads through the rubble toward the gates of the city. The path passes beneath
-the walls of the city, forming a savage killing ground. The path is littered with broken arrow shafts, debris, and the bodies
-of others wha have tned to take this city by storm.
+The dragon is impressive, but you feel vaguely disappointed. This isn't a fearsome flying saurian; it's an overfed monster sitting in a cage.
 
-35! This massive ceutral structuse dominates the city of Lansk Unlike the walls that sueroand this city, chis structure ts
-tortified and prepared for war. Armed Lansk guards patrol the bartleuneots, looking steen and ill humored. Written
-warnings in a variety of languages advise passers-by to keep their distance. And not without reason, tor within the struc:
-tare, Visible through a thick glass panel, vou see a dragon. The beast is huge, complercly filling dre forttess dat is res
-home It must weigh at least aghty tons. The dragon is asleep, but no less fearsome for all of that
-
-A plaque explains the dragon is maintained by the city as its primary means of detense. Should disaster ever threaten the
-city, you read, the dragon will be set free, destroying both the ciry and the army that would conquer it. The dragon ts
-maintained by expensive blood sacrifice primarily by hurling criminals into the dragonbunker.
-
-The dragon isompressive, but you teel vaguely disappointed This isn’t a fearsome flying sauman; it’s an overted menster
-Siting Ld Gaye
-
- 
-
-24
-```
+[頁碼 24]
 
 ---
 
 ## Page 29
 
-- **掃描檔**: `docs/en_manual_images/page-29.png`
-- **內容**: 段落文字頁（Paragraphs）
+36) You alert the warriors to your presence. The soldiers are startled when you speak, and when they turn you see they are pale with fright. They realize you could have killed them before they knew you were there. The soldiers regard you nervously as the woman in red and white approaches.
 
-```
-36) You wer che warnors to your presence. The soldiers are stored when vou speak, and when they turn yer see they
-are pale wath tight. They realize vou could have killed them betore they knew you were Creme The soldices reyatd you
-fervously as the woman in red and white approaches.
+"You're the infiltrators sent from their camp," she says. "I see you are surprised—my city might be losing this war, but we're not without our resources."
 
-“You're the infultraters the Ringshemers sent fom ther camp, she says. “bsee vou are surprised omy city might be
-losiyg this war, bar we're nor without our rescurees ”
+The woman shakes your hand as she introduces herself. "My name is Princess Myrilla," she says. "If you meant us harm you would have attacked us from behind. You don't look like Kingshomers; I choose to trust you." Myrilla barks some orders to her men in a language you don't understand. Turning back to you, she continues, "Follow me. My brother will want to speak with you."
 
-The wornan shakes vane deand as sfc introduces hersell) “My name is Princess Myra.” she save. “Ut vou meant us harm
-you would have attacked us Gran behind You dan't honk by kee: Kingshomers: Pehoose to trust vou.” Myrilla barks same
-orders to her men ina languaye vou don’t understand. Turning back to vou, she continnes "Follow me. My brother will
-wwaint to speak wath vou.”
+Myrilla leads you through a secret passage into the heart of Byzanople. It's odd this girl has so abruptly taken you into her confidence. You decide to play along...it can't make you a better offer than the Kingshomers, this is certainly an easier way into the city than storming the gate.
 
-Myrilla leads vou through a seeret passage into the heart of Byzanople. It’s odd this girl has so abruptly taken you mre her
-contidence. You decide tu play along..at she can’t make you a better offer than the Kingshomers, this is certainly an
-cavet way into che city than storming the gate
+37) Several squat figures surround the entrance to a tunnel leading under the walls of Byzanople. A wooden palisade shields the tunnel entrance from the eyes and weapons of the city's defenders. You recognize the figures as siege engineers, and surmise they are attempting to undermine Byzanople's walls.
 
-37° Several squat trgures surround the entrance ta a tunnel leading under tbe walls of Byzanople A wooden patisade
-shivlds the tunnel entrance trom the eyes and weapons of the city’s detenders. You recognize the figures as sarge
-engineers, and surmise they are artempung to undermine Byzanuple’s walls.
+A short and powerful man covered with mud and sweat emerges from the tunnel. "I think we're through," he says. He had to find our way through a patch of granite, but I think we've come up against a custom or basement wall." He looks at you expectantly. "All we need now is a pack of brave idiots to try the tunnel, find their way into the city, and open the gate for us."
 
-A short and powertul man covered with mud and sweat emerges from the tunnel. “chink we cre through,” he save. We
-had te tind our way through a patch of granite, but | think we've come up against a cistern or basement wall.” He looks
-se yrueeaxpectandy "All we need now isa pack of brave idiots co try the tunnel, find their way inta the city, and open the
-yaty tor us."
+38) Using your magic spell, you watch in wonder as color flows back into the frozen dwarves. The chamber is filled with a noise uncomfortably like the popping of popcorn as the dwarves return to life, their joints made stiff from ages of disuse. Before long, the entire clan is restored to life. The dwarves give you the once-over.
 
-38’ Using vour magic spell, you watch in wonder as color flows back into the frocen dwarves. The chamber is titled with
-a noise uncomfortably irke the popping of popcorn as the dwarves return to lite, their toints made scut trom ages of disuse
-Betore Jong, the entire clan is restored to life. The dwarves give you the once-over.
+39) You find a hidden cove. There's a dock house by the water, and beside it you can see several small ships tied up to the dock. You must pass through the dock house to get to the boats. To your right is a small wayside shrine to some divinity or another. The cove is very quiet, aside from the lapping of the waves and the rhythmic creaking of the boats tugging at their ropes. It's hard to tell if this place is inhabited or not.
 
-39) You find a hidden cove. There’s a dock house by the water, and beside it you can see several pmall ships ued up to
-the dack You must pass through the dock house to get to the boats. Lo your nght is @ small wayside shrine to some
-dbvanes or anether The cave is very quirt, aside from the lapping af the waves and the rhythmic creaking ot the boats
-tugging at ther ropes It’s hard co tell dl dits place 1s inhabited or not
+40) A wave of fetid humidity strikes you like a slap in the face when you open the door to this room. This place must be under an enchantment. Within the room is exactly reproduced a hot and swampy environment not unlike the Isle of Quag. The floor is a deep and bubbling mud bog, while leaf palms grow here and there, and in the underbrush you think you see small reptiles warming themselves on hot rocks. A most unusual sight to find in a dungeon...all the comforts of home (if you're a reptile).
 
-101 A wave of feud humidity stmkes you like a slap m the face when you open the duor to this coum. This place muse be
-under an enchantment. Within the room ts exactly reproduced a hot and swampy environment not unlike che ble ot
-Quay. Phe tloor ts a deep and bubbling mud bog, wide leaf palms grow here and there, and in the underbrush vou chink
-you see small reptiles warmung themselves on hot rocks. A most unusual sight to find in a dungeon....all the comtorts of
-home vt you're a ceptue |
+41) The pirates are friendly enough when you pay them their gold. They offer you a seat and serve you a brutal meal of calamari and grog. "My name's Long John Ugly," the leader identifies himself. "And this here is my gal, Peg." Ugly's gal has two peg legs and no teeth, but she's by far the more presentable member of this motley crew.
 
-41! The pirates are friendly cnoeugh when you pay them their gold They offer yon a seat and serve vou a brutal meal ot
-calaman and grog. “My name s Long John Ugly,” the leader identifies hinaselt “And this here ws my gal, Pep Ugly's
-girl has two peg fegs and ne teeth. but she’s by far the most preseutable member of this motley crew
+You converse with Ugly and his band for several hours. Ugly used to be a sailor in the Tarsian navy. He explains Tars was a minor city on the Isle of Forlorn, and that it was reduced to ruins in the early days of the war with Kingshome. "These ain't good times to be a sailor, me bucko," Ugly growls, becoming increasingly maudlin as the grog does its work. "Namtar don't want folks sailing about from one island to the other. Too hard to keep people in their place that way!".
 
-You converse with Ugly and his band for several hours. Ugly used to be a sasloron the Tarsian navy. He explains Tars
-Was a minor city on the isle of Forlom, and that it was reduced to ruins in the early davs of the war with Kingshome.
+You learn Ugly's band has scratched out a living raiding along the coast, but pickings are slim. You also guess they do a bit of smuggling. Ugly is hesitant to take you out in his boat, saying the weather is wrong and the seas are too dangerous lately. When you remind him of the gold you paid, Ugly smiles and Peg shrieks with laughter.
 
-’ These ain't geod times to be a sailor, me bucko,” Ugly growls, becoming increasingly maudlin as the grog does its wark,
-“Nine dons want folks sacing about fram ons island to the other. Too hard te keep people in their place that way'".
-
-You learn Ugly’s band dias scratched cue a living raring alony rhe coast, but pickings are slim) You also guess they doa
-bit ot smuggling. Ugly is hesitant co cake you aue in his boat, saving the weather es wrong and the seas are too dangerous
-lately. When you remind him of che gold you paid, Ugly smiles and Peg shocks wath lauplite:
-```
+[頁碼 25]
 
 ---
 
 ## Page 30
 
-- **掃描檔**: `docs/en_manual_images/page-30.png`
-- **內容**: 段落文字頁（Paragraphs）
+"I didn't figure that gold covered the cost of a passage, mate!" Ugly laughs. "That was just a fee for this fine repast and for not gettin' yer throats slit." Peg whispers something in Ugly's ear. "But Peg likes ya, and I'm in a charitable mood, so I'll do ya a favor. Seein' as how ya should be dead anyway, I'm willin' to ferry ya over to the Necropolis. There's plenty of loot to be had in that place, which should suit you folks just fine." Ugly gestures over his shoulder and points toward the south wall. "The dock's on the other side of the south door. I'll meet ya out there in a minute." Ugly looks you straight in the eye as he concludes, "And I do mean the south door. You'll do as yer told if you've got any sense."
 
-```
-VAS IVES gg 72OL SB EV.ESES
+42) In this dusty and disused chamber you find what was formerly the throne of King Drake of Kingshome, the mightiest ruler of Dilmun. The throne is heaped in the corner and in poor repair. Carelessly tossed behind the throne you find Drake's ceremonial crown. Maybe it will be worth something, if there is ever a true king in Kingshome.
 
-“Edidn't figure chat yuld covered the cust of a passage, mate Ugly laughs. ° Phat was just a tce for this tine repast and tor
-nor getan’ ver throats slit.” Peg whispers something in Ugly's car. “But Peg likes va and ('m ina charitable mood, su TI
-do yaa favor, Sean as how va should be dead anvway. Um willin to terry vacover to the Necropolis There's plenty ut
-loot to be had in that place, which should suit you tolks iustine © Ugly pestutes aver tis shoulder and pounts caw ard che
-south wall “The dock’s on the other side of the south door (Y meet ya out there ia minute.” Ugly fooks you straight
-inthe eve as he conclides, “And Pdo mean che seuth deer You'll do as yer cold i vou've gou any sense
+43) You sail through most of a day and night through thick fog. There is no moon, and the going is slow and treacherous. Several times you think you may glimpse phantoms in the fog, or hear strange beasts bumping against the hull of your vessel. Just when you think you may never reach your destination, an island looms out of the mist.
 
-42) In chis dusty and disused chamber you tind what was tormerly the throne ot King Drake of Kingshome, the mightiest
-ruler of Dalmun. The throne is heaped in the comer and in poor repair. Carelessly tossed behind the throne vou find
-Drake's ceremonial crown) Maybe tt will be worth something, if there 1s ever a tric king in Kingshome,
+The island is an irregular mass of black stone, covered in moss and green slime. Ruins of impossibly ancient design are just visible in the center of the island. Luminous eyes peer at you from dark hollows and forbidding bogs nestled along the coastline.
 
-43) You sail through most of a dav and might through thick fog. There is no moun, and the going is slow and Ueacheraus
-several times vou think you glimpse phantoms in the tog, or hrar strange beasts houparey A UITTSt the droll of your vessel.
-Just when you think vou may never teach your destination, anaisland loonais cut of the mark.
+44) The magic paint works as advertised. Now covered with the mystic colors, the formerly ruined walls of the City of the Yellow Mud Toad stand tall and strong. You hope strong walls will be enough to hold off the growing terror you know lurks in the swamps, just a few feet away.
 
-The island ry au iepular mass of black stone, covered in moss and green slime. Ruins of impossibly ancrent design are
-just visible in the center of the island Luminous eves peer at vou from dark bollows and torbidding bogs nestied along
-the coastline
+45) The sail to Freeport is a long one, and your supplies are barely enough to last the voyage. You sail east and away from the majority of the Dilmun islands, headed into previously unknown waters. Once free from the war torn islands of the Dilmun interior, you are able to enjoy the natural beauty of the maritime world of Oceana.
 
-44) The magic paine works as advertised. Now covered with the mystic colors, the tormerly nincd walls ot che City ot
-the Yellow Mud Toad stand tall and strong. You hope strong walls will be encogh ta held off the xrowing terror you
-know turks in the swamps. musta tew feet away
+Presently you come in sight of a glistening modern harbor sheltered in a strange coast. Your charts indicate this is Freeport, and you direct your ship at a dock.
 
-45! The sail to Freeport is a long one, and your supplies are barely enough to last the voyage. You sail cast and away from
-the maonty of the Dilmun islands, headed into previously unknown waters. Once free trom the war torn tslands of the
-Dilmun interior, you are able to enjoy the natural beauty of the maritime world of Oceana
+46) Your journey takes you to the frontier known as the Eastern Isles. This area is unclaimed by any nation, and you experience no encounters with hostile maritime forces.
 
-Presently vou come in sight of a glistening modem harbor sheltered ina strange coast Your charts indirare this ts
-Freeport, and anchor vour ship at a dock.
+The Eastern Isles have a rustic quality lacking in the Dilmun interior. Here things are unfinished and wild, and seem untouched by the corruption of the interior. This region is the closest thing you've seen to the paradise you expected to find when you arrived in Purgatory, many months ago.
 
-461 Your tourney takes you fo the trontier known as the Eastern Istes. This area is unclauned by any nanon, and you
-experience accencounters witht droscile maritime forces
+Presently you spot what seems to be a ruined city, half-submerged in the sea. You find a place to land your craft on a stretch of sand southeast of the ruins.
 
-The Eastern Isles have a rustic quality lacking in the Dilmun Interior, Here things are untinished and wild, and seem
-untouched by the corruption ot the Interior. This region is the closest thing you've seen te the paradise vou expected to
-find when you arrived in Purgatory, many months ago.
+47) Near the bridge you find a run-down building. A sign above the door identifies the place as the 'Official Quag Visitors Information Bureau'. The building is newly built so run-down on the inside as that.
 
-Presently you spot what seems to he a rained city, half-submerged in the sea You hod a place to dand vour craft ona
-stretch of sand southeast of the nuns
-
-47) Near the bridge you find a run-down building. A sign above the door identifies the place as the ‘Ufficial Quag Visitors
-Information Bureau’. The building 1s every bit as run-down on the inside as out.
-
-An ugly little woman with a cluster of purple cyes enthusiastically greets you. “Welcome to Quay, Isle of Luxury!” she
-says. “I'm sa glad you're here We don’t get so much hussness since the war.” You learn that Quag's only city—the Ci
-of the Yellow Mud Toad—is sinking into the swamp and the priests of che Yellow Mud Toad are powerless to stop it.
-“Bur et’s really quite sale tor travellers,” the woman is hasty to add. “Quag remains an iste of wonders, and many sall
-
-dream of taking the vapors!”
+An ugly little woman with a cluster of purple eyes enthusiastically greets you. "Welcome to Quag, Isle of Luxury!" she says. "I'm so glad you're here. We don't get so much business since the war." You learn from Quag's only city—the City of the Yellow Mud Toad—is sinking into the swamp and the priests of the Yellow Mud Toad are powerless to stop it. "But it's really quite safe for travellers," the woman is hasty to add. "Quag remains an isle of wonders, and many still dream of taking the vapors!"
 
 You judge the woman quite mad. Saying goodbye, you depart.
-```
+
+[頁碼 26]
 
 ---
 
 ## Page 31
 
-- **掃描檔**: `docs/en_manual_images/page-31.png`
-- **內容**: 段落文字頁（Paragraphs）
+48) A wall of rock stands athwart your path. Massive bronze doors guard a way through the rock; fearsome beasts guard the way to the door.
 
-```
-PRAISES AIC OLSIF
+Two creatures guard the way through the rock. They are half scorpion and half dragon, but in some ways they look like men. Their eyes glow with balesome fury. They glow with an inner light, bathing the ground at their feet in glory. They appear to be a man and a woman, and thus doubly dangerous for the bond they must share.
 
-Sh) A wallet rock stands athwart yveur puch. Massive bronze dans guard a way through the rock: tearsome beascs par
-the way to the door.
+49) After a few hours of cautious work, you're able to lash an appropriate rock to the broken pick handle with the laces you received from the dying man. The result is a serviceable if makeshift hammer. The hammer probably isn't worth much as a weapon, but it might hold up long enough to break the chains that bind you.
 
-Two creatures guard the way through the rock. They are hall scorpion and hali dragon, but in some ways they lok hke
-men Their eves glow with balesome tury They glow with an inner bght, bathing the ground at ther tect in glory They
-appear to be a man and a woman, and thus doubly dangerous for the bond they must share.
+50) The door closed behind you with an ominous sound evoking the finality of the tomb. The door and wall from the bridge must have been sound proofed, for no sooner do you emerge from the bridge than a mad chorus of howls assails your ears. Insane screaming seems to spring from every direction, although you cannot see the source of the noise. It's enough to drive a person mad!
 
-49) Attera tow hours of cautious werk. vou're able to lush an appropriate rock to the broken pick handle with the laces
-vou received trom the dying man The result ts a serviceable it makeshilt hammer The hammicr probably isn't worth
-much asa weapon. burt might hold up dong enough to break the charms that bind vou
+51) You walk beside a clean and stylish harbor. Although you are near the sea, this place has none of the stink associated with Oceana's coastal places...either Freeport is not sinking, or the port is engineered such that seepage is not the problem here that it is elsewhere in the world.
 
-$01 The door closed behind vou with an ominous sound evoking the finaliy of the comb. The door and wall trom the
-bridge must have been sound prooted. tor no sooner do vou emerge from the bridge than a mad chorus of haw!s assails
-sour ear Insane screaming seems to spring trom every direction, although you cannot see the source of the noise. [t's
-enough to drive a person mad!
+The construction here is simple but attractive. There's rustic feeling associated with the unfinished wood railings, foliage, and crisp scent to the air. The people of this place are dressed in effective leather and cloth, and seem healthy and energetic. Everyone is armed, and you judge the citizens of this place know how to defend themselves. You are greeted warmly as you approach, but the citizens of Freeport do not tarry to speak. Everyone seems engaged in a mission of great industry.
 
-SE] You walk beside a clean and stvbsh harbor. Although vou are near the sea. this place has none ot the stink associated
-with Occana’s coastal places. citber Freeport is not sinking, or the port ts engineered such that seepage is nor the problem
-here Unit otas cisewhere i the werld
+52) To the south is a little island in the harbor. Standing in the center of the island is an anvil, plunged to the hilt within the anvil is a brilliantly gleaming magic sword. There seems no way to the island...the water here seethes and boils with magical energy. It doesn't take much imagination to surmise a swim to the island would be fatal.
 
-The construction here is simple but aturacuve. There's nisuc feeling associated with the untinished wood railings,
-tohage, and crisp scent co the air The people at this place are dressed in eftectsve leather and cloth. and seem healthy and
-energeuc. Evervone i armed, and vou tudge the citizens of this place know how to defend themselves. You are greeted
-warmly as vou approach, Dut the citizens of Erceport do not tarry to speak. Evervone seems engaged 1n a mission of great
-industry
+A Freeport citizen notices your interest in the island. "That is the Sword of Freedom," he says. "Many years ago, the great hero Roba delivered it from the Underworld. After many years of adventuring, Roba retired here and founded our city. Shortly before his death, Roba built this magical island to protect his sword."
 
-30) To the sous a fitde asland in the harbor Standing in the center of che osband es an anvil: phanged tothe hilt withen
-the anvilas a bolhanty gleaming magic sword. There seems no way te che island the water here seethes and boils with
-magical energy. dy doesn’t take much pmagination to surmuse a swim to the island would be fatal.
+The citizen is silent for a moment before continuing. "Legend says that so long as the sword remains in the anvil, no harm can come to Freeport," he says. "At the same time, Roba warned a time would come of great strife in Oceana. He said a champion would appear one day to claim the sword. He who wields the Sword of Freedom will quell the strife in Oceana, but at the same time will doom our city. Such is the sacrifice we must someday make."
 
-A Freeport citizen notices your interest in the island. “Thatis the Sword of Freedom,” he savs. “Many vears ago. the
-ervat here Roba delivered it fram the Underworld. After many years of adventunny, Roba retired here and tounded our
-ety Shortly before his death, Roba built this magical island to protect his sword.”
+The citizen wishes you well and leaves. The Sword of Freedom is just out of your reach. It seems to taunt you. How to get it? How to get it...!
 
-The cuicrniis sent tora moment betere cantinuing "Legend says that se lang as the sword remains in the anvil ne
-harm van com to Freep. | he says At the same tie, Roba warned adie would Goime at great state on Oceana He
-sud a champion would appear one das to claim die sword. He who wields the Sword ot Freedom will quell the strife in
-Oceana, hur at the same ume will daem our citv. Such is the sacrifice we must someday make.”
+53) In this cell you find a weak young man dressed in soiled motley. "Good evening ladies and germs, it's good to be back at the palace," he says as you enter his cell. "A funny thing happened to me on the way to the dungeon." The poor man was obviously a court jester. "I can into Sir Loin of Pork this afternoon—he said he was about to become Baron of Greywater." This guy really stinks. It wiser men than you consigned this man to the dungeons, who are you to set him free. "I got a million of 'em," the jester says, seeming to notice you for the first time and perking up considerably. This confirms your worst fears, and you slam and lock the cell door. "Cancel the Renaissance—it looks like a reign of terror!" comes the muffled voice from behind the door.
 
-The cizen wishes you well and leaves. The Sword ot Freedom is just our of vour teach Te scems ta taunt you, How to
-getit? How to get it?
+Even Namtar has a good idea now and then.
 
-S30 In this cell you find a weak young man dressed in soiled motley. “Good evening fadics and xermy, it's goad to be
-back at the palace." he saysas you enter his cell) "A tunny ching happened to me on the was to the dungeon.” The poor
-imal Was obviously a comet gesrer “Team Sar Lorn ai Park this afternoon—-he said he was about ta beeoame Baron at
-Gaesmauer ” This guy really stinks Ttwiser men than you consigned this nian co the dungeons, whe are you ta set ban
-tree. “byotatmalhion orem,” the jester says, seeming to nouce vou for the first ame and perkang up considerably This
-confirms vour worst tears, and vou stam and lock the cell door, "Cancel the Renaissance—it louks Ike a reyn ot terror’
-comes the muttled voice tram behind the door
-
-Lyven Namtar has a good idea now and then
-```
+[頁碼 27]
 
 ---
 
 ## Page 32
 
-- **掃描檔**: `docs/en_manual_images/page-32.png`
-- **內容**: 段落文字頁（Paragraphs）
+54) "Thanks for putting me back together—I feel swell!" Lanac'toor grins. "I was a little nervous when you put my arms on backwards, but I guess I'll get used to it. Having my elbows bend the wrong way will make it easier for me to scratch my back!"
 
-```
-PASSIVE AOL ERSSOE
+55) A yawning chasm stretches before you. A violent gust of hot wind rises from the chasm...the void must reach to the very roots of the world, below even the Underworld. Out of the chasm, starting an unknowable distance beneath you and stretching as far as the eye can see, you view a votuitous mass of irregular black stone. The tower stands piled atop itself and is at once designed and chaotic...from one angle it looks like a sorcerer's stronghold, while from another it seems like the exposed spine of a fantastic beast. Perhaps it is not really there at all. More likely it exists in more than one dimension at the same time, and is thus difficult to see in its entirety.
 
-SV Thanks tor puttiag me back together Tteel swell Lanactoor grins“ was a itde nervous when vou put my atms
-on backwards. but | euess V1 get used tort) Having my clbows bend the wrong way will make at casier for me to scratch
-my back’ ’
+One thing is certain...this tower has nothing to do with god, or salvation, or pilgrims. This is a tower of Evil. This is the Tower of Namtar!
 
-45: A yawning chasm stretches before you. A violent gust of hot wind rises trom the chasm... the void must reach ta the
-very roots ot the world, below even the Underworld. Out of the chasm, starting an unknowable distance beneath vou and
-stretching as tar as the eve can sec, you view a vomitous maps of irregular black stone. The tower stands piled atop itselt
-and is at once designed and chaotie...from one angle it looks tike a sorcerer’s stronghold. whie trom another it sccms like
-the exposed spine of a tantastie beast. Perhaps it ts not really there at all. More Itkely it exists in more than one dimen-
-sion at the same tume ands thus difficult to see i its entirety
+56) A tall and powerfully built man with a greenish complexion greets you when you enter the building. "I am Tarkas, first citizen of Tars," he says. You learn that he and his fellow officers fled here to Freeport when their home city of Tars was destroyed by the legions of Kingshome. Tars was previously the foremost city of the Isle of Forlorn. Now Tars is a sad ruin, while Purgatory passes for the isle's only city. If you explore the ruins of Tars, Tarkas says, be sure to seek the hidden chambers beneath the city—they might still contain fabulous treasures.
 
-One thing is certarn chix cower has norhing to do with god, or salvation, or pilgrims. This ts s tower ut Ewil This is the
-Tower uf Narmtar!
+Tarkas is bitter when he recalls the ruin of his city. "We were betrayed," he says. "We relied on our dragon to defend us. We didn't dream Kingshome would be so bold to assault us when our dragon was healthy and awake. When they lay siege to our city, we released our dragon...and the beast did nothing! A hundred years of blood sacrifice to that terrible dragon, and what good did it do us in our hour of need!"
 
-56) A tail and powerfully built man with a greenish compleaon grectsy you when you enter the building “lam Farkas,
-first ciazen of Pars.” he sayy You leam that he and his fetlow afticers thed here to Treeport when thei home esty ot Tars
-was destroved by the legions of Kingshome. Tars was previously the toremast city ot che Isle of Forclarn Now Tats as 4
-sad ruin, while Purgatory passes forthe isle’s only city, Lf you caplure the ruins of Tars, Turkas says, be sure to seck the
-hidden chambers beavath the city—they might soll contain fabulous treasures.
+Tarkas grows animated as he speaks, accidentally smashing a table as he excitedly flails his arms. "I tell you, Namtar found a way to usurp control of our dragon! Since Namtar too Kingshome against all of Dilmun, dragons have all but vanished! Namtar controls them somehow...but no man can control the saurians without paying a terrible price. If someone could learn what he's done with the dragons—and learn how to wrest their control from Namtar...then Kingshome would learn a thing or two!!"
 
-Tarkas is bitter when he recalls the ruin of his city. “We were betrayed,” he says. “We rehed on our dragon to defend us.
-We didn’t dream Kingshome would be so bold to assaule us when our dragon was healthy and awake. When they lay siege
-tu our city, we released our dragon...and the beast did nothing! A hundred ycars of blood sacrifice to that terrible dragon,
-and what xood did 11 do us in our hour of need?”
+57) This simple hall serves as the community meeting place for the citizens of Freeport. You are greeted by minor city officials who welcome you to their town and eagerly ask you for information of the war in Dilmun. "These are dark days," the official says. "Soon Kingshome will control all of Dilmun, then Namtar will cast his evil gaze toward the Eastern Isle and our fair city."
 
-Tarkas prows animated as he speaks, accidentally smashing a table as he excitedly tlails his arms “Tiel you, Namtar
-teund a was to usurp contol ef our dragon! Since Namtar rose Kinyshomie against all of Dilimun, dragons bave all but
-vanished! Namtar controls them somehow...but no man can control the saurnians without paying a terrible price. It
-someone could tearm what he’s done with the dragons-—and learn how to wrest their control from Namtar...then King-
-shome would fear a thing or twal!”
+The official scratches his head. "It's odd," he says. "My father was an advisor to the court of King Drake of Kingshome. He said Drake was a peaceful old man. His son, Jordan of Byzanople, was a regular firebrand...but not Drake. When suddenly make war on his neighbors? It doesn't make any sense...Namtar must have poisoned him." The official shrugs. "I wonder if something's happened to him. King Drake hadn't been seen in public for over a year when I was last in Phoebus, and thus was some time ago. Maybe something happened to him."
 
-a7! This simple hall serves as the community meeting place for the cuzens of Freeport You are greeted by mainar city
-officials whe welcome vou to their town and eagerly ask you tar antyunmacen ot the wat i Dilsiua. “These ate dark
-days,” the official says. "Soon Kingshome will cootrol all or Daulmun, then Namear will cast his evil gaze coward the East-
-ern Iste and our tair city.”
+58) After a long wait, you shuffle onto the block with a host of other unfortunates. You are in better shape than the poor wretches that surround you, and your group is instantly the subject of spirited bidding. You shudder as you are sold to a man with a fat neck for more gold than you are likely to see in a lifetime.
 
-The otticil scratches his head. “It's odd.” he says. “My tather was an advisor to the court of King Drake at Kingshome
-He said Drake was 4 peacetul old man, Hts son, lordan of Byzanople, was a regular tirebrand...but not Drake. Why
-suddenly make war on his neighbors? It docsn’t make any sensc...Namtar must have poisoned him.” The ofticral shrugs.
-“Lwonder if something's happened to him) Ring Drake hadn't been seen in public for over a year when | was ast in
-Phoebus, and that was sume time ago) Maybe something happened 10 him ”
+You are led away from the slave auction and linked one to another by a continuous sequence of chains and collars. Presently your new master appears and introduces himself. "I am Master Mog," he says. "From this moment on, I am your mother, I am your father, I am your God, I am your world. I am Mog—Mog is All. Abandon all hope of freedom. You are my property, to do with as I please."
 
-at Attera long wait. you shuffle onto the block with a host of other unfortunates. You are tn better shape than the poor
-wretches that surround vou, and your group is instantly the subject of spirited bidding. You shudder as you are sold to a
-man witha tat neck for more gold than you are likely to see in a lifetime,
+Mog leaves you to the hands of his slave bosses, who spend the next several weeks attempting to break your spirit. During this time you are loaded aboard a painfully slow cog and sail to Master Mog's estate. You are afforded a brief glimpse of Mog's luxurious palace before you are led beneath the earth and introduced to Mog's salt mines.
 
-You are Jed away trom che slave suction and linked one to another by a continuous sequence ot chains and collars
-Presendy your new master appears and introduces himself. “lam Master Moy,” he says. “From this moment on, lam
-vour mother, Pam vour tather. Lam vour God, Lam your world. [am Mog-—Mog is All. Abandon all hope of treedom
-You are my property. to de wath as I please.”
+Then begins a mind-numbing series of repetitious chores. You are not permitted to leave the mines. You work, sleep, and eat in the same series of identical tunnels, never permitted to see the sun.
 
-Mog Jeaves vou to the hands of his slave bosses, who spend the next several weeks attempting to break your spirit
-During this ume you are loaded aboard a painfully slow cog and sail to Master Mog’s estate. You are atforded a brict
-glimpse ot Mog’s luxurious palace before you are led beneath the earth and introduced to Mog’s salr mines
-
-Then begins anund-nianbiay, scres ul wepeutous chores. Yuu are nut permitted ro leave rhe mines. You work, sleep,
-and eal iy the sume series at identical tunnels, 1EVOE permitied TO see the Sut
-
- 
-
-IN
-```
+[頁碼 28]
 
 ---
 
 ## Page 33
 
-- **掃描檔**: `docs/en_manual_images/page-33.png`
-- **內容**: 段落文字頁（Paragraphs）
+59) You are admitted to the camp and immediately pressed into service. The army makes no attempt to provision or train you—it's evident they consider you a band of cutthroats, and that they like you just the way you are.
 
-```
-Sie ZAI
+You are billeted in a siege camp located a few miles south of the walled city of Byzanople, which for months has stubbornly resisted the enlightenment of joining the unified Kingshomer Empire under Namtar and King Drake. The besieging Kingshomer army is preparing to take the city by storm. You are to be among the waves of unfortunates they wish to send over the wall. You may not take kindly to this idea, but there are many more of them than there are of you, and this is no opportunity to desert.
 
-S91 You are adeotted to the camp and unmedhately pressed sii sence The ary dikes Qo arienpr te prowision ot
-train vou—ait's evident they consider you a hand of cutthroats, and that they Like you qust the way you are
+60) These cramped quarters serve as home for Mog's unfortunate slaves. Men sleep fitfully on the cold rock floor, encumbered by the stout chains that bind them one to another. An examination of the sleeping men proves your chains will never be removed—some of the sleeping men are still chained to companions who have long since passed away.
 
-You are billeted in a siege camp haicated a ew miles south of the walled city of Byzanople, which tor manths has stub-
-bornly resisted the enbehtenment of arming the unified Kingshomer Empire under Namtar and King Drake The
-besieging Kingshomer army ts preparing to take the city by storm. You are to be among the waves of umtorcunates they
-wish to send over the wall. You may not take kindly ro this idea, but there are many more of them than there are of vou
-and this is ne opportunity ta desert.
+61) The dying man gratefully gulps water from your cup. "You are angels," he says. "I want to die, but not alone, and certainly not thirsty!" The man wipes his mouth with his wrist. His parched lips crack and smear his wrist with blood. "Not much longer," he says with a wan smile. "When I'm gone, I want you to have these." The dying man shows you his boots. The soles are entirely worn away, but the tops are still secured by stout leather laces. "The boots aren't much good, but the laces are strong—maybe you can do something with them." The old man is abruptly seized with a coughing fit. You know the end is near. "I hope you fare better then me," he croaks.
 
-4M These cramped quarters serve as biome tor Moy’s untertunate slaves Men steep fithully on the cold cock Hor,
-encumbered by the stouc chains that bind thems one co another. An examination of your companions proves your chatas
-wall never be removed—some or the sleeping men are still chamed to companions who have lonjt since passed away
+62) The last of the guards drops dead and silence claims the mines. A ladder leads up out of the salt mines. In the dim distance you can see sunlight far up the shaft—the first hint you've had in days or months or weeks. Freedom is at hand. But what awaits you at the top of the shaft?
 
-4&1! The dying man gratctully gulps water trom vour cup. “You are angels,” he save. “I want to die, but not alone. and
-certainly not thirsty!” The man wipes his mouth with bis wnst. His parched lips crack and smear his wrist with blood.
-“Not much longer.” he says with a wan smule. "When I'm gone, I want you to have these" [he dying man shows vou
-his hoots. The soles are entirely worm away, bur the tops are soll secured by stout leather laces. “The boots aren't much
-good, bat the faces are strang—maybe you can do something with them" The ald man es abruptly seized with a cenghing
-ht. You know die cndisacar “T hope vou tare better then me,” hie crvaks.
+63) Several people are huddled around a fire. One of them offers you some stew which you eagerly accept—it's bland and watery, but it's the first hot food you've had in days and you eat every drop. After your meal you doze off by the fire, grateful to at last be in the company of charity and good will. When you awaken, you feel as if you've been reborn.
 
-621 The fast of the guards drops dead and silence clarms the mines. A ladder leads up out of the salt mines. In the dim
-distance you can see sunlight for the first time in uncountable hours, days, or months. Freedom is athand But what
-awatts you at the top of the shatt:
+64) You stand before the gleaming city of Lansk. The streets are clean, the people are orderly, and while the city is walled, there is no gate. None of the busy citizens you spy carries a weapon. The city shows no sign of war or occupation. However, it does seem like a very rich place, and you can detect a faint smell of dragon in the air....
 
-GAL Severat people are huddled around a fire One oi chem offers yau some stew whivh vou cagerly aceept—ait’s bland and
-watery, bocit's the dust bot food you've had tn days and you eat every drop Atter your meal you doze afi by the lire,
-grateful to at last be in the company of charity and good will, When you awaken. you tee) as af you've been rehorn
+65) This guard room is occupied by several menacing men who stand when you enter. "Well...look at this," one of them sneers. "Our prisoners have 'escaped'. We have to 'recapture' them—perhaps several times." The guards begin to close in. "Remember, men, these prisoners were trying to escape...we won't be accused of beating prisoners in their cells again!"
 
-64) You stand before the gleaming city uf Lansk. The streets are clean, the people are orderly, and while the cic as
-walled, there is no gate. Nane of the busy citizens you spy carries a weapon. The citv shows no sign et war of occupa-
-tion. However, it does seem like a very rich nlace, and you can detect a faint smell of dragon in the arr. .
+66) This is Phoebus' incredible Temple of the Sun, renown all across the world of Oceana. The sun's warm rays shine into an open atrium, bathing the broad leaves of a variety of exotic heliotropic plants. Acolytes of the temple are busy about on mysterious tasks. The floor is inscribed with a gold design depicting the motion of Oceana and her sister planets. From some unseen chamber you hear the soothing sound of running water...
 
-65) This guard room is occupied by several menacing men who stand when youcnter “Well. Jook at this.” one of them
-sncers “Our prisances have ‘escaped’. We have to ‘recapture’ them—perhaps several rimes The guards beyin tet lose
-am. “Remember, meo, these puisaners were trying Co escape...we wan't be accused of beating prisaners on their cells
-again!”
+A gold curtain swings aside and a short, swarthy man enters the chamber. He is dressed in blue robes inscribed with stars and moons, and wears a pointed cap. It seems the man very much wants to look like a wizard, but has no idea what wizards actually look like.
 
-66) Thisss Phoebus tncredible Temple of the Sun. renown all across the world of Oceana. The sun’s warm ravs shine
-Inty an open atrium, bathing the broad leaves of a vanety of exouc helowreme plants, Acelvtes ot the temple are busy
-about on mystertous tasks. The floor ts inscribed with a gold design depicting the motion of Oceana and her sister
-planets. From some unseen chamber you hear the soothing sound ot running water.
+"I am Mystalvision, High Priest of the Temple of the Sun," says the wizard in a comically high and wet voice. "You are to be commended for making it this far. I don't care that you cracked out of Purgatory, but your behavior since entering my city has been intolerable." Mystalvision snaps his fingers, and several cruel gentlemen dressed all in black appear out of nowhere. "Namtar's Stosstrupen would like to ask you some questions," Mystalvision sneers. "I should ask you to come along quietly, but it will be more fun to do this the hard way."
 
-A gold curtain swings aside and a short, swarthy man enters the chamber. [leis dressed in blue robes insenbed with stars
-and moous, sud wears a pointed cap It seems the man very much wants to took bke a wecard. but has no idea at what
-wizards actually luok like.
-
-“Lam Mystalvision, High Priest of the Temple of the Sun,” says the wizard in a comically high and wet voice. “You are
-to be commended for making 1t this far. [dont care that vou cracked aut of Purgatory, but vcur behavior since entering
-my city has been intolerable. Mystalyision snaps his fingers, and several crucl gentlemen dressed all tn black appear out
-ob nuwhere “Namtar’s Stosstrupen would Ike to ask vou some questions,” Mystalvisian sneers “ft should ask you to
-came along quictly, but it will he more tun co do this the hard way ”
-```
+[頁碼 29]
 
 ---
 
 ## Page 34
 
-- **掃描檔**: `docs/en_manual_images/page-34.png`
-- **內容**: 說明文字頁
+67) This is an open-air slave market, filled with the cry of fleshmongers and the laughter of a perfumed crowd. Here men and women are for sale—people such as yourselves—to the jaded residents of the Dilmun interior.
 
-PASIV SPOOLS GSS
+From the gate of the slave market you watch as several young men are auctioned off. They seem less healthy than yourselves—maybe they've been in the city longer than you. It seems a sad way out of this place, to make yourself a slave...but isn't anything better than a life of misery and slow death in the streets of Purgatory?
 
-67 This isan open-air slave market, filled with the ery at dleshmengers aed the langhier ata pertumed crowd Tere men
-ahd wenn are tat sale—-people snub as vourselves--to the jaded residents of ie Dylouu aiterien
+You scan the crowd, anxious to measure the character of citizens of the Dilmun interior. Their faces seem cruel and aristocratic, with a faint hint of the more-than-human. Here and there you spot a face that seems kinder than most, but if you were on the block, what guarantee would you have of receiving a kind master? Could you truly live with yourself as a slave?
 
-Fromm the gate ft the slave market you watch as several young men are aucuoned ot. They seem less healthy chan
-yourselves-—maybe they've heen inthe civ longer than you. Ht seems asad way out or this place. to make Vourselt a
-slave...but isn‘tanything better than a ite of misery and slow death in the streets of urgatorv!
+There is a long line of lost souls waiting for the auction block. Nothing will stop you should you decide to join them.
 
-You svan the crowd, anxious tu measure the character of citizens of the Dalmun intener. Their faces seem cruel and
-anstocratic, with a daint hint of the more-than-human. Here and there you spot a tace chat seems kinder than most, but it
-you were on the block. what guarantce would you have of receiving a kind master! Could vou truly live with voursell as
-a stave?
+68) The door to this hut is open, and from within you hear someone singing. Entering the hut, you see a simple room...a pile of straw serves as a bed, while a candle burns on a large rock that passes as a table. Behind the rock you see a sad man who seems very old. His eyes are empty sockets and both his hands have been amputated at the wrist. You wonder why a blind man burns candles when he's alone.
 
-There es a dong ine of lost souls waiting for the auction block. Nothing will stop you should you decide to jain chem
+The man stops singing and swings his head in your direction when you enter. "You must be the outsiders everyone's so excited about," he says with a faint voice. "I can smell Purgatory on you. Please come in. I'd like to see some new faces...provided I could see them."
 
-68! The door to this hurt ts open, and from within you hear someone singing. Entering the hut, you see a semple roan...a
-pile ot straw serves as a hed, while a candle burns on a large rock that passes a5 a table. Behind the rock you see a sad
-man who seems very old. His eves are empty sockets and both his hands have been amputated at the wrist. You wonder
-whv a blind man burns candles when he’s alone.
+You learn the man's name is Carson. He was a sorcerer at the Temple of the Sun, in Phoebus. "That was before Namtar rose from the Pit," says Carson, pausing to spit. "Damn Underworld types should stay in their own world."
 
-The man stops anging and swings his head in your direction when you enter “You must he the autaders everyone's se
-eacited about,” lie says with 4 dibm voice. “y cal smell} Purgatory on you. Please COP LIL Ud lke ta see suITLE TIE
-taces...provided | could see.”
+You talk with Carson well into the evening, pumping him for information. You learn that Namtar is either a demon or a man—Carson seems to use the terms interchangeably. About a year ago Namtar appeared at the court of King Drake in Kingshome, and was welcomed as the court magician. Within a year, Kingshome had mobilized and began making war on its neighbors. At the same time, Namtar announced a general ban on magic, using his secret police—the Stosstrupen—to enforce the ban. A great magical war ensued, which Namtar and the Stosstrupen won handily.
 
-You learn the man’s name ts Carson. He was a sorcerer at the Temple of the Sun, in Phoebus. “That was betore Namtar
-rose trom the Pit,” says Carson, pausing to spit. “Damn Underworld types should stay in their own world.”
+"Now sorcery is all but dead in Dilmun," Carson continues. "Take a look at me. Ten years learning Sun Magic and it leads to this! All the old Masters are gone...Lanac'toor was finally driven over the edge and shattered into a score of pieces. Carson exiled to the deep wilderness and Mystalvision..." Carson is silent for a long time; then says, "I can't prove it, but I always thought Mystalvision was wrapped up with Namtar. He's the High Priest at the Temple of the Sun. Our Order fell to Namtar so quickly...we must have been betrayed. Beware of Mystalvision!"
 
-You talk with Carson well into the cvening. pumping him torinformauion You learn that Namrar 1s ether a demon or a
-Man—Cuarsan seems to use the terms interchangeably. Ahout a year ago Namtar appeared at the court of King Drake in
-Kingshenve, aed was welcomed as the cont magician, Within a year, Kingshome had mohilred and began making: war
-omits nvighbors At thy same tune, Namtar announced a general ban on magic, using his secret police—the
-Stosstrupen—to entoree the ban A yreat magical war ensued, which Namrar and che Stosstrupen won handily
+You talk with Carson late into the night, but learn little else of value. He is either unwilling or unable to teach you any magic. Heeding his advice, you take your leave of the old man.
 
-“Now sorcery ts all bue dead in Dalmun.” Carson continues, “Take a look at me. Ten vears learning Sun Magic and it
-Jeads ta this! Alb the old Masters are gone...Lanac’toor was finally driven over the edge and shattered into a score of
-pieces. Zatan exiled to the deep wilderness, and Mystalvision...”. Carson is silent tara lang time. then says, “I can't prove
-rt. but dalwavs thought Mystalvision was wrapped up with Namtar. He's the High Priest at the Femple of the Sun. Our
-Order tell to Namtar so quickly...we must have been betrayed. Beware of Mystalvision!”’
+69) When no one is looking, you crawl into an open sack filled with disgustingly fresh corpses. You lay still as the sack is crudely sewed shut. The darkness of the tomb descends upon you as the bag is closed.
 
-You talk with Carson tate nite die night, but learn licde else of value. He is creher uowilling or unable to teach yeu any
-magic. Heeding his advice, vou take your leave of the old man.
+None too gently, the entire sack is heaved onto the backs of the slaves. Dead arms embrace you, long fingernails claw at your hair, rotting grave mould seems to penetrate your body. There is a lurch and a rasp as the bag clears the wall, and then you fall.
 
-oY) When no ane is looking, you crawl into an open sack filled with disgusungly fresh corpses. You lay still as the sack is
-crudely sewed shut. Lhe darkness of the tomb descends upon you as the bag 15 closed.
+You freak crawls with anticipation. Will you meet your end smashed to death with a host of corpses on some unseen rocky spire? Or will you splash into the warm waters of Oceana, at long last free from the stinking hell of Purgatory?
 
-None tea gently, the entire sack 1s heaved onta the hacks at the slaves Dead arms embrace you, long tingernai!ls claw at
-your hare. rottitg grave moukd seems ta penetrate your body. There is a lurch and 4 rasp as the bay clears the wall, and
-then you tall.
+You splash. You sink. You struggle. At last you win free of the sack, and the dead hands that drag at you seemingly resentful of the life you display. Lungs bursting, you break from the water at the base of the harbor wall, and quickly clamber aboard some debris you find floating close by and strike out for shore.
 
-Your flesh crawl: with anticipation. Will you meet your end, smashed to death with a host of corpses on some unseen
-rocky spire? Or wall you splash into the warm waters of Oceana, at long last [rec from the stinking hel] of Purgatory:
+70) Mighty oaks interwine above your head to form a living gateway to this enchanted forest. A fresh coat of sparkling dew lays over everything, lending a fantastic quality to the scene. The ground is covered with an inviting blanket of green moss. Faerie lights glimmer from within the boles of dark yet pleasant trees. This is a magical place.
 
-You splash. You sink. You struggle. Ac last you win free ot the sack, and the dead hands that drag at you seemingly
-resenttul of the lite you display. Lungs bursting, you break trom the water at the base of the harbor wall, and quickly
-clamber aboard some dchris you find floating close by and strike aut tor shore.
-
-TO) Mighty oaks mitcrtwine above your head tu form a livary gateway to this enchanted torest A fresh coat of sparkony
-dew lays over everything, lending a fantastic quality co the scene The ground is cuvered with an invicng blanket of green
-moss, Faene lights glimmer from within the boles of dark yet pleasant trees. This 1s a magical place.
-
- 
-
-AQ)
+[頁碼 30]
 
 ---
 
 ## Page 35
 
-- **掃描檔**: `docs/en_manual_images/page-35.png`
-- **內容**: 段落文字頁（Paragraphs）
+71) Much to the garrison's dismay, the gates of Byzanople prove little obstacle for you. The Kingshomer army streams through the open gate and makes short work of the outnumbered city garrison. Byzanople has fallen.
 
-```
-PROS FORSS  BORORE
+After putting the garrison to the sword, the victorious Kingshomer soldiers gleefully get down to some serious pillaging. Buck Ironhead, the commander of the Kingshomer siege camp, appears from the chaos. "I've got to hand it to you," he says, "you really did a job on these Byzanople jerks! Now Namtar's control of Dilmun is complete. I'm sure the Beast From The Pit will want to thank you personally." Ironhead smiles when you remind him of your bargain. "I haven't forgotten, I assure you...but seeing as how you threw in with me so easily, I doubt you have any real sense of honor. I wouldn't trust you clowns as far as I could throw you!" Buck stands back as several of his soldiers gather round. "Put these traitors in irons!" he snarls.
 
-‘)) Much to the garrtson’s dismay. the gates of Byzanople prove little obstacle tor vou. Phe Kingshomer army streams
-through the open gate and makes short work of the outnumbered erty garmson. Byzanople has tallen.
+The guards close in. It's an epic fight, but no heroes can long withstand sheer weight of numbers. Everything goes black as the last of your party falls to the dust.
 
-Attcr parting the garrison to che sword, the victorious Kuyshomer soldiers yleetally yet down to some serions pillaging:
-Buck fronhead, the commander of the Kingshomer siege camp, appears bei the chaos T've got to hand et te yeu, he
-says, ‘you really did a jab on these Byzanople jerks! Now Namuar's control of Dilmun is complete, Im sure the Beast
-From The Pit will want to thank vou personally.” Jronhead smiles when vou remind him of your bargain. “LT haven't
-forgotten, Lassure vou...but seemyg as how you threw in with me so eastly, | doubt yau have any real sense of honor. |
-wouldn't trust you clowns as far as [ could throw you!” Buck stands back as several of his soldiers gather around. “Put
-these traitors in irons!” he snarls.
+72) This shrine is formed from rocks and wood and moss—it seems a profoundly natural thing, more an outgrowth of this enchanted wood than a thing built by man. The divinity worshiped here is none you recognize, but the feeling of the place is one of harmony with nature.
 
-The guards close in. [t's an epic tight, but no heroes can long withstand sheer weight of numbers. Cverything goes black
-as the dase of your party falls to the dist
+Upon closer inspection, you see dried bloodstains on the rock. The stains are not large—this shrine is not used for sacrifice—but perhaps its resident god is awakened by a token gift of life.
 
-72) This shrine 1s formed trom rocks and wood and moss—it seems a profoundly natural thing, more an outgrowth of this
-enchanted wood than a thing built by man. The divinity worshiped here is none you recognize, but the feeling ot the
-place is one of harmony with nature.
+73) This hidden glade is charged with magical energy. The rocks marking this clearing form a ring of deliberately-placed standing stones, the focus of which is upon the earth where you now stand. You feel power rushing from the roots of the earth and into your soul. Enkidu himself stands and regards you.
 
-Upon closer inspection, you see dried bloadstarns on the rock. The stains are not Jarge—this shrine is not used for
-sactifice—buc perhaps its resident poubis awakened by a token gift of life
+74) Old Jack's eyes grow bright when you show him the signet ring. "His majesty...!" Jack whispers. You sadly shake your head, indicating Drake is dead. Tears form in Jack's eyes as he sighs. "Me poor, poor king...I knew ye'd come to no good with that demon Namtar!"
 
-73) This hidden glade is charged with magical energy. The rocks marking this clearing torm a ring of detiberarely-placed
-standing stones, the focus uf which ts upon the earth where you now stand. You fee! power rushing from the rots at the
-earth and inte vour soul. Enkidu himself stands and regards you.
+After showing him your ring, Jack treats you like an honored guest, forgiving all your misdeeds in the forest. "I'm a King's man, ye got ta believe that," he says. "I love me King an' I never disobeyed him. But I never like the looks o' that Namtar—he's a very devil, he is! It must have been 'im wot killed old Drake. You've got the ring, so you're it!"
 
-74) Old Jack’s eyes grow bright when you show him the signet rng. “Has majesty...2” Jack whispers. You sadly shake
-vour head. indicating Drake is dead Tears torm in Jack's eyes as he sighs “Me poor, poor king. Dknew ye'd come tone
-good wel: tha denon Nama!”
+Old Jack solemnly hands you his bow. "This here's me bow, I call her Nevermiss! Drake gave her to me when we were both boys, and she's never failed me. Now I give her to you, to shoot down that foul Namtar!" Jack is hesitant to release the bow, and even as you hold it his eyes linger on the weapon. "She's like a lady, she is...you treat her kind. You treat her kind."
 
-Atter showing him your nng, Jack treats you like an honored guest, forgiving all your muasdeeds in the torst. “li a
-King’s man, ye got ta believe chat,” he says. “] love me King an’ I never disobeyed him. But I never dike the looks o' that
-Namtar he’s a very devil, he is! ft must have been ‘im wor killed old Drake.” Old fack pauses to spit. “Someone's pot
-ta bring Namtar down, and clear the wav for young Prince Jordan to take the throne. You've got the nny, so you're it!
-
-Old lack solemnly hands you his bow. “This here’s me bow, | call her Nevermiss! Drake zave her to me when we were
-hoth hoys, and she’s never tailed me Now I give her to you co shoar dawn that taul Namtar!” Jack is hestranc to release
-the bow, and even as you hold it his eves linger on the weapon “Stie's dike a lady, shes yeu treat her kind) You treat
-
-her kind.”
-
-lack 1s abruptly eager to leave. He refuses to leave the forest, saying it’s his only home He wishes you all goad luck and
-melts inte the woods,
+Jack is abruptly eager to leave. He refuses to leave the forest, saying it's his only home. He wishes you all good luck and melts into the woods.
 
 He will never be seen again.
 
-75) After what seems an eternity, you locate che source of the screaming. Nearly mad yourselves, you find a city af the
-mad squatung on a desolate shore. Feeble huts nade of driftwood and debris huddle together in a feeble pile, White-
-hatred loons with wild eyes stumble to and fro. mumbling to themsctves or shrieking like cats. Crazed citizens of the
-place wrestle with one another, seeming like writhing human serpents. It’s a madhouse, and the inmates are running the
-asylum,
+75) After what seems like an eternity, you locate the source of the screaming. Nearly mad yourselves, you find a city of the mad squatting on a desolate shore. Feeble huts made of driftwood and debris huddle together in a feeble way. White-haired loons with wild eyes stumble to and fro, mumbling to themselves or shrieking like rats. Crazed citizens of the place wrestle with one another, seeming like writhing human serpents. It's a madhouse, and the inmates are running the asylum.
 
- 
-
-31
-```
+[頁碼 31]
 
 ---
 
 ## Page 36
 
-- **掃描檔**: `docs/en_manual_images/page-36.png`
-- **內容**: 段落文字頁（Paragraphs）
+76) A mad artist inscribes designs on the sandy floor of his hut. "I don't have to do this, you know," he says as you enter. It's uncertain if he's talking to you, or if you walk in on him while he was talking to himself. "I can make a living as a tattoo artist!" he continues. "But I will draw on you, mother earth, because everyone else draws from you. You. Who. Moo. Mool"
 
-```
-76) A mad artiscanscnbes designs on the sandy flour of his hut. “don ¢ have to do this, vou know.” he savs as you enter
-It’s uncertain if he’s talking to vou, or it vou walk in on him while he was wilking to himself. of can make a good biving
-Js a tattoo artist!” he continues. “But wall draw on you, mother carth. because evervone else draws tram vou You
-Who. Muu. Moo?’
+The artist jumps up and bounds about the hut. "Moo! Moo!" he howls. "Don't you see! It's all so clear. At last! At last!" The poor man rushes past you and is quickly lost in the village of the lost.
 
-The artist jumps up and bounds about the hut. “Moo! Moo!” he howls. “Don't vou sce! It's all so clear, At last’ At
-last!’ Lhe poor man rushes past you and 15 quickly lost in the village of the last
+77) Amid the ruins you come upon a remarkable sight. A bonfire illuminates a shattered city square. Scores of people cavort about the fire——this is the greatest gathering of people you've seen since arriving in Purgatory.
 
-77) Amid the ruins you came upon a remarkable sight) A bonfire illuminates a shared city square. Seores of people
-vavart about the tire this ss the yreatest gathering of peuple you've seen since arriving in Purgatory.
+The occupants of the square constitute a cross-section of Purgatory's citizenry. Blind beggars, mad poets, dog-faced children, and drunken priests swarm about the fire like moths to a flame; dancing, singing, loving, bleeding, brawling. Above them all, seated on a rude throne of stacked masonry, you see the man you surmise to be the king of this place. If he is a king, he is a king of thieves.
 
- 
+Astounded by this strange sight, you do not notice until it is too late a score of scoundrels sneaking up on you. Surrounded by rogues, you are urged toward the fire, where you come under the gaze of the figure on the throne. "Outlanders!," the king roars, teetering atop his perilous perch. "You've strayed far from your homes, little does and kittens. This is the Court of Miracles, gathered to pay homage to the King of Purgatory..." the king pauses, awaiting the proper moment before continuing, "...me, Clopin Trouillefou!"
 
-The orcupants at the square cunstitute a cross-secuion ul Purpgatory’s citizents Blind beggars, nad poets, dog-taced
-childten, and drunken prests swarm about the fire like moths to a flame; drinking, sinang, loving, bleeding, brawhing.
-Above them all, seated on a rude throne of stacked masonry, you see the man vou surmise to be the king of this place. If
-he is a king, he ts a king of thieves.
+78) A group of ragged unfortunates sun themselves on this dismal coastline. They sit in folding beach chairs, some beneath the shade of colorful beach parasols. All the men and women are dressed in rags. Few have teeth; fewer still have a proper tan. The day is cold and grey.
 
-Astounded by this strange sight, vou do not notice untl at is too late a score of scoundrels sneaking up on you. Sur-
-rounded by rogues. vou are urged toward the fire, where you come under the gaze of the frgure on the throne. "Outland:
-ers), the king roars, teetering atop his perilous perch. “You ve strayed far from your homes, Ite does and kittens. This
-ts the Court of Miracles, gathered to pay hamage to the King of Purgatory..." the king pauses, awaiting the proper mament
-beture continuing, "..me, Clopin Trouillefou!
+"Hail Namtar!" a woman cries. "Great is he to take such care of us! What have we to want for!" A one-armed young man elbows you in the ribs, and says with a sidelong wink, "Quite a little resort we got here, wouldn't you say! Boy, that Namtar sure is a swell egg!" "This is a ritzy place—nothing less than a king retired here!" cackles another. Similar comments come at every turn. You find this place is called Toxic Beach, and those poor lunatics think it's some sort of beach resort to which they've been sent as faithful service to Namtar.
 
-78! A group ot ragged unfuitunates sun themselves on this dismal coastline. They sit in tolding heach chairs, some
-beneath the shade uf colorful beach parasols. All the men and women are dressed in rags. Few have teeth; fewer stall
-have a proper tan. The day is cold and grey.
+A few bloated dead rats have washed up on the bleached coastline. An odd tumble of rocks marks the north end of the shore. The rocks are covered with debris, as if the remains of a shipwreck have washed up here.
 
-“Hatl Namtar!”’ a woman cries. “Great is he to take such care of us! What have we to want for?” A one armed voung
-man clbows you in the ribs, and says with a sidelong wink, “Quite a little resort we got here, wouldn't you say! Boy, that
-Namtar sure is a swell egg!" “This is a ritzy place— nothing less than a king retired here!” cackles another. Similar com-
-Ments come at every turn. You find this place is called Toxic Beach, and these poor lunatics think it's seme sort of beach
-Tesort to which they’ve been sent as reward tor taithful service tu Namtar
+79) There is a deep rumbling as storm clouds gather. Abruptly rain begins to fall in relentless sheets, threatening to flood the stone, the forest, the entire world.
 
-A tew hloated dead rats have washed up on the bleached coastline. An odd tumble of rocks marks the north end of the
-shore. [he rocks are covered with debnis, as if the remains of a shipwreck have washed up here.
+A supernatural hush falls over the glade. Even the pelting rain seems to fall silent. Suddenly you are surrounded by animals—bears, dogs, deer, ducks, and even a penguin. You turn and see still more animals crowding outside the door to the shrine. You see a lion lay down beside a lamb. The animals are waiting for something.
 
-79! There is a deep nimbling as storm clouds gather, Abruptly rain begins to fall in relentless sheets, threatening to Hood
-the stone, the furest, the entire world
+Above the stone appears the ghost of Zaton. The ghost speaks. "My friends, I am forever in your debt for liberating my soul. By restoring me to the world, the world restores itself. The natural order is reestablished. Man and beast may again live in harmony."
 
-A supematucal hush falls over the glade. Even the peluing rain seems to tall silent. Suddenly vou are surrounded by
-auitals—bears, dogs, deer, ducks, and even a penguin. You tum and sce still more animals crowding outside the door to
-the shrine. You see a lion lay down beside a lamb. The animals are waiting for something
+The animals begin to excitedly roar, bark, and bray. "My time in this world is done," Zaton says. "Namtar is evil! He must be destroyed! To you I grant the boon of knowledge...use it well!"
 
-Above the stone appears the ghost of Zaton. The ghust speaks. “My friends, J am forever in your debt ror liberating mv
-soul, By restoring me to the world, the world restores itself. The natural order is reestablished. Man and beast may again
-hive in harmony.”
+80) The center post of these communal huts shelters a secret chamber. A skeleton dressed in the royal colors of Kingshome sits on a makeshift throne. Whoever this was, he's been dead a long time. A royal signet ring gleams on one skeletal finger. The ring seems both valuable and important.
 
-The animals begin to excitedly roar, bark, and bray. “My time in this world is done,” Zacton says. "Buc for you brave
-adventurers the task 15 just beginning. Namrar 1s evil! He must be destroved! To vou | grant the boon of knuwledec.. use
-wowell!”
-
-SOL The center post at these communal huts shelters a secret chamber A skeleton dressed in che royal colors ot King:
-shome sits una makeshuit duane. Whoever this was, he’s been dead a long time A toyal signet ring gleams on one
-skeletal finger. The ring seems both vatuable and important.
-
- 
-
-ca
-```
+[頁碼 32]
 
 ---
 
 ## Page 37
 
-- **掃描檔**: `docs/en_manual_images/page-37.png`
-- **內容**: 段落文字頁（Paragraphs）
+81) A dwarf springs up as you enter the room. He eagerly scans your party, then collapses in disappointment. "No dwarves," he weeps. "Never are there any dwarves. Poor Josephina is all alone." The dwarf has a woman's name, but it's bearded and it smells and...well, no matter. Josephina is probably just as crazy as everyone else in this silly town.
 
-```
-PAPERS ROE RS
+"The kingdom is broken," cries Josephina. "The great clanball is sealed, and all the dwarves slumber in the vaults. Namtar stole the eyes from our icon and hurled them into the sea. Every day I search the coast, but never do I find the eyes." Josephina continues to weep, hardly aware of your presence.
 
-S11 A dwart springs up as vou enter the room. He eagerly seams your party, then collapses mn disappurnement Na
-dwarves,” he weeps. “Never are there any dwarves. Poor Josephina es all alone “ The dwari has a woman's name, hue it's
-bearded and tt smelis and vwell, na matter, Josephina is probably just as crazy as everyone else in this silly town,
+82) Nisir, the Mountain of Salvation, rises above you to an impossibly great height, seeming to rip the sky. Although it is daytime, when you look up you can see stars near where you guess the summit of the mighty mountain must be. It seems to you the mountain must push through the very atmosphere of Oceana to produce such a sight.
 
-"The kingdom os broken.” cries Josephina "The great clanhall is sealed, and all the dwarves slumber tn the vaults.
-Namiar stole the eves trem ourscen and hurled them inte the sca. Every day I search the coase, but never do | find the
-eyes" fosephing comeiues to weep. hardly aware of yur presence
+Ahead of you, a long line of pilgrims slowly files past the sole gate leading under the harbor.
 
-S21 Nasir, che Mountain ot Saulvanion, rises above you coun imposstbly great height, seeming ca ip the sky Although otis
-davume, when you look up you can sce stars near where you guess the summit of the mighty mountain must he ft
-seems to You the mountain must push through the verv atmosphere of Oceana to produce such a sight.
+83) A prisoner lies babbling in the corner. "A secret tunnel connects this prison to the Nisir," he says. "When you find the swamp within the mountain, know you are near Namtar!"
 
-Ahead ot you, a long line of plgnms slowly files past the sole gate leading from the harbor.
+84) The pilgrims stop one-by-one to kneel before this elaborate shrine before continuing. The shrine depicts the image of the Universal God, a faceless deity that runs in all directions at once, and raises its arms to encompass both earth, heaven, and underworld. You note with relief that not even Namtar has dared to undermine the basic faith of Oceana.
 
-RA A prscner bes babbling in the carer “A secret tunnel connects this prison ta the Nisir”, he says. "When you find
-the swamp within che mountain, know you are near Nance!”
+The pilgrims evidently expect enlightenment and salvation to result from their visit to Nisir. You expect salvation of a different kind—the sort that can come only from sending Namtar to his doom.
 
-St) The pilenms stop one-by-one to kneel before this elaborate shrine before continuing. The shrine depicts the image of
-the Universal God, a taceless deity that looks in all directions at once, and raises its arms to encompass both earth,
-heaven. and underworld. You mote with rehef that not even Namtar has dared to undermine the basic taith of Oceana
+85) It is several days' sail to Nisir, the Mountain of Salvation, but the route is easy to follow. The great mountain Nisir seems to rise from the roots of Oceana and reach to the heavens—it is easily the tallest mountain on the planet, and you are in sight of your destination for most of the journey.
 
-The prlyrims evidently expeet enlightenmenc and salvation te result from their visec to Nisir. You expeet salvation of a
-different kemd—the sare that can come only from sending Namtar to his doom
+The harbor at Nisir is clogged with pilgrim's vessels. Several hundred robed figures crowd the docks, slowly passing through the harbor's only exit into the interior. The great mountain of Nisir looms above you, stern and forbidding. You sense a moment of destiny is at hand.
 
-SS' It is several days’ sail to Nisir, the Mountain of Salvation, but the route ts easy to fulluw The great mountain Nisir
-seems to rise from the roots of Oceana and reach to the heavens it is easily the tallest mountain on the planet, and you
-are in sight of your destination for most of the iourney.
+86) You are pressed into service and sent directly to the front. The army makes no attempt to provision or train you—it's evident they consider you a band of cutthroats, and that they like you just the way you are.
 
-The harbor at Nisir is clogged with pilgrim’s vessels. Scveral hundred robed figures crowd the docks, slowly passing
-through the harbor’s ouly exit imto the intenor The great mountain ot Nisir looms above you, stem and torbidding. You
-sense a moment of destiny is at hand.
+A troop ship conveys you to King's Island, where the walled city of Byzanople stubbornly resists the enlightenment of joining the unified Kingshomer Empire under Namtar and King Drake. Byzanople has been under siege for several months, and the besieging Kingshomer army is preparing to take the city by storm. You are to be among the waves of unfortunates they wish to send over the wall. You may not take kindly to this idea, but there are many more of them than there are of you, and this is no opportunity to desert.
 
-so! You are pressed unto service and sence directly to che front. The ariny inakes ny attempt tu provision or train you—it's
-evident they consider you a band of cutthroats, and that they like you just the way you are.
+You are billeted in a siege camp located a few miles south of the actual siege.
 
-A troop ship conveys you tu King’s Island, where the walled city of Byzanople stubbomly resists the enlightenment of
-joining the untied Kingshomer Empire under Namtar and King Drake. Byzanople has been under siege tor several
-months, and the besieging Kingshomer army is preparing to take the city by storm) Yuu are tu be among the waves of un-
-jorlumates they wish to send aver the wall. You may not take kindly to this idea hue there are many more of them than
-there are ot you, and this ts ne opportunicy to desert
+87) Directly ahead you see the semi-permanent camp of the Kingshomer campaign army. The army occupies a valley between two mountain peaks. A wooden palisade has been erected across the mouth of the valley, providing the camp with a measure of protection against raiders from the south.
 
-You are billeted in a siege camp located a few miles south of the actual sicge.
-8) Directly ahead you sce the semi-permanent camp ot the Kingshomer campaign army. The army occupies a valley
-hetween two mountain peaks A wooden palisade has been erected acrass the mouth of the valley, providing the camp
+There is no evidence of an enemy army anywhere in the area. From the looks of the camp, it seems likely this is a base from which the Kingshomer army is besieging an enemy fortress to the south.
 
-with a measure of protection against raiders trom the sourh
+Several guards lounge before the entrance to the camp. They eye you with suspicion.
 
-There is no evidence of an enemy army anywhere in the area. Frour the looks of the camp. it seems likely chis tsa base
-trom which the Kingshonter army is besteging af cneiny fortress oF city
-
-Several guards lounge betore the entrance to the camp. They eve vou with suspicion
-
- 
-
-‘as
-"a
-```
+[頁碼 33]
 
 ---
 
 ## Page 38
 
-- **掃描檔**: `docs/en_manual_images/page-38.png`
-- **內容**: 說明文字頁
+88) Within this building you find a group of old men gathered around a table. They're playing dice and speaking rapidly to each other in a dialect you can barely understand. You are noticed and welcomed into the game.
 
-MASI AER SSPE
+The men play for the joy of it. There's a complicated wagering scheme involved, but no money ever changes hands, and the men don't seem to care if you're rich or destitute. After a while, you begin to make sense of their speech.
 
-Sk) Within thie building you find a group of old men gathered around a table. Ehey're playing dice and speaking rapidly
-to each other ina dialect you can barely understand. You are noticed and welcomed into the game.
+It seems these men are residents of the Dilmun interior, displaced to this island of outlanders by war and oppression. From them you learn a little of recent events in Dilmun. The Dilmun interior consists of several large islands, each of which is dominated by an autonomous city-state. Warfare has been frequent between the rival cities, but no single nation has ever been able to rule them all for others. Each city keeps a dragon captive somewhere within its walls—it total disaster ever threatens, the dragon will be let loose. This would almost certainly lead to the destruction of both sides, but it serves as a deterrent to conquest.
 
-The men pilav tor the soy of uu. Phere’s a complicated wagenny scheme aivolved, bur na money ever changes hands, and
-the men don't scem ta care if you're ach or destitute. Atrera while, you beyie to make sense ot their speech
+Recently, the city of Kingshome launched a bid for empire. Kingshome's imperialism was aided by a sorcerer—Namtar, the Beast From the Pit. Thanks to Namtar, all magical opposition was quickly overwhelmed, and Kingshome made rapid gains. For some unknown reason, the conquered cities never launched their dragons against Kingshome.
 
-It seesus these inen are residents ul the Dilinun mitesior, displaced to this island of auclanders by war and oppression.
-From chem vou learn a licde of recent events in Dilmun. The Diimun interior consises of several large islands, cach of
-which ts dominated by an autonomous city-state. Warfare has been frequent between the rival ciues, but no single nauon
-has ever been able to rule all the others. Each city keeps a dragon captive somewhere within its walls it total disaster
-ever threatens. the dragon wall be let loose. This would almost certainty lead to the destruction of both sides, but it
-serves as a deterrent to conquest.
+The youngest of the men arrived at the camp just a few months ago. So far as he knows, nearly all of Dilmun's cities have been conquered or lay in ruins. The city of Byzanople on the King's Isle remains free, although it has been under siege for several months. He also mentions a city called Freeport in the Eastern Isles, but his companions scoff when he does, saying Freeport is more myth than reality. Nevertheless, the young man asserts he'll find Freeport someday—as soon as he can find a ship bound for the Eastern Isles. Since the war, very few ships travel the interior waterways, and it has become increasingly difficult to use Dilmun's many bridges.
 
-Recently, the city of Kingshome launched a bid tor empire Kingshome's impenalism was aided hy a sorrerer—Namtat,
-the Beast Fram the Pit. Thanks to Naotar, all magical upposiion was quickly overwheliued, and Kiugshome mnade rapid
-gains For sonte unknown reason, the conquered cities never launched they dragons against Kingshome
+89) You restrain the hunchback and prevent him from hurling the prisoner into the pit. Tears flow from the hunchback's already swollen eyes. "Buth Geshtrude must eat!" he mumbles. The dragon's thrashing intensifies, and the great beast begins beating its head against the side of its pit, setting up a great rumbling through the dungeon. "Now thuh manae hath hit thuth windmill!" the hunchback howls, trying to flee down the narrow causeway to the edge of the pit. He doesn't make it...with a great booming, the dragon lurches from from his chains, bumping against the platform on which you stand. The hunchback is hurled screaming into the maw of the dragon...but now that that beast is free of its chains, no mere morsel can satisfy it!
 
-The youngest of the men arnved at the camp just a few months ago. Se far as he knows, nearly all ot Dilmun’s cities have
-been canguered or lay in ruins. The city of Byzanople on the King’s Isle remains tree. although it has been under siege tor
-several months. He also mentions a city called Erecport in the Eastern Isles, but bis companions scoff when he docs.
-saving Frecport 1s more myth than reality. Nevertheless, the young man asserts he'll find Freeport someday —as soon as
-he can tind 2 ship bound for the Eastern Isles. Since. the war. very few ships travel the intenor waterways. and it has
-heeome increasingly difficult co use Dilmiuut’s trary bisdges
+You flee the scene as the dragon smashes at the supports of the dungeon, and in so doing at the foundation of the entire city of Phoebus. You find a crazy path to the surface uncovered by the dragon's rage. You flee the vicinity of the city and watch from a nearby hill as the dragon claws its way to the surface. Before long, Phoebus is a flaming ruin as the dragon takes its terrible toll. The city destroyed, the dragon slowly rises into the sky, and flaps off to the east.
 
-so" You restrain the hunchback and prevent him from hurling the pnsoner inte the pit. Tears flow trom the hunchback’s
-already swollen eyes. “Buth Gethtrude must cat!” he mumbles. The dragon's thrashing intensifies, and the great beast
-hegins beating its head against the side of its pit, setting up 4 great rambling through the dungeon. “Now thuh manuc
-hach hie thatch windoull'!” the hunchback howls, trying ro flee down the narrow causeway ta the edge af the pi He
-doesn't make it.with a great bouining, the dragon lurches from from his chains. bumping agatose the platform on which
-you stand. The hunchback is hurled screaming into the maw of the dragon...but now that that beast is free of its chains,
-no mere morsel can satisty it!
+90) This is the office of the supreme commander of the campaign army of Kingshome. General Buck Ironhead regards you from behind his desk. Ironhead is a frightening sight. His arms are a mass of scar tissue from a sequence of wounds too tedious to list. His face shows no mirth. His hands continually clench and unclench. His head is completely flat—you could balance an egg on it.
 
-You flee the scene as the dragon smashes at the supports of the dungeon, and in so doing at the foundation of the entire
-erty of Phocbus. You find a crazy path to the surface uncovered by the dragon’s rage. You tlee the vicinity of the city and
-watch from a nearby hill as the dragon claws its way to the surtace. Before long, Phocbus 1s a flaming ruin as the dragon
-takes its termble toll The city destroyed, the dragon slowly rises into the sky, and flaps off to the east.
+"It's about time ya goldbricks showed up!" Buck snarls. "What do ya think this is—a soggin' country club!? Ain't ya ever heard of reporting to yer commandin' officer!?" Buck doesn't wait for a reply. "Now, I know you clowns are a pack of liberal adventurers. You don't like Namtar, you don't like the army—kid's today! Ungrateful whelps! Well, I don't care about any of that. I'm here to give you a second chance."
 
-YO’ This is the office ot che supreme commander ot the campaign army of Kingshome. General Buck Ironhead regards
-you from behind his desk. Ironhead 1s a frightening sight. His arms are a mass of scar tissue from a sequence of wounds
-too tedious to list. His face shows no mirth. His hands continually clench and unclench. His head is completely flat. -
-you could balance an egg on it.
+Buck comes out from behind his desk and hobbles around his office as he continues. "You're in the army whether you like it or not, so you might as well do this the easy way. You may think you've got this thing licked, but I know damn well you can't tell your elbow from a dragon's blowhole. You keep your nose clean and serve with some distinction at the front, and I'll do what I can about gettin' you a full pardon. Namtar's a megalomaniac, but he's also a businessman, and he needs creeps like you!"
 
-“d's about Ging ya goldbricks showed up!” Buck suarts. “What do ya think dius is—a soggin’ country clubs? Asa’t ya
-ever heard of reporting to yer commiandin’ officer??” Buck doesn’t wait for a reply. “Now, Dknow you clowns are a pack
-ot liberal adventurers. You don't hake Namuar, you don’t like the army—kid’s today!) Ungrateful whelps! Well, [don't
-care about any of that. tm here to give you a second chance.”
+Buck dismisses you. "This is yer only chance. Namtar's gonna control everything sooner or later, so you might as well join the winning side. Namtar's promised a kinder and gentler Oceana, but he can't get on with it until guys like you join the line.
 
-Buck cames out from behind his desk and hobbles around his office as he continues. *You’re in the army whether you
-Ike at of not, so you might us well do tus the easy way. You may rhink you've got thas Giuag licked, but T know dann
-well you can't tell your elbow trom a dragon's blawhole You keep your nose clean and serve with some distinction ar the
-trot, and PIL du whe f can about gettoy’ you a toll patdon Natatar’s a megalomaniac, but he’s alse a businessman, and
-he needs creeps like you!”
+"Get outta here!!"
 
-Buck dismisses vou. “This is yer only chance. Namtar's gonna control everything sooner or later, so yuu mught as well
-ain the winning side, Namtar’s promised a kinder and gentler Oceana, but he can’t get on woth it until guys like you tae
-the line.
-
-"Get outta here!!”
-
- 
-
-34
+[頁碼 34]
 
 ---
 
 ## Page 39
 
-- **掃描檔**: `docs/en_manual_images/page-39.png`
-- **內容**: 段落文字頁（Paragraphs）
+91) Some bandits were evidently holed up here. Their campfire is still warm. Evidently they were eating a meal when you showed up, as half-finished bowls of gruel stand all around the fire.
 
-```
-FSR IER
+They weren't very good bandits, or maybe they hadn't been at it for long. There isn't much loot to be had in this camp. Maybe they were adventurers such as yourselves, turned to crime in these hard times.
 
-9U1 Some bandits were evidendy holed up here Ther canupliie is sell warn Feidently they weee cating a meal when
-you showed up, as half-finished bowls of gruel stand al! around the fue
+92) The magnificent stag lies dead. As you kneel beside your kill, the shaft of an arrow buries itself to the feathers in the sod between your feet. You look up and see an old but very dangerous-looking man aiming yet another arrow at you.
 
-They weren't verv good bandits, or maybe they hadn t been stat for long. There isn't much loot to be had tn this camp.
-Maybe they were adventurers such as vourscives, turned to crime in these hard times
+"This is the private preserve of King Drake," the old man says. "An' you have been poachin'." He glances over your party before continuing. "These bein' hard times, I imagine ye gots to eat...but that was a prize animal ye just killed, and I've gots to do me job."
 
-921 The magniticent stag lave dead As you kneel beside vour kil. the shate of an arrow buries itsell to the teathers in the
-sod beaween vourfeer You luok up god see an old but very dangcrous-looking man aiming vet another arrow at you.
+The man keeps his bow half-cocked and watches you closely. He seems to be waiting for you to make the first move. Maybe it would be worth winning his trust.
 
-“This is che private preserve of Kiny Deake,” the old man says “An' yan have been poachin’ ° Tle glances over your
-party before conunuing. “These bein’ hard times, | umagine ye gots to eat.but chat was a price anual ve rust kuled, and
-I've gots to do me yub ”
+93) "BRAAAAAP!" Nergal is crude. "That was delicious...I will hallucinate later, and imagine Irkalla working for a living," Nergal shifts his ponderous mass on his throne, leans forward, and leers. "And now you will serve Nergal!"
 
-[he man keeps ms bow halt-cocked and watches vou closely. He seems to be wanang tor vou to make the tirst move
-Maybe it would be worth winning his trust.
+With impossible speed, Nergal grabs the volunteer with both slimy hands. His jaw seems to drop down to his belt as the black maw of his mouth is exposed. He quickly slips the volunteer's head into his mouth, and clenches his jaw with a sickening crunch. The volunteer's body stiffens, then goes limp, collapsing to the ground without a head.
 
-931 “BRAAAAAP!” Nergal is ceude ~That was deliaous twill halluconate later, and imagine Irkalla working fora
-living.” Nergal shifts his ponderous mass on his throne, leans forward, and teers." And nuw you will serve Nergal!’”
+All is silent. Nergal smiles.
 
-With impossible speed, Nergal grabs the volunteer with both slimy hands. His jaw seems to drop down to his bele as che
-black maw of hts mouth ts exposed, He quickly slips the volunteer's head into his mouth, and clenches his jaw with a
-sickening crunch Uhe volunteer's body stitfens. then goes limp, collapsing to the ground without a head.
+94) You recall learning of waters like this during your mystic studies. The pool of water ahead fits the description of Apsu Waters...waters of the world ocean that underlies the surface of Oceana. Apsu Waters are coterminous with the world of Oceana, the mystical Magan Underworld, and dark dimensions where gods and devils reside.
 
-Allissdent Nergal smiles
+95) The slave boss is relentless. He offers you not a moment's rest, nor a drop of water, or even a scrap of bread. All that matters is that the tunnel be completed. No single man or beast may stand in the way of the project. Night and day you are driven to finish your task, with the sharp lash of the whip on your back, and the laughter of the cruel slave boss ringing in your ears.
 
-94! You recall learning or waters like this during your mysuc studies. The pool af water ahead ists the description ol
-Apou Waters...waters of the world ocean chat underlies the surface of Oceana. Apsu Waters are coterminous with the
-world of Oceana, the mystical Magan Underworld, and dark dimensions where gods and devils reside.
+96) An old man leaps to his feet and lunges for his bow when you enter the shack. "Glory be—ye got me snare!!!", he exclaims. "That's quite a feat, but it still don't do to go bargin' in on an honest folks without so much as a knock!"
 
-YS) The slave boss is relentless. He offers you not a moment's rest, nora drop of water, or even a scrap of bread. Al that
-matters 1s that the tunnel be completed. No single man or beast may stand in the wav of the proiect. Night and day vou
-are driven to finish your task, with the sharp lash of the whip on your back. and the laughter ot the cruc! slave boss
-POTNertpL HL Vale Cars
+"Me name is Old Jack," he continues. "I'm the gamewarden hereabouts." Jack keeps his bow half cocked and watches you closely. He seems to be waiting for you to make the first move. Maybe it would be worth winning his trust.
 
-96) An old man leaps to his teet and lunges for his bow when you cuter the shack. “Glory be—ve got past me soare’!”, he
-exchiums Thats qurte a feat, bucat sali don’t do to go bargin’ in on honest folks without so much as a knock!”
+97) The long line of white-robed pilgrims ends at this rocky shrine. One by one the pilgrims pass before a huge and powerful image of the Universal God. There are no guards here. None are required. The God keeps its own order beneath its own roof.
 
-“Me name ts Old lack.” he continues. “I’m the gamewarden hereabouts.” Jack keeps his how halt cocked and watches
-you closely. He seems to be waiting tor you to make the first move. Maybe it would be worth winning his tmust.
+Looking up into the faceless face of the god, you feel the hand of destiny upon you. Namtar has not yet attempted to supplant Oceana's primary religion...but can that day be far away! The gods slid disaster when they come to the world in person—they must work through champions to see their will is done. The Universal God seems to need a champion, a legendary hero to serve the cause of Freedom. Roba of Freeport was such a hero. Will you be another?
 
-97) The lang line ot whate-srobed prlyims ends at this rorky shrine. One by ane the pilgrmms pass hetare a huge and
-¢ pily, y piigrams |
+The God requires a sign.
 
-powertul unage otf the Universal God) There ate no guards here. None are required. The Gad keeps tes awn ardet
-
-beneath its own roar,
-
-Lovking up tnto the faceless tace of the god, you feel the hand of destiny upon you. Namtar has net vet attempted to
-supplant Oceana’s primary religion. .but can that day be tar away! The gods nsk disaster when they come to the world in
-person—they must wark through champions to sce their willis done. ‘Phe Universal God seems to need a champion. a
-legendary here to serve the cause of Freedom. Roba of Prceport was such a hero. Will you be another?
-
-The God requines a sagn
-```
+[頁碼 35]
 
 ---
 
 ## Page 40
 
-- **掃描檔**: `docs/en_manual_images/page-40.png`
-- **內容**: 段落文字頁（Paragraphs）
+98) You climb the Mountain of Salvation for several hours, but the summit seems to draw no closer. Several pilgrims drop from exhaustion along the path...the road to salvation is not for the weak of heart.
 
-```
-PPSIVE CHOLES
+But a fraction of the way up the mountain, the path abruptly cuts into the rock. A level plain has been cleared in the side of the mountain. This is evidently the place to which the pilgrims travel. Turning around, you look out at the world of Oceana from your lofty perch on the world's highest mountain. To your alarm, you see you have long since risen above even the highest clouds. The sky is purple and strange stars twinkle—the huge bloated mass of the sun fully fills half the sky. Truly, this place is close to God.
 
-Ys! You climb the Mountain of Salvation tor severad bores buc the summit seems co draw oo closer. Several pilynmms
-drop trom exhaustion along the path rhe read to salvation uw nottor the weak or hear
+99) In this stuffy bedroom you find a journal. From it you determine the master of this house was a man named Mog, a rich aristocrat who made his fortune in the mining business. By all accounts he was a crude man—wealthy but uncultured—who fancied himself an artist. The journal is largely given over to a remarkably frank account of Mog's failure as an artist.
 
-But 4 tracuien of the way up the muuntam, che path abruptiv cuts into the rock. A level plain has heen cleared in the side
-of the mountain, This 1s evidently the place to which the pilgrims cravel Turning around, vou look out at the world at
-Oceana trom your lofty perch on the world’s highest mountain. ‘lo your alurm, vou sce vou have long since risen above
-even the highest clouds. The sky is purple and strange stars twinkle-~the huge bloated mass of the sun tuliy tills halt rhe
-sky. Truly. this place ts close ta God
+Mog admits to experimenting with alchemy in pursuit of his art. At one point he confesses using a potion to transform living flesh into stone, but the artistic results were not satisfactory.
 
-99! In this stuffy hedroam you tind a journal From it you determine the master ot dus house was aman named Mog, a
-sich anstocrat who made his fortune at the ring business. By all accounts he was a crude man—wealthy bue uncul
-turcd—whie tanesed daansell an asuse. The ysurnal is largely piven over two a remarkably frank account of Mog s fatiure as
-an artist
+Near the end of the journal Mog mentions "acquiring an apprentice" by supernatural means. It seems this apprentice was originally supposed to assist Mog in his art. Toward the end of the journal, Mog admits the apprentice has begun producing incredible works of art which Mog displays in his garden and calls his own. Mog hints that the apprentice demands a terrible price for his art, and that he fears him. It is possible the apprentice might not be human.
 
-Mog admits to experrmenting with alchemy in pursurt of his art. At one paint he confesses using a potion im transioem
-hving flesh inte stone, but the artisuc results were not satistactory.
+100) Off the beaten path you find this is a temple to the Magan Underworld. This seems a considerably older place than the other structures on this plateau. The Underworld was before there was a was, and doubtless it will still thrive when all of Oceana has long since burned off into the void.
 
-Near the end of the jaumal Mog mennons “acquiring an apprentice” by supernatural means. It seems this apprentice was
-originally supposed to assist Moy in his art) Toward the end ot the journal, Mog adnuts the apprentice has begun
-produceng incredible works ot art which Mog displays in his garden and calls his own. Mog hunts that the apprentuce
-demands a ternble price ror his art, and that he fears him. It is possible the apprentice might not be human,
+101) You receive a note with your feeble meal of the day.
 
-100! Off the beaten path vou find this is a temple to the Magan Underworld. This seems a considerably alder place than
-the other structures on this plateau. The Underworld was before there was a was, and doubtless a will still thrive when
-all of Occana has long since bumed off inta the void
+> 'I am Berengaria, Acolyte of the Temple of the Sun. Mystalvision has gone mad. He punishes me and the others for no reason. He has been corrupted by Namtar.
+> 'We of the Sun serve justice; you must believe that. Mystalvision has brought dishonor to our Order. These are dark times. You have been unfairly imprisoned.
+> 'I have unlocked your door, and made certain the jailor is drunk. If you are cautious, you should be able to sneak past him and escape. The jailor's room adjoins the cell block. Look for the secret door in the south wall of the jailor's room—beyond is a passage that leads to people who will help you. I regret I cannot give you a weapon...just doing this much has placed me in great jeopardy.
+> 'Should you escape, meet me at the Icarian Triumph tavern in the northeast quarter of the city. I'll have something for you.
+> 'For justice and the Sun, I remain your friend—
+>     —Berengaria'
 
-JOH) You receive a note with your feeble meal for the dav:
+102) This is the jailor's room. The fat jailor snores in a drunken slumber. He's slumped over his table, but there is a rope tied to his hand, and a bell tied to his rope. Should he stir, the bell will ring, possibly summoning guards. The jailor is asleep, and doubtless very drunk, but turn-keys are notoriously light sleepers.
 
-‘Lam Berengaria. Acolyte of the Temple of the Sun. Mystalvision has gone
-mad. He punishes me and the others for no reason. Hc has been corruptcd by
-Namtar.
+103) These are the private chambers of the master of the house. The curtains are drawn across the windows permitting little light to enter the room. In the murk, you can see that this room, like the others in the house, is strangely devoid of wall hangings...and that no mirrors are present.
 
-‘We of the Sun serve justice; you must belicve that. Mystalvision has brought
-dishonor to our Order. These are dark times. You have been unfairly imprisoned
+The Master is, sitting in his favorite chair. He wears the garb of an artist—specifically a sculptor...and he wants you to be his next masterpiece!
 
-‘VT have unlocked your door, and made certain the jailor is drunk Tf vow are
-cannons, yau should be able te sneak past him and escape. The jailur’s room
-adjoins the cell block. Look for che secret door in the south wall ot the jailor s
-room—beyond 1s 3 passage that leads to people who will help you. | regrec 1 cannot
-give you a weapon...just doing this much has placed me tn great 1eopardy.
-
-‘Should vou escape, meet me at the Icanan Imumph tavern in the vorthcast
-quarter of the erty. IH have something tor you.
-
-“For qustice and the Sun, I remain your trend—
-
-—HKerengaria’
-
-102) This ts the qailor's room. The fat jailor snores in a drunken slumber. He's slumped over his table, but there is a rope
-ued to his hand, and a bell ued to his rope. Should he stir, the hell wiil ring, possibly summoning guards. The tatlor ts
-asleep. and doubtless verv drunk, but turn-keys are notoriously light sleepers.
-
-103) Uhese are the private chambers of the master of the honse. The curtains are drawn across the windows permiung
-hiette light to enter the room In the murk, you can see that this coom, like the athers in the house, is suangely devoid of
-
-wall hangings . and that no murcors are present
-
-The Master is in, sitting in his favorite chair. He wears the garb of an artist—specstically of a sculptor...and he wants you
-to be his next masterpiece!
-
-36
-```
+[頁碼 36]
 
 ---
 
 ## Page 41
 
-- **掃描檔**: `docs/en_manual_images/page-41.png`
-- **內容**: 段落文字頁（Paragraphs）
+104) In the dark shadows of the dungeon you find a pit, at the bottom of which is a frothing dragon. The beast is constrained by a series of chains, but it seems to you the saurian could hardly be bound by such puny restraints.
 
-```
-PRGA ZR OCOD
+Suspended above the center of the pit is a wooden platform, on which a deformed hunchback struggles with a bound prisoner. The hunchback is about to push the prisoner into the pit, evidently intending him as a sacrifice to the dragon. The prisoner struggles as best as he is able, but his hands are tied behind his back, and he is weakened from long captivity. The dragon thrashes back and forth, impatient to receive its meal.
 
-104) tothe dark shadows of the dungeon you tind a pit, ge the hero: ot which is a trothing dragon The beast is
-constramicd by asenes of chains, but it seems to you the sgunan could hardly be bound by such puny restraints
+105) There are evident signs this chamber was formerly the lair of a beast or large animal. A pile of straw in the corner indicates where a large creature could have slept. The walls scraped with claw marks, and the room is pervaded by an unpleasant odor. This room makes you feel instinctively uneasy.
 
-Suspended above the center of the pitas a wooden platiomn, on which a demented hunchback struggles with a bound
-prisoner The hunchback is about to push the prisoner into the pit, evidently intending him as a sacrifice to the dragon.
-The prisoner struggles as best as he is able, but his hands are ved behind his back, and he is weakened trom Jong captiy-
-itv. The dragon thrashes back and forth, impatient to receive its meal.
+106) This torture chamber is a vision of misery. The walls are lined with chains for securing prisoners in place; the center of the room is occupied by racks, iron maidens, a fire pit, and other horrible instruments. In the corner is a hole into which are hurled the grisly remains of stubborn heretics.
 
-105) There are evident signs this chamber was formerly the lair of a beast or large animal. A pile or straw an dhe comer
-indicates where a large creature could have slept. The walls scraped with claw marks, and the room ts pervaded by an
-unpleasant odor. The raom makes you teel instunctively uneasy.
+A dying druid is stretched on the rack. You have rescued him from torture...at the same time, it is evident he will soon die. There is nothing you can do to save his life, but perhaps you can ease his final moments!
 
-106! This torture chamber is a vision ot misery The walls are lined with chains for securing prisoners in place; the
-center of Che rou is uccupied by racks, iron maidens, a fire pit, and other horrible instruments. In the corner is a hole
-into which are hurled che grisly remains of stubborn heretics.
+107) This tower chamber is in very ill repair. The supports are sinking, and half the floor is flooded with inky black water. The contents of innumerable vials and potions are emptied on the floor alongside the smashed vials that formerly contained them. What was once a great magical library has been destroyed by fire and water damage.
 
-A dying druid is stretched on the rack. You have rescued him trom his torture...at the same ume, 1t 1s evident he will
-soon die. There is nothing you can do tu save his life, but perhaps you can ease his final moments?
+Amid a pile of debris you find the fragments of a journal. Much of it is in some magic language you can't understand, but a small part is legible. The journal is dated prior to the destruction of the City of the Yellow Mud Toad. You surmise the journal was maintained by Lanac'toor.
 
-1071 Thrs tawer chamber is in very ill repair The supports are sinking, and half the floor 1s flooded with inky black
-water. The contents of innumerable vials and potions are empued on the flour alongside the smashed vials that formerly
-contained them What was once a great magical library has been destroyed by fire and water damage.
-
-Amida pile of debris you find the fragments of a journal. Much of itis in some magic language vou can’t understand, bus
-a small part is legible ~The iournal 1s dated pnor to the destruction of the City of the Yellow Mud Load. You surmise the
-wurnal was maintained by Lanac’toor.
-
-‘The chicken remains animate, oot thar it matters any longer. That pinhead Mystalvision has changed the rules again
-Where will Ltind a vole in this weather!,..Have resumed expansion of my tower's basement, using Soften Stone and
-Create Wall spells to clear rock, but this whole damn building is sinking. [ keep running intu pockets of water. Further
-more, [ uncovered an entrance to Magan, and all manner of berserk Underworld denizens are running amok in my
-tunnels... he hell of itis that I've lost my spectacles that Utnapishtim the Faraway gaye me. I'll never sce the entrance
-to the College of Magic without them They re bumed somewhere in the rovk. Tdon’t know af Tan locate them ar this
-late dare, with Namtar’s thigs loase and my name on the lit list. [shuld prepare the city for defense, but Dhaven’t done
-my laundry ai weeks, and it’s beginning tu smell.’
+> 'The chicken remains animate, not that it matters any longer. That pinhead Mystalvision has changed the rules again. Where will I find a vole in this weather!...Have resumed expansion of my tower's basement, using Soften Stone and Create Wall spells to clear rock, but this whole damn building is sinking. I keep running into pockets of water. Further more, I uncovered an entrance to Magan, and all manner of beneath Underworld denizens are running amok in my tunnels...The hell of it is that I've lost my spectacles that Untapishtim the Faraway gave me. I'll never see the entrance to the College of Magic without them. They're buried somewhere in the rock. I don't know if I can locate them at this late date, with Namtar's thugs loose and any name on the hit list. I should prepare the city for defense, but I haven't done my laundry in weeks, and it's beginning to smell.'
 
 Such are the concerns of sorcerers.
 
-10K) You are led to a seeret throne roam bencath the city ot Byzanople There Prince Jordan and several advisors huddle
-Monde map sn acon ob war Jordan is stunaed whee he sees hus sister has brought you inty the heare of jis detenses.
-Jordan's private yugrds tense as they lock eyes with you
+108) You enter the door to a secret throne room beneath the city of Byzanople. There Prince Jordan and several advisors huddle around a map in a council of war. Jordan is stunned when he sees his sister has brought you into the heart of his defenses. Jordan's private guards tense as they lock eyes with you.
 
-Ponce Jordan tecovers lis composure and fistens with interest to his sister's story. He is very interested to learn you are
-intiltrators recently pressed into service with the Kingshomer army. “You are not native to Dilmun, | can see that,”
-Jordan says. “This isn’t your war. No Outlander reaches the interior without going through Purgatory...and Purgatary ts
-administered by Kingshome. I know because my sister was formerly Governor of Purgatory.
+Prince Jordan recovers his composure and listens with interest to his sister's story. He is very interested to learn you are infiltrators recently pressed into service with the Kingshomer army. "You are not native to Dilmun, I can see that," Jordan says. "This isn't your war. No Outlander reaches the interior without going through Purgatory...and Purgatory is administered by Kingshome. I know because my sister was formerly Governor of Purgatory."
 
-Jordan invites vau to ait and otters you wine. "My father is King Drake ot Kingshome,” Jordan says. "T haven't scen my
-father in over a year—not since Namtar rose from the Pit. My tather is a peacelul man, and he loves his children bur be
-has tecenthy dismissed my sister trom her pust at Purgatory, and then layed siege tome bere at Byzanople. My tather
-loves me and the successien is nut disputed. [want to see my father die in bed—I[ do not covet his throne. There is no
-reason tor the King to make waron me. It must be Namuar’s doing,
+Jordan invites you to sit and offers you wine. "My father is King Drake of Kingshome," Jordan says. "I haven't seen my father in over a year—not since Namtar rose from the Pit. My father is a peaceful man, and he loves his children...thus he has recently dismissed my sister from her post at Purgatory, and then layed siege to me here at Byzanople. My father loves me and the succession is not disputed. I want to see my father die in bed—I do not covet his throne. There is no reason for the King to make war on me. It must be Namtar's doing.
 
-“My father is not pertect. but it was never his way to imprison Outlanders for no reason. Namtar has stalen my father
-tram me, he has robbed vou of vour dignity. He is our common enemy, | make you an offer—renect Kingshome and join
-me in my struggle against Namtar, When mv father is restored to the throne. | will see vou are richly rewarded.”
-```
+"My father isn't perfect, but it was never his way to imprison Outlanders for no reason. Namtar has stolen my father from me; he has robbed you of your dignity. He is our common enemy. I make you an offer—reject Kingshome and join me in my struggle against Namtar. When my father is restored to the throne, I will see you are richly rewarded."
+
+[頁碼 37]
 
 ---
 
 ## Page 42
 
-- **掃描檔**: `docs/en_manual_images/page-42.png`
-- **內容**: 段落文字頁（Paragraphs）
+109) Jordan smiles. He leads you to the map he and his men were examining. You recognize it as a plan of the Kingshomer siege camp. Jordan pumps you for information concerning the camp and the size of the force stationed there.
 
-```
-PASILE CARAS ESS
+"We'll attack them tonight, Jordan decides. "There is a secret way from the citadel to the enemy camp—we will take them by surprise." Jordan looks at you as he continues, "Feel free to explore the city until we are ready to leave."
 
-109) Tordan smiles Te leads you toa the map be anid his men were examining Yon tecoynice i asa plan ob the King:
-shamer siege camp ferdan pumps yuu tar mntonmatan concerning the camp and the sice of che tarce statimed there.
+110) "The time has come," Prince Jordan says as he meets you on the stairs. Together with several of Prince Jordan's best fighters, you sneak away from Byzanople through a secret passage. Only a skeleton garrison is left behind—you realize Jordan is throwing everything into this attack.
 
-“Well attack chem vomight,” Jordan decides. “There is a secret way from the citadel to the enemy camp—we will take
-them by surprise.” Jordan looks at you as he continues, "Feel free to explore the city unul we are ready to leave.’
+Using a local guide, you pick your way through the mountains surrounding the Kingshomer siege camp. The guide seems to lead you through solid rock at times, and you soon have little idea of where you are. Suddenly, from ahead, you hear Buck Ironhead bellow orders to a pack of new "recruits". The battle is about to begin!
 
-11U' “The time has come." Prince Jordan savs as hy meets you on the stairs. Logether with several ot Prince lordan’s
-best highters, you sneak away trom Byzanople through a secret passage. Only a skeleton garrison is lett bohind—veu
-realize Jordan ts thrawing everything inta this attack
+111) You enter the dusty and perhaps forgotten ancestral crypt of Byzanople. The murky vault stretches off into the darkness, harboring the remains of several generations of royalty. Perhaps they were buried with treasure...!
 
-Using a local guide, you pick your way through the mountains surrounding the Kingshomer siege camp. The guide seems
-to lead you through solid rock at times, and you soon have little idea of where you are. Suddenly, trom ahead, vou hear
-Buck Ironhead hellow orders to a pack of new “recruits”. The battle is about to begin!’
+If you listen, you think you can hear the faint rattle of chains, and the raspy sound of a corpse drawing breath.
 
-11t! You enter the dusty and perhaps torgotten ancestral erypt of Hyzanople. ‘The murky vault stretches uff into the
-darkness. harboring the remains of several gencrations of royalty. Pcorhaps they were huned wath treasure. ?
+112) Deep beneath the live volcano, you find the dragon hatchery. Here fantastic riches are free for the taking. Your perilous journey across the northern desert, so terrible in its undertaking, at last seems worthwhile.
 
-YW you listen, you chink you can hear a faint rate of chains. and the raspy sound of a Corpse drawing breath
+113) "We people gratefully accept your knowledge and help in restoring the temple. "Truly you are people of the Toad," says a priest. "Please accept these boots as our gift." You are provided with several sets of oversized golden boots. The boots are fashioned so as to resemble the flipper feet of a toad. It will be difficult to walk wearing such thing. "The owner of Magic Golden Toad Boots can leap great distances!" the priest says with pride.
 
-112) Deep beneath the live voleana, you find the dragon hatchery, Here fantastic nches are free tor the taking. Your
-Perilous journey across the northern desert, so terrible in its undertaking, at laste seems worthwhile.
+114) In the darkest heart of this palace of the dead you find an incredible sight...the court of Nergal, consort to Irkalla and King of the Underworld. The bloated white mass of Nergal slouches on a throne of skulls, attended by a score of pallid goblins. Worms squirm in his hair, bats nestle in his loins, and rodents peer at you from within Nergal's mouth. About his neck, on a silver chain, you see a large and ornate key.
 
-114) [he priests gratefully accept your knowledge and help ta restoring the temple. “Truly you are people of the Load.”
-says apricst. "Please accept these boots as our gift.” You are provided with several sets of oversized golden hoots. The
-honors are fashianed so as to resemble the flipper tect of a toad St will be difficult to walk wearing such thing “The
-owner ul Magic Gulden Toad Boots can leap great distances!” the priest says with pride
+"Topsiders...in my Court!" Nergal roars. "Bad enough I am in exile without fool clodhoppers barging in on me. Goblins! Ghoulies! Bring them here!!"
 
-114) In the darkest heart of this palace of the dead you find an incredible sight...the court of Nergal, consort to Irkalla and
-King of the Underworld. The bloated white mass of Nergal slouches on a throne of skulls, attended by a score ot pallid
-goblins. Worms squirm tn his hair, bats nestle mn his Joins, and rodents peer at you from within Nergal’s mouth About
-his neck, on a silver chain, vou sve a large and omate key.
+115) "Haw! Most entertaining," Nergal laughs. The hideous god raises one fist and his court of freaks—though you just hacked them to pieces—lurch to their feet like puppets on invisible strings. The goblins and ghoulies look ready to fight again...it's evident the undead monsters will eventually wear you down. "You have entertained me...but you must also feed Nergal and serve Nergal before you can ask a boon of Nergal. That is the law!"
 
-’Topsiders..1n my Court!" Nergal roars “Bad eneuyh fam in extle without foal clodhoppers barging in on me. Goblins’
-Ghouhes' Bring them here!
+Nergal looks at you expectantly. A ghoul titters.
 
-Hal “Haw! Most entertaining,” Nergal laughs. The hideous god raises one fist and his court of treaks—though you just
-hacked them to preces—tlurch co their feet ike puppets on invisible strings. The goblins and ghoulres look ready to fight
-again...it’s evident the undead monsters will eventually wear you down, "You have entertained me...but you must also
-teed Nergal and serve Nergal before you can ask a boun of Nergal. That is the law!”
+116) Just as advertised by the blind juggler, there was indeed a secret tunnel out of Purgatory. Beneath the rock marked with the secret sign you find fresh armor and weapons...thus armed, you are ready to seek revenge for your imprisonment.
 
-Negal lanks at you expectantly. A ghoul urters
+117) Here in the open garden you find an unusual statue. It is of an apparently wealthy man, if the quality of his garments is any clue. He is in poor shape, and appears to be afraid of something. The quality of the work is excellent, but the statue is very unflattering.
 
-116) Just as advertised by the blind juggler, there was indeed a secret tunnel out ot Purgatory. Beneath the rock matked
-with the secret sign you find fresh armor and weapons...thus armed, you are ready to seek revenge tor vour imprisonment.
+118) A massive mechanical brass automaton stands at silent attention in this chamber. It is a flawless piece of engineering, massive yet agile, and heavily armed and armored from head to toe. It would not do to run into this thing in a dark hallway.
 
-Ht’) Here in the open garden you find an unusual statuc. It is of an apparently wealthy man, if the quality of his
-garments is any clue. He is in poor shape, and appears to be afraid of something. The quality ot the work is exccllent, but
-the statuc ts very unflattering
-
-118) A massive mechanical brass automaton stands at silent attention in this chamber [tis a Hlawless piece of engineer:
-ing, Massive yet agile, and heavily armed and armored from head to toe. It would not do to mun into this thing in a dark
-hallway.
-
- 
-
-38
-```
+[頁碼 38]
 
 ---
 
 ## Page 43
 
-- **掃描檔**: `docs/en_manual_images/page-43.png`
-- **內容**: 段落文字頁（Paragraphs）
+119) This vault is filled with slumbering dwarves...but if they sleep, it is the sleep of the dead, for the dwarves have turned to stone. The dwarves are frozen in all variety of poses—sleeping, eating, working, and just a few while fighting. It seems the dwarves were surprised by something terrible that turned them to stone.
 
-```
-PSG ZR ROLF
-
-HY) Thais vaudees filled wath stumbering dwarves. bur st they sleep. tas the sleep ot che dead, ror the dwarves have been
-turned to stone. The dwarves are trozen in all vanety of peses—sleeping, cating, working, and iota lew white ighemnyg,
-It seems the dwarves were surprised by something temmble chat tumed them to stone
-
-120° The Dragon Queen recoils when you show the DragonGem. “Curse you!” she hisses. “The DrayonGem marks you
-as fnend of dragons, and binds me co your will,” The Dragon Queen looms above vou, scening impossibly large. ‘I grant
-vou vour lite, and J dismiss vou tram my presence. When next you use the DragonGem, I will respond...but the sacrifice
-you otter must be sweet, or { will tum on you, and the DragonGem be damned!!"
+120) The Dragon Queen recoils when you show the DragonGem. "Curse you!" she hisses. "The DragonGem marks you as friend of dragons, and binds me to your will," The Dragon Queen looms above you, seeming impossibly large. "I grant you your life, and I dismiss you from my presence. When next you use the DragonGem, I will respond...but the sacrifice you offer must be sweet, or I will turn on you, and the DragonGem be damned!!"
 
 With a beat of her wings the Dragon Queen is gone.
 
-121) Peals of hysterical laughter sssail your ears, You've discovered the secret undercity ai Lansk, and where che city
-above is staid and conservative, this place is a erue party town. Citizens stagger aboutin drunken stupors, angry soldiers
-wrestle with one another, women «nd animals run through the streets,
+121) Peals of hysterical laughter assail your ears. You've discovered the secret undercity of Lansk, and where the city above is staid and conservative, this place is a true party town. Citizens stagger about in drunken stupors, angry soldiers wrestle with one another, women and animals run through the streets.
 
-122) This statue represents Irkalla, the reigning deity of the Magan Underworld. {tis to her vou must appeal it vou will
-long survive in the Underworld. She frequently wars with her consort Nergal, sometime King of the Underworld.
+122) This statue represents Irkalla, the reigning deity of the Magan Underworld. It is to her you must appeal if you will long survive in the Underworld. She frequently wars with her consort Nergal, sometime King of the Underworld.
 
-113! Here is a statue of Nerpal, the cowardly King of the Underworld. When he is not getting along with Irkalla, Nergal
-is cxiled ta his palace io che Necropolis, a city of the dead hidden un one of Dilmun’s inaiy isles. Neaal as a bloated and
-niiculous creature, bur from the look in his eye you surmise he might have a sense of humor,
+123) Here is a statue of Nergal, the cowardly King of the Underworld. When he is not getting along with Irkalla, Nergal is exiled to his palace in the Necropolis, a city of the dead hidden on one of Dilmun's many isles. Nergal is a bloated and ridiculous creature, but from the look in his eye you surmise he might have a sense of humor.
 
-124) This statue honors the Universal God, the most popular deity of the surface realm ot Oceana. The Universal God 1s
-a taceless deity with multiple arms and hands. Each hand is posed in a different signal, sending messages of hope and tear
-to the faithful. {he Universal God 1s said to offer power to those who serve Frecdom—it was a patron of the legendary
+124) This statue honors the Universal God, the most popular deity of the surface realm of Oceana. The Universal God is a faceless deity with multiple arms and hands. Each hand is posed in a different signal, sending messages of hope and fear to the faithful. The Universal God is said to offer power to those who serve Freedom—it was a patron of the legendary Roba of Freeport. An ancient shrine to the Universal God on the mountain of Nisir attracts millions of pilgrims annually.
 
-Roba ot Freeport. An ancient shrine to the Universal God on the mountain of Nisir attracts milhons ot pilgrims annually
+125) Here you find an image of Enkidu the beastman, patron deity of animals and Druids. His worship is strong in the wild places, but has declined in cities with the rise of Namtar and the destruction of the Druid sects.
 
-VA) Here won finda unage ob Foksdu the beastman, patron deity of animals and Druids Hes warship is scrang in the
-wild places, but has declined an croes wath the rise of Namtar and the destructian of the Diuid sect.
+126) Here you find Lansk's dragon, perhaps first glimpsed from the city square above. Up close the dragon is not nearly so impressive. It is an old dragon—its fire has gone out, and its teeth have been pulled. It is still a powerful beast, but age or drugs seem to have robbed the beast of its fighting spirit. The animal looks at you with something close to sadness in its eyes.
 
-126' Here you find Lansk’s dragon, perhaps first glimpsed from the city square above. Up close the dragon ts not nearly
-soimpressive. Itas an old dragan its fire has gone out, and its teeth have been pulled. !t is stall a powerful beast, but age
-or drugs scem to have robbed the bast of ats fighting spurt. The animal looks at you with something close to sadness in
-its CVCA,.
+127) The cave is much larger on the inside than without. The interior of the cave is lined with thousands of natural crystals that crazily reflect the light. After your long dark journey through the Underworld, you are dazzled by the sudden light, and become disoriented.
 
-127! The cave as much barger on the inside than without The interior ol the cave is lined with thensands at natucad
-crystals that craily reflect he light. After your long dark journey through che Underworld, vou are dascled by che suddes
-light, and become disoriented.
+A voice rings in your ears. "You are the heroes of Oceana, and to you has fallen the burden of this adventure. Listen closely, for this is what you must do...
 
-A voice rings in your cars. “You are the heroes of Oceana, and to you has fallen the burden ot this adventure. Listen
-closely, for this ts what you must do...
+"The fair world of Oceana is sinking as the seas swell ever larger—there is little to be done for this. The world has its span of life like any man or beast. The pilgrim Isles of Dilmun have been usurped by Namtar, a renegade demon from the realm of this Underworld. He has disposed of King Drake of Kingshome and rules in the late King's name, using the King's legions to pursue his path of conquest.
 
-‘The tarr world of Oceana t» sinking as the seas swell ever larger there is little to be done tor dis the world has its
-span ob ite ike any man or beast: “he pilgnm Isles of Dslmun have becn usurped by Namtat. a rencgade demon from the
-realm of this Underworld [fe has disposed of King Drake of Kingshome. and miles in the late King’s name using the
-King's legions te pursur his parh of canqguest
+"Namtar must be destroyed. He has isolated his enemies, dispersed the magical brotherhood of the world and taken control of the dragons.
 
-Namur must be destroyed) He has isolated his enemres, dispersed the magical brothethood of the world and taken
-controf of the dragons
+"The Sword of Freedom must be found and reborn in this forge. A reconciliation of sorts must be set between Irkalla and Nergal, for without accord in the Underworld, there can be no peace on the surface. When all is ready, seek the Mountain of Salvation—Namtar must be returned to the pit of hell from which he came."
 
-“The Sword of Freedom must be found and rebom in its torge. A reconciliation of sorts must be set between Irkalla and
-Nergal, tor without accord in the Underworld, there can be no peace on the surface. When all is ready, seck the Moun:
-tam of Salvation) Namtar must be rcturned to the pit of hell tram which he came.”
+The voice fades...
 
-The voice tades...
-```
+[頁碼 39]
 
 ---
 
 ## Page 44
 
-- **掃描檔**: `docs/en_manual_images/page-44.png`
-- **內容**: 段落文字頁（Paragraphs）
+128) You sprinkle the ashes on the dark waters of the well, which abruptly begin to swirl. Although the night of the Underworld is absolute, you think you see a reflection of stars in the swirling black waters. The motion of the water intensifies and the ashes are sucked into the depths.
 
-```
-PPSILE SPOS ESSH
+You stand back as a ghostly apparition rises from the well. At first the form is a shade, then a ghost, then a spectre, then a living corpse. Gradually the shape takes corporeal form...blood, bone, muscle, teeth, hair is restored.
 
-$28) You sprinkle the ashes on the dark waters ot the well, which abruptly begin to swirk Although the might of the
-Underworld ts absolute, vou think you see a reflection of stars in che swirling black waters. Lhe motion of the water
-intensifics and the ashes are sucked into the depths.
+The ashes are restored to life!
 
-You stand hack as a ghostly apparition rises from the well At first the torm is.a shade, then a ghost, then a spectre, then
-ativing corpse Gradually the shape takes corporeal form blood, bone, musele, teeth, hair is restored
+129) The meeting of the Dilmun Underground is called to order. All those in attendance at the meeting are cloaked in dark robes, and although you recognize a few voices, no faces are visible.
 
-The ashes are restored to lite!
+130) Formerly the imperial court of King Drake, this hall retains none of the splendor of ages past. Where once hung brilliant tapestries, the walls are now bare. Empty pedestals mark where renowned sculptures formerly stood. Blocks of marble are missing in several places where materials have been removed to construct fortresses for Kingshome's campaign army. This is not the court of a king in residence.
 
-129) The meeting of the Dilmun Underground 1s called to order, Atl those in attendance at the meeting are cloaked in
-dark robes, and although vou recognize a few voices, no faces are visible.
+131) This is a private bedchamber. A man wearing a simple robe lays on a divan. He seems neither old nor young. He has no distinguishing marks or characteristics...there is no evil air to him, his eyes do not piece to your soul, his brow has no spark of mad genius. He sits up lazily as you enter, swings his feet to the floor, walks across the room, and shakes your hand.
 
-130) Formerly the imperial court at King Drake. this hall retains none ot the splendor of ages past. Where ance hung
-brilliant tapestries, the walls are now bare Pmpry pedestals inark where renowned sculptures formerly storat Blocks uf
-uuarble are missing in several places where materials bave heen removed to construct fortresses for Kingshome’s cam-
-paign army. This is out die court of 3 king in residence.
+"I'm Namtar," he says. "I suppose you guessed that. You've gotten here quite a lot of trouble." Namtar smiles. "Disappointed? Expecting something more? Later—I promise you. Won't you sit down?" Namtar offers you a chair.
 
-131! This is a private bedchamber. A man wearing a simple robe lays on a divan. He seems neither old nor young. He
-has no distinguishing marks or characteristics...there 15 no evil air to him, his eyes do not piece ta your soul, his brow has
-no spark ot mad gemus. He sits up lazily as you enter, swings his feet to the tloor, walks across the room, and shakes
-your hand.
+Namtar looks sleepy. He keeps rubbing his eyes. "Administering the conquest of the world is a bitch," he says. "If I'd know how much work this was going to take, I doubt I ever would have started. Or maybe I never had a choice. No matter. We need to talk.
 
-“Ym Namtar,” be says ‘EP suppose yau guessed that You've given me quite a lot at trouble " Namtar smiles “Disap-
-pointed? Expecting something more! Later—! prumise you. Won't you sit dawn!” Namear offers you a chair.
+"I am the son of gods. It is my destiny to rule men such as yourselves. You don't have to like it—I sense you do not—but that is the way of things. I have some grand plans, but I can't begin until this futile resistance is quelled. It's just a matter of time. You know that as well as I. Why don't you pack it off to the Isle of the Damned—an worked for old Drake. You're not even native to Dilmun...there's little reason for you to oppose me. Granted, that episode in Purgatory was nasty, but into everyone's life a little reign must fall. Ha ha. That was a pun."
 
-Namtar looks sleepy, He keeps rubbing his eves. “Administering the conquest of the world 1s a bitch,” he says. “If I'd
-know how much work this was going to take, | doubt I ever would have started. Or maybe [ never had a choice. No
-matter. We need to talk.
+No one laughs. Namtar sighs. "Ah well, I suppose we'll have to do this the hard way. I'll be leaving now. If you're very dedicated, and very lucky, we may meet again within the Mountain of Salvation. I will kill you then. In the meantime, consider yourselves to be living on borrowed time. It's the least I can give you in gratitude for the entertainment you've provided thus far.
 
-“Lam the son of gods. [tas my destiny to rule men such as yourselves. You dun’t have to like it—I sense you do not—but
-that 1s the way of things. Thave some grand plans, but | can’t begin until this futile resistance is quelled It’s just a
-matteroftme You know that as well asf) Why don’t you pack it off to the Isle af the Namned—it worked tor old
-Drake. You're not even nauve co Dilmun. there's hele reason for you two oppose me. Granted, chat episode in Purgatory
-was nasty, but into everyane’s life a litele reign must fall. Ha ha. That was a pun.”
+"Oh...by the way. You can move again." Namtar's sorcery was so complete, you did not notice you were under his compulsion until he brought it up. "I wish you the worst of luck, my friends." Suddenly Namtar is gone—no flash of light, no peal of thunder — just gone.
 
-No one laughs. Namtar sighs, “Ah well, | suppose we'll have to do this the hard way. I’ll be leaving now. If you're very
-dedicated, and very lucky. we may meet again within the Mountain of Salvation. E wall kill you then. In the meantime,
-consider yourselves to be living on borrowcd time. It's the least | can give you in gratitude tor the entertainment you've
-provided thus tar
+132) Atradrax screams as the first pint of blood is pumped from his body. This is going to be a long night—a single pint will never satisfy the Vampire Lord, but it seems none of the blood is going to come easy. You check the machines and see they function as advertised, but it still seems your volunteer is experiencing needless pain.
 
-“Oh by the way. You can move again" Namtar’s sorcery was so complete, you did vot notice vou were under bis
-compulsion unul he breught it up. “I wash you the worst of luck, my friends.” Suddenly Namtar is gone — no flash of
-hight. no peal of thunder — just gone.
+133) "You're all right," the troll laughs, wiping the froth from his lips. "We have many other strange and wonderful customs of which you should partake. Meet me at the crossed oaks when the moon is full, and you will have your promised meeting with the king."
 
-132! Aradrax sereanss as the first pint of blood is pumped from his body. This is going to be a long mght—a single pint
-wall never satisty the Vampire Lord, but it sccms none of the blood 1s going to come easy. Yuu check the machines and
-sce they function as advertised, but re still seems your voluntcer 1s cxpenencing necdless pain.
-
-133! “You're all aight,” che ural! laughs, wiping the froth from his lips “We have many other strange and wonderful
-customs uf which you should partake. Meet me at che crossed oaks when the mann is full, and you will have your
-promised meeting with the king.”
-
- 
-
-40
-```
+[頁碼 40]
 
 ---
 
 ## Page 45
 
-- **掃描檔**: `docs/en_manual_images/page-45.png`
-- **內容**: 段落文字頁（Paragraphs）
+134) In the very heart of the valley you find the sacred hive of the Dragon Queen. The Queen sits atop a mountain of eggs, some of which hatch young saurians even as you watch. The Dragon Queen is colossal—easily ten times the size of any beast you've confronted thus far. She fixes you with a fierce glare.
 
-```
-144) In the very heart of the valley you tind the sacred hive of the Dragon Queen The Queen sits atop a mountain of
-cggs, some ot which hatch younp saunans even as you watch. The Dragan Queen is colossal—casily ten times the size of
-any beast you've confronted thus tar She tixes you with a fierce glare
-
-"You carve your way through my valley.” she hisses, “destroying my creatures, and new cater the presence ot lie Meahes
-Dragon. You will die for what you bave done, but you will dic slowly...as food for my brood *
+"You carve your way through my valley," she hisses, "destroying my creatures, and now enter the presence of the Mother Dragon. You carve out for what you have done, but you will die slowly...as food for my brood."
 
 The Dragon Queen rears up and prepares to breathe a blast of poisonous fire.
 
-135] “Ltrust you have read Poe,” Namtar laughs. “The best place to hide something ts in plain sight) You paranoid doles
-would never consider that, would you?” Namtar slides another rod into his arcane hox “Soon my work will be
-complete .seon twill tultdll my destiny—and then you will rue the day you laughed atime!”
+135) "I trust you have read Poe," Namtar laughs. "The best place to hide something is in plain sight. You paranoid dolts would never consider that, would you?" Namtar slides another rod into his arcane box. "Soon my work will be complete...soon I will fulfill my destiny—and then you will rue the day you laughed at me!!"
 
-1361 The gallertes are crammed with tools, each exiled here for their inability co follow direcuans. The fantasy ts only se
-real as you allow it to be, and while at cimes life may seem a tool’s errand, it ss only what you make of it. There as litrle
-sense in cheating yourself at solitaire.
+136) The galleries are crammed with fools, unwilling to follow directions. The fantasy is only so real as you allow it to be, and while at times life may seem a fool's errand, it is only what you make of it. There is little sense in cheating yourself at solitaire.
 
-137) Bound in chains upon this lonely Isle of Woe you tind the dark queen irkalla, Mistress of Magan. The chains are
-made of enchanted silver, and she 19 unable to move. “ lopsiders!” she snarls when she sees you. “It’s always the samc.
-The water level mses, your toilets hack up, and cveryone mashes to the Underworld far help’ Well, | have problems ot my
-own, as you can ser That tilthy halfbreed Nanstar chained ine here, and gave the key to the one creature who owes ine
-na tavars."'
+137) Bound in chains upon this lonely Isle of Woe you find the dark queen Irkalla, Mistress of Magan. The chains are made of enchanted silver, and she is unable to move. "Topsiders!" she snarls when she sees you. "It's always the same. The water level rises, your toilets back up, and everyone rushes to the Underworld for help. Well, I have problems of my own, as you can see. That filthy halfbreed Namtar chained me here, and gave the key to the one creature who owes me no favors."
 
-Irkalla regards you. “Perhaps you could be of some use,” she says, her tone suddenly becoming incredibly seductive.
-“Find the Silver Key and set me free.,.you will be richly rewarded. Namtar is our mutual enemy. Serve me, and | shall
-serve you to deteat him!”
+Irkalla regards you. "Perhaps you could be of some use," she says, her tone suddenly becoming incredibly ingratiating. "Find the Silver Key and set me free...you will be richly rewarded. Namtar is our mutual enemy. Serve me, and I shall serve you to defeat him!"
 
-138" You stand at the edge of the Isle of Woc, looking out across the dark waters. and arc convinced nothing 1s gong to
-happen when a sudden flight of hats overhead heralds the amnval of momentous cvents. An amincus ringing tills the au
+138) You stand at the edge of the Isle of Woe, looking out across the dark waters, and are convinced nothing is going to happen when a sudden flight of stars overhead heralds the arrival of momentous events. An ominous ringing fills the air. A few yards offshore the dark waters part, and offered up from the depths you see the legendary Sword of Freedom. Forged from dwarven steel in the fires of hell, powered by the essence of the legendary hero Roba, and tempered in the Apsu waters that underlie creation, the most powerful artifact Oceana has ever known has been reborn!
 
-A tew yards offshore the dark waters part, and offered up trom the depths you see the legendary Sword of Ficedoi. Furged
-from dwarven steel in the fires of bell, powered by the essence of the legendary hero Roba, and tempered in the Apsu
-waters that underlie creation, the most powerful artifact (ceana has ever known has been rebum!
+139) The dwarf has the engine running in no time. With a shudder and a cough, the ancient airship lumbers aloft, and for the first time in centuries something other than a dragon plies the airways of Oceana.
 
-1391 The dwarf has the engine running in no time, With a shudder and a cough. the ancient arrship Jumbers ajott, and tor
-the first time in centunes something other than a dragon ples the atrways of Oceana
+After several days journey to the west, you spot an uncharted island. At the center of the island is an odd ring of standing stones, and in the center of the ring you see....
 
-Atter several days inumey to the west, you spot an uncharted island At the center atthe islands an odd ring af seandsae
-stones, and an ahe center ot the ring you see
+140) You are up to see the dawn as the sun's rays spread across the waters of Oceana. Nights on the trail have their own sort of beauty, but you can't hope helping it won't always be like this. Someday you will no longer be an outlaw. Someday you will sleep beneath a roof like other people, and get to be considered a true citizen of Dilmun. You won't always be poor—this is just a phase.
 
-10) You wre up in see che dawn as the sun’s rays boilliantly spread across the waters of Oceana. Nights on che tea have
-their awn sore ot heauty, but you can’t bope helping it won't always be like this. Someday you will no longer be an
-outlaw. Someday you will sleep beneath a roof like other people, and at last be considered a true cruzen ot Dulmun You
-won't always be poar—this is just a phase.
+141) In the next chamber, you see fires identical to the first. "Very good," the voice intones. "You have potential, but I detected a flaw in your form. Please negotiate this wall of fire for me, that I might study your finer points."
 
-131) Inthe next chamber you see fires idenucal to the first. “Very good,” the voice intones. “You have potential buc t
-detected a tlaw in your form) Please negoriate this wall of fire for me, that TP might study your tiner points ”
+142) "Now you are learning. Not everything is as it seems," says the voice. You enter a chamber occupied by a stone gargoyle. The gargoyle's gaze is fixed on the door through which you must exit the room. "To be seen by the gargoyle is to know death," says the voice. "Yet the gargoyle sees the exit. What to do, what to do...!"
 
-142} “Now vou aie leaning. Now everything is asatserms, "save the vance. You enter a chamber cecupied by a stone
-gargoyle. The gargoyle’s gaze is fixed on che door through which you must exie the room. © To he seen by the gargoyle as
-to know death,” says the voice. “Yet the gargoyle sees che exit, What te do, what to da!”
-
- 
-
-41
-```
+[頁碼 41]
 
 ---
 
 ## Page 46
 
-- **掃描檔**: `docs/en_manual_images/page-46.png`
-- **內容**: 說明文字頁
+143) "Now you have learned to listen. Excellent...you are half-way home," says the voice. You detect genuine admiration in its tone. "This college exists in the rarified atmosphere of the true academic, but not everyone you will encounter appreciates the Art. You must learn to deal with such ruffians." Out of thin air, a huge warrior appears, wielding a sword in both hands. "I'm gonna split yer lobe, highbrow!" he snarls.
 
-PASSIVE GAEL ESEO
+144) "I'm sorry that was so brutal, but I had to prove a point," the voice explains. "Some people can't appreciate Art...in such times, you must rely on more direct measures." You find yourself in a chamber over which is suspended a huge block of granite. The block is hung by a cable...the cable trails to a wall and down to the floor, where it stretches across the floor as a trip-wire. It doesn't take much intelligence to figure it would be unhealthful to trip on the wire. The voice is strangely silent.
 
-£331 "Now you have learned to listen. Excellent.-you are halt way home," says the voice. You detect genuine admura-
-von in its tone. “This college exists in the rarified atmosphere of the true academic, but not everyone vou will encounter
-appreciates the Art. You must learn to deal with such nuffians.” Out of thin air, a huge warrior appears, wielding a sword
-in both hands. "Em gonna split ver lobe, highbrow!" he snarls.
+145) "That was novel. I don't think I've seen that solution before," says your mysterious host. "I am Untapishtim, also called the Faraway. I have been your teacher, now you must teach me something. I want to see something novel and new. Give me your best shot...you go first." The wizard waits for you to act.
 
-1441 “I'm sorry that was so brutal, but | had co prove a point.” the voice explains. "Some people can’t appreciate Art..in
-such umes, you must rely on more direct measures.” You find yourself in a chamber over which 1s suspended a huye
-block of gyramte The block is hung by a cable..the cable trails to a wall and dewn to the tloor, where it stectches across
-the tHloor as a trip-wire Tr doesn’t take much intelligence, to hgure ic would be unheslohtul cto tap on the wie. The voice
-is stranpely silent.
+146) This time it is Untapishtim in the flesh who greets you. "Well done!" he says. "Having learned to listen to me, you've learned you don't have to listen to me. Lanac'toor could not have done better." The old wizard shows no concern when you tell him Lanac'toor is dead. "There's death, and then there's death. I wouldn't worry about Toor."
 
-145! °That was novel. Pdon’t think I’ve seen that solution before.” Across the room you see your mysterius hest. "Ef
-am Utnapishum, also called the Faraway. [have been your teacher, now you must teach me something. | want to see
-something novel and new. Give me your best shot...vou go first.” “Vhe wizard waits for you to act.
+Untapishtim shows you to a cabinet, within which are three magic items. "For completing my gauntlet, you may select one item. I offer the Soul Bowl, the Laugh Staff, or the Sing Ring. Which will it be, my friends?" The wizard looks at you with a hint of impatience. From the way he introduced the items, you judge he does not want you to select the Soul Bowl.
 
-146} [his time it is Urnapishtim in the tlesh who grcets you. “Well donc!" he says. “Having learned to listen to me
-you've lcarnedd you don't have to hsten to me. Lanae’toar could now have dene herter.” The old wizard shows na concern
-when you tell him Lanactoar is dead “There's death, and then here’s death TP wouldn't worry about Toor"
-
-Utnapishum shows you to a cabinet, within which are three magic items. “For completing my gauntlet, vou may select
-one item, f offer the Soul Bow!, the Laugh Staff, or the Sing Ring. Which will it be, my friends?" The wizard looks at you
-with a hint of impatience. Fram the way he introduced the items, you judge he does not want vou to select the Soul
-Bow).
-
-147! You emerge trom a narrow pass and look out on a hidden valley. The valley is narraw and wet and confined on three
-sides by mauntains and by the sea on the tourth The swampy mass of the valley floor at first appears to be moviny...until
-you look closer, when you malize che valley tloor is covered with 3 mass of living creatures, crawling one atop another as
-jar as the eye can see.
+147) You emerge from a narrow pass and look out on a hidden valley. The valley is narrow and wet and confined on three sides by mountains and by the sea on the fourth. The swampy mass of the valley floor at first appears to be moving...until you look closer, when you realize the valley floor is covered with a mass of living creatures, crawling one atop another as far as the eye can see.
 
 To venture into the Dragon Valley is to invite certain death.
+
+[頁碼 42]
 
 ---
 
 ## Page 47
 
-- **掃描檔**: `docs/en_manual_images/page-47.png`
-- **內容**: 說明文字頁
+**Limited Warranty**
 
-Limited Warranty
-INTERPLAY LIMITED 90-DAY WARRANTY
+**INTERPLAY LIMITED 90-DAY WARRANTY**
 
-Interplay warrants to the original consumer purchaser of this compuler software product Unat (he recording medium on
-which the safieare programs are recorded will be free trom detects in material and workmanship tor 90 days from the date
-of purchase. If the recording medium is found defective within 90 days of original purchase. Interplay agrees to replace.
-tree of charge, any product discovered to be defective within such period upon receipt at its Factory Service Center of the
-product, postage paid. with proof of date of purchase. This warranty ty limited to the recording medium containing the
-software program orginally provided by Interplay and is not applicable to normal wear and tear. This warranty shall not be
-applicable and shalt be void if the defect has arisen through abuse, mistreatment. or neglect. Any implied warranties applic
-able to this product are limited to the 90-day period described above. Interplay disclaims all responsibility for incidental or
-consequential damages
+Interplay warrants to the original consumer purchaser of this computer software product that the recording medium on which the software programs are recorded will be free from defects in material and workmanship for 90 days from the date of purchase. If the recording medium is found defective within 90 days of original purchase, Interplay agrees to replace, free of charge, any product discovered to be defective within such period upon receipt at its Factory Service Center of the product, postage paid, with proof of date of purchase. This warranty is limited to the recording medium containing the software program originally provided by Interplay and is not applicable to normal wear and tear. This warranty shall not be applicable and shall be void if the defect has arisen through abuse, mistreatment, or neglect. Any implied warranties applicable to this product are limited to the 90-day period described above. Interplay disclaims all responsibility for incidental or consequential damages.
 
-Some states do not allow limitations as to how long an implied warranty lasts and/or exclusions or limitations of meidental
-oy consequential damages so the above limitations and ‘or exclusions of hability may not apply te vou This warranty gives
-you specific nghts, and you may also have other rights which vary fram state to state
+Some states do not allow limitations as to how long an implied warranty lasts and/or exclusions or limitations of incidental or consequential damages so the above limitations and/or exclusions of liability may not apply to you. This warranty gives you specific rights, and you may also have other rights which vary from state to state.
 
-Lifetime Warranty
+**Lifetime Warranty**
 
-If the recording meditim should fait after the original 90-day warranty period has expired. you may return the software pro-
-gram to Interplay at the address noted below with a check or money order for $5.00 (ULS. currency), which includes
-postage and handling, and {Interplay will mail a replacement to you. To receive a replacement, vou should enclose Uhe
-detective medium (including the orginal product labell in protective packaging accompanied by: (]1 a $5.0fh check. (2) a4
-brief statement describing the defect. and (3) your return address. If you have a problem with vour software, you may wish
-to call us first at (714) 553-6678, If vour media is defective and a replacement is necessary, U.P.S. or registered mail is rec-
-ormuended for returns, Please send the defective disk(s) ouly (nut the box! with a description of the problem and $5.00 to:
+If the recording medium should fail after the original 90-day warranty period has expired, you may return the software program to Interplay at the address noted below with a check or money order for $5.00 (U.S. currency), which includes postage and handling, and Interplay will mail a replacement to you. To receive a replacement, you should enclose the defective medium (including the original product label) in protective packaging accompanied by: (1) a $5.00 check, (2) a brief statement describing the defect, and (3) your return address. If you have a problem with your software, you may wish to call us first at (714) 553-6678. If your media is defective and a replacement is necessary, U.P.S. or registered mail is recommended for returns. Please send the defective disk(s) only (not the box) with a description of the problem and $5.00 to:
 
-WARRANTY REPLACEMENTS
+**WARRANTY REPLACEMENTS**
+
 Interplay 17922 Fitch Ave., Irvine, CA 92714
 
-System Upgrades
+**System Upgrades**
 
-Interplay has a system upgrade policy. At any time after purchasing any Interplay product. vou may send us your original
-disks and a check for $15.00 (0S. funds) and we will replace vour disks with the version for another computer svstem that
-you specify. (This price is subject to change.!
+Interplay has a system upgrade policy. At any time after purchasing any Interplay product, you may send us your original disks and a check for $15.00 (U.S. funds) and we will replace your disks with the version for another computer system that you specify. (This price is subject to change.)
 
-Copying Prohibited
+**Copying Prohibited**
 
-This software product and the manual are copyrighted and all nights are reserved by Interplay and are protected by the
-copyright laws that pertain to computer software. These disks are not copy-protected. This does not mean you may make
-unlimited copies. You can back up the disk for your own personal use, but it's egal to sell. pive or othenvise distribute a
-copy ta another persun. Copyright 1988-1993. All rights reserved. C1989 Interplay Productions, Ine. All rights reserved.
-Interplay 1s @ trademark of Interplay Productions.
+This software product and the manual are copyrighted and all rights are reserved by Interplay and are protected by the copyright laws that pertain to computer software. These disks are not copy-protected. This does not mean you may make unlimited copies. You can back up the disk for your own personal use, but it's illegal to sell, give or otherwise distribute a copy to another person. Copyright 1988-1992. All rights reserved. ©1989 Interplay Productions, Inc. All rights reserved. Interplay is a trademark of Interplay Productions.
 
-NOTICE: Interplay reserves the right ta make modifications or improvements to the product described in this manual at
-any time and without notice.
+*NOTICE: Interplay reserves the right to make modifications or improvements to the product described in this manual at any time and without notice.*
 
 ---
 
 ## Page 48
 
-- **掃描檔**: `docs/en_manual_images/page-48.png`
-- **內容**: 說明文字頁
+**BILL HEINEMAN**
 
-BILL HEINEMAN
+Imagine my surprise when my boss told me I had to create a top-notch fantasy role-playing game in four months and four disk sides. Much to his dismay, it took a little more time than anyone thought but with the talents of everyone involved, we were able to create a new gaming experience for you to enjoy. My thanks to Paul O'Connor for his excellent game design, Todd Camasta for his artistic touches, and to Brian Fargo for putting up with me.
 
-Imagine my surprise when my boss told ine | had to create a top-notelr fantasy
-role playing game in four months and four disk sides. Much to his dismay. it took
-a litthe more time than anyone thought but with the talents of everyone involved,
-we were able to create a new gaming experience for you to enjoy, My thanks to
-Pad O'Connor tor his excellent game design, Todd Camasra tor bis artistic
-touches, and to Brian Farge tor purring up with me,
+Now about that vacation...
 
-Now about that vacation.
-
-+
-
-w-,
-Zz
-
-a
--
-
-al
-Ld
-
-iad
-oa
-
-ate
-
- 
-
-From the dette Puanl CMC amor, Bali Haeteeoman fiadid f Curmratata
+> *From the left: Paul O'Connor, Bill Heineman, Todd J. Camasta*
+> (照片:三人合影,中為 Bill Heineman)
 
 ---
 
----
+## 轉寫狀態與人工複核建議
 
-## Read Paragraph 防拷段落分析
-
-### 說明
-
-Dragon Wars 使用「Read Paragraph」防拷機制：
-遊戲過程中會要求玩家翻閱手冊並朗讀特定編號的段落文字，
-以驗證玩家持有正版手冊。段落文字順序故意打亂（非連續順序），
-純閱讀無法推測出所有段落。
-
-### 段落分佈位置
-
-| 手冊頁碼 | 說明 |
-|----------|------|
-| Page 24–48 | 段落文字區塊（Paragraphs section） |
-| Page 24 | 段落區塊開頭，標題「Dragon Wars Paragraphs」 |
-| Page 47–48 | 版權頁、作者後記 |
-
-### 偵測到的段落編號
-
-- OCR 偵測到段落共 **52** 個（OCR 識別率有限，實際應更多）
-- 編號範圍：**8** ～ **185**
-- 已識別編號列表: 8, 10, 13, 14, 16, 17, 18, 19, 22, 24, 27, 30, 32, 33, 34, 36, 39, 42, 43, 44, 47, 49, 56, 64, 65, 66, 72, 73, 74, 75, 76, 77, 96, 97, 102, 103, 104, 105, 109, 112, 114, 116, 118, 121, 122, 124, 129, 130, 131, 137, 144, 185
-
-### 備註
-
-- 由於掃描品質與 OCR 的英文識別限制，部分段落編號可能識別有誤
-- 中文手冊(精確轉寫見 `34_READ_PARAGRAPHS.md` / `33_MANUAL_TRANSCRIPTION.md`;舊 OCR `_deprecated/31_CHINESE_MANUAL_TEXT.md`)的第二冊（2F3_SCAN1239）
-  頁面 002–020 對應中文版的段落文字，段落編號約 1～147+
-- 中英文段落對應：中文手冊段落 ≈ 英文段落（同一遊戲，不同語言版本）
+- **完整轉寫頁數**:48 / 48 頁(page-01 ~ page-48)。
+- **Read Paragraph 段落範圍**:1–147,全數轉寫,逐段含原始編號(對應 `34_READ_PARAGRAPHS.md` 中文 1–147)。
+- **建議人工複核頁面**(掃描小字密集或語句疑似 OCR 殘留 → 視覺判讀已盡量還原,但仍建議比對原圖確認):
+  - **Page 25(段落 5)、Page 28(段落 30–35)、Page 33(段落 59–66)、Page 38(段落 88–90)**:長段落、字密,個別連接詞/語法處可能仍有 1–2 字誤判。
+  - **Page 27 段落 25**:刻意拼出的「機械慢速語音」(Wellll...cooome... 等)字數依視覺呈現,長度未必逐字精確,已標 `[?]`。
+  - **Page 23 / Page 19(地圖頁)、Page 48(照片頁)**:含圖,文字已轉,圖內細節以說明標註。
+- **相較舊 tesseract OCR 修正的明顯亂碼**(舊檔多處 `[OCR 待校對]`、空白頁、亂碼字母):
+  - Page 01 舊檔標「(空白頁或圖片頁)/(OCR 無有效輸出)」→ 已補回封面標題與版權標示。
+  - 全書花飾分隔線造成的 OCR 噪音字元(隨機符號)已移除。
+  - `Getring`→`Getting`、`tirst`→`first`、`producr`→`product` 等常見 OCR 形近字誤判已修正。
+  - 段落區先前因雙欄/小字導致的斷字、漏字、亂碼,已依視覺逐段重寫並補齊編號。
