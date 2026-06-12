@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="520" viewBox="0 0 520 520" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <!-- 上方與左側石牆(粗暗塊) -->
+  <rect x="20" y="20" width="470" height="22" fill="#6b5b4d"/>
+  <rect x="20" y="20" width="22" height="430" fill="#6b5b4d"/>
+  <!-- 左牆內側散布灌木 -->
+  <g fill="#3a7d44">
+    <circle cx="70" cy="80" r="5"/><circle cx="70" cy="160" r="5"/><circle cx="70" cy="240" r="5"/><circle cx="70" cy="320" r="5"/><circle cx="70" cy="400" r="5"/>
+    <circle cx="400" cy="120" r="5"/><circle cx="430" cy="200" r="5"/><circle cx="400" cy="280" r="5"/>
+  </g>
+  <!-- 城內房間群(空心方塊,open door) -->
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <rect x="100" y="120" width="50" height="40"/>           <!-- 10 -->
+    <rect x="240" y="60" width="80" height="80"/>            <!-- 11 大廳 -->
+    <path d="M 350 80 L 380 80 L 380 120 L 350 120"/>       <!-- 8 -->
+    <path d="M 400 70 L 440 70 L 440 110"/>                 <!-- 6 -->
+    <rect x="240" y="160" width="70" height="60"/>
+    <!-- 中段 -->
+    <path d="M 120 230 L 180 230 L 180 290 L 120 290 L 120 260"/>
+    <rect x="220" y="240" width="70" height="60"/>          <!-- 5 -->
+    <rect x="320" y="230" width="80" height="60"/>
+    <!-- 下段 -->
+    <rect x="200" y="340" width="70" height="60"/>
+    <path d="M 360 290 L 420 290 L 420 330"/>               <!-- 3 走道 -->
+    <path d="M 380 360 L 440 360 L 440 410 L 380 410 L 380 380"/> <!-- 4 -->
+    <rect x="200" y="420" width="55" height="50"/>          <!-- 1 -->
+    <path d="M 130 420 L 185 420 L 185 470 L 130 470"/>     <!-- 2 旁 -->
+  </g>
+  <!-- 編號點 -->
+  <g font-size="14" font-weight="bold">
+    <g><circle cx="65" cy="100" r="11" fill="#c0392b"/><text x="65" y="100" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text></g>
+    <g><circle cx="120" cy="140" r="11" fill="#c0392b"/><text x="120" y="140" fill="#fff" text-anchor="middle" dominant-baseline="central">10</text></g>
+    <g><circle cx="280" cy="100" r="11" fill="#c0392b"/><text x="280" y="100" fill="#fff" text-anchor="middle" dominant-baseline="central">11</text></g>
+    <g><circle cx="365" cy="95" r="11" fill="#c0392b"/><text x="365" y="95" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text></g>
+    <g><circle cx="340" cy="65" r="11" fill="#c0392b"/><text x="340" y="65" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text></g>
+    <g><circle cx="420" cy="85" r="11" fill="#c0392b"/><text x="420" y="85" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text></g>
+    <g><circle cx="250" cy="270" r="11" fill="#c0392b"/><text x="250" y="270" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text></g>
+    <g><circle cx="415" cy="310" r="11" fill="#c0392b"/><text x="415" y="310" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text></g>
+    <g><circle cx="410" cy="385" r="11" fill="#c0392b"/><text x="410" y="385" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text></g>
+    <g><circle cx="180" cy="430" r="11" fill="#c0392b"/><text x="180" y="430" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text></g>
+    <g><circle cx="225" cy="445" r="11" fill="#c0392b"/><text x="225" y="445" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text></g>
+  </g>
+  <text x="260" y="505" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">Phoebus (菲巴斯)</text>
+</svg>

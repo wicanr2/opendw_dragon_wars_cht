@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="480" viewBox="0 0 500 480" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <!-- 周圍樹叢 -->
+  <g fill="#3a7d44">
+    <circle cx="40" cy="40" r="6"/><circle cx="120" cy="35" r="6"/><circle cx="200" cy="40" r="6"/><circle cx="300" cy="35" r="6"/><circle cx="380" cy="40" r="6"/><circle cx="450" cy="50" r="6"/>
+    <circle cx="35" cy="120" r="6"/><circle cx="35" cy="200" r="6"/><circle cx="35" cy="280" r="6"/><circle cx="35" cy="360" r="6"/>
+    <circle cx="460" cy="120" r="6"/><circle cx="460" cy="200" r="6"/><circle cx="460" cy="280" r="6"/><circle cx="460" cy="360" r="6"/>
+    <circle cx="60" cy="430" r="6"/><circle cx="150" cy="440" r="6"/><circle cx="250" cy="435" r="6"/><circle cx="350" cy="440" r="6"/><circle cx="430" cy="430" r="6"/>
+  </g>
+  <!-- 宅院迷宮(中度簡化) -->
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <!-- 上方兩個獨立小室 1 / 8 -->
+    <rect x="130" y="70" width="60" height="50"/>
+    <rect x="290" y="70" width="60" height="80"/>
+    <line x1="350" y1="130" x2="400" y2="130"/>          <!-- 7 走道 -->
+    <!-- 主體外框 -->
+    <rect x="90" y="160" width="320" height="220"/>
+    <!-- 內部橫向隔牆 -->
+    <line x1="90" y1="200" x2="200" y2="200"/>
+    <line x1="250" y1="200" x2="410" y2="200"/>
+    <line x1="90" y1="250" x2="410" y2="250"/>
+    <line x1="90" y1="310" x2="410" y2="310"/>
+    <!-- 內部縱向隔牆 -->
+    <line x1="150" y1="200" x2="150" y2="380"/>
+    <line x1="230" y1="160" x2="230" y2="250"/>
+    <line x1="230" y1="310" x2="230" y2="380"/>
+    <line x1="320" y1="250" x2="320" y2="380"/>
+    <line x1="350" y1="160" x2="350" y2="200"/>
+  </g>
+  <!-- 編號點 -->
+  <g font-size="14" font-weight="bold">
+    <g><circle cx="190" cy="95" r="11" fill="#c0392b"/><text x="190" y="95" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text></g>
+    <g><circle cx="320" cy="90" r="11" fill="#c0392b"/><text x="320" y="90" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text></g>
+    <g><circle cx="375" cy="130" r="11" fill="#c0392b"/><text x="375" y="130" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text></g>
+    <g><circle cx="120" cy="185" r="11" fill="#c0392b"/><text x="120" y="185" fill="#fff" text-anchor="middle" dominant-baseline="central">10</text></g>
+    <g><circle cx="120" cy="230" r="11" fill="#c0392b"/><text x="120" y="230" fill="#fff" text-anchor="middle" dominant-baseline="central">11</text></g>
+    <g><circle cx="400" cy="230" r="11" fill="#c0392b"/><text x="400" y="230" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text></g>
+    <g><circle cx="280" cy="285" r="11" fill="#e67e22"/><text x="280" y="285" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text></g>
+    <g><circle cx="120" cy="350" r="11" fill="#c0392b"/><text x="120" y="350" fill="#fff" text-anchor="middle" dominant-baseline="central">12</text></g>
+    <g><circle cx="190" cy="350" r="11" fill="#c0392b"/><text x="190" y="350" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text></g>
+    <g><circle cx="100" cy="370" r="11" fill="#c0392b"/><text x="100" y="370" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text></g>
+    <g><circle cx="130" cy="370" r="11" fill="#c0392b"/><text x="130" y="370" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text></g>
+    <g><circle cx="270" cy="370" r="11" fill="#c0392b"/><text x="270" y="370" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text></g>
+  </g>
+  <text x="250" y="465" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">Mog's Slave Estate (莫格的宅院)</text>
+</svg>

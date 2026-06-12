@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="520" viewBox="0 0 520 520" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <!-- 外框 -->
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <rect x="30" y="30" width="450" height="430"/>
+  </g>
+  <!-- 4 號:右上實心黑房(內含小空腔) -->
+  <rect x="350" y="60" width="110" height="110" fill="#1c1c1c"/>
+  <rect x="385" y="95" width="40" height="40" fill="#fbf9f4"/>
+  <!-- 左半通道迷宮(蜿蜒) -->
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <!-- 6 上方房 -->
+    <path d="M 180 30 L 180 90 L 250 90 L 250 30"/>
+    <!-- 8 左上樓梯房 -->
+    <line x1="110" y1="60" x2="160" y2="60"/>
+    <line x1="110" y1="60" x2="110" y2="120"/>
+    <!-- 蜿蜒主通道 -->
+    <line x1="60" y1="120" x2="170" y2="120"/>
+    <line x1="170" y1="120" x2="170" y2="200"/>
+    <line x1="60" y1="160" x2="60" y2="320"/>
+    <line x1="110" y1="160" x2="110" y2="260"/>
+    <line x1="60" y1="200" x2="110" y2="200"/>
+    <!-- 5 房 -->
+    <line x1="210" y1="120" x2="280" y2="120"/>
+    <line x1="210" y1="120" x2="210" y2="200"/>
+    <line x1="280" y1="120" x2="280" y2="220"/>
+    <line x1="210" y1="200" x2="280" y2="200"/>
+    <line x1="150" y1="200" x2="150" y2="320"/>
+    <line x1="200" y1="240" x2="200" y2="360"/>
+    <line x1="60" y1="320" x2="200" y2="320"/>
+    <line x1="110" y1="360" x2="280" y2="360"/>
+    <line x1="60" y1="380" x2="60" y2="460"/>
+    <line x1="110" y1="380" x2="110" y2="460"/>
+    <!-- 9 下方出口 -->
+    <line x1="200" y1="420" x2="260" y2="420"/>
+  </g>
+  <!-- 右半:厚牆隔出的牢房格 -->
+  <g stroke="#6b5b4d" stroke-width="9" fill="none">
+    <!-- 3 走道厚牆 -->
+    <line x1="290" y1="230" x2="470" y2="230"/>
+    <line x1="290" y1="230" x2="290" y2="320"/>
+    <!-- 2 走道 -->
+    <line x1="320" y1="260" x2="450" y2="260"/>
+  </g>
+  <!-- 1 號:格狀牢房(細線網格) -->
+  <g stroke="#222" stroke-width="2" fill="none">
+    <rect x="320" y="320" width="150" height="120"/>
+    <line x1="320" y1="350" x2="470" y2="350"/>
+    <line x1="320" y1="380" x2="470" y2="380"/>
+    <line x1="320" y1="410" x2="470" y2="410"/>
+    <line x1="357" y1="320" x2="357" y2="440"/>
+    <line x1="395" y1="320" x2="395" y2="440"/>
+    <line x1="432" y1="320" x2="432" y2="440"/>
+  </g>
+  <!-- 左上樓梯 -->
+  <g stroke="#222" stroke-width="1.5" fill="#eee">
+    <rect x="115" y="75" width="32" height="40" fill="#eee" stroke="#222"/>
+    <line x1="115" y1="85" x2="147" y2="85"/><line x1="115" y1="95" x2="147" y2="95"/><line x1="115" y1="105" x2="147" y2="105"/>
+  </g>
+  <!-- 編號點 -->
+  <g font-size="14" font-weight="bold">
+    <g><circle cx="395" cy="430" r="11" fill="#c0392b"/><text x="395" y="430" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text></g>
+    <g><circle cx="430" cy="245" r="11" fill="#c0392b"/><text x="430" y="245" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text></g>
+    <g><circle cx="310" cy="300" r="11" fill="#c0392b"/><text x="310" y="300" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text></g>
+    <g><circle cx="405" cy="115" r="11" fill="#e67e22"/><text x="405" y="115" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text></g>
+    <g><circle cx="245" cy="160" r="11" fill="#c0392b"/><text x="245" y="160" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text></g>
+    <g><circle cx="215" cy="60" r="11" fill="#c0392b"/><text x="215" y="60" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text></g>
+    <g><circle cx="180" cy="150" r="11" fill="#c0392b"/><text x="180" y="150" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text></g>
+    <g><circle cx="150" cy="95" r="11" fill="#c0392b"/><text x="150" y="95" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text></g>
+    <g><circle cx="230" cy="440" r="11" fill="#c0392b"/><text x="230" y="440" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text></g>
+  </g>
+  <text x="260" y="505" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">Phoebus Dungeon (菲巴斯地牢)</text>
+</svg>

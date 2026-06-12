@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="460" viewBox="0 0 500 460" font-family="Noto Sans CJK TC" font-size="15">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <rect x="30" y="30" width="440" height="360"/>
+    <!-- room 9 top left -->
+    <line x1="30" y1="90" x2="140" y2="90"/>
+    <line x1="140" y1="30" x2="140" y2="90"/>
+    <!-- room 8 top middle + corridor -->
+    <line x1="200" y1="30" x2="200" y2="80"/>
+    <line x1="280" y1="30" x2="280" y2="80"/>
+    <line x1="200" y1="80" x2="280" y2="80"/>
+    <!-- corridor to 8 -->
+    <line x1="140" y1="60" x2="200" y2="60"/>
+    <line x1="280" y1="60" x2="340" y2="60"/>
+    <!-- room 7 top right + S -->
+    <line x1="340" y1="30" x2="340" y2="110"/>
+    <line x1="340" y1="110" x2="470" y2="110"/>
+    <line x1="340" y1="80" x2="420" y2="80"/>
+    <!-- vertical spine middle -->
+    <line x1="230" y1="80" x2="230" y2="240"/>
+    <line x1="320" y1="110" x2="320" y2="240"/>
+    <!-- chest room 1 -->
+    <line x1="230" y1="200" x2="320" y2="200"/>
+    <!-- room 3 chest lower -->
+    <line x1="230" y1="280" x2="320" y2="280"/>
+    <line x1="230" y1="280" x2="230" y2="340"/>
+    <line x1="320" y1="240" x2="320" y2="340"/>
+    <!-- room 4 right of spine -->
+    <line x1="320" y1="170" x2="400" y2="170"/>
+    <line x1="400" y1="170" x2="400" y2="260"/>
+    <!-- room 10 bottom left -->
+    <rect x="30" y="300" width="70" height="90"/>
+    <line x1="100" y1="130" x2="100" y2="300"/>
+    <line x1="100" y1="200" x2="170" y2="200"/>
+    <line x1="170" y1="200" x2="170" y2="300"/>
+  </g>
+  <!-- chest glyphs -->
+  <g stroke="#222" stroke-width="2" fill="none">
+    <rect x="262" y="210" width="26" height="20"/><line x1="262" y1="220" x2="288" y2="220"/>
+    <rect x="262" y="290" width="26" height="20"/><line x1="262" y1="300" x2="288" y2="300"/>
+  </g>
+  <g font-size="12" font-weight="bold" fill="#444"><text x="430" y="100" text-anchor="middle">S</text></g>
+  <g font-weight="bold">
+    <circle cx="55" cy="70" r="11" fill="#c0392b"/><text x="55" y="70" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text>
+    <circle cx="240" cy="55" r="11" fill="#c0392b"/><text x="240" y="55" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text>
+    <circle cx="375" cy="65" r="11" fill="#c0392b"/><text x="375" y="65" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text>
+    <circle cx="255" cy="150" r="11" fill="#c0392b"/><text x="255" y="150" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text>
+    <circle cx="275" cy="195" r="11" fill="#c0392b"/><text x="275" y="195" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text>
+    <circle cx="345" cy="150" r="11" fill="#c0392b"/><text x="345" y="150" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text>
+    <circle cx="135" cy="160" r="11" fill="#c0392b"/><text x="135" y="160" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text>
+    <circle cx="135" cy="250" r="11" fill="#c0392b"/><text x="135" y="250" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text>
+    <circle cx="275" cy="305" r="11" fill="#c0392b"/><text x="275" y="305" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text>
+    <circle cx="55" cy="345" r="11" fill="#c0392b"/><text x="55" y="345" fill="#fff" text-anchor="middle" dominant-baseline="central">10</text>
+  </g>
+  <text x="250" y="436" text-anchor="middle" font-size="19" font-family="Noto Sans CJK TC" font-weight="bold" fill="#222">Byzanople Dungeon 指揮部</text>
+</svg>

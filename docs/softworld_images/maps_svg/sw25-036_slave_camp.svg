@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="500" viewBox="0 0 460 500" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <!-- 右側水域(以淺藍區塊示意) -->
+  <path d="M 400 20 Q 380 120 405 220 Q 385 320 410 440 L 440 440 L 440 20 Z" fill="#cfe3ef" stroke="none"/>
+  <!-- 森林:綠色小樹點陣示意營地遍布樹叢 -->
+  <g fill="#3a7d44">
+    <!-- 上半森林 -->
+    <circle cx="80" cy="90" r="5"/><circle cx="120" cy="70" r="5"/><circle cx="160" cy="95" r="5"/>
+    <circle cx="200" cy="70" r="5"/><circle cx="250" cy="90" r="5"/><circle cx="300" cy="75" r="5"/>
+    <circle cx="60" cy="150" r="5"/><circle cx="110" cy="170" r="5"/><circle cx="160" cy="150" r="5"/>
+    <circle cx="240" cy="160" r="5"/><circle cx="300" cy="150" r="5"/><circle cx="340" cy="120" r="5"/>
+    <circle cx="70" cy="230" r="5"/><circle cx="120" cy="250" r="5"/><circle cx="170" cy="230" r="5"/>
+    <circle cx="220" cy="250" r="5"/><circle cx="300" cy="230" r="5"/><circle cx="350" cy="200" r="5"/>
+    <!-- 下半森林 -->
+    <circle cx="60" cy="330" r="5"/><circle cx="110" cy="350" r="5"/><circle cx="160" cy="330" r="5"/>
+    <circle cx="220" cy="350" r="5"/><circle cx="300" cy="330" r="5"/><circle cx="350" cy="300" r="5"/>
+    <circle cx="80" cy="410" r="5"/><circle cx="140" cy="430" r="5"/><circle cx="200" cy="410" r="5"/>
+    <circle cx="260" cy="430" r="5"/><circle cx="320" cy="410" r="5"/>
+  </g>
+  <!-- 小屋方塊(open-ended 角落) -->
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <path d="M 70 80 L 30 80 L 30 130 L 70 130"/>            <!-- 7 左上 -->
+    <path d="M 230 90 L 175 90 L 175 145 L 230 145 L 230 110"/> <!-- 9 -->
+    <path d="M 50 280 L 50 335 L 105 335 L 105 290"/>         <!-- 3 左中 -->
+    <!-- 中央小屋群 10/8/6/2 -->
+    <path d="M 230 240 L 230 300 L 270 300"/>                 <!-- 8 房 -->
+    <path d="M 270 250 L 320 250 L 320 305 L 270 305 L 270 250"/> <!-- 6 房 -->
+    <path d="M 360 380 L 320 380 L 320 425 L 360 425 L 360 405"/> <!-- 4 右下 -->
+  </g>
+  <!-- 編號點 -->
+  <g font-size="14" font-weight="bold">
+    <g><circle cx="48" cy="100" r="11" fill="#c0392b"/><text x="48" y="100" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text></g>
+    <g><circle cx="195" cy="110" r="11" fill="#c0392b"/><text x="195" y="110" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text></g>
+    <g><circle cx="305" cy="155" r="11" fill="#e67e22"/><text x="305" y="155" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text></g>
+    <g><circle cx="70" cy="305" r="11" fill="#c0392b"/><text x="70" y="305" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text></g>
+    <g><circle cx="232" cy="270" r="11" fill="#c0392b"/><text x="232" y="270" fill="#fff" text-anchor="middle" dominant-baseline="central">10</text></g>
+    <g><circle cx="262" cy="270" r="11" fill="#c0392b"/><text x="262" y="270" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text></g>
+    <g><circle cx="295" cy="270" r="11" fill="#e67e22"/><text x="295" y="270" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text></g>
+    <g><circle cx="258" cy="320" r="11" fill="#c0392b"/><text x="258" y="320" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text></g>
+    <g><circle cx="335" cy="402" r="11" fill="#c0392b"/><text x="335" y="402" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text></g>
+    <g><circle cx="230" cy="448" r="11" fill="#c0392b"/><text x="230" y="448" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text></g>
+  </g>
+  <text x="230" y="485" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">Slave Camp (奴隸營)</text>
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="500" viewBox="0 0 480 500" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <!-- 石牆外框(粗暗框示意廢墟外牆) -->
+  <rect x="20" y="20" width="440" height="430" fill="none" stroke="#6b5b4d" stroke-width="14"/>
+  <!-- 右側階梯狀外牆缺口示意 -->
+  <g stroke="#6b5b4d" stroke-width="10" fill="none">
+    <path d="M 440 90 L 410 90 L 410 130 L 440 130"/>
+    <path d="M 440 230 L 400 230 L 400 270 L 440 270"/>
+    <path d="M 440 360 L 410 360 L 410 400"/>
+  </g>
+  <!-- 廢墟散落房間方塊(灰填,實心廢墟塊) -->
+  <g fill="#d8d2c4" stroke="#222" stroke-width="2.5">
+    <rect x="70" y="70" width="55" height="40"/>
+    <rect x="150" y="60" width="45" height="40"/>
+    <rect x="220" y="70" width="50" height="35"/>
+    <rect x="330" y="70" width="55" height="40"/>
+    <rect x="60" y="160" width="55" height="40"/>
+    <rect x="190" y="150" width="60" height="45"/>
+    <rect x="300" y="160" width="50" height="45"/>
+    <rect x="210" y="230" width="80" height="70"/>     <!-- 1 中央大塊 -->
+    <rect x="60" y="270" width="80" height="35"/>
+    <rect x="330" y="240" width="50" height="40"/>
+    <rect x="70" y="360" width="70" height="40"/>      <!-- 6 -->
+  </g>
+  <!-- 編號點 -->
+  <g font-size="14" font-weight="bold">
+    <g><circle cx="248" cy="300" r="11" fill="#c0392b"/><text x="248" y="300" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text></g>
+    <g><circle cx="395" cy="270" r="11" fill="#c0392b"/><text x="395" y="270" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text></g>
+    <g><circle cx="385" cy="230" r="11" fill="#c0392b"/><text x="385" y="230" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text></g>
+    <g><circle cx="370" cy="100" r="11" fill="#c0392b"/><text x="370" y="100" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text></g>
+    <g><circle cx="420" cy="90" r="11" fill="#c0392b"/><text x="420" y="90" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text></g>
+    <g><circle cx="100" cy="400" r="11" fill="#c0392b"/><text x="100" y="400" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text></g>
+    <g><circle cx="150" cy="220" r="11" fill="#c0392b"/><text x="150" y="220" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text></g>
+  </g>
+  <text x="240" y="485" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">Tars Ruins (塔斯廢墟)</text>
+</svg>
