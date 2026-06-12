@@ -39,7 +39,7 @@ target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
 add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp)
-add_library(dwr_i18n STATIC src/i18n/strings.cpp)
+add_library(dwr_i18n STATIC src/i18n/strings.cpp src/i18n/string_table.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
@@ -66,3 +66,11 @@ target_link_libraries(render_menu_demo PRIVATE dwr_resource dwr_render dwr_i18n)
 # R6 起步:從 asset bundle 載 sprite 渲染(不依賴 DATA1,見 docs/adr/0001)。
 add_executable(render_sprite_bundle tools/verify/render_sprite_bundle.cpp)
 target_link_libraries(render_sprite_bundle PRIVATE dwr_render)
+
+# tools/extract:DATA1 → bundle 字串表(offset→english)。
+add_executable(extract_strings tools/extract/extract_strings.cpp)
+target_link_libraries(extract_strings PRIVATE dwr_resource)
+
+# 文字脫離 DATA1:從 bundle 字串表取選單渲染(英/中)。
+add_executable(render_menu_bundle tools/verify/render_menu_bundle.cpp)
+target_link_libraries(render_menu_bundle PRIVATE dwr_render dwr_i18n)
