@@ -38,7 +38,7 @@ add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
-add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp)
+add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp)
 target_include_directories(dwr_render PUBLIC src)
 
 # golden 測試:remake 渲染 title,與 golden 對拍(見 tools_build/render_golden.sh)。
@@ -48,6 +48,10 @@ target_link_libraries(render_title PRIVATE dwr_render dwr_resource)
 # 8×8 字渲染樣本(視覺驗證)。
 add_executable(render_text tools/verify/render_text.cpp)
 target_link_libraries(render_text PRIVATE dwr_render)
+
+# CJK 混排 demo(8×8 ASCII + 24×24 中文)。
+add_executable(render_cjk_demo tools/verify/render_cjk_demo.cpp)
+target_link_libraries(render_cjk_demo PRIVATE dwr_render)
 
 # 後續階段(R2+)再加入 SDL2 / freetype:
 #   find_package(SDL2 REQUIRED); find_package(Freetype REQUIRED)

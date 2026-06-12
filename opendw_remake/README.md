@@ -4,6 +4,15 @@
 
 設計與驗證策略見 [`ARCHITECTURE.md`](ARCHITECTURE.md)。
 
+## Showcase(remake 自身管線渲染)
+
+| 標題畫面(R0 解壓 + R2 render) | 遊戲原生 8×8 字 | CJK 混排在地化 |
+|---|---|---|
+| ![title](docs/screenshots/r2_title.png) | ![font](docs/screenshots/r2_font8x8.png) | ![cjk](docs/screenshots/r2_cjk_mixed.png) |
+
+右圖:遊戲原生 8×8 ASCII 字 + 24×24 中文點陣混排進同一 320×200 framebuffer,
+譯名依 `../CONTEXT.md`(火龍之戰 / 波卡城 / 罪惡之城 / 瑪根地底世界 / 段落 N)。
+
 ## 定位
 
 - **不是**把組語再翻一次。是理解後的現代重寫:乾淨的 script VM + 渲染器 + 資產層,**執行原始(已萃取並驗證)的 bytecode**。
@@ -24,7 +33,7 @@
 
 | `vm/`(script 虛擬 CPU) | 🚧 R1:56/256 opcode(模式/算術/旗標/邏輯/比較/跳轉/loop/game_state/bit) |
 | **差異測試 harness** | ✅ remake VM trace == opendw oracle(逐指令一致)。`bash tools_build/diff_trace.sh` |
-| `render/`(framebuffer + 全螢幕圖 + 8×8 字) | ✅ R2 batch 1:framebuffer + title_adjust(title golden 通過,`render_golden.sh`)。✅ R2 batch 2:遊戲原生 8×8 字(chr_table @ dragon.com 0xBE52,MSB-first),視覺驗證 alphabet/數字/符號正確 |
+| `render/`(framebuffer + 全螢幕圖 + 8×8 字) | ✅ R2 batch 1:framebuffer + title_adjust(title golden 通過,`render_golden.sh`)。✅ R2 batch 2:遊戲原生 8×8 字(chr_table)。✅ R2 batch 3:24×24 中文點陣(atlas)+ 8×8/24×24 混排 → Showcase |
 
 **R1 進行中**:VM 核心 + 差異測試 harness 已立(`diff_trace.sh` 證明 remake 對拍 opendw 逐指令一致)。
 逐 batch 補齊 256 opcode,每批用差異測試驗。
