@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="380" viewBox="0 0 420 380" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <!-- 兩側水域(深色塊),中間留橋 -->
+  <rect x="40" y="120" width="140" height="90" fill="#4a6d8c"/>
+  <rect x="240" y="120" width="140" height="90" fill="#4a6d8c"/>
+  <!-- 橋體開口框(中央通道) -->
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <path d="M 180 110 L 180 150"/>
+    <path d="M 180 180 L 180 220"/>
+    <path d="M 240 110 L 240 150"/>
+    <path d="M 240 180 L 240 220"/>
+  </g>
+  <!-- 周圍樹叢與石塊 -->
+  <g fill="#3a7d44">
+    <circle cx="70" cy="70" r="7"/><circle cx="130" cy="60" r="7"/><circle cx="300" cy="65" r="7"/><circle cx="350" cy="75" r="7"/>
+    <circle cx="60" cy="260" r="7"/><circle cx="120" cy="280" r="7"/><circle cx="300" cy="270" r="7"/><circle cx="350" cy="280" r="7"/>
+  </g>
+  <g fill="#9b9183">
+    <circle cx="190" cy="70" r="9"/><circle cx="230" cy="70" r="9"/>
+    <circle cx="100" cy="250" r="9"/><circle cx="320" cy="250" r="9"/>
+  </g>
+  <!-- 編號點 -->
+  <g font-size="14" font-weight="bold">
+    <g><circle cx="210" cy="245" r="11" fill="#c0392b"/><text x="210" y="245" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text></g>
+    <g><circle cx="290" cy="200" r="11" fill="#c0392b"/><text x="290" y="200" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text></g>
+    <g><circle cx="200" cy="200" r="11" fill="#c0392b"/><text x="200" y="200" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text></g>
+  </g>
+  <text x="210" y="355" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">Guarded Bridge (橋梁)</text>
+</svg>

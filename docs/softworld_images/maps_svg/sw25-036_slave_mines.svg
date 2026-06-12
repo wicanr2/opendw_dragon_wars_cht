@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="460" viewBox="0 0 500 460" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <!-- 礦場迷宮(通道網,中度簡化) -->
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <rect x="30" y="30" width="440" height="360"/>
+    <!-- 橫向通道 -->
+    <line x1="30" y1="110" x2="200" y2="110"/>
+    <line x1="260" y1="110" x2="470" y2="110"/>
+    <line x1="90" y1="170" x2="300" y2="170"/>
+    <line x1="360" y1="170" x2="470" y2="170"/>
+    <line x1="30" y1="230" x2="160" y2="230"/>
+    <line x1="220" y1="230" x2="420" y2="230"/>
+    <line x1="30" y1="300" x2="240" y2="300"/>
+    <line x1="300" y1="300" x2="470" y2="300"/>
+    <!-- 縱向通道 -->
+    <line x1="90" y1="30" x2="90" y2="170"/>
+    <line x1="160" y1="110" x2="160" y2="300"/>
+    <line x1="220" y1="30" x2="220" y2="110"/>
+    <line x1="300" y1="110" x2="300" y2="230"/>
+    <line x1="360" y1="170" x2="360" y2="300"/>
+    <line x1="420" y1="110" x2="420" y2="230"/>
+    <line x1="240" y1="230" x2="240" y2="390"/>
+    <line x1="120" y1="300" x2="120" y2="390"/>
+    <line x1="300" y1="300" x2="300" y2="390"/>
+    <line x1="400" y1="300" x2="400" y2="390"/>
+  </g>
+  <!-- 樓梯(7S 附近) -->
+  <g stroke="#222" stroke-width="1.5" fill="none">
+    <rect x="170" y="55" width="36" height="40" fill="#eee" stroke="#222"/>
+    <line x1="170" y1="65" x2="206" y2="65"/><line x1="170" y1="75" x2="206" y2="75"/><line x1="170" y1="85" x2="206" y2="85"/>
+  </g>
+  <!-- 編號點 -->
+  <g font-size="14" font-weight="bold">
+    <g><circle cx="105" cy="55" r="11" fill="#c0392b"/><text x="105" y="55" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text></g>
+    <g><circle cx="210" cy="55" r="11" fill="#c0392b"/><text x="210" y="55" fill="#fff" text-anchor="middle" dominant-baseline="central">10</text></g>
+    <g><circle cx="148" cy="85" r="11" fill="#c0392b"/><text x="148" y="85" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text></g>
+    <g><circle cx="148" cy="105" r="11" fill="#888"/><text x="148" y="105" fill="#fff" text-anchor="middle" dominant-baseline="central">S</text></g>
+    <g><circle cx="395" cy="65" r="11" fill="#e67e22"/><text x="395" y="65" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text></g>
+    <g><circle cx="335" cy="150" r="11" fill="#c0392b"/><text x="335" y="150" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text></g>
+    <g><circle cx="120" cy="215" r="11" fill="#c0392b"/><text x="120" y="215" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text></g>
+    <g><circle cx="190" cy="265" r="11" fill="#c0392b"/><text x="190" y="265" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text></g>
+    <g><circle cx="445" cy="265" r="11" fill="#c0392b"/><text x="445" y="265" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text></g>
+    <g><circle cx="240" cy="345" r="11" fill="#c0392b"/><text x="240" y="345" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text></g>
+  </g>
+  <text x="250" y="430" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">Slave Mines (礦場)</text>
+</svg>

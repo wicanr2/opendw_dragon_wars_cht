@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="500" viewBox="0 0 540 500" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <!-- forest / rocky bands forming the winding path between buildings -->
+  <g fill="#9aa089" stroke="#6f7560" stroke-width="1">
+    <!-- right vertical band -->
+    <rect x="470" y="30" width="55" height="430"/>
+    <!-- central diagonal mass -->
+    <polygon points="230,90 360,90 360,210 470,210 470,260 300,260 300,160 230,160"/>
+    <!-- lower-left rocky around room 12 -->
+    <polygon points="30,310 200,310 200,460 30,460"/>
+    <!-- mid scatter -->
+    <rect x="150" y="130" width="40" height="120"/>
+  </g>
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <!-- 4 top-left -->
+    <rect x="60" y="45" width="90" height="55"/>
+    <line x1="80" y1="45" x2="80" y2="30"/><line x1="120" y1="45" x2="120" y2="30"/>
+    <!-- 3 top-center -->
+    <rect x="200" y="70" width="70" height="55"/>
+    <!-- 1 top-right small -->
+    <rect x="430" y="45" width="40" height="40"/>
+    <!-- 5 left -->
+    <rect x="50" y="150" width="80" height="80"/>
+    <!-- 2 center-left -->
+    <rect x="200" y="190" width="70" height="80"/>
+    <line x1="270" y1="215" x2="290" y2="215"/><line x1="270" y1="250" x2="290" y2="250"/>
+    <!-- 7/8 right stack -->
+    <rect x="410" y="270" width="70" height="70"/>
+    <line x1="410" y1="295" x2="390" y2="295"/><line x1="410" y1="320" x2="390" y2="320"/>
+    <!-- 12 big bottom-left room -->
+    <rect x="70" y="340" width="110" height="90"/>
+    <!-- bottom-center room cluster -->
+    <rect x="290" y="370" width="70" height="55"/>
+    <!-- 9 bottom-right -->
+    <rect x="400" y="400" width="70" height="55"/>
+    <line x1="420" y1="400" x2="420" y2="385"/><line x1="450" y1="400" x2="450" y2="385"/>
+    <!-- 11 / 10 bottom rooms -->
+    <rect x="120" y="455" width="60" height="25"/>
+    <rect x="220" y="455" width="60" height="25"/>
+    <line x1="135" y1="455" x2="135" y2="440"/><line x1="165" y1="455" x2="165" y2="440"/>
+    <line x1="235" y1="455" x2="235" y2="440"/><line x1="265" y1="455" x2="265" y2="440"/>
+  </g>
+  <g font-size="15" font-weight="bold">
+    <circle cx="105" cy="72" r="11" fill="#c0392b"/><text x="105" y="72" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text>
+    <circle cx="235" cy="97" r="11" fill="#c0392b"/><text x="235" y="97" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text>
+    <circle cx="450" cy="65" r="11" fill="#c0392b"/><text x="450" y="65" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text>
+    <circle cx="90" cy="190" r="11" fill="#c0392b"/><text x="90" y="190" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text>
+    <circle cx="235" cy="235" r="11" fill="#c0392b"/><text x="235" y="235" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text>
+    <circle cx="100" cy="320" r="11" fill="#c0392b"/><text x="100" y="320" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text>
+    <circle cx="445" cy="295" r="11" fill="#c0392b"/><text x="445" y="295" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text>
+    <circle cx="445" cy="320" r="11" fill="#c0392b"/><text x="445" y="320" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text>
+    <circle cx="125" cy="385" r="11" fill="#c0392b"/><text x="125" y="385" fill="#fff" text-anchor="middle" dominant-baseline="central">12</text>
+    <circle cx="325" cy="397" r="11" fill="#c0392b"/><text x="325" y="397" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text>
+    <circle cx="150" cy="468" r="11" fill="#c0392b"/><text x="150" y="468" fill="#fff" text-anchor="middle" dominant-baseline="central">11</text>
+    <circle cx="250" cy="468" r="11" fill="#c0392b"/><text x="250" y="468" fill="#fff" text-anchor="middle" dominant-baseline="central">10</text>
+  </g>
+  <text x="270" y="494" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">City of Freeport 自由港</text>
+</svg>

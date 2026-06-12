@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="675" viewBox="0 0 620 675" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <!-- dark hatched mass (room 4) center-right -->
+  <g fill="#2f2f2f">
+    <polygon points="430,420 470,400 510,400 510,470 540,470 540,510 470,510 470,470 430,470"/>
+  </g>
+  <g stroke="#222" stroke-width="2" stroke-linecap="square" fill="none">
+    <!-- top maze band -->
+    <line x1="40" y1="90" x2="560" y2="90"/>
+    <line x1="120" y1="90" x2="120" y2="150"/>
+    <line x1="120" y1="150" x2="260" y2="150"/>
+    <line x1="200" y1="90" x2="200" y2="130"/>
+    <line x1="300" y1="90" x2="300" y2="180"/>
+    <line x1="380" y1="120" x2="460" y2="120"/>
+    <line x1="460" y1="90" x2="460" y2="180"/>
+    <line x1="520" y1="120" x2="560" y2="120"/>
+
+    <!-- left column rooms 12, 13 -->
+    <rect x="40" y="290" width="55" height="80"/>   <!-- 12 -->
+    <rect x="120" y="270" width="55" height="120"/> <!-- 13 -->
+    <line x1="40" y1="180" x2="40" y2="560"/>
+    <line x1="40" y1="200" x2="95" y2="200"/>
+    <line x1="40" y1="420" x2="95" y2="420"/>
+    <line x1="40" y1="470" x2="95" y2="470"/>
+
+    <!-- room 1 swirl (center) -->
+    <path d="M250,300 H330 V380 H270 V340 H310 V320 H290"/>
+    <!-- room 2 small -->
+    <rect x="305" y="385" width="30" height="25"/>
+
+    <!-- room 9 with cross corridors -->
+    <rect x="250" y="470" width="100" height="100"/>
+    <line x1="300" y1="470" x2="300" y2="570"/>
+    <line x1="250" y1="520" x2="350" y2="520"/>
+
+    <!-- room 8 corridor -->
+    <line x1="180" y1="460" x2="240" y2="460"/>
+    <line x1="180" y1="460" x2="180" y2="560"/>
+
+    <!-- right upper rooms 10, 3 -->
+    <rect x="490" y="240" width="70" height="70"/> <!-- 10 -->
+    <line x1="500" y1="240" x2="500" y2="200"/>
+    <line x1="540" y1="240" x2="540" y2="200"/>
+    <line x1="440" y1="350" x2="520" y2="350"/> <!-- near 3 -->
+    <line x1="440" y1="300" x2="440" y2="400"/>
+    <line x1="520" y1="370" x2="560" y2="370"/>
+
+    <!-- room 5 boxed bottom-right -->
+    <rect x="490" y="500" width="80" height="80"/>
+    <rect x="510" y="520" width="40" height="40"/>
+
+    <!-- 6 / 7 area -->
+    <line x1="400" y1="500" x2="450" y2="500"/>
+    <line x1="400" y1="520" x2="450" y2="520"/>
+
+    <!-- 11 bottom-center -->
+    <rect x="250" y="600" width="120" height="25"/>
+    <line x1="180" y1="560" x2="180" y2="620"/>
+    <line x1="180" y1="620" x2="250" y2="620"/>
+  </g>
+  <g font-size="14" font-weight="bold">
+    <circle cx="62" cy="330" r="10" fill="#c0392b"/><text x="62" y="330" fill="#fff" text-anchor="middle" dominant-baseline="central">12</text>
+    <circle cx="147" cy="330" r="10" fill="#c0392b"/><text x="147" y="330" fill="#fff" text-anchor="middle" dominant-baseline="central">13</text>
+    <circle cx="290" cy="360" r="10" fill="#c0392b"/><text x="290" y="360" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text>
+    <circle cx="320" cy="397" r="10" fill="#c0392b"/><text x="320" y="397" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text>
+    <circle cx="200" cy="490" r="10" fill="#c0392b"/><text x="200" y="490" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text>
+    <circle cx="300" cy="520" r="10" fill="#c0392b"/><text x="300" y="520" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text>
+    <circle cx="525" cy="275" r="10" fill="#c0392b"/><text x="525" y="275" fill="#fff" text-anchor="middle" dominant-baseline="central">10</text>
+    <circle cx="500" cy="345" r="10" fill="#c0392b"/><text x="500" y="345" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text>
+    <circle cx="475" cy="455" r="10" fill="#c0392b"/><text x="475" y="455" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text>
+    <circle cx="530" cy="540" r="10" fill="#c0392b"/><text x="530" y="540" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text>
+    <circle cx="430" cy="535" r="10" fill="#c0392b"/><text x="430" y="535" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text>
+    <circle cx="430" cy="500" r="10" fill="#c0392b"/><text x="430" y="500" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text>
+    <circle cx="310" cy="612" r="10" fill="#c0392b"/><text x="310" y="612" fill="#fff" text-anchor="middle" dominant-baseline="central">11</text>
+  </g>
+  <text x="310" y="665" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">Depth of Nisir 尼塞山腹</text>
+</svg>

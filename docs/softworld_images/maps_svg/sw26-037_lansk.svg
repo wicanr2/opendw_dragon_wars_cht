@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="560" viewBox="0 0 560 560" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+
+  <text x="280" y="34" text-anchor="middle" font-size="21" font-weight="bold" fill="#222">Lansk 蘭斯克</text>
+
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <!-- outer wall, roughly square with notched corners -->
+    <path d="M70 60 L490 60 L490 120 L470 120 L470 60
+             M70 60 L70 480 L130 480 L130 460
+             M490 120 L490 480 L430 480 L430 460
+             M130 480 L430 480"/>
+    <!-- simplify: draw a clean rectangle outer wall -->
+    <rect x="70" y="60" width="420" height="420"/>
+
+    <!-- central H structure -->
+    <path d="M210 180 L210 360 M350 180 L350 360 M210 270 L350 270
+             M210 180 L250 180 M310 180 L350 180
+             M210 360 L250 360 M310 360 L350 360"/>
+    <rect x="210" y="180" width="140" height="180"/>
+    <line x1="210" y1="270" x2="350" y2="270"/>
+    <!-- notches making it H-ish -->
+    <rect x="245" y="180" width="70" height="40" fill="#fbf9f4" stroke="#fbf9f4"/>
+    <rect x="245" y="320" width="70" height="40" fill="#fbf9f4" stroke="#fbf9f4"/>
+    <path d="M245 180 L245 220 L315 220 L315 180 M245 360 L245 320 L315 320 L315 360"/>
+
+    <!-- top room row (4 ... 3) comb-like cells -->
+    <path d="M150 130 L150 170 M180 130 L180 170 M210 130 L210 170
+             M150 130 L410 130
+             M250 130 L250 170 M280 130 L280 170 M310 130 L310 170
+             M340 130 L340 170 M370 130 L370 170 M410 130 L410 170"/>
+
+    <!-- bottom room row (7 8 ... 2) -->
+    <path d="M150 390 L150 430 M180 390 L180 430 M210 390 L210 430
+             M150 430 L410 430
+             M250 390 L250 430 M280 390 L280 430 M310 390 L310 430
+             M340 390 L340 430 M370 390 L370 430 M410 390 L410 430"/>
+
+    <!-- left rooms (6) -->
+    <path d="M110 230 L150 230 M110 290 L150 290 M110 350 L150 350 M150 230 L150 350"/>
+    <!-- right rooms (3 col) -->
+    <path d="M410 230 L450 230 M410 290 L450 290 M410 350 L450 350 M410 230 L410 350"/>
+    <!-- door 5 (stairs to undercity) on central-left -->
+    <rect x="200" y="265" width="14" height="20"/>
+  </g>
+
+  <g font-size="15" font-weight="bold" stroke="none">
+    <circle cx="220" cy="150" r="11" fill="#c0392b"/><text x="220" y="150" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text>
+    <circle cx="380" cy="150" r="11" fill="#c0392b"/><text x="380" y="150" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text>
+    <circle cx="230" cy="275" r="11" fill="#c0392b"/><text x="230" y="275" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text>
+    <circle cx="280" cy="320" r="11" fill="#c0392b"/><text x="280" y="320" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text>
+    <circle cx="130" cy="290" r="11" fill="#c0392b"/><text x="130" y="290" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text>
+    <circle cx="195" cy="410" r="11" fill="#c0392b"/><text x="195" y="410" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text>
+    <circle cx="225" cy="410" r="11" fill="#c0392b"/><text x="225" y="410" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text>
+    <circle cx="360" cy="410" r="11" fill="#c0392b"/><text x="360" y="410" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text>
+  </g>
+
+  <text x="280" y="525" text-anchor="middle" font-size="13" fill="#444">1.訊息35  2.Beauro Info  3.Quarter Master  4.Lubrication  5.通往地下城  6.Druid Mace  7.Governor  8.Visitor Reg.</text>
+</svg>

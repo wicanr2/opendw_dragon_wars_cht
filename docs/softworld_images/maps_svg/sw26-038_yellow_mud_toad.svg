@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="480" viewBox="0 0 560 480" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <!-- outer wall, irregular top edge -->
+    <path d="M40 90 L40 430 L470 430 L470 250 L490 250 L490 70 L300 70 L300 50 L150 50 L150 70 L40 70 L40 90"/>
+    <rect x="40" y="70" width="450" height="360"/>
+
+    <!-- internal partitions (approximate rooms) -->
+    <!-- top-right rooms 6,7 -->
+    <path d="M360 70 L360 150 M420 70 L420 150 M360 150 L470 150
+             M470 110 L490 110"/>
+    <!-- 11 door right -->
+    <rect x="455" y="160" width="14" height="20"/>
+    <!-- left room 8 partition -->
+    <path d="M40 130 L150 130 M150 130 L150 250 M110 250 L150 250"/>
+    <!-- mid vertical walls -->
+    <path d="M250 90 L250 200 M310 200 L310 320"/>
+    <!-- room 2,3 lower-right -->
+    <path d="M360 330 L360 380 M360 380 L420 380 M420 330 L420 380
+             M250 360 L310 360 M250 360 L250 410 M310 360 L310 410"/>
+    <!-- bottom rooms 9,10,1 -->
+    <path d="M40 400 L470 400
+             M120 400 L120 430 M200 400 L200 430 M260 400 L260 430"/>
+  </g>
+
+  <!-- mud-pit shaded blotches -->
+  <g fill="#8a7d5f" stroke="none" opacity="0.85">
+    <ellipse cx="200" cy="150" rx="16" ry="11"/>
+    <ellipse cx="250" cy="170" rx="13" ry="9"/>
+    <ellipse cx="180" cy="210" rx="14" ry="10"/>
+    <ellipse cx="300" cy="200" rx="12" ry="9"/>
+    <ellipse cx="330" cy="170" rx="14" ry="10"/>
+    <ellipse cx="220" cy="260" rx="13" ry="9"/>
+    <ellipse cx="290" cy="270" rx="15" ry="10"/>
+    <ellipse cx="360" cy="240" rx="13" ry="9"/>
+    <ellipse cx="170" cy="320" rx="14" ry="10"/>
+    <ellipse cx="260" cy="320" rx="12" ry="8"/>
+    <ellipse cx="120" cy="270" rx="13" ry="9"/>
+    <ellipse cx="380" cy="300" rx="13" ry="9"/>
+  </g>
+
+  <g font-size="15" font-weight="bold" stroke="none">
+    <circle cx="120" cy="160" r="11" fill="#c0392b"/><text x="120" y="160" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text>
+    <circle cx="380" cy="105" r="11" fill="#c0392b"/><text x="380" y="105" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text>
+    <circle cx="445" cy="105" r="11" fill="#c0392b"/><text x="445" y="105" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text>
+    <circle cx="475" cy="170" r="11" fill="#c0392b"/><text x="475" y="170" fill="#fff" text-anchor="middle" dominant-baseline="central">11</text>
+    <circle cx="160" cy="180" r="11" fill="#c0392b"/><text x="160" y="180" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text>
+    <circle cx="150" cy="240" r="11" fill="#c0392b"/><text x="150" y="240" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text>
+    <circle cx="390" cy="355" r="11" fill="#c0392b"/><text x="390" y="355" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text>
+    <circle cx="280" cy="385" r="11" fill="#c0392b"/><text x="280" y="385" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text>
+    <circle cx="90" cy="415" r="11" fill="#c0392b"/><text x="90" y="415" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text>
+    <circle cx="160" cy="415" r="11" fill="#c0392b"/><text x="160" y="415" fill="#fff" text-anchor="middle" dominant-baseline="central">10</text>
+    <circle cx="225" cy="415" r="11" fill="#c0392b"/><text x="225" y="415" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text>
+  </g>
+
+  <text x="280" y="465" text-anchor="middle" font-size="20" font-weight="bold" fill="#222">Yellow Mud Toad 黃泥蟾蜍城</text>
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="560" viewBox="0 0 560 560" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <!-- maze-like walls (stylised from scan: dense orthogonal corridors) -->
+    <!-- top entries 4,5,2 -->
+    <path d="M60 60 L60 110 M110 60 L110 110 M150 90 L150 130 M150 90 L210 90 M210 90 L210 60"/>
+    <!-- outer-ish frame fragments -->
+    <path d="M250 70 L250 470 M250 70 L470 70 M470 70 L470 470 M250 470 L470 470"/>
+
+    <!-- central spiral / nested chambers -->
+    <path d="M300 130 L420 130 L420 420 L290 420 L290 360 L360 360 L360 200 L300 200 L300 130"/>
+    <path d="M330 230 L390 230 L390 330 L330 330 L330 280 L360 280"/>
+
+    <!-- left corridor structures around 1 -->
+    <path d="M90 150 L150 150 L150 220 L90 220 L90 150"/>
+    <path d="M60 250 L130 250 L130 330 L60 330 M130 290 L60 290"/>
+    <path d="M90 360 L170 360 L170 440 L90 440 L90 360"/>
+
+    <!-- right corridor fragments -->
+    <path d="M470 150 L520 150 M470 200 L520 200 L520 260 M490 260 L490 320 L520 320
+             M470 360 L520 360 M470 420 L520 420"/>
+
+    <!-- bottom corridors -->
+    <path d="M200 480 L200 530 M260 480 L260 530 M360 480 L360 530 M460 480 L460 530"/>
+
+    <!-- staircases: 1 (left) and 7 (centre) -->
+    <path d="M100 175 L140 175 M100 190 L140 190 M100 205 L140 205"/>
+    <path d="M340 290 L380 290 M340 300 L380 300 M340 310 L380 310"/>
+  </g>
+  <!-- stair frames -->
+  <g stroke="#222" stroke-width="2.5" fill="none">
+    <path d="M98 165 L98 215 M142 165 L142 215"/>
+    <path d="M338 280 L338 320 M382 280 L382 320"/>
+  </g>
+
+  <g font-size="15" font-weight="bold" stroke="none">
+    <circle cx="120" cy="148" r="11" fill="#c0392b"/><text x="120" y="148" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text>
+    <circle cx="180" cy="80" r="11" fill="#c0392b"/><text x="180" y="80" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text>
+    <circle cx="400" cy="300" r="11" fill="#c0392b"/><text x="400" y="300" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text>
+    <circle cx="85" cy="80" r="11" fill="#c0392b"/><text x="85" y="80" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text>
+    <circle cx="45" cy="80" r="11" fill="#c0392b"/><text x="45" y="80" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text>
+    <circle cx="500" cy="440" r="11" fill="#c0392b"/><text x="500" y="440" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text>
+    <circle cx="360" cy="270" r="11" fill="#c0392b"/><text x="360" y="270" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text>
+  </g>
+
+  <text x="280" y="548" text-anchor="middle" font-size="20" font-weight="bold" fill="#222">Lanac'toor's 拉娜的實驗室</text>
+</svg>

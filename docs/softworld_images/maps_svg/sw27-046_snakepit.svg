@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="500" viewBox="0 0 520 500" font-family="Noto Sans CJK TC" font-size="15">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <!-- outer cave -->
+    <rect x="20" y="20" width="480" height="420"/>
+    <!-- point 2 / 1 cluster upper right -->
+    <line x1="300" y1="60" x2="360" y2="60"/>
+    <line x1="360" y1="60" x2="360" y2="110"/>
+    <line x1="300" y1="110" x2="360" y2="110"/>
+    <line x1="300" y1="60" x2="300" y2="150"/>
+    <line x1="300" y1="150" x2="360" y2="150"/>
+    <!-- point 9 small box left -->
+    <rect x="70" y="150" width="50" height="40"/>
+    <!-- point 7 small box left lower -->
+    <rect x="70" y="290" width="50" height="40"/>
+    <!-- central nested rooms -->
+    <!-- top room 11 -->
+    <line x1="180" y1="150" x2="280" y2="150"/>
+    <line x1="180" y1="150" x2="180" y2="190"/>
+    <line x1="280" y1="150" x2="280" y2="190"/>
+    <line x1="180" y1="190" x2="280" y2="190"/>
+    <!-- side arms of room 11 -->
+    <line x1="140" y1="170" x2="180" y2="170"/>
+    <line x1="280" y1="170" x2="320" y2="170"/>
+    <!-- core rooms 8 / 4 / 5 / 12 -->
+    <rect x="160" y="210" width="60" height="80"/>
+    <rect x="220" y="210" width="40" height="40"/>
+    <rect x="220" y="250" width="40" height="40"/>
+    <line x1="260" y1="220" x2="320" y2="220"/>
+    <line x1="320" y1="220" x2="320" y2="290"/>
+    <line x1="260" y1="290" x2="320" y2="290"/>
+    <line x1="120" y1="230" x2="160" y2="230"/>
+    <!-- point 3 lower middle -->
+    <line x1="260" y1="380" x2="340" y2="380"/>
+    <line x1="260" y1="380" x2="260" y2="420"/>
+    <line x1="340" y1="360" x2="340" y2="420"/>
+    <!-- point 6 lower left -->
+    <line x1="120" y1="400" x2="180" y2="400"/>
+    <line x1="120" y1="400" x2="120" y2="420"/>
+  </g>
+  <!-- S markers -->
+  <g font-size="12" font-weight="bold" fill="#444">
+    <text x="345" y="92" text-anchor="middle">S</text>
+    <text x="200" y="245" text-anchor="middle">S</text>
+    <text x="240" y="290" text-anchor="middle">S</text>
+  </g>
+  <g font-weight="bold">
+    <circle cx="345" cy="130" r="11" fill="#c0392b"/><text x="345" y="130" fill="#fff" text-anchor="middle" dominant-baseline="central">1</text>
+    <circle cx="330" cy="55" r="11" fill="#c0392b"/><text x="330" y="55" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text>
+    <circle cx="305" cy="400" r="11" fill="#c0392b"/><text x="305" y="400" fill="#fff" text-anchor="middle" dominant-baseline="central">3</text>
+    <circle cx="200" cy="225" r="11" fill="#c0392b"/><text x="200" y="225" fill="#fff" text-anchor="middle" dominant-baseline="central">4</text>
+    <circle cx="200" cy="268" r="11" fill="#c0392b"/><text x="200" y="268" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text>
+    <circle cx="150" cy="420" r="11" fill="#c0392b"/><text x="150" y="420" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text>
+    <circle cx="95" cy="310" r="11" fill="#c0392b"/><text x="95" y="310" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text>
+    <circle cx="175" cy="250" r="11" fill="#c0392b"/><text x="175" y="250" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text>
+    <circle cx="95" cy="170" r="11" fill="#c0392b"/><text x="95" y="170" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text>
+    <circle cx="55" cy="225" r="11" fill="#c0392b"/><text x="55" y="225" fill="#fff" text-anchor="middle" dominant-baseline="central">10</text>
+    <circle cx="230" cy="170" r="11" fill="#c0392b"/><text x="230" y="170" fill="#fff" text-anchor="middle" dominant-baseline="central">11</text>
+    <circle cx="290" cy="255" r="11" fill="#c0392b"/><text x="290" y="255" fill="#fff" text-anchor="middle" dominant-baseline="central">12</text>
+  </g>
+  <text x="260" y="468" text-anchor="middle" font-size="19" font-family="Noto Sans CJK TC" font-weight="bold" fill="#222">Snakepit 蛇窟</text>
+</svg>

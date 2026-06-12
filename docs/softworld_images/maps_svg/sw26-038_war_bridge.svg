@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="360" viewBox="0 0 340 360" font-family="sans-serif">
+  <rect width="100%" height="100%" fill="#fbf9f4"/>
+
+  <!-- upper bridge span with stepped right edge -->
+  <path d="M30 60 L210 60 L210 110 L240 110 L240 170 L150 170 L150 150 L100 150 L100 130 L30 130 Z"
+        fill="#5a5248" stroke="#222" stroke-width="2.5"/>
+  <!-- lower bridge span -->
+  <path d="M30 200 L230 200 L230 290 L120 290 L120 270 L70 270 L70 250 L30 250 Z"
+        fill="#5a5248" stroke="#222" stroke-width="2.5"/>
+
+  <g stroke="#222" stroke-width="3" stroke-linecap="square" fill="none">
+    <!-- right-upper passage / door -->
+    <path d="M240 90 L300 90 M300 90 L300 150 M270 150 L300 150"/>
+    <rect x="262" y="118" width="14" height="20"/>
+    <!-- small stoppers on lower span top edge -->
+    <path d="M120 195 L120 205 M150 195 L150 205 M180 195 L180 205"/>
+  </g>
+
+  <text x="170" y="335" text-anchor="middle" font-size="19" font-weight="bold" fill="#222">War Bridge 橋樑</text>
+</svg>
