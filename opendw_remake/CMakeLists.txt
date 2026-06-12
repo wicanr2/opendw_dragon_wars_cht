@@ -37,6 +37,14 @@ add_test(NAME vm_selftest COMMAND vm_selftest)
 add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)
 
+# --- render 模組(R2:framebuffer + 全螢幕圖解碼)---
+add_library(dwr_render STATIC src/render/picture.cpp)
+target_include_directories(dwr_render PUBLIC src)
+
+# golden 測試:remake 渲染 title,與 golden 對拍(見 tools_build/render_golden.sh)。
+add_executable(render_title tools/verify/render_title.cpp)
+target_link_libraries(render_title PRIVATE dwr_render dwr_resource)
+
 # 後續階段(R2+)再加入 SDL2 / freetype:
 #   find_package(SDL2 REQUIRED); find_package(Freetype REQUIRED)
 #   add_executable(opendw_remake src/main.cpp ...)
