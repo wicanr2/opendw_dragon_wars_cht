@@ -22,9 +22,12 @@
 
 **R0(資產層)完成**:archive + text_codec + decompress 全數對拍 opendw 一致。
 
-| `vm/`(script 虛擬 CPU) | 🚧 R1 batch 1:VmState + dispatch + trace + 15 個純 opcode(模式/算術/旗標/jmp/call-ret/test),自測通過 |
+| `vm/`(script 虛擬 CPU) | 🚧 R1:VmState + dispatch + trace + 15 個純 opcode(模式/算術/旗標/jmp/call-ret/test) |
+| **差異測試 harness** | ✅ remake VM trace == opendw oracle(逐指令一致)。`bash tools_build/diff_trace.sh` 一鍵從零重建+對拍 |
 
-**R1 進行中**:VM 核心已立,逐 batch 補齊 256 opcode 並對拍 opendw trace(差異測試)。
+**R1 進行中**:VM 核心 + 差異測試 harness 已立(`diff_trace.sh` 證明 remake 對拍 opendw 逐指令一致)。
+逐 batch 補齊 256 opcode,每批用差異測試驗。
+> 發現:opendw 未實作 op_43/5F/60/63(targets[] 引用裸名但無實作),這幾個 opcode **無 oracle**,需另從 ASM/spec 實作後人工驗。
 
 ## 建置(docker first)
 
