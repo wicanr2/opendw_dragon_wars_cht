@@ -37,7 +37,7 @@
 
 **R1 進行中**:VM 核心 + 差異測試 harness 已立(`diff_trace.sh` 證明 remake 對拍 opendw 逐指令一致)。
 逐 batch 補齊 256 opcode,每批用差異測試驗。
-**Asset bundle(ADR 0001)起步**:sprite 走 bundle `.spr`+PNG+manifest,從 bundle 渲染與 DATA1 解碼**像素一致**且執行期不依賴 DATA1 —— 換檔即換 sprite(未來 X68000/PC-9801 美術)。
+**Asset bundle(ADR 0001)**:ResourceProvider 抽象(Data1Provider oracle / BundleProvider 執行期);script bytecode + sprite + 字串皆可走 bundle,BundleProvider 載入 == DATA1 byte-for-byte。sprite 走 bundle `.spr`+PNG+manifest,從 bundle 渲染與 DATA1 解碼**像素一致**且執行期不依賴 DATA1 —— 換檔即換 sprite(未來 X68000/PC-9801 美術)。
 
 > 發現:opendw 未實作 op_43/5F/60/63(targets[] 引用裸名但無實作),這幾個 opcode **無 oracle**,需另從 ASM/spec 實作後人工驗。
 
