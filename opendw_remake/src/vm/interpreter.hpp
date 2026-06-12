@@ -76,9 +76,23 @@ private:
   void op4F_clr_gs_bit();      // 0x4F
   void op50_test_gs_bit();     // 0x50
 
+  // --- batch 3:rcr+加減 / loop / set-msb / test-gs / bit ---
+  void op2F_rcr_add_gs();      // 0x2F
+  void op30_rcr_add_imm();     // 0x30
+  void op31_rcr_sub_gs();      // 0x31
+  void op32_rcr_sub_imm();     // 0x32
+  void op48_set_gs_msb();      // 0x48
+  void op49_loop();            // 0x49
+  void op4A_loop_eq();         // 0x4A
+  void op66_test_gs();         // 0x66
+  void op9A_set_gs_ff();       // 0x9A
+  void op9B_set_gs_bit();      // 0x9B
+  void op9D_test_gs_bit();     // 0x9D
+
   // 輔助
   void set_gs(std::uint16_t idx, std::uint8_t val);
   void get_bit_mask(std::uint8_t al);
+  void set_flags();
 };
 
 }  // namespace dw::vm
