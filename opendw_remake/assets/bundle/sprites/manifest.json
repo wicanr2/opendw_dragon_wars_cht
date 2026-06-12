@@ -15,10 +15,34 @@
     "h": 136,
     "source": "dos"
   },
+  "200": {
+    "name": "innocent_man",
+    "spr": "200_innocent_man.spr",
+    "png": "200_innocent_man.png",
+    "w": 160,
+    "h": 136,
+    "source": "dos"
+  },
   "210": {
     "name": "pikeman",
     "spr": "210_pikeman.spr",
     "png": "210_pikeman.png",
+    "w": 160,
+    "h": 136,
+    "source": "dos"
+  },
+  "222": {
+    "name": "fanatic",
+    "spr": "222_fanatic.spr",
+    "png": "222_fanatic.png",
+    "w": 160,
+    "h": 136,
+    "source": "dos"
+  },
+  "152": {
+    "name": "guard",
+    "spr": "152_guard.spr",
+    "png": "152_guard.png",
     "w": 160,
     "h": 136,
     "source": "dos"

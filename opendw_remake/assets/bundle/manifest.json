@@ -1,0 +1,16 @@
+{
+  "format": "opendw-bundle/1",
+  "source": "Dragon Wars (Interplay 1989) DATA1/DATA2",
+  "scripts": [
+    "scripts/0.bin",
+    "scripts/3.bin",
+    "scripts/6.bin"
+  ],
+  "strings": [
+    "strings/0.tsv",
+    "strings/3.tsv",
+    "strings/6.tsv"
+  ],
+  "sprites": "sprites/manifest.json",
+  "note": "remake 執行期讀此 bundle,不需原始磁碟檔。對話改 strings/*.tsv,sprite 改 sprites/*.png(轉回 .spr)。"
+}
