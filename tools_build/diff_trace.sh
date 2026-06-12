@@ -4,7 +4,7 @@ set -e
 REPO="$(cd "$(dirname "$0")/.." && pwd)"; OUT=/tmp/dwbuild/trace; mkdir -p "$OUT"
 bash "$REPO/tools_build/build_trace_oracle.sh" /home/anr2/tmp/longcat/opendw "$OUT"
 docker run --rm -v "$REPO/opendw_remake":/app -v "$OUT":/out -w /app dwtools bash -c \
-  'g++ -O1 -w -std=c++20 -Isrc src/vm/interpreter.cpp tools/verify/trace_remake.cpp -o /out/trace_remake 2>/dev/null && echo "OK trace_remake" || echo FAIL'
+  'g++ -O1 -w -std=c++20 -Isrc src/vm/interpreter.cpp src/resource/text_codec.cpp tools/verify/trace_remake.cpp -o /out/trace_remake 2>/dev/null && echo "OK trace_remake" || echo FAIL'
 docker run --rm -v "$OUT":/t dwtools /t/trace_opendw 2>/dev/null | grep -E '^[0-9a-f]{4} op=' > "$OUT/opendw.txt"
 docker run --rm -v "$OUT":/t dwtools /t/trace_remake 2>/dev/null > "$OUT/remake.txt"
 if diff "$OUT/opendw.txt" "$OUT/remake.txt" >/dev/null; then

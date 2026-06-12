@@ -28,6 +28,7 @@ target_link_libraries(verify_decompress PRIVATE dwr_resource)
 # --- vm 模組(R1:script 虛擬 CPU)---
 add_library(dwr_vm STATIC src/vm/interpreter.cpp)
 target_include_directories(dwr_vm PUBLIC src)
+target_link_libraries(dwr_vm PUBLIC dwr_resource)
 
 enable_testing()
 add_executable(vm_selftest tests/vm_selftest.cpp)
@@ -79,3 +80,7 @@ target_link_libraries(render_menu_bundle PRIVATE dwr_render dwr_i18n)
 # ResourceProvider 對拍:BundleProvider == Data1Provider(未編輯資源)。
 add_executable(verify_provider tools/verify/verify_provider.cpp)
 target_link_libraries(verify_provider PRIVATE dwr_resource)
+
+# 完整閉環:bundle bytecode → VM op_78 → i18n → 渲染。
+add_executable(render_vm_text tools/verify/render_vm_text.cpp)
+target_link_libraries(render_vm_text PRIVATE dwr_vm dwr_render dwr_i18n)
