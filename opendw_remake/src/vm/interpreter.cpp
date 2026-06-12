@@ -1,5 +1,7 @@
 #include "interpreter.hpp"
 
+#include "../resource/text_codec.hpp"
+
 namespace dw::vm {
 
 // --- opcode 實作(逐字對照 opendw engine.c;cpu.ax→s_.ax 等)---
@@ -548,6 +550,19 @@ void Interpreter::op9D_test_gs_bit() {
   set_flags();
 }
 
+// --- 字串輸出 opcode ---
+// 在 pc 處用 text_codec 解一條字串、推進 pc 到字串結束處(對照 opendw set_msg:
+// cpu.pc = base_pc + extract_string(...)),並以 (起始 offset, 英文原文) 回呼 sink。
+void Interpreter::emit_string() {
+  std::size_t start = s_.pc;
+  auto [str, next] = text::decode(s_.script, start);
+  s_.pc = next;
+  if (msg_sink_) msg_sink_(start, str);
+}
+void Interpreter::op78_set_msg() { emit_string(); }
+void Interpreter::op7B_ui_header() { emit_string(); }            // header,文字路徑同
+void Interpreter::op77_draw_and_set() { emit_string(); }          // (draw_pattern 副作用屬 render,略)
+
 // --- dispatch 表 ---
 #define OP(n, m) [n] = &Interpreter::m
 const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
@@ -610,6 +625,10 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x9A] = &Interpreter::op9A_set_gs_ff;
   t[0x9B] = &Interpreter::op9B_set_gs_bit;
   t[0x9D] = &Interpreter::op9D_test_gs_bit;
+  // 字串輸出
+  t[0x77] = &Interpreter::op77_draw_and_set;
+  t[0x78] = &Interpreter::op78_set_msg;
+  t[0x7B] = &Interpreter::op7B_ui_header;
   return t;
 }();
 #undef OP

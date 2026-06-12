@@ -4,6 +4,8 @@
 // 後續 batch 補齊其餘 opcode 並全程對拍 opendw(差異測試)。
 #pragma once
 #include <array>
+#include <functional>
+#include <string>
 #include "vm_state.hpp"
 #include "trace.hpp"
 
@@ -12,6 +14,11 @@ namespace dw::vm {
 class Interpreter {
 public:
   explicit Interpreter(VmState& s, Trace* trace = nullptr) : s_(s), trace_(trace) {}
+
+  // 字串輸出 sink:VM 執行 op_77/78/7B 時,以 (字串起始 offset, 解出的英文原文) 回呼。
+  // 呼叫端據 (section,offset) 查 bundle 字串表 / i18n,渲染在地化文字。
+  using MessageSink = std::function<void(std::size_t offset, const std::string&)>;
+  void set_message_sink(MessageSink sink) { msg_sink_ = std::move(sink); }
 
   // 執行直到 halt(op_5A)或 pc 越界。回傳執行的指令數。
   int run();
@@ -89,10 +96,18 @@ private:
   void op9B_set_gs_bit();      // 0x9B
   void op9D_test_gs_bit();     // 0x9D
 
+  // 字串輸出 opcode(解字串 + 推進 pc + emit 給 sink)
+  void op77_draw_and_set();    // 0x77
+  void op78_set_msg();         // 0x78
+  void op7B_ui_header();       // 0x7B
+  void emit_string();          // 共用:在 pc 解字串、推進 pc、回呼 sink
+
   // 輔助
   void set_gs(std::uint16_t idx, std::uint8_t val);
   void get_bit_mask(std::uint8_t al);
   void set_flags();
+
+  MessageSink msg_sink_;
 };
 
 }  // namespace dw::vm
