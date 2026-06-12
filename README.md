@@ -5,6 +5,13 @@ OpenDW 是 Interplay 1989/1990 年遊戲 **Dragon Wars** 的開源重製版。
 
 **Repo URL**: https://github.com/wicanr2/opendw_dragon_wars_cht
 
+## 重點文件 / 設計筆記
+
+- 📐 [**為什麼原始火龍之戰要拆 DATA1 / DATA2?**](docs/42_WHY_DATA1_DATA2.md) — 1989 硬體環境下的設計推理(軟碟容量 / 多卷目錄 / 換片 / RAM)。
+- 🏗️ [**opendw_remake/**](opendw_remake/README.md) — 以 C++20 + SDL2 重寫的執行環境(VM + 渲染 + 自包含資產),以 opendw 為正確性 oracle。
+- 📋 [ADR 0001:Asset Bundle 與 ResourceProvider](docs/adr/0001-asset-bundle-and-resource-provider.md) — resource 脫離 DATA1/DATA2、可編輯/可替換。
+- 📖 [docs 索引](docs/README.md) · [術語表 CONTEXT.md](CONTEXT.md) · [opcode 雙語參考](docs/OPCODE_REFERENCE.md)
+
 ## 專案結構
 
 ```
