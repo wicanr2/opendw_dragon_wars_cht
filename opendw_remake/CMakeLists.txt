@@ -14,6 +14,7 @@ add_library(dwr_resource STATIC
   src/resource/text_codec.cpp
   src/resource/archive.cpp
   src/resource/decompress.cpp
+  src/resource/provider.cpp
 )
 target_include_directories(dwr_resource PUBLIC src)
 
@@ -74,3 +75,7 @@ target_link_libraries(extract_strings PRIVATE dwr_resource)
 # 文字脫離 DATA1:從 bundle 字串表取選單渲染(英/中)。
 add_executable(render_menu_bundle tools/verify/render_menu_bundle.cpp)
 target_link_libraries(render_menu_bundle PRIVATE dwr_render dwr_i18n)
+
+# ResourceProvider 對拍:BundleProvider == Data1Provider(未編輯資源)。
+add_executable(verify_provider tools/verify/verify_provider.cpp)
+target_link_libraries(verify_provider PRIVATE dwr_resource)
