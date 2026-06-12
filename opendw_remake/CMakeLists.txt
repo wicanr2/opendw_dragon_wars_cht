@@ -38,7 +38,7 @@ add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
-add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp)
+add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp)
 add_library(dwr_i18n STATIC src/i18n/strings.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
@@ -62,3 +62,7 @@ target_link_libraries(render_cjk_demo PRIVATE dwr_render)
 # R3 端到端:DATA1 → text_codec → i18n → 渲染(英/中選單)。
 add_executable(render_menu_demo tools/verify/render_menu_demo.cpp)
 target_link_libraries(render_menu_demo PRIVATE dwr_resource dwr_render dwr_i18n)
+
+# R6 起步:從 asset bundle 載 sprite 渲染(不依賴 DATA1,見 docs/adr/0001)。
+add_executable(render_sprite_bundle tools/verify/render_sprite_bundle.cpp)
+target_link_libraries(render_sprite_bundle PRIVATE dwr_render)

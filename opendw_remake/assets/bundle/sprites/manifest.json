@@ -1,0 +1,26 @@
+{
+  "168": {
+    "name": "wolf",
+    "spr": "168_wolf.spr",
+    "png": "168_wolf.png",
+    "w": 160,
+    "h": 136,
+    "source": "dos"
+  },
+  "196": {
+    "name": "spider",
+    "spr": "196_spider.spr",
+    "png": "196_spider.png",
+    "w": 160,
+    "h": 136,
+    "source": "dos"
+  },
+  "210": {
+    "name": "pikeman",
+    "spr": "210_pikeman.spr",
+    "png": "210_pikeman.png",
+    "w": 160,
+    "h": 136,
+    "source": "dos"
+  }
+}
