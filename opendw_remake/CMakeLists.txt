@@ -39,6 +39,8 @@ target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
 add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp)
+add_library(dwr_i18n STATIC src/i18n/strings.cpp)
+target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
 # golden 測試:remake 渲染 title,與 golden 對拍(見 tools_build/render_golden.sh)。
@@ -56,3 +58,7 @@ target_link_libraries(render_cjk_demo PRIVATE dwr_render)
 # 後續階段(R2+)再加入 SDL2 / freetype:
 #   find_package(SDL2 REQUIRED); find_package(Freetype REQUIRED)
 #   add_executable(opendw_remake src/main.cpp ...)
+
+# R3 端到端:DATA1 → text_codec → i18n → 渲染(英/中選單)。
+add_executable(render_menu_demo tools/verify/render_menu_demo.cpp)
+target_link_libraries(render_menu_demo PRIVATE dwr_resource dwr_render dwr_i18n)
