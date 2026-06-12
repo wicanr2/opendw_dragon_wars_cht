@@ -22,8 +22,9 @@
 
 **R0(資產層)完成**:archive + text_codec + decompress 全數對拍 opendw 一致。
 
-| `vm/`(script 虛擬 CPU) | 🚧 R1:VmState + dispatch + trace + 15 個純 opcode(模式/算術/旗標/jmp/call-ret/test) |
-| **差異測試 harness** | ✅ remake VM trace == opendw oracle(逐指令一致)。`bash tools_build/diff_trace.sh` 一鍵從零重建+對拍 |
+| `vm/`(script 虛擬 CPU) | 🚧 R1:56/256 opcode(模式/算術/旗標/邏輯/比較/跳轉/loop/game_state/bit) |
+| **差異測試 harness** | ✅ remake VM trace == opendw oracle(逐指令一致)。`bash tools_build/diff_trace.sh` |
+| `render/`(framebuffer + 全螢幕圖) | ✅ R2 batch 1:framebuffer + title_adjust + nibble→palette。title 畫面 golden 對拍通過(`bash tools_build/render_golden.sh`) |
 
 **R1 進行中**:VM 核心 + 差異測試 harness 已立(`diff_trace.sh` 證明 remake 對拍 opendw 逐指令一致)。
 逐 batch 補齊 256 opcode,每批用差異測試驗。
