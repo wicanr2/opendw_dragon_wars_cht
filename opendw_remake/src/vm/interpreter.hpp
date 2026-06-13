@@ -157,7 +157,12 @@ private:
   void op14_data_from_r2();    // 0x14  data[operand] = r2
   void op15_data_off_from_r2();// 0x15  data[operand + r4] = r2
   void op16_data_gsoff_from_r2();// 0x16 data[gs[op]+r4] = r2
+  void op17_store_into_res();   // 0x17 res[gs[op+2]].bytes[(gs[op]|gs[op+1]<<8)+r4] = r2
   void op18_data_gsidx_from_r2();// 0x18 data[(gs[op1]|gs[op1+1]<<8)+op2] = r2(byte/word)
+  // 取資源 index 的持久 bytes(對照 resource_get_by_index → allocations[idx],engine.c:176):
+  //   data_res→data_bytes、script_res→script,否則 res_cache(provider 載入後快取)。
+  //   回 nullptr 表無法取得。可寫(op_17 的寫入須持久,後續讀同資源要看得到)。
+  std::vector<std::uint8_t>* res_bytes_by_index(int idx);
 
   // --- 乘/除法子系統(對照 engine.c word_11C0..11CC + multiply_16bit/divide_16bit)---
   void op33_mul_gs();          // 0x33  11C2=gs[op],11C4=gs[op+2],11C0=r2 → multiply → 存 gs
@@ -196,6 +201,9 @@ private:
   void op5F_or_char_data();    // 0x5F  char_data[(sel<<8)+bx] |= bitmask(設角色 bit 屬性)
   void op60_and_char_data();   // 0x60  char_data[(sel<<8)+bx] &= ~bitmask(清角色 bit 屬性)
   void op61_test_char_prop();  // 0x61  test char_data[player*512 + bx] & bitmask → 設 sf/zf/cf
+  void op63_set_char_ext_word();// 0x63 set_char_data_word:mode=ax高位;讀2B operand;
+                                //      檢查 char_ext[sel<<8 + u4456[0]];=0 → clc(本切片路徑)
+  void op69_set_char_ext();    // 0x69  char_ext[sel<<8 + u4456[gs[7]] + op] = r2(byte/word)
   // 角色資料定址輔助:回傳「當前角色 record 的頁高位(selector=gs[idx+0x0A])」。
   std::uint16_t char_record_base();  // = selector << 8(char_data 內的 record 起點)
 
