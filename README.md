@@ -26,15 +26,21 @@ OpenDW 是 Interplay 1989/1990 年遊戲 **Dragon Wars** 的開源重製版。
 | ![fp](opendw_remake/docs/screenshots/r9_fp_event_twolayer.png) | ![wolf](opendw_remake/docs/showcase/sprite_wolf.png) |
 | 第一人稱透視走廊 +**踩到事件格顯示在地化繁中事件文字**;**雙層渲染**:像素層整數放大 + SDL2_ttf 文字層(中文 24px 恆銳利) | 從 asset bundle 載入,對拍 opendw byte-for-byte |
 
-**目前已落地(均經 opendw 對拍或攻略對照驗證)**:
-- ✅ SDL2 視窗 + DOS 16 色 framebuffer;操作鍵對齊原版說明書(`B`/`C` 選單、`I/J/L/K` 移動、`Esc`/`Q`)。
-- ✅ VM(90+ opcode,含 op_58 跨資源 call)跑 bundle bytecode;**多國語系**架構(`--locale`,日文 ready);diff_trace 逐指令 == opendw。
-- ✅ **40 關真實地圖**從 DATA1/DATA2 抽出(關卡名與攻略地區 100% 對應);事件腳本 emit **440** 條訊息,與攻略「訊息 N」吻合。
-- ✅ 標題/場景圖、sprite 渲染 **byte-for-byte == 原版**(`verify_scene_golden.sh`、`verify_viewport` 3/3)。
-- ✅ **第一人稱 viewport**(進入遊戲的透視牆面)—— FOV→牆面元件→sprite blit→framebuffer 全鏈,**全 40 關像素對拍 opendw 430/430 PASS**(`verify_fp`/`fov`/`compose`/`sweep`)。
-- ✅ **踩到事件格 → 第一人稱畫面顯示在地化繁中事件文字**(`--fp`,真實地圖 + VM 事件 script + i18n,**全自包含不依賴 DATA1**);CJK atlas 197 字。
+| 角色屬性表 | 遭遇/戰鬥畫面 | 段落捲動檢視器 |
+|:---:|:---:|:---:|
+| ![char](opendw_remake/docs/party_demo/char_sheet_zh_muskels.png) | ![combat](docs/combat_screens/encounter_humbaba.png) | ![para](opendw_remake/docs/paragraph_demo/para88_top.png) |
+| `V`/1-4 看完整屬性(力量/敏捷/智力/精神/生命/法力/狀態…),i18n 三語 | 怪物圖 @ (16,8) **對齊原版 `draw_random_encounter_graphic` 佈局**(golden byte-for-byte)+ 隊伍面板 + F戰鬥/R逃跑 | **Read Paragraph** 防拷段落以捲動 overlay 顯示完整繁中譯文,不截斷不切字 |
 
-> 本機執行:`cd opendw_remake && cmake -S . -B build && cmake --build build --target opendw_remake`,再 `./build/opendw_remake`(選單)、`--map 1 --fp`(進波卡城第一人稱)、`--scene 29`(標題)。走到事件格即顯示繁中事件文字。
+**目前已落地(均經 opendw 對拍或攻略對照驗證;戰鬥結算除外,見下)**:
+- ✅ SDL2 視窗 + DOS 16 色 framebuffer;操作鍵對齊原版說明書(`B`/`C` 選單、`I/J/L/K` 移動、`Esc`/`Q`)。
+- ✅ VM(含 op_58 跨資源 call、角色資料 primitive op_5D/5E/5F/60/61、乘除 op_33-36、op_89 選單跳轉)跑 bundle bytecode;**多國語系**架構(`--locale`,日文 ready);**diff_trace 逐指令 == opendw**。
+- ✅ **40 關真實地圖**從 DATA1/DATA2 抽出(關卡名與攻略地區 100% 對應);**地圖區域切換**(踩出入口→換 area,`verify_areaswitch`);事件腳本 emit 訊息與攻略「訊息 N」吻合。
+- ✅ 標題/場景圖、sprite 渲染 **byte-for-byte == 原版**(`verify_scene_golden.sh`、`verify_viewport` 3/3)。
+- ✅ **第一人稱 viewport** FOV→牆面元件→sprite blit→framebuffer 全鏈,**全 40 關像素對拍 opendw PASS**(`verify_fp`/`fov`/`compose`/`sweep`)。
+- ✅ **踩到事件格 → 顯示在地化繁中事件文字**;**Read Paragraph 段落捲動檢視器**(完整譯文不截斷);**角色屬性表**;**存檔/讀檔**(`S` 存、選單 `C` 繼續,round-trip byte-for-byte);**遭遇畫面**(怪物圖佈局對拍 oracle golden)。**全自包含,執行期不依賴 DATA1**。
+- ⚠️ **戰鬥結算**:opendw 的 C 反編譯**本身未實作**命中/傷害結算(公式在原版未逆出的 bytecode);遭遇畫面 + 怪物資料 + RNG(op_4D)已 **byte-for-byte 對拍 oracle**,但 to-hit/傷害目前是**乾淨室模型(placeholder,非原版真值)**,已於程式碼與 `docs/42` 誠實標示。原版戰鬥 bytecode 已能在 VM 上執行(攻擊迴圈跑滿無 halt),HP-vs-oracle 對拍待 roster pipeline 完整逆向。
+
+> 本機執行:`cd opendw_remake && cmake -S . -B build && cmake --build build --target opendw_remake`,再 `./build/opendw_remake`(選單)、`--map 1 --fp`(進波卡城第一人稱)、`--scene 29`(標題)、`--read-para 88`(段落檢視器)、`--encounter 12`(遭遇畫面)。回歸:`cd build && ctest`(8/8)。
 
 ## 專案結構
 
