@@ -100,6 +100,12 @@ if 'static void sub_2AEE' not in s:
       'static void op_43(void){} static void op_5F(void){} static void op_60(void){} static void op_63(void){}\n')
     s=s.replace(marker, shim+marker, 1)
 
+# batch11:dispatch_sound_effect 中性化 —— headless 無音效表(func_5060 全 NULL)會 exit(1);
+# 其 VM 狀態契約(operand 消耗 + cpu.ax)在呼叫前已完成,故整個 dispatch no-op 不影響對拍。
+s=re.sub(r'(static void dispatch_sound_effect\(int function_idx\)\s*\{)',
+         r'\1\n  (void)function_idx; return; // b11: headless 中性化(無音效子系統)',
+         s, count=1)
+
 # wait_for_event:headless 固定回 key=0(對齊 remake op_8C 的 key=0)。
 # 在函式 body 開頭直接設 cpu.ax=0 並 return,跳過鍵盤/滑鼠輪詢。
 s=re.sub(r'(static void wait_for_event\(uint16_t flags, unsigned char \*src_ptr, const unsigned char \*base\)\s*\{)',
@@ -111,6 +117,7 @@ if 'dw_trace_run' not in s:
 static struct resource dw_trace_res;
 void dw_trace_run(const unsigned char *code, int len){
   dw_trace_res.bytes=(unsigned char*)code; dw_trace_res.len=len; running_script=&dw_trace_res;
+  word_3ADF=&dw_trace_res; // b11:word_3ADF(資料資源)指向同一份(對齊 remake data_bytes=script)
   memset(&cpu,0,sizeof(cpu)); cpu.sp=STACK_SIZE; cpu.pc=dw_trace_res.bytes; cpu.base_pc=dw_trace_res.bytes;
   byte_3AE1=0; word_3AE2=0; word_3AE4=0; word_3AE6=0; memset(&game_state,0,sizeof(game_state));
   extern void (*string_byte_handler_func)(unsigned char);

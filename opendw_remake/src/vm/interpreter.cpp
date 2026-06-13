@@ -1137,6 +1137,54 @@ void Interpreter::op8C_prompt_no_yes() {
   s_.flags = f;
 }
 
+// --- batch 11:資料資源讀(gs 索引)/ 印字 / 音效 ---
+
+// op_0E(@0x3BD0):r2 = word_3ADF->bytes[ gs[op] | gs[op+1]<<8 + word_3AE4 ](word,mode 遮罩)。
+//   oracle:al=operand;bx = gs[al] | gs[al+1]<<8;bx += word_3AE4;
+//          ax = es[bx] | es[bx+1]<<8(es = word_3ADF->bytes);ah &= byte_3AE1;word_3AE2 = ax。
+//   與 op_0D 類似,差在 base 索引取自 game_state(gs[al] 兩 byte 組成 offset),而非直接 operand。
+void Interpreter::op0E_r2_from_data_gsoff() {
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al;
+  std::uint16_t idx = s_.ax & 0xFF;
+  std::uint16_t bx = s_.game_state[idx & 0xFF];
+  bx += (std::uint16_t)(s_.game_state[(idx + 1) & 0xFF] << 8);
+  bx += s_.r4;
+  s_.bx = bx;
+  const auto& d = s_.data_bytes;
+  std::uint16_t lo = (bx < d.size()) ? d[bx] : 0;
+  std::uint16_t hi = ((std::size_t)(bx + 1) < d.size()) ? d[bx + 1] : 0;
+  s_.ax = (std::uint16_t)(lo | (hi << 8));
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;
+  ah &= s_.mode;  // byte_3AE1
+  s_.ax = (std::uint16_t)((ah << 8) | (s_.ax & 0xFF));
+  s_.r2 = s_.ax;
+}
+
+// op_83(@0x48EE):把 word_3AE2 以 byte/word 模式 emit(印字)。無 operand。
+//   oracle:若 byte_3AE1 != ah(word 模式)→ 先 emit word_3AE2 高位;再 emit word_3AE2 低位。
+//          兩次都走 handle_byte_callback(輸出),不改 r2/r4/flags/game_state。
+//   remake 走 i18n/UTF-8 字串 sink:把要印的 byte(s)轉成字串以哨兵 offset emit;
+//   VM 狀態與 oracle 一致(純輸出,無狀態變更)。
+void Interpreter::op83_print_char() {
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;
+  std::string out;
+  if (s_.mode != ah) {  // word 模式:先印高位
+    out.push_back((char)((s_.r2 & 0xFF00) >> 8));
+  }
+  out.push_back((char)(s_.r2 & 0xFF));
+  if (msg_sink_) msg_sink_(kNumberSink, out);
+}
+
+// op_90(op_sound_effect @0x49E7):讀 1 byte operand(音效編號),dispatch_sound_effect(al)。
+//   VM 可見副作用:消耗 1 operand + cpu.ax;不改 r2/r4/flags/game_state。
+//   remake 無音效子系統 → 忠實消耗 operand(音效播放屬 render/audio 副作用)。
+void Interpreter::op90_sound_effect() {
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al;
+  // dispatch_sound_effect 為音效副作用,VM 狀態不變。
+}
+
 // op_16:bx = gs[op] | gs[op+1]<<8 + r4;data[bx] = r2(byte;word 模式再寫 +1)。
 void Interpreter::op16_data_gsoff_from_r2() {
   std::uint8_t al = s_.fetch8();
@@ -1267,6 +1315,10 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x7D] = &Interpreter::op7D_char_name;
   t[0x80] = &Interpreter::op80_advance_cursor;
   t[0x8C] = &Interpreter::op8C_prompt_no_yes;
+  // batch 11:資料資源讀(gs 索引)/ 印字 / 音效
+  t[0x0E] = &Interpreter::op0E_r2_from_data_gsoff;
+  t[0x83] = &Interpreter::op83_print_char;
+  t[0x90] = &Interpreter::op90_sound_effect;
   return t;
 }();
 #undef OP
