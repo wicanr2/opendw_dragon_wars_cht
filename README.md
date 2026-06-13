@@ -21,17 +21,17 @@ OpenDW 是 Interplay 1989/1990 年遊戲 **Dragon Wars** 的開源重製版。
 | ![menu](opendw_remake/docs/showcase/menu.png) | ![title](opendw_remake/docs/showcase/title.png) | ![map](opendw_remake/docs/showcase/map_purgatory.png) |
 | VM 跑 bundle bytecode → i18n 繁中(B 開始/C 繼續,操作對齊原版說明書) | `decode_fullscreen`(title_adjust 去交錯)**逐位元 == 原版** | 從原版抽出的 **40 關真實地圖**(關卡名 100% 對應《軟體世界》攻略) |
 
-| 怪物 sprite | viewport 框架(進行中) |
+| 第一人稱 viewport(進入遊戲畫面) | 怪物 sprite |
 |:---:|:---:|
-| ![wolf](opendw_remake/docs/showcase/sprite_wolf.png) | ![viewport](opendw_remake/docs/showcase/viewport_frame.png) |
-| 從 asset bundle 載入,對拍 opendw byte-for-byte | 第一人稱 viewport 渲染核心**已對拍 opendw 3/3 PASS**;組景(牆面)為最後一塊 |
+| ![fp](opendw_remake/docs/showcase/viewport_fp_purgatory.png) | ![wolf](opendw_remake/docs/showcase/sprite_wolf.png) |
+| 進入遊戲的第一人稱透視走廊(`--fp`),**viewport_memory 逐位元 == 原版**(4 朝向 4/4 PASS) | 從 asset bundle 載入,對拍 opendw byte-for-byte |
 
 **目前已落地(均經 opendw 對拍或攻略對照驗證)**:
 - ✅ SDL2 視窗 + DOS 16 色 framebuffer;操作鍵對齊原版說明書(`B`/`C` 選單、`I/J/L/K` 移動、`Esc`/`Q`)。
 - ✅ VM(65 opcode)跑 bundle bytecode → **在地化選單**;**多國語系**架構(`--locale`,日文 ready)。
 - ✅ **40 關真實地圖**從 DATA1/DATA2 抽出(關卡名與攻略地區 100% 對應);事件腳本 emit 267 條訊息,與攻略「訊息 N」吻合。
 - ✅ 標題/場景圖、sprite 渲染 **byte-for-byte == 原版**(`verify_scene_golden.sh`、`verify_viewport` 3/3)。
-- ⏳ 第一人稱 viewport 組景(牆面)—— 整條管線已逆向、decode 核心已對拍,組景 port 為進行中的最後一塊(見 [`VIEWPORT.md`](opendw_remake/docs/VIEWPORT.md) / [`VIEWPORT_COMPOSE.md`](opendw_remake/docs/VIEWPORT_COMPOSE.md))。
+- ✅ **第一人稱 viewport(進入遊戲的透視牆面)** —— FOV 取樣 → 牆面元件選擇 → sprite blit → framebuffer 全鏈 port 完成,**Purgatory 4 朝向 viewport_memory 逐位元 == 原版**(`verify_fp`/`verify_fov`/`verify_compose` 全 PASS)。`--fp` 進遊戲,I/J/L/K 走動(見 [`VIEWPORT.md`](opendw_remake/docs/VIEWPORT.md) / [`VIEWPORT_COMPOSE.md`](opendw_remake/docs/VIEWPORT_COMPOSE.md))。
 
 > 本機執行:`cd opendw_remake && cmake -S . -B build && cmake --build build --target opendw_remake`,再 `./build/opendw_remake`(選單)、`--map 1`(波卡城)、`--scene 29`(標題)、`--viewport`(框架)。
 

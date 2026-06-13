@@ -539,6 +539,38 @@ void ViewportDecoder::compose_frame(const std::uint8_t* vp0,
   }
 }
 
+// port 自 opendw draw_viewport_sky 的 al!=1 分支 (engine.c:5576)。
+void ViewportDecoder::fill_sky_flat() {
+  static const std::uint16_t data_575C[4] = {0x4040, 0x0404, 0, 0};
+  int dx = 88;
+  int bx = 0;
+  std::uint8_t* vp = mem.data();
+  do {
+    if (dx < 0x28) bx |= 2;
+    std::uint16_t ax = data_575C[bx];
+    for (int i = 0; i < 40; ++i) {
+      *vp++ = (ax & 0xFF00) >> 8;
+      *vp++ = ax & 0xFF;
+    }
+    bx = bx ^ 1;
+    dx--;
+  } while (dx >= 0);
+}
+
+// port 自 opendw draw_sprite_to_viewport (engine.c:5512)。
+bool ViewportDecoder::draw_sprite(const std::uint8_t* comp, std::size_t comp_len,
+                                  std::uint16_t& word_104F, int sprite_offset,
+                                  int xpos, int ypos, std::uint8_t byte_104E) {
+  std::size_t hdr = (std::size_t)word_104F + (std::size_t)sprite_offset;
+  if (hdr + 1 >= comp_len) return false;  // 防越界 (原版假設資料合法)
+  std::uint16_t size = comp[hdr] | (comp[hdr + 1] << 8);
+  if (size == 0) return false;            // 空 slot:不畫,不動 word_104F
+  word_104F = static_cast<std::uint16_t>(word_104F + size);
+  const std::uint8_t* payload = comp + word_104F;
+  decode(payload, xpos, ypos, /*word_1053=*/0x50, byte_104E);
+  return true;
+}
+
 void ViewportDecoder::decode(const std::uint8_t* tmpl,
                              int xpos,
                              int ypos,

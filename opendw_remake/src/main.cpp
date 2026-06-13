@@ -26,6 +26,7 @@
 #include "render/sprite.hpp"
 #include "render/picture.hpp"
 #include "render/viewport.hpp"
+#include "render/viewport_compose.hpp"
 #include "render/sdl_video.hpp"
 #include "resource/level.hpp"
 #include "i18n/strings.hpp"
@@ -66,6 +67,7 @@ int main(int argc, char** argv) {
   int start_pc = 20, max_frames = -1, press = 0, map_area = -1;
   std::string dump, sprite_name, scene_name;
   bool viewport_mode = false;   // --viewport:顯示原版第一人稱 viewport 靜態框架
+  bool fp_mode = false;         // --fp:S_GAME 用第一人稱 viewport(取代俯視彩格)
   for (int i = 1; i < argc; ++i) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
     if (eq("--bundle") && i + 1 < argc) bundle = argv[++i];
@@ -81,6 +83,7 @@ int main(int argc, char** argv) {
     else if (eq("--map") && i + 1 < argc) map_area = std::atoi(argv[++i]);   // 直接進某區地圖
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
     else if (eq("--viewport")) viewport_mode = true;   // 顯示原版 viewport 靜態框架
+    else if (eq("--fp")) fp_mode = true;               // 第一人稱 viewport(透視牆面)
   }
 
   auto font = render::Font8x8::load_table(font_raw);
@@ -134,6 +137,26 @@ int main(int argc, char** argv) {
     return true;
   };
   if (map_area >= 0) { if (!enter_map(map_area)) return 1; state = S_GAME; }
+
+  // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
+  render::ComponentStore comps(bundle + "/components");
+  std::vector<std::uint8_t> vpt[4];
+  bool vpt_ok = false;
+  if (fp_mode) {
+    auto load_bin = [&](const std::string& name) -> std::vector<std::uint8_t> {
+      std::string path = bundle + "/viewport/" + name + ".bin";
+      std::FILE* f = std::fopen(path.c_str(), "rb");
+      if (!f) return {};
+      std::vector<std::uint8_t> buf; int c;
+      while ((c = std::fgetc(f)) != EOF) buf.push_back((std::uint8_t)c);
+      std::fclose(f);
+      return buf;
+    };
+    vpt[0] = load_bin("vp0"); vpt[1] = load_bin("vp1");
+    vpt[2] = load_bin("vp2"); vpt[3] = load_bin("vp3");
+    vpt_ok = !vpt[0].empty() && !vpt[1].empty() && !vpt[2].empty() && !vpt[3].empty();
+    if (!vpt_ok) std::fprintf(stderr, "fp: viewport frame templates missing (vp0..vp3)\n");
+  }
 
   if (viewport_mode) {
     // ── 原版第一人稱 viewport 靜態框架(port 自 opendw ui_update_viewport +
@@ -275,8 +298,28 @@ int main(int argc, char** argv) {
       }
     }
   };
+  // F+:第一人稱 viewport(透視牆面)。port 自 opendw refresh_viewport →
+  //   update_viewport(靜態框架)→ ui_update_viewport(上螢幕)。對拍 verify_fp 4/4。
+  auto draw_game_fp = [&]() {
+    fb.clear(0);
+    if (!level) return;
+    render::ViewportDecoder dec;
+    // 牆面/地面/天空 sprite blit 進 viewport_memory(已對拍 golden 10880B)。
+    render::render_first_person(*level, px, py, dir, dec, comps);
+    // 靜態透視框架疊上(vp0..vp3,= 原版 update_viewport)。
+    if (vpt_ok)
+      dec.compose_frame(vpt[0].data(), vpt[1].data(), vpt[2].data(), vpt[3].data());
+    dec.to_framebuffer(fb);   // 160×136 @ (16,8)
+    // UI:關卡名 + 控制提示
+    font->draw_string(fb, 8, 4, level->name.c_str(), 14, 0);
+    font->draw_string(fb, 8, 150, "I:fwd  J/L:turn  K:door  Esc:back", 7, 0);
+    if (!event_msg.empty()) {
+      std::string z = tr->tr(event_msg);
+      draw_mixed(fb, *font, *cjk, 8, 162, z, 15, 0);
+    }
+  };
   auto render_now = [&]() {
-    if (state == S_GAME) { draw_game(); return; }   // 地圖(--map 或選單 B 進入)
+    if (state == S_GAME) { if (fp_mode) draw_game_fp(); else draw_game(); return; }   // 地圖(--map 或選單 B 進入)
     if (!menu_mode) return;                          // sprite/scene:靜態,已畫
     if (state == S_MENU) draw_menu();
     else draw_branch();

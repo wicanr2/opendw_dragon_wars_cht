@@ -1,5 +1,7 @@
 #include "render/viewport_compose.hpp"
 
+#include <cstdio>
+
 namespace dw::render {
 namespace {
 
@@ -530,6 +532,57 @@ std::vector<DrawCmd> compose_draw_sequence(const res::Level& level, int x, int y
   }
 
   return out;
+}
+
+// ===========================================================================
+// Step 3:像素 blit。
+// ===========================================================================
+
+const std::vector<std::uint8_t>* ComponentStore::get(int tag) const {
+  auto it = cache_.find(tag);
+  if (it != cache_.end()) return &it->second;
+  if (missing_.count(tag)) return nullptr;
+  std::string path = dir_ + "/" + std::to_string(tag) + ".bin";
+  std::FILE* f = std::fopen(path.c_str(), "rb");
+  if (!f) { missing_[tag] = true; return nullptr; }
+  std::vector<std::uint8_t> buf;
+  std::fseek(f, 0, SEEK_END);
+  long sz = std::ftell(f);
+  std::fseek(f, 0, SEEK_SET);
+  if (sz > 0) {
+    buf.resize((std::size_t)sz);
+    if (std::fread(buf.data(), 1, (std::size_t)sz, f) != (std::size_t)sz) buf.clear();
+  }
+  std::fclose(f);
+  auto& slot = cache_[tag];
+  slot = std::move(buf);
+  return &slot;
+}
+
+void render_first_person(const res::Level& level, int x, int y, int facing,
+                         ViewportDecoder& dec, const ComponentStore& comps) {
+  dec.reset(0);
+
+  std::vector<DrawCmd> seq = compose_draw_sequence(level, x, y, facing);
+
+  // sky:序列若無 SKY 筆 (draw_viewport_sky 走 al!=1) → 平面兩色填色。
+  bool has_sky = false;
+  for (const auto& d : seq)
+    if (d.batch == 0) { has_sky = true; break; }
+  if (!has_sky) dec.fill_sky_flat();
+
+  // 逐筆 draw_sprite_to_viewport (每元件 word_104F 重置 0,對齊 refresh_viewport)。
+  for (const auto& d : seq) {
+    const std::vector<std::uint8_t>* comp = comps.get(d.tag);
+    if (!comp || comp->empty()) {
+      std::fprintf(stderr, "render_first_person: missing component tag %d (batch %d)\n",
+                   d.tag, d.batch);
+      continue;
+    }
+    std::uint16_t word_104F = 0;
+    dec.draw_sprite(comp->data(), comp->size(), word_104F, d.sprite_offset,
+                    d.xpos, d.ypos, d.byte_104E);
+  }
 }
 
 }  // namespace dw::render

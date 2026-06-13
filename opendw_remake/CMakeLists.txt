@@ -115,3 +115,11 @@ target_link_libraries(verify_fov PRIVATE dwr_render dwr_resource)
 
 add_executable(verify_compose tools/verify/verify_compose.cpp)
 target_link_libraries(verify_compose PRIVATE dwr_render dwr_resource)
+
+# viewport 組景 step3 像素對拍:remake render_first_person vs golden_pixel (10880B)。
+add_executable(verify_fp tools/verify/verify_fp.cpp)
+target_link_libraries(verify_fp PRIVATE dwr_render dwr_resource)
+
+# tools/extract:抽各關用到的牆/地/天空元件資源 → bundle/components/<tag>.bin。
+add_executable(extract_components tools/extract/extract_components.cpp)
+target_link_libraries(extract_components PRIVATE dwr_render dwr_resource)

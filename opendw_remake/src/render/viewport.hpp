@@ -66,6 +66,22 @@ public:
                      const std::uint8_t* vp1,
                      const std::uint8_t* vp2,
                      const std::uint8_t* vp3);
+
+  // draw_viewport_sky 的 al!=1 分支:天空/地板兩色交替填色。
+  // port 自 opendw engine.c:5576。dx 由 88 遞減到 0 (共 89 列),每列 40 個
+  // word (= 80 byte) 寫 data_575C[bx] 的 hi/lo byte;dx<0x28 時 bx|=2,
+  // 每列尾 bx^=1。data_575C = {0x4040,0x0404,0,0}。
+  void fill_sky_flat();
+
+  // draw_sprite_to_viewport (engine.c:5512) 的像素 blit:
+  //   ds = comp + word_104F + sprite_offset;size = *(u16)ds;
+  //   if size==0 return (不動 word_104F);word_104F += size;
+  //   payload = comp + word_104F;decode(payload, xpos, ypos, 0x50, byte_104E)。
+  // word_104F 由呼叫端維護 (每個元件畫前 reset 0,refresh_viewport 慣例)。
+  // 回傳 true 表示有畫 (size!=0)。
+  bool draw_sprite(const std::uint8_t* comp, std::size_t comp_len,
+                   std::uint16_t& word_104F, int sprite_offset,
+                   int xpos, int ypos, std::uint8_t byte_104E);
 };
 
 } // namespace dw::render
