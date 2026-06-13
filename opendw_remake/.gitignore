@@ -1,0 +1,4 @@
+# build 目錄(CMake 產物,勿入庫)
+build/
+build_*/
+*.ppm
