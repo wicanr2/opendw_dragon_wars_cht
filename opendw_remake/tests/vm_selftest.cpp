@@ -76,6 +76,30 @@ int main() {
           (s.flags & kSign) == 0 && (s.flags & kReserved) != 0);
   }
 
+  // --- batch 11:op_0E / op_83 / op_90(已對拍 opendw oracle,逐指令一致)---
+
+  // J: op_0E:gs[0x10]=7、gs[0x11]=0 → base=7;op_0E 0x10 讀 data[7]=prog[7]=0x06 → r2=0x0006。
+  //    [0]=01 byte mode  [1]=1A 10 07 gs[16]=7  [4]=1A 11 00 gs[17]=0
+  //    [7]=06 00 r4=0  [9]=0E 10 → r2=data[7]=0x06  [11]=5A
+  {
+    VmState s = run({0x01, 0x1A, 0x10, 0x07, 0x1A, 0x11, 0x00, 0x06, 0x00, 0x0E, 0x10, 0x5A});
+    check("op0E:r2=data[gs 索引]=0x06", s.r2 == 0x0006 && s.halted);
+  }
+
+  // K: op_83(print_char)無 operand、純輸出,不動 r2/r4/flags。
+  //    op_09 r2=0x41 → op_83 印 → op_24 inc r2→0x42 → op_83 印 → r2 仍 0x42。
+  {
+    VmState s = run({0x01, 0x09, 0x41, 0x83, 0x24, 0x83, 0x5A});
+    check("op83 純輸出、r2 不受影響(=0x42)", s.r2 == 0x42 && s.halted);
+  }
+
+  // L: op_90(sound_effect)讀 1B operand、不動 r2/r4/flags(僅音效副作用)。
+  //    op_09 r2=7 → op_90 01(吃1B) → op_24 inc r2→8 → op_90 02 → r2=8。
+  {
+    VmState s = run({0x01, 0x09, 0x07, 0x90, 0x01, 0x24, 0x90, 0x02, 0x5A});
+    check("op90 消耗 1B operand、r2 不受影響(=8)", s.r2 == 0x08 && s.halted);
+  }
+
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);
   return fails ? 1 : 0;
 }

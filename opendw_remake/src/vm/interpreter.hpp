@@ -173,6 +173,11 @@ private:
   void op80_advance_cursor();  // 0x80  advance_cursor:讀 1B operand、ui_draw_string + 補空白
   void op8C_prompt_no_yes();   // 0x8C  prompt_no_yes:Y/N 提示,依鍵值設 word_3AE6 旗標
 
+  // --- batch 11:資料資源讀(gs 索引)/ 印字 / 音效 ---
+  void op0E_r2_from_data_gsoff();// 0x0E  r2 = data[gs[op]|gs[op+1]<<8 + r4](word,mode 遮罩)
+  void op83_print_char();      // 0x83  把 word_3AE2 以 byte/word 模式 emit(印字,無 operand)
+  void op90_sound_effect();    // 0x90  op_sound_effect:讀 1B operand(音效),VM 僅消耗 operand
+
   // 切換 running_script / word_3ADF 到資源 idx(對照 populate_3ADD_and_3ADF)。
   // 用 resource_provider 取 bytes;成功回 true。
   bool load_resource(int idx, std::vector<std::uint8_t>& out);
