@@ -13,6 +13,8 @@ namespace dw::i18n {
 class Strings {
 public:
   static std::optional<Strings> load(const std::filesystem::path& tsv);
+  // 併入另一個 TSV(如 events.tsv);成功併入回 true,鍵衝突以新檔覆寫。
+  bool merge(const std::filesystem::path& tsv);
   // 查譯文;無對應則回傳原文(回退英文)。
   std::string tr(const std::string& english) const;
   std::size_t size() const { return map_.size(); }

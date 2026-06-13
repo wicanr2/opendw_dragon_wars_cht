@@ -38,6 +38,23 @@ bool CjkFont::draw(Framebuffer& fb, int px, int py, std::uint32_t cp, std::uint8
   return true;
 }
 
+bool CjkFont::draw_half(Framebuffer& fb, int px, int py, std::uint32_t cp, std::uint8_t color) const {
+  auto it = glyphs_.find(cp);
+  if (it == glyphs_.end()) return false;
+  const auto& g = it->second;
+  auto on = [&](int x, int y) -> bool {
+    std::uint8_t byte = g[y * 3 + x / 8];
+    return (byte & (0x80 >> (x % 8))) != 0;
+  };
+  for (int y = 0; y < 12; ++y)
+    for (int x = 0; x < 12; ++x) {
+      int sx = x * 2, sy = y * 2;  // 2×2 區塊 OR 降採樣
+      if (on(sx, sy) || on(sx + 1, sy) || on(sx, sy + 1) || on(sx + 1, sy + 1))
+        fb.put(px + x, py + y, color);
+    }
+  return true;
+}
+
 std::uint32_t utf8_next(const char*& p) {
   std::uint8_t c = static_cast<std::uint8_t>(*p++);
   if (c < 0x80) return c;

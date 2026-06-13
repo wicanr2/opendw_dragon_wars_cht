@@ -12,7 +12,10 @@ W=/tmp/dwbuild
 mkdir -p "$OUT/scripts" "$OUT/strings" "$OUT/sprites"
 
 # 1) script bytecode + 內嵌字串表(script-bearing sections)
-SECTIONS="0 3 6"
+#    含全 40 關事件 script 經 op_58 跨資源 call 載入的 tag 聯集(由 remake
+#    extract_eventscripts 掃描得出:0 1 3 5 8 9 10 11 17 19),讓 app run_event
+#    的 BundleProvider 不依賴 DATA1 也能跑 op_58。6 = 既有選單用 section。
+SECTIONS="0 1 3 5 6 8 9 10 11 17 19"
 docker run --rm -v "$REPO/opendw_remake":/app -v "$W":/o -w /app dwtools bash -c \
   'g++ -O1 -w -std=c++20 -Isrc src/resource/archive.cpp src/resource/decompress.cpp src/resource/text_codec.cpp tools/extract/extract_strings.cpp -o /o/extract_strings'
 for id in $SECTIONS; do

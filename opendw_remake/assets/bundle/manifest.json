@@ -3,9 +3,19 @@
   "source": "Dragon Wars (Interplay 1989) DATA1/DATA2",
   "scripts": [
     "scripts/0.bin",
+    "scripts/1.bin",
     "scripts/3.bin",
-    "scripts/6.bin"
+    "scripts/5.bin",
+    "scripts/6.bin",
+    "scripts/8.bin",
+    "scripts/9.bin",
+    "scripts/10.bin",
+    "scripts/11.bin",
+    "scripts/17.bin",
+    "scripts/19.bin"
   ],
+  "event_script_tags": [0, 1, 3, 5, 8, 9, 10, 11, 17, 19],
+  "event_script_note": "全 40 關事件 script 經 op_58 跨資源 call 載入的 tag 聯集(< RESOURCE_MAX 0x107)。由 extract_eventscripts 掃描得出,供 app run_event 的 BundleProvider-based resource_provider 使用,執行不需 DATA1。",
   "strings": [
     "strings/0.tsv",
     "strings/3.tsv",

@@ -105,6 +105,10 @@ target_link_libraries(extract_level PRIVATE dwr_resource)
 add_executable(level_events tools/extract/level_events.cpp)
 target_link_libraries(level_events PRIVATE dwr_vm)
 
+# tools/extract:全 40 關事件腳本 op_58 跨資源 tag 聯集 → bundle/scripts/<tag>.bin。
+add_executable(extract_eventscripts tools/extract/extract_eventscripts.cpp)
+target_link_libraries(extract_eventscripts PRIVATE dwr_vm)
+
 # viewport 解碼對拍:remake ViewportDecoder vs golden .vpmem (byte-for-byte)。
 add_executable(verify_viewport tools/verify/verify_viewport.cpp)
 target_link_libraries(verify_viewport PRIVATE dwr_render)
