@@ -208,6 +208,49 @@ int main() {
           s.game_state[0x37]==12 && s.halted);
   }
 
+  // --- batch 14:戰鬥流程 opcode(op_17 寫資源 / op_89 鍵注入 / op_63/69 char_ext)---
+  // X: op_17 寫入「指定 index 的資源」:gs[0x20]=0x04(di lo)、gs[0x22]=0x03(res idx)。
+  //    di=4;res 3 = data_res(指向 data_bytes);byte 模式寫 data_bytes[4]=r2 低位。
+  {
+    VmState s; s.game_state[0x20]=0x04; s.game_state[0x21]=0x00; s.game_state[0x22]=0x03;
+    s.script_res=3; s.data_res=3;
+    s.script={0x09,0x37, 0x17,0x20, 0x5A};  // r2=0x37; op_17 offset_idx=0x20
+    s.data_bytes=s.script;
+    Interpreter(s).run();
+    check("op17 寫資源(res idx=gs[0x22]=3=data_res):data_bytes[4]==0x37",
+          s.data_bytes.size()>4 && s.data_bytes[4]==0x37 && s.halted);
+  }
+
+  // Y: op_89 headless 鍵注入:flags(2B)後接 key→addr 表。注入 'F'(0xC6)→ 跳到 addr 0x08。
+  //    表:[0xC6][0x08][0x00][0xFF];0x08=0x5A(halt)。跳轉後跑 0x5A → pc=0x09。
+  //    word_3AE2 = 命中的表 key(0xC6,對照 wait_event 結尾 word_3AE2 = ax & 0xFF)。
+  {
+    VmState s; s.headless_key=0xC6;
+    s.script={0x89,0x00,0x00, 0xC6,0x08,0x00, 0xFF,0x00, 0x5A};
+    Interpreter(s).run();
+    check("op89 注入F→跳 0x08(跑 0x5A)→ pc==0x09、r2==0xC6、halt",
+          s.pc==0x09 && (s.r2 & 0xFF)==0xC6 && s.halted);
+  }
+
+  // Z: op_69 寫 char_ext:gs[7]=0(u4456[0]=0)、gs[6]=0、gs[0x0A]=2 → di=(2<<8)+0+operand。
+  //    operand=1 → di=0x201;byte 模式寫 char_ext[0x201]=r2 低位。
+  {
+    VmState s; s.game_state[7]=0; s.game_state[6]=0; s.game_state[0x0A]=2;
+    s.script={0x09,0x55, 0x69,0x01, 0x5A};  // r2=0x55; op_69 operand=1
+    Interpreter(s).run();
+    check("op69 char_ext[(2<<8)+1]==0x55", s.char_ext[0x201]==0x55 && s.halted);
+  }
+
+  // AA: op_63 char_ext=0 路徑:讀 2B operand、清 carry(char_ext 全 0 → 非 exit 分支)。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2;
+    s.flags |= kCarry;                       // 先設 carry,驗證 op_63 清掉
+    s.script={0x63,0x00,0x00, 0x5A};         // op_63 + 2B operand
+    Interpreter(s).run();
+    check("op63 char_ext=0 → 清 carry、halt",
+          (s.flags & kCarry)==0 && s.halted);
+  }
+
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);
   return fails ? 1 : 0;
 }

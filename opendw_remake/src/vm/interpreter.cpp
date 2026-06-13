@@ -619,6 +619,20 @@ bool Interpreter::load_resource(int idx, std::vector<std::uint8_t>& out) {
   return true;
 }
 
+// 取資源 index 的持久 bytes(對照 resource_get_by_index → allocations[idx])。
+//   優先指向當前 data_bytes / script(同一份,寫入立即可見);否則用 res_cache
+//   (miss 時以 provider 載入後快取)。回 nullptr 表無法取得。
+std::vector<std::uint8_t>* Interpreter::res_bytes_by_index(int idx) {
+  if (idx == s_.data_res && !s_.data_bytes.empty()) return &s_.data_bytes;
+  if (idx == s_.script_res && !s_.script.empty()) return &s_.script;
+  auto it = s_.res_cache.find(idx);
+  if (it != s_.res_cache.end()) return &it->second;
+  std::vector<std::uint8_t> loaded;
+  if (!load_resource(idx, loaded)) return nullptr;
+  auto [ins, ok] = s_.res_cache.emplace(idx, std::move(loaded));
+  return &ins->second;
+}
+
 // op_0C:word_3AE2(r2) = word_3ADF->bytes[operand](2-byte LE),高位以 byte_3AE1(mode)遮罩。
 void Interpreter::op0C_r2_from_data() {
   s_.ax = s_.fetch8();
@@ -973,12 +987,9 @@ void Interpreter::op0F_r2_from_res() {
   std::uint8_t res_idx = s_.game_state[(bx + 2) & 0xFF];
   di += s_.r4;
 
-  // 取資源 bytes:同 data_res 用 data_bytes、同 script_res 用 script,否則 provider。
-  const std::vector<std::uint8_t>* bytes = nullptr;
-  std::vector<std::uint8_t> loaded;
-  if (res_idx == s_.data_res) bytes = &s_.data_bytes;
-  else if (res_idx == s_.script_res) bytes = &s_.script;
-  else if (load_resource(res_idx, loaded)) bytes = &loaded;
+  // 取資源 bytes:走 res_bytes_by_index(data_res/script_res/持久快取),
+  //   讓 op_17 的寫入後續被 op_0F 讀到(對照 allocations[] 持久語意)。
+  const std::vector<std::uint8_t>* bytes = res_bytes_by_index(res_idx);
 
   std::uint16_t lo = 0, hi = 0;
   if (bytes) {
@@ -1100,13 +1111,77 @@ void Interpreter::op7C_ui_header_data() {
 // op_88(op_wait_escape):等待 ESC 鍵;headless 抽取無輸入 → 視為段落結束。
 void Interpreter::op88_wait_escape() { s_.halted = true; }
 
-// op_89(wait_event):等待鍵盤事件並依鍵值跳轉(後接變長 key→addr 表,以 0xFF 結束)。
-//   抽取期無鍵盤輸入,無法決定分支;讀完 flags(2B)後結束該段,避免執行落入資料
-//   被誤判為 opcode(原本 runaway 至 0xCE/0x79)。對照 wait_event @0x4977。
+// op_89(wait_event @0x4977):等待鍵盤事件並依鍵值跳轉(後接變長 key→addr 表)。
+//   對照 wait_event → wait_for_event(@0x4368)→ handle_key_event(@0x4328):
+//     1. 讀 2-byte flags(word_2AA7);
+//     2. 表起點 si = flags 後的 pc;每筆 3 byte:[key][addr_lo][addr_hi];
+//     3. 等鍵 → 大寫化(& 0xDF)後與表中 key 比對;
+//        key 型別:0x00=catch-all、0x01=數字鍵(對應隊員,選中設 gs[6])、
+//        0x81=跳過(di++)、0xFF=表尾、其餘(高位 set)=直接鍵比對;
+//     4. 命中 → bx = base[di+1] | base[di+2]<<8(絕對 offset),
+//        cpu.pc = base + bx;word_3AE2 = key(& 0xFF)。
+//   ── headless ──:無鍵盤。headless_key != 0 時以該鍵掃表(UI leaf:畫字串/mouse/
+//   timer/狀態列 全略過,對選定分支無影響);為 0 時維持 halt(無輸入可分支)。
+//   注意:pressed key 在 opendw 經 get_key_from_buffer 已大寫化為「大寫字母|0x80」
+//   (例 'F'|0x80=0xC6);headless_key 直接帶此值。
 void Interpreter::op89_wait_event() {
-  s_.fetch8();      // flags lo
-  s_.fetch8();      // flags hi
-  s_.halted = true; // 無輸入可分支 → 結束該事件段
+  std::uint8_t flags_lo = s_.fetch8();
+  std::uint8_t flags_hi = s_.fetch8();
+  (void)flags_lo; (void)flags_hi;       // word_2AA7;UI/輸入旗標,結算分支不需
+
+  // 取本次注入鍵:優先用 headless_keys 序列(逐個 op_89 取用),用完回退 headless_key。
+  std::uint8_t key = 0;
+  if (s_.headless_key_idx < s_.headless_keys.size())
+    key = s_.headless_keys[s_.headless_key_idx++];
+  else
+    key = s_.headless_key;
+  if (key == 0) { s_.halted = true; return; }  // 無注入 → 維持原行為
+
+  const auto& base = s_.script;          // running_script bytes(= cpu.base_pc)
+  std::size_t di = s_.pc;                // 表起點(flags 之後)= word_2AA2
+
+  // 掃表(對照 wait_for_event @0x29DD 迴圈)。
+  while (di < base.size()) {
+    std::uint8_t al = base[di];
+    if (al == 0x00) {                    // catch-all:無條件命中(handle_key_event)
+      break;
+    }
+    if (al == 0xFF) {                    // 表尾:無匹配。headless 視為段落結束(防 runaway)
+      s_.halted = true;
+      return;
+    }
+    if (al == 0x01) {                    // 數字鍵(隊員選擇);本切片戰鬥選單未用 → 略過該筆
+      di += 3;
+      continue;
+    }
+    if (al == 0x81) {                    // skip 標記(對照 0x2A24:di++)
+      di += 1;
+      continue;
+    }
+    if (al == 0x80) {                    // 0x80:特殊,非直接鍵 → 下一筆
+      di += 3;
+      continue;
+    }
+    if ((al & 0x80) == 0) {              // 範圍型(low/high 邊界);本切片未用 → 跳一筆
+      di += 3;
+      continue;
+    }
+    // 高位 set 的直接鍵:al == 按下的鍵?
+    if (al == key) break;                // 命中
+    di += 3;                             // 下一筆
+  }
+  if (di >= base.size()) { s_.halted = true; return; }
+
+  // handle_key_event(@0x4328):di++ 後讀跳轉位址。
+  std::size_t a = di + 1;
+  std::uint16_t bx = (a + 1 < base.size())
+                         ? (std::uint16_t)(base[a] | (base[a + 1] << 8))
+                         : 0;
+  // word_3AE2 = key(對照 wait_event 結尾 word_3AE2 = ax & 0xFF)。
+  s_.r2 = (std::uint16_t)(key & 0xFF);
+  s_.ax = (std::uint16_t)(key & 0xFF);
+  s_.bx = bx;
+  s_.pc = bx;                            // cpu.pc = base_pc + bx
 }
 
 // op_81(print_number @0x48C5):cpu.ax = word_3AE2; print_number(ax)。
@@ -1307,6 +1382,57 @@ void Interpreter::op61_test_char_prop() {
   set_flags();
 }
 
+// data_CA4C per-character offset table(對照 tables.c unknown_4456[],engine.c get_unknown_4456)。
+static const std::uint16_t kUnknown4456[] = {
+    0x0000, 0x0017, 0x002E, 0x0045, 0x005C, 0x0073, 0x008A,
+    0x00A1, 0x00B8, 0x00CF, 0x00E6, 0x00FD, 0x00E8};
+static std::uint16_t unknown_4456(std::uint8_t idx) {
+  if (idx >= sizeof(kUnknown4456) / sizeof(kUnknown4456[0])) return 0;
+  return kUnknown4456[idx];
+}
+
+// op_63(set_char_data_word @0x43F7):
+//   byte_3AE1 = ax 高位(dispatch 後 ax=opcode → 高位 0 → byte 模式);r2 高位 = ah。
+//   讀 2-byte word operand(→ word_4454,本切片不另用);
+//   di = (0xCA4C + (selector<<8) + unknown_4456[bx=0]) - 0xCA4C = (selector<<8);
+//   若 char_ext[di] != 0 → opendw 0x4430 未實作(exit);本切片戰鬥首回合 char_ext=0,
+//   走 0x444C 分支:清 carry(word_3AE6 &= ~1)。為安全:!=0 時標未實作並 halt(不臆造)。
+void Interpreter::op63_set_char_ext_word() {
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;  // dispatch 後 = 0
+  s_.mode = ah;                              // byte_3AE1 = ah
+  s_.r2 = (std::uint16_t)((ah << 8) | (s_.r2 & 0xFF));
+  // es:lodsw — 讀 2-byte operand(word_4454)。
+  std::uint16_t w = s_.fetch8();
+  w += (std::uint16_t)(s_.fetch8() << 8);
+  (void)w;
+  std::uint16_t bx = 0;                      // cpu.bx=0; <<1 = 0
+  std::uint8_t player_idx = s_.game_state[6];
+  std::uint8_t sel = s_.game_state[(player_idx + 0x0A) & 0xFF];  // character select
+  std::uint32_t di = ((std::uint32_t)sel << 8) + unknown_4456((std::uint8_t)bx);
+  if (di < s_.char_ext.size() && s_.char_ext[di] != 0) {
+    last_unimpl_ = 0x63;  // 對照 opendw 0x4430 未實作分支(char_ext 非 0);不臆造
+    s_.halted = true;
+    return;
+  }
+  s_.flags &= 0xFFFE;  // clear carry(對照 0x444C:word_3AE6 &= 0xFFFE)
+  s_.cf = 0;
+}
+
+// op_69(@0x453F):char_ext[(selector<<8) + unknown_4456[gs[7]] + operand] = r2(byte/word)。
+void Interpreter::op69_set_char_ext() {
+  std::uint16_t bx = s_.game_state[7];
+  std::uint8_t player_idx = s_.game_state[6];
+  std::uint8_t sel = s_.game_state[(player_idx + 0x0A) & 0xFF];
+  std::uint32_t di = ((std::uint32_t)sel << 8) + unknown_4456((std::uint8_t)bx);
+  std::uint8_t al = s_.fetch8();
+  di += al;
+  std::uint16_t ax = s_.r2;
+  if (di < s_.char_ext.size()) s_.char_ext[di] = ax & 0xFF;
+  if (s_.mode != 0) {
+    if (di + 1 < s_.char_ext.size()) s_.char_ext[di + 1] = (ax & 0xFF00) >> 8;
+  }
+}
+
 // op_16:bx = gs[op] | gs[op+1]<<8 + r4;data[bx] = r2(byte;word 模式再寫 +1)。
 void Interpreter::op16_data_gsoff_from_r2() {
   std::uint8_t al = s_.fetch8();
@@ -1321,6 +1447,27 @@ void Interpreter::op16_data_gsoff_from_r2() {
   if (bx < d.size()) d[bx] = s_.cx & 0xFF;
   if (s_.mode != ((s_.ax & 0xFF00) >> 8)) {
     if ((std::size_t)(bx + 1) < d.size()) d[bx + 1] = (s_.cx & 0xFF00) >> 8;
+  }
+}
+
+// op_17(store_data_into_resource @0x3CB0):
+//   offset_idx = operand;di = gs[offset_idx] | gs[offset_idx+1]<<8;
+//   res_idx = gs[offset_idx+2];di += r4;res[res_idx].bytes[di] = r2 低位;
+//   word 模式(byte_3AE1 != (ax>>8))再寫 +1。寫入須持久(走 res_bytes_by_index)。
+void Interpreter::op17_store_into_res() {
+  std::uint8_t offset_idx = s_.fetch8();
+  std::uint16_t di = s_.game_state[offset_idx];
+  di += (std::uint16_t)(s_.game_state[(offset_idx + 1) & 0xFF] << 8);
+  std::uint8_t res_idx = s_.game_state[(offset_idx + 2) & 0xFF];
+  di += s_.r4;
+  s_.di = di;
+  s_.cx = s_.r2;
+  std::vector<std::uint8_t>* b = res_bytes_by_index(res_idx);
+  if (b) {
+    if (di < b->size()) (*b)[di] = s_.cx & 0xFF;
+    if (s_.mode != ((s_.ax & 0xFF00) >> 8)) {
+      if ((std::size_t)(di + 1) < b->size()) (*b)[di + 1] = (s_.cx & 0xFF00) >> 8;
+    }
   }
 }
 
@@ -1566,6 +1713,7 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x14] = &Interpreter::op14_data_from_r2;
   t[0x15] = &Interpreter::op15_data_off_from_r2;
   t[0x16] = &Interpreter::op16_data_gsoff_from_r2;
+  t[0x17] = &Interpreter::op17_store_into_res;
   t[0x18] = &Interpreter::op18_data_gsidx_from_r2;
   t[0x33] = &Interpreter::op33_mul_gs;
   t[0x34] = &Interpreter::op34_mul_imm;
@@ -1592,6 +1740,8 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x5F] = &Interpreter::op5F_or_char_data;
   t[0x60] = &Interpreter::op60_and_char_data;
   t[0x61] = &Interpreter::op61_test_char_prop;
+  t[0x63] = &Interpreter::op63_set_char_ext_word;
+  t[0x69] = &Interpreter::op69_set_char_ext;
   return t;
 }();
 #undef OP

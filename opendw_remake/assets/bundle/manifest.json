@@ -6,6 +6,7 @@
     "scripts/1.bin",
     "scripts/2.bin",
     "scripts/3.bin",
+    "scripts/4.bin",
     "scripts/5.bin",
     "scripts/6.bin",
     "scripts/8.bin",
@@ -19,8 +20,8 @@
   ],
   "event_script_tags": [0, 1, 3, 5, 8, 9, 10, 11, 17, 19],
   "event_script_note": "全 40 關事件 script 經 op_58 跨資源 call 載入的 tag 聯集(< RESOURCE_MAX 0x107)。由 extract_eventscripts 掃描得出,供 app run_event 的 BundleProvider-based resource_provider 使用,執行不需 DATA1。",
-  "combat_script_tags": [2, 3, 6, 18, 22],
-  "combat_script_note": "戰鬥腳本(res 3)經 op_58 跨資源 call 用到的資源:0x02、0x03(自身)、0x06(戰鬥訊息)、0x12=18(戰鬥選單,1375B)、0x16=22。供 probe_combat_script / 未來戰鬥 bytecode 執行使用。見 docs/42_COMBAT_BYTECODE.md。",
+  "combat_script_tags": [2, 3, 4, 6, 18, 22],
+  "combat_script_note": "戰鬥腳本(res 3)經 op_58 跨資源 call 用到的資源:0x02、0x03(自身)、0x04(攻擊分支)、0x06(戰鬥訊息)、0x12=18(戰鬥選單,1375B)、0x16=22。供 probe_combat_script / 未來戰鬥 bytecode 執行使用。見 docs/42_COMBAT_BYTECODE.md。",
   "strings": [
     "strings/0.tsv",
     "strings/3.tsv",

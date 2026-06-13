@@ -7,6 +7,7 @@
 #include <array>
 #include <cstdint>
 #include <functional>
+#include <map>
 #include <optional>
 #include <vector>
 
@@ -42,6 +43,12 @@ struct VmState {
   //   op_61(test)另用 get_player_data((selector)>>1)*512 + bx 定址(見 interpreter.cpp)。
   static constexpr std::size_t kCharDataSize = 0xE00;
   std::array<std::uint8_t, kCharDataSize> char_data{};  // = data_C960
+
+  // 角色「擴充/回合」狀態塊(對照 engine.c data_CA4C[4096],初始全 0)。
+  //   op_63(set_char_data_word)/op_69 以「selector<<8 + unknown_4456[bx] + operand」
+  //   定址(per-character,stride 見 tables.c unknown_4456)。戰鬥回合的角色暫態存於此。
+  static constexpr std::size_t kCharExtSize = 4096;
+  std::array<std::uint8_t, kCharExtSize> char_ext{};  // = data_CA4C
 
   // 位元組定址堆疊(忠實對照 opendw cpu.stack[256] + sp:向下成長,
   //   push_byte: --sp; pop_byte: sp++)。op_53/54 用 push_word/pop_word(2 byte),
@@ -114,6 +121,24 @@ struct VmState {
   //   不影響戰鬥數值),讓「原版戰鬥腳本」能在無圖形子系統下繼續跑結算路徑。
   bool headless_encounter = false;
   std::uint8_t encounter_monster_id = 0xFF;  // op_8A 記錄的怪物 id(= word_3AE2 低位)
+
+  // 已載入資源的持久快取(對照 opendw resource_get_by_index → &allocations[index],
+  //   engine.c:176)。op_0F(讀)/op_17(寫)以資源 index 存取任意已載入資源,
+  //   且 op_17 的寫入需持久(後續再讀同一資源要看得到)。以此 map 模擬 allocations[]。
+  //   key = 資源 index;value = 該資源(解壓後)bytes。
+  std::map<int, std::vector<std::uint8_t>> res_cache;
+
+  // op_89(wait_event)的 headless 鍵盤注入。
+  //   opendw wait_for_event 等待鍵盤後,依 key→address 表跳轉(engine.c:4368)。
+  //   headless 下無鍵盤;headless_key != 0 時 op_89 改為「以此鍵掃表跳轉」,
+  //   key 為「大寫字母 | 0x80」(對照 get_key_from_buffer 的大寫化結果),
+  //   例:選 Fight → 'F'|0x80 = 0xC6;Run → 'R'|0x80 = 0xD2。
+  //   為 0 時維持既有行為(halt:headless 無輸入可分支)。
+  std::uint8_t headless_key = 0;
+  // 多重 op_89 提示的鍵序列(戰鬥流程可能連續多個選單)。非空時 op_89 依序取用;
+  //   用完則回退 headless_key;再無則 halt。每個元素同樣是「大寫字母 | 0x80」。
+  std::vector<std::uint8_t> headless_keys;
+  std::size_t headless_key_idx = 0;
 
   // 取下一個 byte / word(LE),前進 pc。
   std::uint8_t fetch8() { return pc < script.size() ? script[pc++] : 0; }

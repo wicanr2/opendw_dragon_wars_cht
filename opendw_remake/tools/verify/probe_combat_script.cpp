@@ -52,6 +52,9 @@ int main(int argc, char** argv) {
     st.game_state[0x0A + i] = (std::uint8_t)(i * 2);  // selector = record_index*2
   st.r2 = 0;  // 怪物 encounter id（先給 0；op_8A 在 remake 會 halt，見下分析）
   st.headless_encounter = true;  // op_8A 不 halt:略過圖形,跑戰鬥結算路徑
+  // op_89 鍵序列:戰鬥選單 'F'(Fight=0xC6)→ 動作選單 'A'(Attack=0xC1)→ 之後皆 'A'。
+  st.headless_keys = {0xC6, 0xC1};
+  st.headless_key = 0xC1;        // 序列用完後回退 'A'(Attack)
 
   vm::Trace tr;
   vm::Interpreter ip(st, &tr);
@@ -61,8 +64,15 @@ int main(int argc, char** argv) {
   int steps = ip.run(maxsteps);
 
   const auto& R = tr.records();
-  std::printf("ran %d steps; halted=%d last_unimpl=0x%02X final_pc=0x%04zx\n",
-              steps, st.halted ? 1 : 0, ip.last_unimpl(), st.pc);
+  std::printf("ran %d steps; halted=%d last_unimpl=0x%02X final_pc=0x%04zx "
+              "script_res=%d data_res=%d (script size=%zu)\n",
+              steps, st.halted ? 1 : 0, ip.last_unimpl(), st.pc,
+              st.script_res, st.data_res, st.script.size());
+  // 印停在處 ±8 byte(目前 running_script bytes)。
+  std::printf("-- bytes around final_pc (res %d) --\n", st.script_res);
+  for (std::size_t o = (st.pc > 6 ? st.pc - 6 : 0);
+       o < st.pc + 10 && o < st.script.size(); ++o)
+    std::printf("  0x%04zx: %02x%s\n", o, st.script[o], o == st.pc ? "  <-- pc" : "");
   // 印最後 12 步軌跡。
   std::printf("-- last %d trace recs --\n", (int)(R.size() > 12 ? 12 : R.size()));
   for (std::size_t i = (R.size() > 12 ? R.size() - 12 : 0); i < R.size(); ++i)

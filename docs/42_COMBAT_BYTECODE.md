@@ -63,5 +63,42 @@ opendw `targets[]`(engine.c:583)中為 `NULL` 的 opcode = 從未被逆向:
 docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
   mkdir -p /tmp/rb && cd /tmp/rb && cmake /app && cmake --build . -j$(nproc)
   ./probe_combat_script /app/assets/bundle 3 300000'
-# → ran 2556 steps; halted=1 ... final_pc=0x00fb(op_89 戰鬥選單鍵盤等待)
+```
+
+---
+
+## 8. 更新(2026-06-14,第二輪:打通 op_89 + 攻擊迴圈)
+
+### 新進展:戰鬥腳本已可跑完整攻擊迴圈(real bytecode)
+- 修「op_89 卡點」並沿 Fight 分支推進,步數從 2556 →(注入 F/A 鍵後)**跑滿 300000 步無 halt、無缺 opcode**——即攻擊解算迴圈已在 remake VM 上以原版 bytecode 執行。
+
+### op_89(wait_event)語意拆解(oracle 行號)
+`wait_event`(engine.c:4792)→ `wait_for_event`(4368)→ `handle_key_event`(4328):
+- **VM 狀態(須複刻)**:讀 2-byte flags;表起點 = flags 後 pc;每筆 3 byte `[key][addr_lo][addr_hi]`(0xFF 結尾、0x00 catch-all、0x01 數字鍵→設 `gs[6]`、0x81 skip);命中 → `bx = base[di+1]|base[di+2]<<8`;`pc = base+bx`;`word_3AE2 = key`。
+- **UI leaf(headless 中性化,不影響分支)**:`ui_draw_string` / mouse / timers / `draw_player_status_panel` / escape-string 繪製 / `poll_mouse`。
+- **headless 注入**:`VmState.headless_key`(單鍵)+ `headless_keys`(序列,逐個 op_89 取用)。鍵為「大寫字母 | 0x80」(對照 get_key_from_buffer 大寫化),例 Fight='F'|0x80=0xC6、Attack='A'|0x80=0xC1、Run='R'|0x80=0xD2。
+
+### 戰鬥選單結構(res 18,實測)
+- 主選單 op_89 @res18:0xf8。key→addr 表:`F(0xC6)→0x0108`、`R(0xD2)→0x02cf`…
+- Fight(0x108)分支後再一個 op_89(動作選單):`A(0xC1)→0x03bc`、`D(0xC4)→0x02c5`、`C(0xC3)→0x0517`(Attack/Dodge/Cast,對齊 CONTEXT「攻擊/閃避/施法」)。注入 A 進入攻擊解算。
+
+### 本輪逐指令對齊實作(byte-for-byte,皆入 vm_selftest)
+- **op_89**:headless 鍵注入 + key→addr 表跳轉(對照 wait_event/handle_key_event)。
+- **op_17**(store_data_into_resource,engine.c:1247):寫入「gs 指定 index 的資源」`res[gs[op+2]].bytes[(gs[op]|gs[op+1]<<8)+r4]=r2`。為此加**持久資源快取** `VmState.res_cache`(對照 `resource_get_by_index → allocations[idx]`,engine.c:176),op_0F(讀)/op_17(寫)共用,寫入持久。
+- **op_63**(set_char_data_word,engine.c:2761)、**op_69**(engine.c:2846):角色擴充狀態塊 `data_CA4C`(加 `VmState.char_ext[4096]`)+ `unknown_4456[]` per-char offset 表(tables.c:295)。op_63 在 `char_ext==0`(戰鬥首回合)走清-carry 分支(對照 0x444C);`!=0` 的 opendw 未實作分支(0x4430)標記 last_unimpl 不臆造。
+- 另抽戰鬥用資源進 bundle:res 4(248B)。
+
+### 仍差什麼(下一步)
+- **怪物 combatant 設置**:目前攻擊迴圈空轉、HP 不變,因 **headless 入口從 script3 offset 0 直跑、怪物未被設成參戰角色**(`gs[0x1F]` 仍只 4 名隊員;`gs[0x5A]`=怪物資料資源索引未被正確設定)。opendw 中怪物參戰資料由「地圖層遭遇進入 + op_8A 載入怪物資源 + 設定階段(res3 sub 0x4f1 經 op_0F 讀 `gs[0x5A]` 指定資源)」建立。
+- 因此 **`verify_combat_script` 逐回合 HP 對拍尚未達成**:需先讓 headless op_8A 忠實載入怪物資料(目前只記 id、略過圖形),並提供正確的遭遇進入 context(`gs[0x5A]` 等)。
+- 一旦怪物參戰,攻擊迴圈即會對怪物 HP 做扣減(命中/傷害已走 op_4D/op_33-36 等原版算術);屆時再寫 verify_combat_script 並考慮移除 combat.cpp placeholder 標示。
+
+### combat.cpp placeholder 狀態
+- **仍維持乾淨室標示,不可移除** —— 因為一場戰鬥尚未真正跑出怪物 HP 變化(空轉),戰鬥數值尚未經原版 bytecode 驗證為 oracle 真值。誠實標示不變。
+
+### 重現(本輪)
+```bash
+# probe 注入 F(Fight)+A(Attack):跑滿步數、無缺 opcode(攻擊迴圈執行中)
+./probe_combat_script /app/assets/bundle 3 300000
+# → ran 300000 steps; halted=0 ...(headless_keys={0xC6,0xC1})
 ```
