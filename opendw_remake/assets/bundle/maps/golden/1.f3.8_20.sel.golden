@@ -1,0 +1,20 @@
+# golden_select lvl=/home/anr2/tmp/longcat/opendw_dragon_wars_cht/opendw_remake/assets/bundle/maps/1.lvl facing=3 x=8 y=20
+# data_5A56[0..11]: 11 10 10 00 00 00 01 00 00 01 00 00
+# data_5A56[12..23]: 10 10 10 10 10 11 10 10 10 10 10 10
+# data_5897[0..11]: 00 01 02 06 09 05 07 93 00 00 00 00
+# data_56E5[0..11]: 01 02 00 00 06 02 00 00 04 03 07 00
+# data_56C6[0..15]: 00 00 05 00 00 00 00 00 00 00 00 00 00 00 00 00
+# data_59E4 tags[0..11]: 110 111 112 116 119 115 117 129 65535 65535 65535 65535
+# ndraws=11
+# idx batch counter tag offset xpos ypos b104e
+draw  0 SKY c=-1 tag=111 off= 4 x=     0 y=   0 b104e=0x00
+draw  1 GND c= 8 tag=112 off= 8 x=    96 y=  88 b104e=0x00
+draw  2 GND c= 7 tag=112 off= 4 x=     0 y=  88 b104e=0x00
+draw  3 GND c= 6 tag=112 off= 6 x=    48 y=  88 b104e=0x00
+draw  4 GND c= 5 tag=112 off=14 x=   112 y= 104 b104e=0x00
+draw  5 GND c= 4 tag=112 off=10 x=     0 y= 104 b104e=0x00
+draw  6 GND c= 3 tag=112 off=12 x=    32 y= 104 b104e=0x00
+draw  7 GND c= 2 tag=112 off=20 x=   128 y= 120 b104e=0x00
+draw  8 GND c= 1 tag=112 off=16 x=     0 y= 120 b104e=0x00
+draw  9 GND c= 0 tag=112 off=18 x=    16 y= 120 b104e=0x00
+draw 10 OTH c=20 tag=119 off= 8 x=    96 y=  48 b104e=0x01

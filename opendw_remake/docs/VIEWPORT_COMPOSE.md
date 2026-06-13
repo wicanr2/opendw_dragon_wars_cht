@@ -431,6 +431,98 @@ g++ -std=c++20 -Isrc src/resource/level.cpp src/resource/text_codec.cpp \
 
 ---
 
+## Step 2 對拍結論(2026-06-13,golden_select vs remake compose_draw_sequence)
+
+延續 step1 的 standalone oracle 範式,把 `refresh_viewport` 的**選擇 + draw 呼叫段**
+(sky / ground / other 三批)+ 其相依的 `read_level_metadata` / `cache_level_components`
+/ `cache_resources` verbatim 抽成 standalone C oracle
+(`tools_build/viewport_compose_golden/golden_select.c`),對同 4 組
+(facing,x,y) dump **繪製指令序列**(每筆:batch / counter / tag / sprite_offset /
+xpos / ypos / byte_104E),remake `dw::render::compose_draw_sequence`
+(`src/render/viewport_compose.{hpp,cpp}`)逐筆對拍:
+
+| facing | (x,y) | 繪製指令數 | 結果 |
+|---|---|---|---|
+| 0 (N) | (10,10) | 16(sky + 9 ground + 6 wall) | PASS |
+| 1 (E) | (10,10) | 12(sky + 9 ground + 2 wall) | PASS |
+| 2 (S) | (15,12) | 12 | PASS |
+| 3 (W) | (8,20) | 11 | PASS |
+
+→ **4/4 逐筆一致**(batch / counter / tag / sprite_offset / xpos / ypos / byte_104E
+全數對齊)。step1 的 `verify_fov` 仍維持 4/4(未破壞)。
+
+### 選擇鏈最終確認
+
+1. **resource tag 來源 = `(data_5897[idx] & 0x7F) + 0x6E`**(= DATA1 section)。
+   `game_memory_alloc` 設 `resource.tag = sec`,而關卡用
+   `sec = (data_5897[i] & 0x7F) + 0x6E` 接線(`cache_resources` engine.c:5483)。
+   所以 `Drawing component (tag:)` 的 tag **不需載入 DATA1 像素就能算**——這正是
+   step2 的乾淨邊界。Purgatory area1 的 `data_5897[0..7] = 00 01 02 06 09 05 07 93`
+   → tags `110 111 112 116 119 115 117 129`(0x6E + low 7 bit)。
+
+2. **`data_56E5` index 算法**(`cache_level_components`,3 批寫入):
+   - `[0..3]` = sky/wall 類,`[4..6]` = ground,`[8..]` = other。每批從 .lvl 連續讀
+     byte(`al &= 0x7F` 存值)直到 byte ≥ 0x80(含 terminator)。
+   - 三批間 **`cpu.bx` 不重置但 `cpu.di` 累進**(每批尾 `di += bx; bx = 0`);
+     `data_56C6` pair 迴圈的 `bx` 推進**會帶進**第一批 `cache_level_components`
+     (沒插 `advance_data_ptr`)——port 必須完整保留此 di/bx 接力,否則 section
+     邊界錯位。remake 的 `MetaParser` 已逐指令保留。
+
+3. **ground vs other 分支**:
+   - **ground**(9 槽,counter 8..0):`bx = data_56A3[counter]` → 取 `data_5A56[bx+0xC]`
+     的**高 nibble** `>>4 & 3`(0..2 三種地面)→ `data_56E5[bx+4]` 取資源 index →
+     `data_59E4[idx]`。Purgatory 全 ground tag=112(單一地面型)。sprite_offset =
+     `sprite_indices[counter]`,xpos/ypos = `ground_points[counter]`,byte_104E 恆 0。
+   - **other/牆**(24 槽,counter 23..0):`ax = data_55EF[counter]`,`di = ax & 0x7F`
+     選 `data_5A56` 槽;`(ax&0xFF) > 0x80` → 取**高 nibble**(`bl >>= 4`)否則低
+     nibble,`bl &= 0xF`;`bl != 0` 才畫。`al = data_56C6[bl]`(牆/門型);
+     **若 `data_564F[counter] & 1`(奇數)→ 改查 `data_56E5[bl+7]`**(other 元件資源
+     表,非 56C6)。`al <= 0x7F` 才畫:`r = data_59E4[al]`(原碼 `al<<1` 後 `>>1`,
+     等同 `al`)。
+
+4. **`byte_104E` 來源 = `data_564F[counter]`**(other 批)。bit0 → 切 `data_56E5[bl+7]`
+   資源表(見上);bit7(0x80)→ neg-x 描線;bit6(0x40)→ flip-y(step3 描線用)。
+   sky/ground 批 byte_104E 恆 0。觀測:f0 OTH counter 16/4/3 的 b104e=0x01(奇數
+   → 走 56E5[bl+7],tag 119),counter 21/17/14 的 b104e=0x00(走 56C6)。
+
+5. **sky 選擇**(`draw_viewport_sky`):`bl = data_5A56[0x16]`,rcl 3 次後 `&3` 取 2 bit
+   → `data_56E5[bx]` → `data_5897[bx] & 0x7F`;**只有 == 1 時才畫 sky sprite**
+   (sprite_offset = 4,tag 來自 `data_59E4[bx]`),否則填地板兩色(`data_575C`,
+   不產生繪製指令,故序列不含此筆)。Purgatory 4 組皆 == 1 → 都畫 sky tag=111。
+
+### step3(sprite 像素 blit)需要再抽的東西
+
+step2 只確認「選哪個元件 + 畫在哪」,**未載入任何 sprite 像素**。step3 要補:
+
+- **resource bytes**:對每個用到的 tag(sky=0x6F、ground=0x70、wall=0x6E/0x74/0x77…)
+  跑 `resource_load(tag)` 從 **DATA1** 讀並解壓(`needs_decompression` 對 sec > 0x17,
+  這些 tag ≥ 0x6E 全需解壓,沿用既有 `decompress_data1`)。本步 oracle 的
+  `resource_load` 是 tag-only stub(`bytes = NULL`),step3 要換成真讀。
+- **sprite payload 格式**:resource bytes 是多筆 `[size:2 LE][payload]` 串接;
+  `draw_sprite_to_viewport(vp, sprite_offset)` 用 `word_1051->bytes + word_104F +
+  sprite_offset` 取 size(== 0 跳過),`word_104F += size`,payload 開頭
+  `runlength:1 / numruns:1 / Δx:1 / Δy:1` + run-length nibble 資料(`vp->data + 4` 起)。
+- **描線核心**:`decode_viewport_data` + `process_quadrant` / `draw_viewport_word_mode`
+  / `neg_x` / `neg_x_alt` / `flip_y`(byte_104E 的 0x80/0x40 分派),遮罩表
+  `and_table`/`or_table`(tables.c)。已在 `VIEWPORT.md` §描線原語規劃,step3 直接複用。
+- **相依記錄**:選擇鏈的 sprite_offset(ground=`sprite_indices`,other=`data_561F`)
+  與 xpos/ypos(`ground_points` / `data_558F` / `data_55BF`)已在 step2 算出並對拍,
+  step3 只需把這些餵進描線核心。
+
+### 復現指令(step2)
+
+```
+# 產 golden(docker dwsdl)——同時產 step1 (.golden) 與 step2 (.sel.golden)
+bash tools_build/viewport_compose_golden/build_run.sh
+# remake 對拍(docker dwsdl):4/4 PASS
+g++ -std=c++20 -Isrc src/resource/level.cpp src/resource/text_codec.cpp \
+    src/render/viewport_compose.cpp tools/verify/verify_compose.cpp -o /tmp/verify_compose
+/tmp/verify_compose assets/bundle/maps/1.lvl assets/bundle/maps/golden
+# 或 cmake target: verify_compose
+```
+
+---
+
 ## 待確認清單(原始推測;最終答案見上方「Step 1 對拍結論」)
 
 1. **`data_530B` 索引 −8**:opendw 是否在 runtime 真的 −8?

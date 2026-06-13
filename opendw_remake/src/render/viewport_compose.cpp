@@ -257,4 +257,279 @@ FovSample sample_fov(const res::Level& level, int x, int y, int facing) {
   return out;
 }
 
+// ===========================================================================
+// Step 2:元件選擇 + 繪製指令序列。
+// ===========================================================================
+namespace {
+
+// 靜態 viewport 落點 / 槽對應表 (engine.c:213..291),copied verbatim。
+const unsigned short data_558F[] = {
+    0x0020, 0x0000, 0x0080, 0xFFC0, 0x0080, 0x0020, 0xFFC0, 0x0080,
+    0x0030, 0x0020, 0x0070, 0xFFF0, 0x0070, 0x0030, 0xFFF0, 0x0070,
+    0x0040, 0x0030, 0x0060, 0x0020, 0x0060, 0x0040, 0x0020, 0x0060};
+const unsigned short data_55BF[] = {
+    0x0010, 0x0000, 0x0000, 0x0010, 0x0010, 0x0010, 0x0010, 0x0010,
+    0x0020, 0x0010, 0x0010, 0x0020, 0x0020, 0x0020, 0x0020, 0x0020,
+    0x0030, 0x0020, 0x0020, 0x0030, 0x0030, 0x0030, 0x0030, 0x0030};
+const unsigned short data_55EF[] = {
+    0x0016, 0x000A, 0x000B, 0x0015, 0x0017, 0x008A, 0x0089, 0x008B,
+    0x0013, 0x0007, 0x0008, 0x0012, 0x0014, 0x0087, 0x0086, 0x0088,
+    0x0010, 0x0004, 0x0005, 0x000F, 0x0011, 0x0084, 0x0083, 0x0085};
+const unsigned short data_561F[] = {
+    0x0004, 0x000C, 0x000C, 0x0004, 0x0004, 0x0004, 0x0004, 0x0004,
+    0x0006, 0x000E, 0x000E, 0x0006, 0x0006, 0x0006, 0x0006, 0x0006,
+    0x0008, 0x0010, 0x0010, 0x0008, 0x0008, 0x0008, 0x0008, 0x0008};
+const unsigned short data_564F[] = {
+    0x0001, 0x0000, 0x0080, 0x0001, 0x0001, 0x0000, 0x0000, 0x0000,
+    0x0001, 0x0000, 0x0080, 0x0001, 0x0001, 0x0000, 0x0000, 0x0000,
+    0x0001, 0x0000, 0x0080, 0x0001, 0x0001, 0x0000, 0x0000, 0x0000};
+struct UiPoint {
+  short x, y;
+};
+const UiPoint ground_points[] = {{16, 120}, {0, 120}, {128, 120},
+                                 {32, 104}, {0, 104}, {112, 104},
+                                 {48, 88},  {0, 88},  {96, 88}};
+const unsigned short data_56A3[] = {0x000A, 0x0009, 0x000B, 0x0007, 0x0006,
+                                    0x0008, 0x0004, 0x0003, 0x0005};
+const unsigned short sprite_indices[] = {18, 16, 20, 12, 10, 14, 6, 4, 8};
+
+// opendw resource 子系統的選擇相依子集:resource_load(sec).tag == sec,
+// allocations[0]/[1] 為靜態保留 (rm_init),第一個動態 load 落在 index 2。
+struct ResTable {
+  struct Slot {
+    int tag = 0;
+    int usage = 0;
+    int index = 0;
+  };
+  std::array<Slot, 128> slots{};
+
+  ResTable() {
+    slots[0].usage = 0xFF;
+    slots[0].tag = 0xFFFF;
+    slots[0].index = 0;
+    slots[1].usage = 0xFF;
+    slots[1].tag = 0xFFFE;
+    slots[1].index = 1;
+    // index 2 = 關卡資源本身 (level_res);本步不需其 tag 參與選擇,僅佔位。
+    slots[2].usage = 1;
+    slots[2].tag = 0x47;
+    slots[2].index = 2;
+  }
+  int find_by_tag(int tag) const {
+    for (int i = 0; i < 128; ++i)
+      if (slots[i].tag == tag && slots[i].usage != 0) return i;
+    return -1;
+  }
+  // 回傳 allocation index (= data_5897[i+0xF] 存的值)。
+  int load(int sec) {
+    int idx = find_by_tag(sec);
+    if (idx != -1) return idx;
+    int i = 0;
+    for (; i < 128; ++i)
+      if (slots[i].usage == 0) break;
+    slots[i].usage = 1;
+    slots[i].tag = sec;
+    slots[i].index = i;
+    return i;
+  }
+};
+
+// read_level_metadata + cache_level_components + cache_resources 的選擇相依
+// 部分,verbatim port (操作 level bytes,不讀 DATA1)。
+struct MetaParser {
+  const res::Level& lvl;
+  std::array<std::uint8_t, 256>& a5897;
+  std::array<std::uint8_t, 128>& a56C6;
+  std::array<std::uint8_t, 128>& a56E5;
+  ResTable& rt;
+
+  std::uint16_t ax = 0, bx = 0, si = 0, di = 0;
+  std::uint16_t stk[64];
+  int sp = 0;
+  void push(std::uint16_t v) { stk[sp++] = v; }
+  std::uint16_t pop() { return stk[--sp]; }
+  std::uint8_t byte_at(std::uint16_t i) const { return lvl.byte_at(i); }
+
+  void advance_data_ptr() {
+    di = static_cast<std::uint16_t>(di + bx);
+    bx = 0;
+  }
+
+  // engine.c:5037
+  void cache_level_components(int starting_index) {
+    std::uint8_t al;
+    do {
+      al = byte_at(static_cast<std::uint16_t>(bx + di));
+      ax = (ax & 0xFF00) | al;
+      push(ax);
+      al &= 0x7F;
+      a56E5[starting_index] = al;
+      bx++;
+      starting_index++;
+      ax = pop();
+    } while ((ax & 0xFF) < 0x80);
+    di = static_cast<std::uint16_t>(di + bx);
+    bx = 0;
+  }
+
+  // engine.c:5061 (selection-relevant portion)
+  void read_level_metadata() {
+    std::uint8_t al;
+    di = 0;
+    while (di < 4) di++;  // header bytes已由 Level 解析;此處僅推進 di。
+    bx = 0;
+    do {
+      al = byte_at(static_cast<std::uint16_t>(bx + di));
+      a5897[bx] = al;
+      bx++;
+    } while (al < 0x80);
+    advance_data_ptr();
+    si = 0;
+    do {
+      al = byte_at(static_cast<std::uint16_t>(bx + di));
+      ax = (ax & 0xFF00) | al;
+      push(ax);
+      al &= 0x7F;
+      ax = (ax & 0xFF00) | al;
+      a56C6[si + 1] = al;
+      bx++;
+      al = byte_at(static_cast<std::uint16_t>(bx + di));
+      a56C6[si + 0xf + 1] = al;
+      bx++;
+      si++;
+      ax = pop();
+    } while ((ax & 0xFF) < 0x80);
+    si = 0;
+    cache_level_components(0);
+    si = 4;
+    cache_level_components(4);
+    si = 8;
+    cache_level_components(8);
+    // (level 名稱 offset + data_5A04 尾段不影響元件選擇,略。)
+  }
+
+  // engine.c:5468 (selection-relevant portion;resource_load = tag 計算)。
+  void cache_resources(std::array<int, 128>& tags) {
+    std::uint8_t al, bl;
+    bx = 0xFFFF;
+    do {
+      bx++;
+      push(bx);
+      bl = a5897[bx];
+      bx = (bx & 0xFF00) | bl;
+      bx &= 0x7F;
+      bx += 0x6E;
+      int idx = rt.load(bx);  // resource_load(sec).index
+      bx = pop();
+      a5897[bx + 0xf] = static_cast<std::uint8_t>(idx);
+      al = a5897[bx];
+    } while (al < 0x80);
+    bx = 0xE;
+    do {
+      al = a5897[bx + 0xf];
+      if (al < 0x80) {
+        tags[bx] = rt.slots[al].tag;  // data_59E4[bx] = resource_get_by_index(al)
+      }
+      bx = static_cast<std::uint16_t>(bx - 1);
+    } while (bx != 0xFFFF);
+  }
+};
+
+}  // namespace
+
+LevelComponents parse_level_components(const res::Level& level) {
+  LevelComponents lc;
+  lc.tags.fill(-1);
+  ResTable rt;
+  MetaParser mp{level, lc.a5897, lc.a56C6, lc.a56E5, rt};
+  mp.read_level_metadata();
+  mp.cache_resources(lc.tags);
+  return lc;
+}
+
+std::vector<DrawCmd> compose_draw_sequence(const res::Level& level, int x, int y,
+                                           int facing) {
+  std::vector<DrawCmd> out;
+
+  // 1) FOV 取樣 → data_5A56[0..23] (step1,已對拍)。
+  FovSample fov = sample_fov(level, x, y, facing);
+  std::array<std::uint8_t, 128> a5a56{};
+  for (int i = 0; i < 12; ++i) {
+    a5a56[i] = fov.wall[i];
+    a5a56[i + 0xC] = fov.ground[i];
+  }
+
+  // 2) 元件表 (read_level_metadata + cache_*)。
+  LevelComponents lc = parse_level_components(level);
+
+  // 3) 選擇 + draw 呼叫序列 (refresh_viewport,sky → ground → other)。
+  std::uint16_t bx = 0;
+
+  // --- sky (draw_viewport_sky, engine.c:5533) ---
+  {
+    std::uint8_t bl = a5a56[0x16];
+    int cf = 0;
+    for (int i = 0; i < 3; ++i) {
+      int tmp_carry = (bl & 0x80) ? 1 : 0;
+      bl = static_cast<std::uint8_t>((bl << 1) + cf);
+      cf = tmp_carry;
+    }
+    bx = (bx & 0xFF00) | bl;
+    bx &= 3;
+    bl = lc.a56E5[bx];
+    bx = (bx & 0xFF00) | bl;
+    std::uint8_t al = lc.a5897[bx];
+    al &= 0x7F;
+    if (al == 1) {
+      out.push_back(DrawCmd{0, -1, lc.tags[bx], 4, 0, 0, 0});
+    }
+  }
+
+  // --- ground 9 sprites (counter 8..0) ---
+  for (int counter = 8; counter >= 0; --counter) {
+    bx = data_56A3[counter];
+    std::uint8_t bl = a5a56[bx + 0xC];
+    bl = static_cast<std::uint8_t>(bl >> 4);
+    bx = (bx & 0xFF00) | bl;
+    bx &= 3;
+    bl = lc.a56E5[bx + 4];
+    bx = (bx & 0xFF00) | bl;
+    int tag = lc.tags[bx];
+    out.push_back(DrawCmd{1, counter,
+                          tag,
+                          sprite_indices[counter],
+                          ground_points[counter].x,
+                          ground_points[counter].y,
+                          0});
+  }
+
+  // --- other components (counter 23..0) ---
+  for (int counter = 23; counter >= 0; --counter) {
+    std::uint16_t ax = data_55EF[counter];
+    std::uint16_t di = ax;
+    di &= 0x007F;
+    std::uint8_t bl = a5a56[di];
+    if ((ax & 0xFF) > 0x80) bl = static_cast<std::uint8_t>(bl >> 4);
+    bx = (bx & 0xFF00) | bl;
+    bx &= 0x000F;
+    if (bx != 0) {
+      std::uint16_t cx = data_564F[counter];
+      std::uint8_t b104e = cx & 0xFF;
+      std::uint8_t al = lc.a56C6[bx];
+      if (((cx & 0xFF) & 1) == 1) al = lc.a56E5[bx + 0x7];
+      if (al <= 0x7F) {
+        int tag = lc.tags[al];
+        out.push_back(DrawCmd{2, counter,
+                              tag,
+                              data_561F[counter],
+                              static_cast<short>(data_558F[counter]),
+                              static_cast<short>(data_55BF[counter]),
+                              b104e});
+      }
+    }
+  }
+
+  return out;
+}
+
 }  // namespace dw::render
