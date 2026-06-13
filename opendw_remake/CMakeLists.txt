@@ -143,6 +143,16 @@ target_link_libraries(level_events PRIVATE dwr_vm)
 add_executable(extract_eventscripts tools/extract/extract_eventscripts.cpp)
 target_link_libraries(extract_eventscripts PRIVATE dwr_vm)
 
+# tools/verify:掃所有關卡找會改 gs[2](area)/入口 gs[0/1/3] 的事件(換場逆向)。
+add_executable(probe_areaswitch tools/verify/probe_areaswitch.cpp)
+target_link_libraries(probe_areaswitch PRIVATE dwr_vm)
+
+# tools/verify:地圖換場/同區傳送的確定性 PASS/FAIL 驗證(ctest)。
+add_executable(verify_areaswitch tools/verify/verify_areaswitch.cpp)
+target_link_libraries(verify_areaswitch PRIVATE dwr_vm)
+add_test(NAME verify_areaswitch
+         COMMAND verify_areaswitch ${CMAKE_SOURCE_DIR}/assets/bundle)
+
 # viewport 解碼對拍:remake ViewportDecoder vs golden .vpmem (byte-for-byte)。
 add_executable(verify_viewport tools/verify/verify_viewport.cpp)
 target_link_libraries(verify_viewport PRIVATE dwr_render)

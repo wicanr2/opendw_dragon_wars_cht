@@ -92,6 +92,15 @@
 - **Loading... — 載入中…**；**Saving game... — 儲存遊戲中…**；**The game is paused — 遊戲已暫停**
 - **paragraph (Read paragraph N) — 段落(請閱讀第 N 段)**. _防拷段落,內容在手冊_
 
+## 地圖導航 / Map navigation(換場機制,逆向自 opendw)
+
+- **area — 區域**. 一張地圖關卡(共 40 關)；存於 `game_state[2]`，資源 index = `area + 0x46`. _Avoid_: level(避免與 .lvl 檔混用)、world
+- **entry x/y/facing — 入口座標/朝向**. 換場後玩家落點;存於 `gs[0]`=X、`gs[1]`=Y、`gs[3]`=朝向(0=N 1=E 2=S 3=W)
+- **area switch — 換場(換 area)**. 事件腳本寫 `gs[2]`=新 area → poll 偵測 `gs[2]` 變化 → 重載 `maps/<area>.lvl`. opendw 走 `load_level_resources`(每幀比對 `gs[2]` vs `gs[0x57]`)
+- **relocation / 傳送**. 同一 area 內事件改 `gs[0]/gs[1]`(樓梯/陷阱),不重載地圖. _Avoid_: 把同區傳送說成「換場」
+- **wrap world — 環繞世界**. level header flag(`gs[0x23]`)bit1 設定;opendw 對其邊界環繞與「換入此 area」皆 `exit(1)` 未實作. remake 規範:**換入 wrap-world 目標 → 跳過 + log**(area 0 Dilmun、18、19、22、27 等)
+- **sync_relocation**. remake main 中對拍 `load_level_resources` 的 poll 函式:跑完事件腳本後比對 `gs[2]`/`gs[0..1,3]` → 換 area / 同區傳送 / wrap 跳過
+
 ---
 
 ## Flagged ambiguities(待釐清)
