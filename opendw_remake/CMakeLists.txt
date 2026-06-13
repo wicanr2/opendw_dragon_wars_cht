@@ -194,6 +194,12 @@ target_link_libraries(verify_op58 PRIVATE dwr_vm)
 add_test(NAME verify_op58
          COMMAND verify_op58 ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# i18n 覆蓋率 / fallback 契約:鎖「多語系、日文 ready」架構。
+add_executable(verify_i18n tools/verify/verify_i18n.cpp)
+target_link_libraries(verify_i18n PRIVATE dwr_i18n)
+add_test(NAME verify_i18n
+         COMMAND verify_i18n ${CMAKE_SOURCE_DIR}/assets/i18n)
+
 # viewport 解碼對拍:remake ViewportDecoder vs golden .vpmem (byte-for-byte)。
 add_executable(verify_viewport tools/verify/verify_viewport.cpp)
 target_link_libraries(verify_viewport PRIVATE dwr_render)
