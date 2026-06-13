@@ -57,9 +57,15 @@ target_link_libraries(render_text PRIVATE dwr_render)
 add_executable(render_cjk_demo tools/verify/render_cjk_demo.cpp)
 target_link_libraries(render_cjk_demo PRIVATE dwr_render)
 
-# 後續階段(R2+)再加入 SDL2 / freetype:
-#   find_package(SDL2 REQUIRED); find_package(Freetype REQUIRED)
-#   add_executable(opendw_remake src/main.cpp ...)
+# --- R2 SDL2 開窗 app(可選:偵測到 SDL2 才建)---
+find_package(SDL2 QUIET)
+if(SDL2_FOUND)
+  add_executable(opendw_remake src/main.cpp src/render/sdl_video.cpp)
+  target_link_libraries(opendw_remake PRIVATE dwr_render SDL2::SDL2)
+  message(STATUS "SDL2 found: opendw_remake app enabled")
+else()
+  message(STATUS "SDL2 not found: skip opendw_remake app (only build/test libs)")
+endif()
 
 # R3 端到端:DATA1 → text_codec → i18n → 渲染(英/中選單)。
 add_executable(render_menu_demo tools/verify/render_menu_demo.cpp)
