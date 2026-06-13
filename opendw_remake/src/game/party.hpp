@@ -27,21 +27,84 @@
 
 namespace dw::game {
 
-// opendw player_record 關鍵欄位 offset(player.c)。
+// 解碼後的武器傷害骰(fraterrisus 裝備格式,1 byte = 高 3bit 骰面 + 低 3bit 骰數-1)。
+//   高 3 bit = 骰面:000=d4 001=d6 010=d8 011=d10 100=d12 101=d20 110=d30 111=d100
+//   低 3 bit = 骰數 − 1(000=1 顆 … 111=8 顆)。中間 2 bit 恆 0。
+//   範例:0b101_00_001 = 2d20。
+// raw==0 視為「無傷害骰」(空欄/無武器)。
+struct DamageDice {
+  int count = 0;   // 骰數;0 = 無
+  int sides = 0;   // 骰面;0 = 無
+  bool valid() const { return count > 0 && sides > 0; }
+};
+DamageDice decode_damage_dice(std::uint8_t encoded);
+
+// 解析出的裝備(物品欄一格;fraterrisus 11-byte bit-packed 格式)。
+// 目前只解出戰鬥結算需要的欄位;其餘(需求/魔效/售價)暫不展開。
+struct EquipItem {
+  bool present = false;       // 該欄是否有物品(非全 0)
+  bool equipped = false;      // bit[00]
+  int av_mod = 0;             // bit[24-27] AV 修正(bit[08]=1 時為負)
+  int ac_mod = 0;             // bit[28-31] AC 修正(恆正)
+  std::uint8_t item_type = 0; // bit[40-47] 低 5 bit(00 一般 / 03 斧 / 05 劍 …)
+  DamageDice primary_dmg;     // bit[64-71] 主傷害骰(decode_damage_dice)
+};
+
+// opendw player_record / fraterrisus 512-byte 佈局關鍵欄位 offset。
 struct CharacterRecord {
   std::string name;          // name[0..]:除末位元組外皆設高位元,末位元組高位元清除
-  std::uint8_t strength = 0, max_strength = 0;       // 0x0C,0x0D
-  std::uint8_t dexterity = 0, max_dexterity = 0;     // 0x0E,0x0F
-  std::uint8_t intel = 0, max_intel = 0;             // 0x10,0x11
-  std::uint8_t spirit = 0, max_spirit = 0;           // 0x12,0x13
-  std::uint16_t health = 0, max_health = 0;          // 0x14,0x16
-  std::uint16_t stun = 0, max_stun = 0;              // 0x18,0x1A
-  std::uint16_t power = 0, max_power = 0;             // 0x1C,0x1E
-  std::uint8_t status = 0;   // 0x4C bitfield:0x01 dead / 0x02 chained / 0x04 poisoned / 0x80 stunned
-  std::uint8_t gender = 0;   // 0x4E
-  std::uint16_t level = 0;   // 0x4F
-  std::uint32_t gold = 0;    // 0x55
-  std::array<std::uint8_t, 512> raw{};  // 完整原始 record(供未來欄位擴充)
+  std::uint8_t strength = 0, max_strength = 0;       // 0x0C,0x0D = [12,13]
+  std::uint8_t dexterity = 0, max_dexterity = 0;     // 0x0E,0x0F = [14,15]
+  std::uint8_t intel = 0, max_intel = 0;             // 0x10,0x11 = [16,17]
+  std::uint8_t spirit = 0, max_spirit = 0;           // 0x12,0x13 = [18,19]
+  std::uint16_t health = 0, max_health = 0;          // 0x14,0x16 = [20,22]
+  std::uint16_t stun = 0, max_stun = 0;              // 0x18,0x1A = [24,26]
+  std::uint16_t power = 0, max_power = 0;             // 0x1C,0x1E = [28,30]
+
+  // ── 戰鬥相關欄位(fraterrisus 512B 格式;本次擴充)──────────────────
+  std::array<std::uint8_t, 27> skills{};  // [32-58] 每技能 1B = 等級(順序見 docs/44)
+  std::array<std::uint8_t, 8> spells{};   // [60-67] 法術 bitfield(順序見 docs/44)
+  std::uint8_t xp = 0;       // [80] 經驗值 XP
+  std::uint8_t gold8 = 0;    // [81] 金幣(fraterrisus 記為 1B;見 gold 欄註)
+  std::uint8_t av = 0;       // [82] AV 攻擊值(命中)— 注意:起始隊伍為 0,runtime 計算
+  std::uint8_t dv = 0;       // [83] DV 防禦值(閃避)— 同上
+  std::uint8_t ac = 0;       // [84] AC 護甲等級    — 同上
+  std::uint8_t flags = 0;    // [85] 祝福旗標
+
+  std::uint8_t status = 0;   // [76] bitfield:0x01 dead / 0x02 chained / 0x04 poisoned / 0x80 stunned
+  std::uint8_t gender = 0;   // [78]
+  std::uint16_t level = 0;   // [79]
+  // 注意:remake 既有把 gold 讀為 0x55 起 4B(little-endian);fraterrisus 標 gold 在 [81] 1B。
+  //       兩者來源不同(opendw player.c vs fraterrisus hex guide),起始隊伍此區皆 0,無法以資料判別。
+  //       保留既有 0x55 4B 解析(回歸不變),另存 fraterrisus 的 gold8[81] 供對照。
+  std::uint32_t gold = 0;    // 0x55(既有解析,回歸保留)
+
+  std::array<std::uint8_t, 512> raw{};  // 完整原始 record
+
+  // 主武器 = 物品欄第一格 [236-258](23B:11B bit-packed + 12B 名)。
+  // 起始隊伍無裝備(全 0)→ present=false → 結算回退徒手。
+  EquipItem main_weapon() const;
+
+  // 戰鬥用「有效 AV/DV」:stored 欄為 0 時改用 SDA 公式 base = DEX/4。
+  //   eff_av = (stored_av>0 ? stored_av : DEX/4 + 武器 AV 修正) + 武器技能(隱形)
+  //   eff_dv = (stored_dv>0 ? stored_dv : DEX/4)
+  // 來源:SDA(base AV/DV = DEX÷4;最終 AV 含武器技能 1:1)。
+  int effective_av() const;
+  int effective_dv() const;
+  int effective_ac() const;  // stored_ac>0 ? stored_ac : 武器/防具 AC 修正(起始 0)
+};
+
+// 技能陣列索引(skills[0..26] 對應 selector 0x24..0x3E;index = selector − 0x24)。
+// 武器技能(docs/44):0x37 斧 … 0x3E 投擲。
+enum SkillIndex {
+  kSkillAxe = 0x37 - 0x24,     // 19
+  kSkillFlail = 0x38 - 0x24,   // 20
+  kSkillMace = 0x39 - 0x24,    // 21
+  kSkillSword = 0x3A - 0x24,   // 22
+  kSkillTwoHand = 0x3B - 0x24, // 23
+  kSkillBow = 0x3C - 0x24,     // 24
+  kSkillCrossbow = 0x3D - 0x24,// 25
+  kSkillThrown = 0x3E - 0x24,  // 26
 };
 
 class Party {

@@ -109,7 +109,15 @@
 > 來源:fraterrisus(與 remake `text_codec` 一致)。
 7-bit ASCII,**高位元設 1**,僅最後一字元高位元為 0。例:"Shield" = `D3 E8 E9 E5 EC 64`。
 
-## 5. 對 remake 的應用(待辦)
-1. `game::CharacterRecord` 補解析 AV[82]/DV[83]/AC[84]/XP[80]/skills[32-58]/spells[60-67]/inventory[236+]——**對拍真實 default_party.bin**(AV/DV 應 ≈ DEX/4)。
-2. `game::combat` 結算改用真實 stats + 武器傷害骰(編碼解碼)+ AC 減傷 + AV-vs-DV 命中,取代乾淨室 placeholder。確切 to-hit 骰式由 `43_DOS_PLAYTEST.md` 校準。
-3. 法術系統依手冊 + 法術索引建立。
+## 5. 對 remake 的應用(進度)
+1. ✅ `game::CharacterRecord` 已補解析 AV[82]/DV[83]/AC[84]/XP[80]/skills[32-58]/spells[60-67]/主武器欄[236-258]。
+   - **byte-grounded 發現**:`default_party.bin` 的 4 員 **stored AV/DV/AC=0、XP=0、inventory 全 0**——
+     起始隊伍的 AV/DV/AC 是原版 **runtime 計算**(非存於 blob),與 SDA「base AV/DV = DEX÷4」一致。
+   - 故 remake 補了 `effective_av()/effective_dv()/effective_ac()`:stored 為 0 時回退 SDA 公式(DEX/4 + 武器技能 ± 武器 AV 修正)。
+     實測 effective DV == DEX/4(Muskels 20→5、Theb 24→6、Elendil 16→4、Cheetah 12→3)。
+   - base offset 與 fraterrisus 一致(STR@12、status@76、gender@78、level@79、AV@82…),**無需校正**。
+2. ✅ `game::combat` 結算改用真實 stats:命中 = 攻擊者 AV vs 目標 DV;傷害 = 解碼武器主傷害骰 + STR 修正 − 目標 AC(AC 先扣)→ 作用於 STUN(HP=Stun);STUN≤0 → status bit0 死亡。
+   - **to-hit 骰分布為暫定**(2d10 + 門檻,參數化於 `combat.hpp`),**待 `43_DOS_PLAYTEST.md` 的 DOS 實機校準**。
+   - 起始隊伍無武器 → 徒手傷害骰回退(暫定 1d2,手冊未明列)。
+   - 標示已從「乾淨室 placeholder」改為「依 fraterrisus/SDA/手冊規格;非 opendw byte-for-byte(opendw C 未實作結算);不宣稱 oracle 真值」。
+3. ⬜ 法術系統依手冊 + 法術索引建立(未做)。
