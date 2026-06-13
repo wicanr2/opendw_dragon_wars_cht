@@ -120,6 +120,10 @@ target_link_libraries(verify_compose PRIVATE dwr_render dwr_resource)
 add_executable(verify_fp tools/verify/verify_fp.cpp)
 target_link_libraries(verify_fp PRIVATE dwr_render dwr_resource)
 
+# 全 40 關第一人稱像素對拍廣度掃描 (每關多可走格 × 4 朝向)。
+add_executable(verify_fp_sweep tools/verify/verify_fp_sweep.cpp)
+target_link_libraries(verify_fp_sweep PRIVATE dwr_render dwr_resource)
+
 # tools/extract:抽各關用到的牆/地/天空元件資源 → bundle/components/<tag>.bin。
 add_executable(extract_components tools/extract/extract_components.cpp)
 target_link_libraries(extract_components PRIVATE dwr_render dwr_resource)
