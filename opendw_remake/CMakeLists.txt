@@ -41,7 +41,7 @@ add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
-add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp)
+add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp)
 add_library(dwr_i18n STATIC src/i18n/strings.cpp src/i18n/string_table.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
@@ -103,3 +103,7 @@ target_link_libraries(extract_level PRIVATE dwr_resource)
 # tools/extract:關卡事件腳本(特殊格→script→emit),驗證 tile→段落。
 add_executable(level_events tools/extract/level_events.cpp)
 target_link_libraries(level_events PRIVATE dwr_vm)
+
+# viewport 解碼對拍:remake ViewportDecoder vs golden .vpmem (byte-for-byte)。
+add_executable(verify_viewport tools/verify/verify_viewport.cpp)
+target_link_libraries(verify_viewport PRIVATE dwr_render)
