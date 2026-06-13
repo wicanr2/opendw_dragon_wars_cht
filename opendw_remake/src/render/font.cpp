@@ -16,6 +16,16 @@ std::optional<Font8x8> Font8x8::load(const std::filesystem::path& dragon_com) {
   return font;
 }
 
+std::optional<Font8x8> Font8x8::load_table(const std::filesystem::path& raw) {
+  std::FILE* f = std::fopen(raw.string().c_str(), "rb");
+  if (!f) return std::nullopt;
+  Font8x8 font;
+  std::size_t n = std::fread(font.table_.data(), 1, font.table_.size(), f);
+  std::fclose(f);
+  if (n != font.table_.size()) return std::nullopt;
+  return font;
+}
+
 void Font8x8::draw_char(Framebuffer& fb, int px, int py, std::uint8_t ch,
                         std::uint8_t fg, std::uint8_t bg) const {
   const std::uint8_t* g = &table_[(ch & 0x7F) * 8];
