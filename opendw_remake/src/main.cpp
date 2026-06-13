@@ -17,6 +17,7 @@
 #include "render/font.hpp"
 #include "render/cjk_font.hpp"
 #include "render/framebuffer.hpp"
+#include "render/sprite.hpp"
 #include "render/sdl_video.hpp"
 #include "i18n/strings.hpp"
 using namespace dw;
@@ -35,6 +36,7 @@ int main(int argc, char** argv) {
   int start_pc = 20;       // section 0 的選單 op_78 觸發點(見專案 lore)
   int max_frames = -1;
   std::string dump;        // --dump <ppm>:把渲染的一幀寫出(headless 視覺驗證)
+  std::string sprite_name; // --sprite NAME:改顯示 bundle 內的 sprite(NAME 或 .spr 路徑)
   for (int i = 1; i < argc; ++i) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
     if (eq("--bundle") && i + 1 < argc) bundle = argv[++i];
@@ -44,40 +46,56 @@ int main(int argc, char** argv) {
     else if (eq("--pc") && i + 1 < argc) start_pc = std::atoi(argv[++i]);
     else if (eq("--frames") && i + 1 < argc) max_frames = std::atoi(argv[++i]);
     else if (eq("--dump") && i + 1 < argc) dump = argv[++i];
+    else if (eq("--sprite") && i + 1 < argc) sprite_name = argv[++i];
   }
 
-  res::BundleProvider bun(bundle);
-  auto sec0 = bun.load(0);
   auto font = render::Font8x8::load_table(font_raw);
-  auto cjk = render::CjkFont::load(atlas);
-  auto tr = i18n::Strings::load(menu_tsv);
-  if (!sec0) { std::fprintf(stderr, "bundle section 0 load failed: %s\n", bundle.c_str()); return 1; }
-  if (!font || !cjk || !tr) { std::fprintf(stderr, "font/atlas/i18n load failed\n"); return 1; }
+  if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }
+  render::Framebuffer fb;
 
-  // 跑 VM,收集 emit 的字串
-  std::vector<std::string> msgs;
-  { vm::VmState st; st.script = *sec0; st.pc = (std::size_t)start_pc;
-    vm::Interpreter ip(st);
-    ip.set_message_sink([&](std::size_t, const std::string& s) { msgs.push_back(s); });
-    int steps = ip.run();
-    std::fprintf(stderr, "VM ran %d steps, emitted %zu strings\n", steps, msgs.size()); }
+  if (!sprite_name.empty()) {
+    // ── A:sprite 檢視模式(從 bundle 載 .spr,不碰 DATA1)──
+    std::string path = sprite_name.find('/') != std::string::npos
+                         ? sprite_name : bundle + "/sprites/" + sprite_name + ".spr";
+    auto sp = render::Sprite::load(path);
+    if (!sp) { std::fprintf(stderr, "sprite load failed: %s\n", path.c_str()); return 1; }
+    fb.clear(0);
+    sp->blit(fb, (render::kW - sp->w) / 2, (render::kH - sp->h) / 2, 6);  // 置中,棕底(6)透明
+    font->draw_string(fb, 8, 8, sprite_name.c_str(), 15, 0);
+    std::fprintf(stderr, "sprite %s %dx%d rendered from bundle (no DATA1)\n",
+                 sprite_name.c_str(), sp->w, sp->h);
+  } else {
+    // ── B:VM 驅動的在地化選單 ──
+    res::BundleProvider bun(bundle);
+    auto sec0 = bun.load(0);
+    auto cjk = render::CjkFont::load(atlas);
+    auto tr = i18n::Strings::load(menu_tsv);
+    if (!sec0) { std::fprintf(stderr, "bundle section 0 load failed: %s\n", bundle.c_str()); return 1; }
+    if (!cjk || !tr) { std::fprintf(stderr, "atlas/i18n load failed\n"); return 1; }
 
-  // 取選單字串(含 "Begin a new game" 者;否則取最長一條)
-  std::string menu;
-  for (auto& s : msgs) if (s.find("Begin a new game") != std::string::npos) { menu = s; break; }
-  if (menu.empty()) for (auto& s : msgs) if (s.size() > menu.size()) menu = s;
+    std::vector<std::string> msgs;
+    { vm::VmState st; st.script = *sec0; st.pc = (std::size_t)start_pc;
+      vm::Interpreter ip(st);
+      ip.set_message_sink([&](std::size_t, const std::string& s) { msgs.push_back(s); });
+      int steps = ip.run();
+      std::fprintf(stderr, "VM ran %d steps, emitted %zu strings\n", steps, msgs.size()); }
 
-  // 渲染:藍底 + 標題「火龍之戰」+ 在地化選單(CJK 24×24 + 8×8 ASCII 混排)
-  render::Framebuffer fb; fb.clear(1);
-  { int x = 8; for (std::uint32_t cp : {U'火', U'龍', U'之', U'戰'}) { cjk->draw(fb, x, 8, cp, 14); x += 24; } }
-  int y = 48;
-  for (auto& ln : lines_of(menu)) {
-    if (ln.empty()) { y += 12; continue; }
-    std::string z = tr->tr(ln); const char* p = z.c_str(); int x = 16;
-    while (*p) { std::uint32_t cp = render::utf8_next(p);
-      if (cp < 0x80) { font->draw_char(fb, x, y + 8, (std::uint8_t)cp, 15, 1); x += 8; }
-      else { cjk->draw(fb, x, y, cp, 15); x += 24; } }
-    y += 28;
+    std::string menu;
+    for (auto& s : msgs) if (s.find("Begin a new game") != std::string::npos) { menu = s; break; }
+    if (menu.empty()) for (auto& s : msgs) if (s.size() > menu.size()) menu = s;
+
+    fb.clear(1);
+    { int x = 8; for (std::uint32_t cp : {U'火', U'龍', U'之', U'戰'}) { cjk->draw(fb, x, 8, cp, 14); x += 24; } }
+    int y = 48;
+    for (auto& ln : lines_of(menu)) {
+      if (ln.empty()) { y += 12; continue; }
+      std::string z = tr->tr(ln); const char* p = z.c_str(); int x = 16;
+      while (*p) { std::uint32_t cp = render::utf8_next(p);
+        if (cp < 0x80) { font->draw_char(fb, x, y + 8, (std::uint8_t)cp, 15, 1); x += 8; }
+        else { cjk->draw(fb, x, y, cp, 15); x += 24; } }
+      y += 28;
+    }
+    std::fprintf(stderr, "menu rendered (%zu chars)\n", menu.size());
   }
 
   if (!dump.empty()) {  // headless 視覺驗證:把這一幀存成 PPM
@@ -94,6 +112,6 @@ int main(int argc, char** argv) {
     if (max_frames >= 0 && ++frames >= max_frames) break;
   }
   vid.close();
-  std::fprintf(stderr, "ok (menu=%zu chars, frames=%d)\n", menu.size(), frames);
+  std::fprintf(stderr, "ok (frames=%d)\n", frames);
   return 0;
 }
