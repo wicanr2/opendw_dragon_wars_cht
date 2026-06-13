@@ -207,6 +207,12 @@ if(TARGET opendw_remake)
                    $<TARGET_FILE:opendw_remake> ${CMAKE_SOURCE_DIR})
 endif()
 
+# 全 40 關第一人稱 viewport 像素對拍(byte-for-byte vs opendw golden)+ viewport 模板解碼。
+# remake 最關鍵的正確性保證,先前未進 ctest;此處納入 CI 守護(154 case + 模板)。
+add_test(NAME render_sweep
+         COMMAND bash ${CMAKE_SOURCE_DIR}/tools/verify/render_sweep.sh
+                 $<TARGET_FILE_DIR:verify_fp_sweep> ${CMAKE_SOURCE_DIR})
+
 # viewport 解碼對拍:remake ViewportDecoder vs golden .vpmem (byte-for-byte)。
 add_executable(verify_viewport tools/verify/verify_viewport.cpp)
 target_link_libraries(verify_viewport PRIVATE dwr_render)
