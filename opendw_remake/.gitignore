@@ -2,6 +2,8 @@
 build/
 build_*/
 *.ppm
+# 例外:golden 對拍 fixture 是刻意入庫的測試資料(否則 CI fresh checkout 缺檔 → verify_encounter_golden 失敗)
+!assets/bundle/sprites/golden/*.ppm
 
 # 實際存檔(執行期產生於 cwd 的 save/;只入庫格式/工具/測試,不入庫存檔本身)
 save/
