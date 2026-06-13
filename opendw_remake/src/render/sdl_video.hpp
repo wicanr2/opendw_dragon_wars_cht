@@ -13,12 +13,14 @@ struct SDL_Texture;
 
 namespace dw::render {
 
-// 一幀內收到的輸入事件(互動骨架用)。
+// 一幀內收到的輸入事件(互動骨架用;鍵位對齊說明書,見 docs/CONTROLS.md)。
 struct Input {
-  bool quit = false;     // 關窗 / ESC / Q
-  bool up = false;       // ↑ / K
-  bool down = false;     // ↓ / J
-  bool select = false;   // Enter / Space
+  bool quit = false;     // 關窗 / Q(離開遊戲)
+  bool back = false;     // Esc(離開子畫面 / 繼續訊息)
+  bool up = false;       // ↑
+  bool down = false;     // ↓
+  bool select = false;   // Enter / Space(輔助選取)
+  int  key = 0;          // 本幀按下的字母鍵(大寫 ASCII,如 'B'/'C'/'I'/'U'…),供快捷字母
 };
 
 class SdlVideo {
