@@ -27,6 +27,17 @@ public:
   bool in_bounds(int x, int y) const { return x >= 0 && y >= 0 && x < w && y < h; }
   bool walkable(int x, int y) const { return in_bounds(x, y) && tile(x, y) != 0; }
 
+  // 關卡 bytecode(level 資源本身也是 script);供 VM 執行事件腳本。
+  const std::vector<std::uint8_t>& data() const { return b_; }
+  // 特殊格事件腳本入口(對拍 opendw op_71/run_level_script):
+  //   script 表起點 = grid + w*3*h(= data_5A04[0]);entry = base + (tile_value+1)*2;
+  //   該處 16-bit = script PC(level bytecode 內)。
+  std::size_t script_table() const { return grid_ + (std::size_t)w * 3 * h; }
+  std::uint16_t script_pc(std::uint8_t tile_value) const {
+    std::size_t e = script_table() + (std::size_t)(tile_value + 1) * 2;
+    return (e + 1 < b_.size()) ? (std::uint16_t)(b_[e] | (b_[e + 1] << 8)) : 0;
+  }
+
 private:
   std::vector<std::uint8_t> b_;
   std::size_t grid_ = 0;

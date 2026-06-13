@@ -99,3 +99,7 @@ target_link_libraries(render_vm_text PRIVATE dwr_vm dwr_render dwr_i18n)
 # tools/extract:關卡(level)資源解析(R4 真實地圖)。
 add_executable(extract_level tools/extract/extract_level.cpp)
 target_link_libraries(extract_level PRIVATE dwr_resource)
+
+# tools/extract:關卡事件腳本(特殊格→script→emit),驗證 tile→段落。
+add_executable(level_events tools/extract/level_events.cpp)
+target_link_libraries(level_events PRIVATE dwr_vm)
