@@ -54,3 +54,50 @@
 
 > 這塊是獨立的大型子系統(run-length 偽 3D 渲染),建議當作專注的多步任務推進,
 > 每階段以 golden 對拍確保與原版逐像素一致。
+
+---
+
+## 完整 port 規格(已逆向到 byte 級,turnkey)
+
+### viewport_memory(畫布)
+- 大小 `viewport_mem_sz = 10880` bytes(ui.c:118),**packed 2 像素/byte**(高 nibble=左像素色、低 nibble=右像素色;見 `ui_update_viewport`)。
+- 列位移:`get_offset(pos)`(offsets.c:46)→ byte offset;列間 stride 由 `word_1055` 決定(= ±`word_1053`,依象限 y 翻轉旗標 `byte_104E&0x40`)。
+
+### decode_viewport_data(data, vp)(ui.c:1003,dispatch)
+1. `vp->runlength = *data++; vp->numruns = *data++;`
+2. 讀 1 byte 有號 → 依 `byte_104E&0x80` 取負 → `vp->xpos +=`;`runlength&=0x7F`。
+3. 讀 1 byte 有號 → 依 `byte_104E&0x40` 取負 → `vp->ypos +=`。
+4. 算象限 `bx`:`(xpos&1)<<1` | (xpos<0 ? 4:0) | (byte_104E&0x80 ? 8:0)。
+5. `word_1055 = (byte_104E&0x40)? -word_1053 : word_1053`。
+6. switch(bx):0→`process_quadrant`、2→`draw_viewport_word_mode`、4→`draw_viewport_neg_x`、6→`draw_viewport_neg_x_alt`、8→`draw_viewport_flip_y`。
+
+### 描線原語(run-length nibble blit)
+- **byte 模式**(`process_quadrant`,ui.c:188):`newx = xpos>>1(算術)`;裁切 `word_104A=runlength`(依 `newx - word_1053`);
+  `p = data + get_offset(ypos) + newx`;`si = vp->data + 4`;
+  迴圈 numruns 列 × word_104A byte:`*p = (*p & and_table[*si]) | or_table[*si]; p++; si++;` 每列後 `offset += word_1055; si += runlength - word_104A`。
+- **word 模式**(`draw_viewport_word_mode`/`neg_x`/`neg_x_alt`/`flip_y`,ui.c:235/383/314/442):同形,但用 16-bit 讀寫 + `and_table_B452[256]`/`or_table_B652[256]`(uint16,tables.c:178/214);neg_x 系列 x 方向遞減、flip_y 系列 y 方向翻轉。
+- **遮罩表**(tables.c):`and_table[256]`/`or_table[256]`(byte,@106/142)、`and_table_B452`/`or_table_B652`(uint16,@178/214)。這套 nibble 遮罩 = 與已驗證的 sprite blit 同原理(透明 nibble 不蓋)。**port 時直接複製 tables.c 的 4 張表**(或從 DRAGON.COM 0xB452/0xB652 抽 word 表)。
+
+### 模板資料(已抽成資產,見 assets/bundle/viewport/)
+- 主視圖 4 象限:`vp0..vp3.bin`;minimap:`data6820.bin`/`minimap.bin`。各以 `runlength,numruns` 開頭 + run-length nibble 資料。
+
+### 組景(update_viewport,ui.c:1081)
+- 依玩家 (x,y,facing) + 前方 tile 的 `word_11C6` 牆屬性,選 viewport 模板/wall 元件填 viewport_memory(4 象限各跑一次 decode)。`viewport_metadata` 提供各象限 xpos/ypos。
+
+### 上螢幕(ui_update_viewport,ui.c:517)
+- viewport_memory(2px/byte)→ framebuffer:每 byte 拆 hi/lo nibble = 2 個像素色(0–15),寫到 `get_line_offset(line_num)+0x10`,共 `viewport_height × viewport_width` byte。
+
+### golden 對拍策略(verify-first)
+1. opendw 小 harness:設 byte_104E/word_1053/viewport_metadata + 載一個模板(vp/.bin)→ `decode_viewport_data` → dump viewport_memory(10880B)。
+2. remake port 同條件 → `cmp` byte-for-byte。
+3. 再對 `ui_update_viewport` 的 framebuffer 輸出對拍(比照 `verify_scene_golden.sh`)。
+
+### 執行順序(phase 2+)
+1. 複製 4 張遮罩表 + `get_offset` + `viewport_mem` 緩衝。
+2. port `process_quadrant`(byte 模式)→ golden(decode 單模板)。
+3. port 3 個 word 模式 draw 變體 → golden。
+4. `ui_update_viewport` blit → framebuffer golden。
+5. `update_viewport` 組景(tile→模板)→ 與 opendw 實機畫面對拍。
+
+> 結論:in-game 第一人稱 viewport 已**完整逆向、byte 級可執行**;剩下是機械式翻譯
+> 上列函式/表 + 逐階段 golden。資料層(phase 1)已入庫。
