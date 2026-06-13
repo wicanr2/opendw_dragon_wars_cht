@@ -107,6 +107,68 @@ struct MsgViewer {
   }
 };
 
+// ParaViewer — Read Paragraph 長段落捲動檢視器(scrollable overlay 子狀態)。
+//
+// 與 MsgViewer 的差異(為什麼另立一個 deep module 而非塞進 MsgViewer):
+//   MsgViewer 是「下半部 ~3 行的分頁訊息框」,對齊原版中央訊息;段落(防拷手冊)動輒
+//   1000+ 字、wrap 後 50+ 行,需要一個近全螢幕、可逐行/逐頁平滑捲動的覆蓋面板,且要顯示
+//   標題「段落 N」與捲動位置。介面語意(行偏移捲動 vs 翻頁切片)不同 → 分開,各自窄介面。
+//
+// 對外只露 open/close/active + scroll_line/scroll_page + 取「可見行切片」與位置資訊;
+// 內部隱藏 wrap 後的全行、可視行數、行偏移 top_ 的夾制。框與文字由 main 的 draw 函式繪製。
+//
+// 操作:↑↓ 逐行捲動;PgUp/PgDn / Space / Enter 逐頁;Esc 關閉回遊戲。
+// F4 切語系時 main 以新文字 reflow();段落僅 zh-TW 有資料,缺其他語系時 main 回退 zh-TW 全文。
+struct ParaViewer {
+  bool active = false;
+  int para_n = 0;                 // 段落號 N(標題顯示「段落 N」)
+  int top = 0;                    // 視窗頂端對應的行索引(0-based;捲動狀態)
+  int visible_lines = 1;          // 可視行數(由框高算)
+  std::vector<std::string> lines; // wrap 後的全部行
+
+  void open(int n, std::vector<std::string> wrapped, int vis) {
+    para_n = n;
+    lines = std::move(wrapped);
+    visible_lines = vis < 1 ? 1 : vis;
+    top = 0;
+    active = true;
+  }
+  void close() { active = false; top = 0; lines.clear(); }
+
+  int total_lines() const { return (int)lines.size(); }
+  // 可捲動的最大頂端行(讓最後一頁剛好填滿;不足一頁則為 0)。
+  int max_top() const {
+    int m = total_lines() - visible_lines;
+    return m < 0 ? 0 : m;
+  }
+  bool at_top() const { return top <= 0; }
+  bool at_bottom() const { return top >= max_top(); }
+  // 當前頁碼 / 總頁數(以可視行數切;捲動位置提示用)。
+  int page_count() const {
+    if (lines.empty()) return 1;
+    return (total_lines() + visible_lines - 1) / visible_lines;
+  }
+  int cur_page() const { return visible_lines > 0 ? top / visible_lines + 1 : 1; }
+
+  void clamp() { if (top < 0) top = 0; if (top > max_top()) top = max_top(); }
+  void scroll_line(int d) { top += d; clamp(); }                 // ↑↓ 逐行
+  void scroll_page(int d) { top += d * visible_lines; clamp(); } // PgUp/PgDn 逐頁
+
+  // 取目前可見的行切片(top .. top+visible_lines)。
+  std::vector<std::string> visible() const {
+    std::vector<std::string> out;
+    for (int i = top; i < total_lines() && i < top + visible_lines; ++i)
+      out.push_back(lines[i]);
+    return out;
+  }
+
+  // F4 重排:語系變了用新 wrap 行重建;盡量維持捲動位置(夾住 top)。
+  void reflow(std::vector<std::string> wrapped) {
+    lines = std::move(wrapped);
+    clamp();
+  }
+};
+
 // CharSheet — 角色屬性表檢視子狀態(對齊原版手冊 V=查看人物特質 / X=屬性畫面)。
 //
 // Deep module:對外只露 open/close/active/select + 取當前角色 index。內部隱藏
@@ -157,7 +219,8 @@ int main(int argc, char** argv) {
   int start_pc = 20, max_frames = -1, press = 0, map_area = -1;
   int at_x = -1, at_y = -1;       // --at x y:把玩家放到指定格(headless 驗證事件文字)
   int msg_page = 0;               // --msg-page N:訊息檢視器先翻到第 N 頁再 dump(headless 驗證分頁)
-  int read_para = -1;             // --read-para N:直接開段落 N 進訊息檢視(headless 驗證長段落)
+  int read_para = -1;             // --read-para N:直接開段落 N 進捲動 overlay(headless 驗證長段落)
+  int para_scroll = 0;            // --para-scroll N:dump 前先「逐頁」下捲 N 次(headless 驗證跨頁無遺漏)
   int char_sheet = -1;            // --char-sheet N:直接開第 N 名(1-based)角色屬性表(headless 驗證)
   std::string dump, sprite_name, scene_name;
   std::string save_path = "save/slot0.sav";  // 存/讀檔預設路徑(cwd 可寫處;見 .gitignore)
@@ -185,7 +248,8 @@ int main(int argc, char** argv) {
     else if (eq("--at") && i + 2 < argc) { at_x = std::atoi(argv[++i]); at_y = std::atoi(argv[++i]); }  // 玩家落點(測試)
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
     else if (eq("--msg-page") && i + 1 < argc) msg_page = std::atoi(argv[++i]);   // 訊息檢視先翻到第 N 頁再 dump
-    else if (eq("--read-para") && i + 1 < argc) read_para = std::atoi(argv[++i]); // 直接開段落 N 進訊息檢視
+    else if (eq("--read-para") && i + 1 < argc) read_para = std::atoi(argv[++i]); // 直接開段落 N 進捲動 overlay
+    else if (eq("--para-scroll") && i + 1 < argc) para_scroll = std::atoi(argv[++i]); // dump 前逐頁下捲 N 次
     else if (eq("--char-sheet") && i + 1 < argc) char_sheet = std::atoi(argv[++i]); // 直接開第 N 名角色屬性表
     else if (eq("--load") && i + 1 < argc) load_path = argv[++i];        // 啟動讀檔還原
     else if (eq("--save-path") && i + 1 < argc) save_path = argv[++i];   // 覆寫存/讀檔路徑
@@ -277,8 +341,12 @@ int main(int argc, char** argv) {
   std::array<std::uint8_t, 256> game_state{};
   std::string event_msg;          // 踩到事件格時跑 script emit 的文字(原文,F4 重排用)
   int last_event_tile = -1;       // 對拍 op_71:tile 值變了才觸發
-  MsgViewer msg;                  // 訊息/段落檢視器(分頁捲動;active 時暫停移動)
+  MsgViewer msg;                  // 一般事件訊息檢視器(下半部分頁;active 時暫停移動)
+  ParaViewer para;                // Read Paragraph 長段落捲動檢視器(全螢幕 overlay;active 時暫停移動)
   CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
+  // run_event 攔到「Read paragraph N」時,把 N 寫進此處(>=0 表示本次事件是段落觸發);
+  // main 偵測後改開 ParaViewer(長段落捲動)而非一般訊息框。-1 = 非段落事件。
+  int event_para_n = -1;
 
   // ── 遭遇 / 戰鬥畫面狀態(S_COMBAT)──
   // 怪物圖渲染對齊 oracle:畫進 160×136 viewport 區、blit 到 framebuffer (16,8)
@@ -307,6 +375,7 @@ int main(int argc, char** argv) {
   // 踩到特殊格 → 跑該關事件腳本,回傳 emit 的文字(對拍 opendw op_71/run_level_script)。
   // 對齊 level_events:設 script_res/data_res = level_res,並掛 resource_provider 讓 op_58 能跑。
   auto run_event = [&](std::uint8_t tv) -> std::string {
+    event_para_n = -1;            // 預設:本次非段落事件(命中 op_81 數字 sink 才設)
     if (!level) return "";
     std::uint16_t pc = level->script_pc(tv);
     if (pc == 0 || pc >= level->data().size()) return "";
@@ -345,6 +414,7 @@ int main(int argc, char** argv) {
         if (read_para_pending) {
           read_para_pending = false;
           int n = std::atoi(s.c_str());
+          event_para_n = n;                                // 記下段落號(main 用以開捲動 overlay)
           std::optional<std::string> para;
           if (book) para = book->text(n);
           if (para) { out = *para; }                       // 顯示段落繁中原文
@@ -364,6 +434,19 @@ int main(int argc, char** argv) {
     ip.run();
     game_state = st.game_state;   // 回寫:事件對遊戲狀態的修改持久保留
     return out;
+  };
+
+  // 取段落 N 的顯示全文,含跨語系回退:目前 locale 的段落書有 → 用之;沒有(段落
+  // 目前僅 zh-TW 有資料)→ 回退載 zh-TW 段落書取全文。標題「段落 N」走 i18n,故即使
+  // 內文是 zh-TW,在 en/ja 下標題仍會在地化。回傳空 = 連 zh-TW 都查無此段。
+  std::optional<res::ParagraphBook> zh_book_fallback;  // 惰性載入的 zh-TW 段落書(回退用)
+  auto para_text = [&](int n) -> std::string {
+    if (book) { if (auto t = book->text(n)) return *t; }
+    if (locale != "zh-TW") {
+      if (!zh_book_fallback) zh_book_fallback = res::ParagraphBook::load(bundle + "/paragraphs", "zh-TW");
+      if (zh_book_fallback) { if (auto t = zh_book_fallback->text(n)) return *t; }
+    }
+    return "";
   };
 
   // 進入某區地圖:載入真實關卡 .lvl + 找第一個可走格當起點
@@ -483,12 +566,13 @@ int main(int argc, char** argv) {
   if (map_area >= 0) {
     if (!enter_map(map_area)) return 1;
     state = S_GAME;
-    // --read-para N:直接取段落 N 的在地化原文當訊息(headless 驗證長段落分頁)。
-    if (read_para >= 0 && book) {
-      auto para = book->text(read_para);
-      if (para) { event_msg = *para; last_event_tile = -1;
-        std::fprintf(stderr, "read-para %d: %zu bytes\n", read_para, event_msg.size()); }
-      else std::fprintf(stderr, "read-para %d: not found\n", read_para);
+    // --read-para N:直接開段落 N 的捲動 overlay(headless 驗證長段落跨頁)。
+    // 實際 open 延後到 SDL/TextLayer 就緒後(open_para 需要 tl.wrap);這裡只記 N。
+    if (read_para >= 0) {
+      event_msg = para_text(read_para);   // 預載全文(空 = 查無;含 zh-TW 回退)
+      event_para_n = read_para; last_event_tile = -1;
+      std::fprintf(stderr, "read-para %d: %zu bytes%s\n", read_para, event_msg.size(),
+                   event_msg.empty() ? " (not found)" : "");
     }
     // --at:把玩家放到指定格;若是事件格(tile>1)立刻跑事件腳本(headless 驗證)。
     else if (at_x >= 0 && at_y >= 0 && level && level->in_bounds(at_x, at_y)) {
@@ -746,6 +830,70 @@ int main(int argc, char** argv) {
     }
   };
 
+  // ── Read Paragraph 長段落捲動 overlay 框幾何(320×200 虛擬座標)──
+  // 近全螢幕(只在四周留薄邊),標題列在上、內文捲動區在中、捲動位置提示在下。
+  // 用既有雙層渲染:底框 + 邊框走像素層;標題與段落文字走 TextLayer 高解析(CJK 銳利)。
+  const int PB_X = 4, PB_W = render::kW - 8;          // 框左 + 寬(左右各留 4)
+  const int PB_Y = 4, PB_H = render::kH - 8;          // 框上 + 高(上下各留 4,幾乎全螢幕)
+  const int PB_PAD = 5;
+  const int PB_LINE_H = PX_BODY / scale + 3;          // 內文行距(虛擬座標)
+  const int PB_TEXT_X = PB_X + PB_PAD;
+  const int PB_TEXT_W = PB_W - 2 * PB_PAD;
+  const int PB_TITLE_TOP = PB_Y + PB_PAD;             // 標題列 y
+  const int PB_TEXT_TOP = PB_TITLE_TOP + PB_LINE_H + 3;  // 內文起始 y(標題下)
+  // 內文可視行數:扣掉標題列(+間隔)與底部一行捲動提示。
+  const int PB_LINES = (PB_H - 2 * PB_PAD - 2 * PB_LINE_H - 3) / (PB_LINE_H > 0 ? PB_LINE_H : 1);
+
+  // 把段落 N 的在地化全文 wrap 後開啟捲動 overlay(回到頂端)。
+  // 段落僅 zh-TW 有資料;book->text(N) 缺則由呼叫端事先回退,這裡只負責排版。
+  auto open_para = [&](int n, const std::string& full) {
+    if (full.empty()) return;
+    para.open(n, tl.wrap(full, PB_TEXT_W, PX_BODY), PB_LINES);
+  };
+
+  // 段落 overlay 底框 + 邊框(像素層;深藍底 + 亮框,對齊既有 UI 風格)。
+  auto fill_para_box = [&]() {
+    for (int y = PB_Y; y < PB_Y + PB_H && y < render::kH; ++y)
+      for (int x = PB_X; x < PB_X + PB_W && x < render::kW; ++x)
+        fb.put(x, y, 1);                               // 深藍實心底
+    for (int x = PB_X; x < PB_X + PB_W; ++x) {          // 上下邊框
+      fb.put(x, PB_Y, 15); fb.put(x, PB_Y + PB_H - 1, 15);
+    }
+    for (int y = PB_Y; y < PB_Y + PB_H; ++y) {          // 左右邊框
+      fb.put(PB_X, y, 15); fb.put(PB_X + PB_W - 1, y, 15);
+    }
+    // 標題列下方一道分隔線(像素層),把標題與內文分開。
+    int sep_y = PB_TITLE_TOP + PB_LINE_H + 1;
+    for (int x = PB_X + 1; x < PB_X + PB_W - 1; ++x) fb.put(x, sep_y, 8);
+  };
+
+  // 畫段落捲動 overlay:底框 + 標題「段落 N」+ 可見行切片 + 捲動位置提示(▲/▼/頁碼)。
+  auto draw_para_overlay = [&]() {
+    fill_para_box();
+    // 標題列:「段落 N」(i18n「段落」+ 數字)。
+    char title[48];
+    std::snprintf(title, sizeof title, "%s %d", tr.tr("Paragraph").c_str(), para.para_n);
+    tl.add(PB_TEXT_X, PB_TITLE_TOP, title, 14, PX_BODY);
+    // 內文可見行(自動換行後切片,top..top+visible)。
+    int y = PB_TEXT_TOP;
+    for (const std::string& ln : para.visible()) {
+      tl.add(PB_TEXT_X, y, ln, 15, PX_BODY);
+      y += PB_LINE_H;
+    }
+    // 底部捲動位置提示:上方還有 → ▲;下方還有 → ▼;附「目前行範圍/總行數」(明確無歧義,
+    // 證明跨頁無遺漏)。例:「▼ 行 1–14 / 21」。
+    int iy = PB_Y + PB_H - PB_LINE_H - 1;
+    char ind[96];
+    const char* up = para.at_top() ? "  " : "\xE2\x96\xB2";    // ▲
+    const char* dn = para.at_bottom() ? "  " : "\xE2\x96\xBC"; // ▼
+    int first = para.total_lines() ? para.top + 1 : 0;
+    int last = para.top + (int)para.visible().size();
+    std::snprintf(ind, sizeof ind, "%s%s  %d-%d / %d", up, dn, first, last, para.total_lines());
+    tl.add(PB_TEXT_X, iy, ind, 14, PX_UI);                     // 黃:▲▼ + 行範圍
+    // 操作提示(i18n)靠右;放不下時自動被框裁切,不影響閱讀。
+    tl.add(PB_TEXT_X + 60, iy, tr.tr("Up/Down scroll  Space page  Esc close"), 8, PX_UI * 3 / 4);
+  };
+
   // ── 角色屬性表框幾何(320×200 虛擬座標)──
   // 落在畫面中央偏左(避開右側隊伍面板區),框較高以容納所有屬性列。
   const int CS_X = 8, CS_Y = 20, CS_W = 200, CS_H = render::kH - CS_Y - 8;
@@ -958,12 +1106,14 @@ int main(int argc, char** argv) {
       }
     font->draw_char(fb, ox + px * cs, oy + py * cs, (std::uint8_t)dirch[dir], 15, 0);  // 玩家(像素層)
     // 右側隊伍狀態面板(同 fp 模式;像素層狀態條 + 文字層角色名)。
-    party.draw_status_panel(fb, tl, PX_UI);
-    // 文字層:關卡名 + 控制提示 + 事件文字(自動換行)。
-    tl.add(8, 2, level->name, 14, PX_UI);
+    // 段落 overlay 近全螢幕 → 隱藏面板/關卡名,避免文字層名字穿透蓋在段落上。
+    if (!para.active) {
+      party.draw_status_panel(fb, tl, PX_UI);
+      tl.add(8, 2, level->name, 14, PX_UI);              // 文字層:關卡名
+    }
     add_lang_badge();
     int hint_y = oy + H * cs + 6;
-    if (!msg.active && !sheet.active)                    // 訊息檢視 / 屬性表期間隱藏控制提示(避免穿透框)
+    if (!msg.active && !para.active && !sheet.active)    // 子畫面期間隱藏控制提示(避免穿透框)
       tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  V:stats  S:save  Esc:back", 7, PX_UI);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
@@ -980,11 +1130,13 @@ int main(int argc, char** argv) {
     dec.to_framebuffer(fb);   // 160×136 @ (16,8)(像素層)
     // 右側隊伍狀態面板(port 自 opendw draw_player_status_panel):
     //   像素層 = 狀態條(HP/暈眩/法力);文字層 = 角色名(PX_UI 字級)。
-    party.draw_status_panel(fb, tl, PX_UI);
-    // 文字層:關卡名 + 控制提示 + viewport 下方事件/段落文字(自動換行)。
-    tl.add(8, 2, level->name, 14, PX_UI);
+    // 段落 overlay 近全螢幕 → 隱藏面板/關卡名,避免文字層名字穿透蓋在段落上。
+    if (!para.active) {
+      party.draw_status_panel(fb, tl, PX_UI);
+      tl.add(8, 2, level->name, 14, PX_UI);              // 文字層:關卡名
+    }
     add_lang_badge();
-    if (!msg.active && !sheet.active)                    // 訊息檢視 / 屬性表期間隱藏控制提示(避免穿透框)
+    if (!msg.active && !para.active && !sheet.active)    // 子畫面期間隱藏控制提示(避免穿透框)
       tl.add(8, 150, "I:fwd  J/L:turn  K:door  V:stats  S:save  Esc:back", 7, PX_UI);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
@@ -997,7 +1149,8 @@ int main(int argc, char** argv) {
     if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面
     if (state == S_GAME) {
       if (fp_mode) draw_game_fp(); else draw_game();
-      if (msg.active) draw_msg_overlay();            // 訊息檢視器疊在地圖/viewport 上層
+      if (msg.active) draw_msg_overlay();            // 一般事件訊息框疊在地圖/viewport 上層
+      if (para.active) draw_para_overlay();          // Read Paragraph 長段落捲動 overlay(近全螢幕)
       if (sheet.active) draw_char_sheet();           // 角色屬性表疊在最上層
       return;
     }
@@ -1005,9 +1158,16 @@ int main(int argc, char** argv) {
     if (state == S_MENU) draw_menu();
     else draw_branch();
   };
-  // headless / 啟動即有訊息(--at 事件格 或 --read-para):進訊息檢視器。
-  // --msg-page N:在 dump 前先翻到第 N 頁(驗證分頁:第 1 頁含 ▼、第 2 頁續顯示)。
-  if (state == S_GAME && !event_msg.empty()) {
+  // headless / 啟動即有訊息(--at 事件格 或 --read-para):進對應檢視器。
+  //   段落事件(event_para_n>=0)→ 長段落捲動 overlay(--para-scroll N 先下捲 N 頁)。
+  //   一般事件文字 → 下半部分頁訊息框(--msg-page N 先翻到第 N 頁)。
+  if (state == S_GAME && event_para_n >= 0 && !event_msg.empty()) {
+    open_para(event_para_n, event_msg);
+    for (int p = 0; p < para_scroll && !para.at_bottom(); ++p) para.scroll_page(1);
+    std::fprintf(stderr, "para viewer: N=%d, %d lines, %d/page → %d pages; top=%d page %d/%d\n",
+                 para.para_n, para.total_lines(), para.visible_lines, para.page_count(),
+                 para.top, para.cur_page(), para.page_count());
+  } else if (state == S_GAME && !event_msg.empty()) {
     open_msg(event_msg);
     for (int p = 0; p < msg_page && msg.active; ++p) msg.advance();
     std::fprintf(stderr, "msg viewer: %d lines, %d/page → %d pages; showing page %d\n",
@@ -1048,7 +1208,11 @@ int main(int argc, char** argv) {
       locale_idx = (locale_idx + 1) % (int)locales.size();
       load_locale(locales[locale_idx]);
       relocalize();                                      // 選單/branch 重譯
-      if (state == S_GAME && level && last_event_tile > 1) {
+      if (para.active) {
+        // 段落 overlay:用新語系全文(含 zh-TW 回退)就地重排,維持捲動位置;標題即時換 i18n。
+        std::string full = para_text(para.para_n);
+        if (!full.empty()) para.reflow(tl.wrap(full, PB_TEXT_W, PX_BODY));
+      } else if (state == S_GAME && level && last_event_tile > 1) {
         event_msg = run_event((std::uint8_t)last_event_tile);  // 事件文字換語言
         if (msg.active) msg.reflow(tl.wrap(event_msg, MB_TEXT_W, PX_BODY));  // 當前頁就地重排
       }
@@ -1064,6 +1228,19 @@ int main(int argc, char** argv) {
       else if (in.key == 'V') sheet.close();             // V 再按一次 → 關閉
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;                                          // 屬性表期間不處理移動
+    }
+    // Read Paragraph 長段落捲動 overlay 啟用時:接管輸入,暫停移動。
+    //   ↑↓:逐行捲動;PgUp/PgDn / Space / Enter / I / K:逐頁;Esc:關閉回遊戲。
+    //   (放在 msg 之前;兩者互斥,paragraph 觸發時 msg 不會 active。)
+    if (para.active) {
+      if (in.back) { para.close(); }                     // Esc:關閉回遊戲
+      else if (in.up) para.scroll_line(-1);              // ↑:上捲一行
+      else if (in.down) para.scroll_line(1);             // ↓:下捲一行
+      else if (in.pgup) para.scroll_page(-1);            // PgUp:上翻一頁
+      else if (in.pgdown || in.select || in.key == 'I' || in.key == 'K')
+        para.scroll_page(1);                             // PgDn/Space/Enter/I/K:下翻一頁
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;                                          // 段落檢視期間不處理移動
     }
     // 訊息檢視器啟用時:接管輸入(翻頁/關閉),暫停移動,翻頁鍵不誤觸移動。
     if (msg.active) {
@@ -1120,7 +1297,12 @@ int main(int argc, char** argv) {
               // 換 area:事件文字仍顯示(若有),但事件格判定改用新區的格子。
               if (level) { int ntv = level->tile(px, py); last_event_tile = (ntv > 1) ? ntv : -1; }
             }
-            if (!event_msg.empty()) open_msg(event_msg);   // 進訊息檢視(暫停移動)
+            // Read Paragraph 事件 → 長段落捲動 overlay;一般事件 → 下半部分頁訊息框。
+            if (event_para_n >= 0) {
+              std::string full = para_text(event_para_n);   // 含 zh-TW 回退(en/ja 缺段落時)
+              if (full.empty()) full = event_msg;           // 連 zh-TW 都查無 → 用 run_event 回退字樣
+              open_para(event_para_n, full);                // 暫停移動
+            } else if (!event_msg.empty()) open_msg(event_msg);  // 進訊息檢視(暫停移動)
           } else if (tv <= 1) { last_event_tile = -1; event_msg.clear(); }
         }
       }

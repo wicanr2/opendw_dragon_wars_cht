@@ -7,8 +7,13 @@
 > VM op_58/59 對齊 opendw byte-stack + 新增 op_81(print_number)使 N 進輸出流;
 > app `run_event` 攔「Read paragraph 」+ N → 顯示段落繁中原文(回退「Read paragraph N」);
 > CJK atlas 擴至 1653 字涵蓋全段落;7 個觸發點 N=27/90/146/134/108/53/65 與地點吻合。
-> **未做**:長段落 scrollable overlay(目前 FP 訊息區僅約 3 行,長段落底部截斷)。
-> 截圖:`opendw_remake/docs/screenshots/r8_read_paragraph_zh.png`(Magic College + 段落 146)。
+> **已補(2026-06-14)**:長段落 scrollable overlay 子狀態(ParaViewer,近全螢幕)。
+> 觸發 Read Paragraph N → 進捲動 overlay(取代下半部訊息框);標題「段落 N」(i18n)、
+> TextLayer wrap 多行、↑↓ 逐行 / PgUp PgDn / Space 逐頁、Esc 關閉、底部「▲▼ 行範圍/總行數」。
+> headless:`--read-para N`(可加 `--para-scroll P` 逐頁下捲 + `--frames`)dump 全文分頁;
+> 段落僅 zh-TW 有資料,en/ja 回退 zh-TW 全文 + 標題 i18n。ctest 8/8 不破。
+> 截圖:`opendw_remake/docs/screenshots/r8_read_paragraph_zh.png`(Magic College + 段落 146);
+> 捲動 demo:`opendw_remake/docs/paragraph_demo/`(段落 88 頂/底頁 + en 回退 + 遊戲內段落 94)。
 
 ---
 
