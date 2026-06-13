@@ -48,6 +48,61 @@ static std::vector<std::string> lines_of(const std::string& s) {
 
 struct Opt { char hot; std::string label; std::string en; };  // 快捷字母 + 在地化文字 + 英文源(F4 重譯用)
 
+// MsgViewer — 可分頁捲動的訊息/段落檢視器(對齊原版「看完中央訊息後按 Esc 繼續」)。
+//
+// Deep module:對外只露 open/advance/close/active + 取當前頁文字行。內部隱藏
+//   自動換行(走 TextLayer::wrap,CJK 逐字 / ASCII 逐詞)+ 依框高的可見行數切頁。
+//
+// 框落在 320×200 虛擬座標(由 main 的 draw 函式畫底框 + 邊框,並逐行 add 文字層)。
+// 翻頁鍵 Space/Enter/↓/I 下一頁;最後一頁再按 → 關閉;Esc → 直接關閉。
+// F4 切語系時 main 以新文字 reflow(),停在同一頁號(夾在有效範圍)。
+struct MsgViewer {
+  bool active = false;
+  int page = 0;                              // 當前頁(0-based)
+  int lines_per_page = 1;                    // 每頁可見行數(由框高算)
+  int max_vw = 0, body_px = 0;               // 換行寬度(虛擬)+ 字級(視窗 px)
+  std::vector<std::string> lines;            // 全文換行後的所有行
+
+  // 開啟檢視器:以 wrap 後的行 + 每頁行數初始化(回到第 1 頁)。
+  void open(std::vector<std::string> wrapped, int per_page) {
+    lines = std::move(wrapped);
+    lines_per_page = per_page < 1 ? 1 : per_page;
+    page = 0;
+    active = true;
+  }
+  void close() { active = false; page = 0; lines.clear(); }
+
+  int page_count() const {
+    if (lines.empty()) return 1;
+    return (int)((lines.size() + lines_per_page - 1) / lines_per_page);
+  }
+  bool has_more() const { return page + 1 < page_count(); }   // 還有下一頁 → 顯示 ▼
+
+  // 翻頁:非最後頁 → page++ 並回傳 true(續顯示);最後頁 → 關閉並回傳 false(回遊戲)。
+  bool advance() {
+    if (has_more()) { ++page; return true; }
+    close();
+    return false;
+  }
+
+  // 取當前頁要顯示的行(切片)。
+  std::vector<std::string> page_lines() const {
+    std::vector<std::string> out;
+    int start = page * lines_per_page;
+    for (int i = start; i < (int)lines.size() && i < start + lines_per_page; ++i)
+      out.push_back(lines[i]);
+    return out;
+  }
+
+  // F4 重排:以新換行後的行重建,夾住頁號(語系變了,總頁數可能不同)。
+  void reflow(std::vector<std::string> wrapped) {
+    lines = std::move(wrapped);
+    int pc = page_count();
+    if (page >= pc) page = pc - 1;
+    if (page < 0) page = 0;
+  }
+};
+
 // tile 型(word_11C8)→ framebuffer 顏色:0=void/牆、1=地面、其他=特殊/事件格。
 static std::uint8_t tile_color(std::uint8_t t) {
   if (t == 0) return 8;            // 牆/void = 灰
@@ -68,6 +123,8 @@ int main(int argc, char** argv) {
   int scale = 3;                  // --scale N:視窗 = 320*N × 200*N(預設 3 → 960×600,CJK≈36px 原生)
   int start_pc = 20, max_frames = -1, press = 0, map_area = -1;
   int at_x = -1, at_y = -1;       // --at x y:把玩家放到指定格(headless 驗證事件文字)
+  int msg_page = 0;               // --msg-page N:訊息檢視器先翻到第 N 頁再 dump(headless 驗證分頁)
+  int read_para = -1;             // --read-para N:直接開段落 N 進訊息檢視(headless 驗證長段落)
   std::string dump, sprite_name, scene_name;
   bool viewport_mode = false;   // --viewport:顯示原版第一人稱 viewport 靜態框架
   bool fp_mode = false;         // --fp:S_GAME 用第一人稱 viewport(取代俯視彩格)
@@ -87,6 +144,8 @@ int main(int argc, char** argv) {
     else if (eq("--map") && i + 1 < argc) map_area = std::atoi(argv[++i]);   // 直接進某區地圖
     else if (eq("--at") && i + 2 < argc) { at_x = std::atoi(argv[++i]); at_y = std::atoi(argv[++i]); }  // 玩家落點(測試)
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
+    else if (eq("--msg-page") && i + 1 < argc) msg_page = std::atoi(argv[++i]);   // 訊息檢視先翻到第 N 頁再 dump
+    else if (eq("--read-para") && i + 1 < argc) read_para = std::atoi(argv[++i]); // 直接開段落 N 進訊息檢視
     else if (eq("--viewport")) viewport_mode = true;   // 顯示原版 viewport 靜態框架
     else if (eq("--fp")) fp_mode = true;               // 第一人稱 viewport(透視牆面)
   }
@@ -153,8 +212,9 @@ int main(int argc, char** argv) {
   const char* dirch = "^>v<";
   std::optional<res::Level> level;
   int level_res = -1;             // 當前關卡資源 index(= area + 0x46;= word_3AE8)
-  std::string event_msg;          // 踩到事件格時跑 script emit 的文字
+  std::string event_msg;          // 踩到事件格時跑 script emit 的文字(原文,F4 重排用)
   int last_event_tile = -1;       // 對拍 op_71:tile 值變了才觸發
+  MsgViewer msg;                  // 訊息/段落檢視器(分頁捲動;active 時暫停移動)
 
   // 事件腳本跨資源 call(op_58)的資源提供者:從 bundle 載(自包含,不需 DATA1)。
   // tag = DATA1 section;BundleProvider 讀 assets/bundle/scripts/<tag>.bin(解壓後)。
@@ -235,8 +295,15 @@ int main(int argc, char** argv) {
   if (map_area >= 0) {
     if (!enter_map(map_area)) return 1;
     state = S_GAME;
+    // --read-para N:直接取段落 N 的在地化原文當訊息(headless 驗證長段落分頁)。
+    if (read_para >= 0 && book) {
+      auto para = book->text(read_para);
+      if (para) { event_msg = *para; last_event_tile = -1;
+        std::fprintf(stderr, "read-para %d: %zu bytes\n", read_para, event_msg.size()); }
+      else std::fprintf(stderr, "read-para %d: not found\n", read_para);
+    }
     // --at:把玩家放到指定格;若是事件格(tile>1)立刻跑事件腳本(headless 驗證)。
-    if (at_x >= 0 && at_y >= 0 && level && level->in_bounds(at_x, at_y)) {
+    else if (at_x >= 0 && at_y >= 0 && level && level->in_bounds(at_x, at_y)) {
       px = at_x; py = at_y;
       int tv = level->tile(px, py);
       if (tv > 1) {
@@ -367,13 +434,54 @@ int main(int argc, char** argv) {
     tl.add(render::kW - 78, 13, "F4:lang", 8, PX_UI * 3 / 4);
   };
 
-  // 文字層:多行段落/事件文字(虛擬座標,自動換行)。回傳是否畫滿到底。
-  auto add_wrapped = [&](const std::string& z, int vx, int vy, int max_vw, int line_h,
-                         std::uint8_t color, int px) {
-    for (const std::string& ln : tl.wrap(z, max_vw, px)) {
-      if (vy + line_h > render::kH) break;     // 超出畫面底部即停
-      tl.add(vx, vy, ln, color, px);
-      vy += line_h;
+  // ── 訊息/段落檢視器框幾何(320×200 虛擬座標)──
+  // 落在畫面下半 + 左右留邊;CJK 內文 24px、行距適中。每頁行數由框內可用高度算。
+  const int MB_X = 6, MB_W = render::kW - 12;        // 框左 + 寬(左右各留 6)
+  const int MB_Y = 96, MB_H = render::kH - MB_Y - 4; // 框上緣 + 高(落在下半,底留 4)
+  const int MB_PAD = 5;                              // 框內邊距
+  const int MB_LINE_H = PX_BODY / scale + 3;         // 行距(虛擬座標;CJK 字高/scale + 間距)
+  const int MB_TEXT_X = MB_X + MB_PAD;
+  const int MB_TEXT_W = MB_W - 2 * MB_PAD;
+  const int MB_TEXT_TOP = MB_Y + MB_PAD;
+  // 預留底部一行給 ▼ / 提示 → 內文可用行數。
+  const int MB_LINES = (MB_H - 2 * MB_PAD - MB_LINE_H) / (MB_LINE_H > 0 ? MB_LINE_H : 1);
+
+  // 用當前語系文字(已在地化)開啟訊息檢視器:wrap → 切頁。
+  auto open_msg = [&](const std::string& z) {
+    if (z.empty()) return;
+    msg.max_vw = MB_TEXT_W; msg.body_px = PX_BODY;
+    msg.open(tl.wrap(z, MB_TEXT_W, PX_BODY), MB_LINES);
+  };
+
+  // 框底實心 + 邊框(像素層);疊在 viewport/地圖之上。half=半透明感(暗藍底)。
+  auto fill_msg_box = [&]() {
+    for (int y = MB_Y; y < MB_Y + MB_H && y < render::kH; ++y)
+      for (int x = MB_X; x < MB_X + MB_W && x < render::kW; ++x)
+        fb.put(x, y, 1);                              // 深藍實心底
+    for (int x = MB_X; x < MB_X + MB_W; ++x) {        // 上下邊框
+      fb.put(x, MB_Y, 15); fb.put(x, MB_Y + MB_H - 1, 15);
+    }
+    for (int y = MB_Y; y < MB_Y + MB_H; ++y) {        // 左右邊框
+      fb.put(MB_X, y, 15); fb.put(MB_X + MB_W - 1, y, 15);
+    }
+  };
+
+  // 畫訊息檢視器:底框(像素層)+ 當前頁文字行(文字層)+ ▼/提示。
+  auto draw_msg_overlay = [&]() {
+    fill_msg_box();
+    int y = MB_TEXT_TOP;
+    for (const std::string& ln : msg.page_lines()) {
+      tl.add(MB_TEXT_X, y, ln, 15, PX_BODY);
+      y += MB_LINE_H;
+    }
+    // 底部指示:多於一頁顯示 ▼ 與頁碼;最後一頁顯示「Esc/Space 繼續」。
+    int iy = MB_Y + MB_H - MB_LINE_H - 1;
+    if (msg.has_more()) {
+      char buf[32];
+      std::snprintf(buf, sizeof buf, "%s  %d/%d", "\xE2\x96\xBC", msg.page + 1, msg.page_count());
+      tl.add(MB_TEXT_X, iy, buf, 14, PX_UI);          // ▼ + 頁碼(黃)
+    } else {
+      tl.add(MB_TEXT_X, iy, tr.tr("[ continue ]"), 11, PX_UI);  // 末頁:繼續提示
     }
   };
 
@@ -421,9 +529,9 @@ int main(int argc, char** argv) {
     tl.add(8, 2, level->name, 14, PX_UI);
     add_lang_badge();
     int hint_y = oy + H * cs + 6;
-    tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
-    if (!event_msg.empty())
-      add_wrapped(event_msg, 4, hint_y + 12, render::kW - 8, 13, 15, PX_BODY);
+    if (!msg.active)                                     // 訊息檢視期間隱藏控制提示(避免穿透訊息框)
+      tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
+    // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
   //   update_viewport(靜態框架)→ ui_update_viewport。對拍 verify_fp 4/4(像素層不變)。
@@ -439,9 +547,9 @@ int main(int argc, char** argv) {
     // 文字層:關卡名 + 控制提示 + viewport 下方事件/段落文字(自動換行)。
     tl.add(8, 2, level->name, 14, PX_UI);
     add_lang_badge();
-    tl.add(8, 150, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
-    if (!event_msg.empty())
-      add_wrapped(event_msg, 4, 158, render::kW - 8, 13, 15, PX_BODY);
+    if (!msg.active)                                     // 訊息檢視期間隱藏控制提示(避免穿透訊息框)
+      tl.add(8, 150, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
+    // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // sprite/scene/viewport 靜態檢視:像素層已於前面建好;文字層每幀補上標籤。
   auto draw_static_text = [&]() {
@@ -449,11 +557,23 @@ int main(int argc, char** argv) {
   };
   auto render_now = [&]() {
     tl.clear();                                      // 每幀重建文字層
-    if (state == S_GAME) { if (fp_mode) draw_game_fp(); else draw_game(); return; }
+    if (state == S_GAME) {
+      if (fp_mode) draw_game_fp(); else draw_game();
+      if (msg.active) draw_msg_overlay();            // 訊息檢視器疊在地圖/viewport 上層
+      return;
+    }
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
     if (state == S_MENU) draw_menu();
     else draw_branch();
   };
+  // headless / 啟動即有訊息(--at 事件格 或 --read-para):進訊息檢視器。
+  // --msg-page N:在 dump 前先翻到第 N 頁(驗證分頁:第 1 頁含 ▼、第 2 頁續顯示)。
+  if (state == S_GAME && !event_msg.empty()) {
+    open_msg(event_msg);
+    for (int p = 0; p < msg_page && msg.active; ++p) msg.advance();
+    std::fprintf(stderr, "msg viewer: %d lines, %d/page → %d pages; showing page %d\n",
+                 (int)msg.lines.size(), msg.lines_per_page, msg.page_count(), msg.page + 1);
+  }
   render_now();
 
   if (!dump.empty()) {
@@ -475,9 +595,19 @@ int main(int argc, char** argv) {
       locale_idx = (locale_idx + 1) % (int)locales.size();
       load_locale(locales[locale_idx]);
       relocalize();                                      // 選單/branch 重譯
-      if (state == S_GAME && level && last_event_tile > 1)
+      if (state == S_GAME && level && last_event_tile > 1) {
         event_msg = run_event((std::uint8_t)last_event_tile);  // 事件文字換語言
+        if (msg.active) msg.reflow(tl.wrap(event_msg, MB_TEXT_W, PX_BODY));  // 當前頁就地重排
+      }
       continue;                                          // 本幀不再處理其他輸入
+    }
+    // 訊息檢視器啟用時:接管輸入(翻頁/關閉),暫停移動,翻頁鍵不誤觸移動。
+    if (msg.active) {
+      if (in.back) { msg.close(); }                      // Esc:直接關閉回遊戲
+      else if (in.select || in.down || in.up || in.key == 'I')
+        msg.advance();                                   // Space/Enter/↓/I:下一頁;末頁→關閉
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;                                          // 訊息檢視期間不處理移動
     }
     if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
       if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
@@ -489,11 +619,13 @@ int main(int argc, char** argv) {
           if (level && level->walkable(nx, ny)) { px = nx; py = ny; }
         }
         if (in.key == 'K') std::fprintf(stderr, "open door (stub)\n");
-        // 事件格(對拍 op_71:tile 值變了才觸發);事件文字走 i18n,可切語系
+        // 事件格(對拍 op_71:tile 值變了才觸發);事件文字 → 開訊息檢視器(分頁捲動)
         if (level) {
           int tv = level->tile(px, py);
-          if (tv > 1 && tv != last_event_tile) { event_msg = run_event((std::uint8_t)tv); last_event_tile = tv; }
-          else if (tv <= 1) { last_event_tile = -1; event_msg.clear(); }
+          if (tv > 1 && tv != last_event_tile) {
+            event_msg = run_event((std::uint8_t)tv); last_event_tile = tv;
+            open_msg(event_msg);                         // 進訊息檢視(暫停移動)
+          } else if (tv <= 1) { last_event_tile = -1; event_msg.clear(); }
         }
       }
     } else if (!menu_mode) { if (in.back) break; }       // sprite/scene 檢視:Esc/Q 離開
