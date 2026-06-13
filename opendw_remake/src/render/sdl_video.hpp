@@ -19,6 +19,8 @@ struct Input {
   bool back = false;     // Esc(離開子畫面 / 繼續訊息)
   bool up = false;       // ↑
   bool down = false;     // ↓
+  bool left = false;     // ←
+  bool right = false;    // →
   bool select = false;   // Enter / Space(輔助選取)
   int  key = 0;          // 本幀按下的字母鍵(大寫 ASCII,如 'B'/'C'/'I'/'U'…),供快捷字母
 };

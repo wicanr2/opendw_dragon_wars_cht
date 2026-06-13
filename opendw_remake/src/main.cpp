@@ -47,6 +47,28 @@ static void draw_mixed(render::Framebuffer& fb, const render::Font8x8& font,
 
 struct Opt { char hot; std::string label; };   // 快捷字母 + 在地化文字
 
+// F:測試地圖(真實 viewport 地圖資料抽取為後續步驟;此處先驗證移動/朝向骨架)。
+// '#'=牆 '.'=可走。16×12。
+static const char* kMap[] = {
+  "################",
+  "#....#.....#..S#",   // S = 起點(視為可走)
+  "#.##.#.###.#.#.#",
+  "#.#..#...#...#.#",
+  "#.#.####.#####.#",
+  "#.#....#......##",
+  "#.####.#.####..#",
+  "#......#.#..#..#",
+  "######.#.#.##..#",
+  "#......#.#.....#",
+  "#.######.#####.#",
+  "################",
+};
+static constexpr int kMapW = 16, kMapH = 12;
+static bool walkable(int x, int y) {
+  if (x < 0 || y < 0 || x >= kMapW || y >= kMapH) return false;
+  return kMap[y][x] != '#';
+}
+
 int main(int argc, char** argv) {
   std::string bundle = "assets/bundle";
   std::string font_raw = "assets/fonts/dw8x8.bin";
@@ -79,8 +101,11 @@ int main(int argc, char** argv) {
   std::string header;
   std::vector<Opt> opts;
   int sel = 0;
-  enum { S_MENU, S_BRANCH } state = S_MENU;
+  enum { S_MENU, S_BRANCH, S_GAME } state = S_MENU;
   std::string branch_label;
+  int px = 14, py = 1, dir = 3;   // 玩家位置/朝向(0=N,1=E,2=S,3=W);起點在 'S'
+  const int dx4[4] = {0, 1, 0, -1}, dy4[4] = {-1, 0, 1, 0};
+  const char* dirch = "^>v<";
 
   if (scene_mode) {
     // ── E:全螢幕場景圖(從 bundle .pic 載解壓資料,title_adjust 去交錯)──
@@ -137,7 +162,11 @@ int main(int argc, char** argv) {
 
     // --press 模擬:直接觸發對應快捷字母(headless 驗證分支)
     if (press) for (std::size_t i = 0; i < opts.size(); ++i)
-      if (opts[i].hot == press) { sel = (int)i; state = S_BRANCH; branch_label = opts[i].label; }
+      if (opts[i].hot == press) {
+        sel = (int)i;
+        if (opts[i].hot == 'B') { px = 14; py = 1; dir = 3; state = S_GAME; }  // 開始新遊戲→地圖
+        else { state = S_BRANCH; branch_label = opts[i].label; }
+      }
   }
 
   auto draw_menu = [&]() {
@@ -167,7 +196,26 @@ int main(int argc, char** argv) {
     font->draw_string(fb, 16, 120, "(game screen - to be implemented)", 7, 1);
     font->draw_string(fb, 16, 156, "Esc: back   Q: quit", 8, 1);
   };
-  auto render_now = [&]() { if (!menu_mode) return; (state == S_MENU) ? draw_menu() : draw_branch(); };
+  auto draw_game = [&]() {
+    // F:測試地圖俯視圖 + 玩家朝向(移動鍵對齊說明書,見 docs/CONTROLS.md)
+    fb.clear(0);
+    const int cs = 11, ox = (render::kW - kMapW * cs) / 2, oy = 16;
+    for (int my = 0; my < kMapH; ++my)
+      for (int mx = 0; mx < kMapW; ++mx) {
+        std::uint8_t c = (kMap[my][mx] == '#') ? 8 : 1;   // 牆=灰,地=藍
+        for (int j = 1; j < cs; ++j) for (int i = 1; i < cs; ++i)
+          fb.put(ox + mx * cs + i, oy + my * cs + j, c);
+      }
+    // 玩家(朝向字元)
+    font->draw_char(fb, ox + px * cs + 2, oy + py * cs + 2, (std::uint8_t)dirch[dir], 14, 1);
+    font->draw_string(fb, 8, oy + kMapH * cs + 8, "I:fwd  J/L:turn  K:door  Esc:menu", 7, 0);
+  };
+  auto render_now = [&]() {
+    if (!menu_mode) return;
+    if (state == S_MENU) draw_menu();
+    else if (state == S_GAME) draw_game();
+    else draw_branch();
+  };
   render_now();
 
   if (!dump.empty()) {
@@ -192,8 +240,23 @@ int main(int argc, char** argv) {
         if (in.down) sel = (sel + 1) % n;
         int trig = in.select ? sel : -1;
         if (in.key) for (int i = 0; i < n; ++i) if (opts[i].hot == in.key) trig = i;  // 快捷字母
-        if (trig >= 0) { sel = trig; state = S_BRANCH; branch_label = opts[trig].label;
-                         std::fprintf(stderr, "selected [%c] %s\n", opts[trig].hot, opts[trig].label.c_str()); }
+        if (trig >= 0) {
+          sel = trig;
+          std::fprintf(stderr, "selected [%c] %s\n", opts[trig].hot, opts[trig].label.c_str());
+          if (opts[trig].hot == 'B') { px = 14; py = 1; dir = 3; state = S_GAME; }  // 開始新遊戲→地圖
+          else { state = S_BRANCH; branch_label = opts[trig].label; }
+        }
+      }
+    } else if (state == S_GAME) {                        // F:地圖移動(對齊說明書)
+      if (in.back) state = S_MENU;                       // Esc 返回選單
+      else {
+        if (in.left  || in.key == 'J') dir = (dir + 3) % 4;   // 左轉
+        if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // 右轉
+        if (in.up    || in.key == 'I') {                      // 前進
+          int nx = px + dx4[dir], ny = py + dy4[dir];
+          if (walkable(nx, ny)) { px = nx; py = ny; }
+        }
+        if (in.key == 'K') std::fprintf(stderr, "open door (stub)\n");
       }
     } else {                                             // S_BRANCH
       if (in.back || in.select) state = S_MENU;
