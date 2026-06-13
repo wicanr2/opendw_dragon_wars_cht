@@ -23,8 +23,8 @@ OpenDW 是 Interplay 1989/1990 年遊戲 **Dragon Wars** 的開源重製版。
 
 | **第一人稱 + 繁中事件**(進入遊戲) | 怪物 sprite |
 |:---:|:---:|
-| ![fp](opendw_remake/docs/screenshots/r7_fp_event_zh.png) | ![wolf](opendw_remake/docs/showcase/sprite_wolf.png) |
-| 第一人稱透視走廊 +**踩到事件格顯示在地化繁中事件文字**(真實地圖→VM 事件 script→i18n),全自包含 | 從 asset bundle 載入,對拍 opendw byte-for-byte |
+| ![fp](opendw_remake/docs/screenshots/r9_fp_event_twolayer.png) | ![wolf](opendw_remake/docs/showcase/sprite_wolf.png) |
+| 第一人稱透視走廊 +**踩到事件格顯示在地化繁中事件文字**;**雙層渲染**:像素層整數放大 + SDL2_ttf 文字層(中文 24px 恆銳利) | 從 asset bundle 載入,對拍 opendw byte-for-byte |
 
 **目前已落地(均經 opendw 對拍或攻略對照驗證)**:
 - ✅ SDL2 視窗 + DOS 16 色 framebuffer;操作鍵對齊原版說明書(`B`/`C` 選單、`I/J/L/K` 移動、`Esc`/`Q`)。
