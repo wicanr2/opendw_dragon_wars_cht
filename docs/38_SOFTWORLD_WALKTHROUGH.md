@@ -91,7 +91,7 @@
 
 ### 5.1 Purgatory 波卡城(起始城)
 
-![Purgatory 波卡城 主城地圖](softworld_images/sw25-035.jpg)
+![Purgatory 波卡城(臨摹地圖)](softworld_images/maps_svg/sw25-035_purgatory.svg)
 
 **簡介**:這是一座有進無出的城,城門有重兵把守。除上兵外,城內盡是小偷與流氓,打架在所難免,最好打到對手不堪一擊。城北有巫師 **Humbaba(胡姆巴巴)**,必須打敗。可由西南角祕門出城,或從 **Apsu Waters**(更正自 Apeu Waters)進入 **Magan(瑪根)地底世界**再覓路出去。前往 **Irkalla(伊爾卡拉)**女神雕像前,記得把能拿的都拿盡。
 
@@ -147,7 +147,8 @@
 
 ### 5.2 Slave Camp 奴隸營 + Slave Mines 礦場
 
-![Slave Camp 奴隸營 + Slave Mines 礦場](softworld_images/sw25-036.jpg)
+![Slave Camp 奴隸營(臨摹地圖)](softworld_images/maps_svg/sw25-036_slave_camp.svg)
+![Slave Mines 礦場(臨摹地圖)](softworld_images/maps_svg/sw25-036_slave_mines.svg)
 
 **簡介**:若在 Purgatory 賣身奴隸營,會發現自己鋼鏈加身、不能自由活動,但仍能施法術。要恢復自由,須先製作能驅退鋼鏈的工具(以龍石/錘子等取得自由),再從暗門帶走寶藏離開,並在礦場第 10 處打敗一群警衛與頭頭。
 
@@ -234,7 +235,8 @@
 
 ### 5.3 Mog's Slave Estate 莫格的宅院 + Tars Ruins 塔斯廢墟
 
-![Mog's Slave Estate 莫格的宅院 + Tars Ruins 塔斯廢墟](softworld_images/sw25-037.jpg)
+![Mog's Slave Estate 莫格的宅院(臨摹地圖)](softworld_images/maps_svg/sw25-037_mog_estate.svg)
+![Tars Ruins 塔斯廢墟(臨摹地圖)](softworld_images/maps_svg/sw25-037_tars_ruins.svg)
 
 **簡介(莫格的宅院)**:從 Slave Mines 暗門逃出後,可朝 **Mog(莫格)**宅院走去(亦可由正門進)。Mog 是已死的奴隸販子。地下迷宮裡的 goblin(山妖怪)會讓你頭痛,拿了東西就走。
 
@@ -285,7 +287,9 @@
 
 ### 5.4 Tars Ruins 地下室 + Guarded Bridge 守橋 + Yellow Mud Toad 前導 + Phoebus 圖例
 
-![Tars Ruins 地下室 + Guarded Bridge 橋梁 + Phoebus 圖例](softworld_images/sw25-038.jpg)
+![Guarded Bridge 守橋(臨摹地圖)](softworld_images/maps_svg/sw25-038_guarded_bridge.svg)
+![Phoebus 菲巴斯城(臨摹地圖)](softworld_images/maps_svg/sw25-038_phoebus.svg)
+![Tars Ruins 地下室(臨摹地圖)](softworld_images/maps_svg/sw25-038_tars_dungeon.svg)
 
 **簡介(塔斯地下室)**:此地下室在大水之下,年久失修。走路聽到地板作響時,旁邊可能有珍貴的東西。
 
@@ -329,7 +333,7 @@
 
 ### 5.5 Phoebus 菲巴斯城 + Phoebus Dungeon 菲巴斯地牢
 
-![Phoebus 菲巴斯城 + Phoebus Dungeon 菲巴斯地牢](softworld_images/sw25-039.jpg)
+![Phoebus Dungeon 菲巴斯地牢(臨摹地圖)](softworld_images/maps_svg/sw25-039_phoebus_dungeon.svg)
 
 **簡介(菲巴斯城)**:**Phoebus(菲巴斯)**曾為貿易大都市,自 **Mystalvision(美斯達)**出現後成為太陽神勢力範圍,城中設有各種怪物與據點(Stossstrupen)。西側住著一群小妖精(goblin)。
 
@@ -372,7 +376,8 @@
 
 ### 5.6 Mystic Wood 神祕林(第 26 期起)
 
-![Mystic Wood 神祕林](softworld_images/sw26-036.jpg)
+![Guarded Bridge 守橋(臨摹地圖)](softworld_images/maps_svg/sw26-036_guarded_bridge.svg)
+![Mystic Wood 神祕林(臨摹地圖)](softworld_images/maps_svg/sw26-036_mystic_wood.svg)
 
 **簡介**:**神祕林(Mystic Wood)**位於某城西南方,是德魯伊系法師(用 Zaton〔?〕法術)的大本營,森林裡有許多陷阱與怪物,進入前最好練高德魯伊魔法。林中與 **Enkidu(恩奇杜)半人半獸**及力量(Strength)/精神(Spirit)檢定相關;可用吹奏號角、Beast Call 呼叫野獸等技能。某處藏有 **Golden Boots 黃金之靴**的一隻(須湊成一雙)。
 
@@ -408,7 +413,7 @@
 
 ### 5.7 War Bridge 重兵守橋 + Lansk 蘭斯克
 
-![War Bridge 橋樑 + Lansk 蘭斯克](softworld_images/sw26-037.jpg)
+![Lansk 蘭斯克(臨摹地圖)](softworld_images/maps_svg/sw26-037_lansk.svg)
 
 **簡介(守橋)**:連接神祕林(太陽島 the Sun's Isle 與 **Lansk 蘭斯克**之間)的重兵守橋。過橋會碰上強敵守衛(大軍/海關官員),可用 Pick Pocket 扒竊取得官員證件/鑰匙,或製造混亂引開守衛;亦可出示後段拿到的公文/通行證放行。北方武器庫會回應警鈴引來增援,建議不要硬碰。
 
@@ -439,7 +444,9 @@
 
 ### 5.8 Lansk Undercity 蘭斯克地下城 + Yellow Mud Toad 黃泥蟾蜍城
 
-![Lansk Undercity 蘭斯克地下城 + Yellow Mud Toad 黃泥蟾蜍城](softworld_images/sw26-038.jpg)
+![Lansk Undercity 蘭斯克地下城(臨摹地圖)](softworld_images/maps_svg/sw26-038_lansk_undercity.svg)
+![War Bridge 橋樑(臨摹地圖)](softworld_images/maps_svg/sw26-038_war_bridge.svg)
+![Yellow Mud Toad 黃泥蟾蜍城(臨摹地圖)](softworld_images/maps_svg/sw26-038_yellow_mud_toad.svg)
 
 **簡介(蘭斯克地下城)**:由蘭斯克城地圖右下角的樓梯口往下進入,依市民證/通行證查驗;若以市民身分通行需出示往京雄王島的船票。四角各有一座雕像對應一種屬性檢定,依提示通過後可開後續門與地底世界出入口。生病/中毒時留好蘑菇會有回報。東南角有傳送通往 Magan 地底世界。
 
@@ -508,7 +515,7 @@
 
 ### 5.9 Yellow Mud Toad 黃泥蟾蜍城 + Lanac'toor's Lab 拉娜的實驗室
 
-![Yellow Mud Toad + Lanac'toor's Lab 拉娜的實驗室](softworld_images/sw26-039.jpg)
+![Lanac'toor's Lab 拉娜的實驗室(臨摹地圖)](softworld_images/maps_svg/sw26-039_lanactoor_lab.svg)
 
 **簡介(黃泥蟾蜍城)**:處處泥濘、城牆極厚的城市。城中蟾蜍住持女巫處,只要有一雙 **Golden Boots 黃金之靴**即可助你渡過泥濘水域。找到泥水源頭後,用 **Create Wall 造牆**法術可到城中心。酒店藏有 **Ankh 護身符**。城中心半毀雕像是魔法師 **Lanac'toor(拉娜)**——被 **Namtar(納達)**變石像後敲碎,碎片(頭/手/手臂/身體共四塊)散布迪瑪大陸;重組可觸發神奇事件。
 
@@ -544,7 +551,8 @@
 
 ### 5.10 Smuggler's Cove 海盜竊穴 + The Necropolis 奈羅波裡(第 27 期起)
 
-![Smuggler's Cove 海盜竊穴 + The Necropolis 奈羅波裡](softworld_images/sw27-044.jpg)
+![The Necropolis 奈羅波裡(臨摹地圖)](softworld_images/maps_svg/sw27-044_necropolis.svg)
+![Smuggler's Cove 海盜竊穴(臨摹地圖)](softworld_images/maps_svg/sw27-044_smugglers_cove.svg)
 
 **簡介(海盜竊穴)**:位於黃泥蟾蜍城海邊。取得藏在此的寶箱需高 Lockpick 開鎖或 Pick Pocket 扒竊。藏在此的 **Jade Eye 翠玉之眼**要留好(後面矮人城堡會用到)。
 
@@ -583,7 +591,7 @@
 
 ### 5.11 Magan Underworld 瑪根地底世界(大圖)
 
-![Magan Underworld 瑪根地底世界 大圖](softworld_images/sw27-045.jpg)
+![Magan Underworld 瑪根地底世界(臨摹地圖)](softworld_images/maps_svg/sw27-045_magan_underworld.svg)
 
 **簡介**:一個龐大的地底神祕世界,上面有許多出入口連往地面,怪物多半很強。主軸任務:取得 **Sword of Freedom 自由之劍**。關鍵地名/詞:Namtar's Pit 納達之坑/深淵、Well of Souls 靈魂之泉、Mountain of Salvation 救贖之山、Necropolis 陳屍所、Inferno 地獄之火法術、Climb 攀爬技能、Golden Boots 黃金之靴、Dwarf Forge 矮人鑄爐。
 
@@ -602,7 +610,9 @@
 
 ### 5.12 Old Dock 老碼頭 + Bridge of Exiles 放逐橋 & Snakepit 蛇窟
 
-![Old Dock 老碼頭 + Bridge of Exiles 放逐橋 + Snakepit 蛇窟](softworld_images/sw27-046.jpg)
+![Bridge of Exiles 放逐橋(臨摹地圖)](softworld_images/maps_svg/sw27-046_bridge_of_exiles.svg)
+![Old Dock 老碼頭(臨摹地圖)](softworld_images/maps_svg/sw27-046_old_dock.svg)
+![Snakepit 蛇窟(臨摹地圖)](softworld_images/maps_svg/sw27-046_snakepit.svg)
 
 **簡介(老碼頭)**:從黃泥蟾蜍城購得往孤島的船票即在此下船;可再搭船往奈羅波裡下城。此處可通往 **Nisir 尼塞山**,但需穿著 **Pilgrim's Garb 朝聖者之袍**(在 Kingshome 京雄城取得),並用 Strength 力量推門。
 
@@ -657,7 +667,8 @@
 
 ### 5.13 Dwarf Ruins & Clanhall 矮人廢墟與城堡 + Siege Camp 軍營
 
-![Dwarf Ruins & Clanhall 矮人廢墟與城堡 + Siege Camp 軍營](softworld_images/sw27-047.jpg)
+![Dwarf Clanhall 矮人城堡(臨摹地圖)](softworld_images/maps_svg/sw27-047_dwarf_clanhall.svg)
+![Dwarf Ruins 矮人廢墟(臨摹地圖)](softworld_images/maps_svg/sw27-047_dwarf_ruins.svg)
 
 **簡介(矮人廢墟與城堡)**:矮人廢墟位於國王島市南方石頭之間。城堡(Clanhall)有機關控制,把 **Jade Eye 翠玉之眼**裝到牆壁雕像上,城堡通道就會打開。進城後別亂取財物;遇 **Soften Stone 軟化石**法術可軟化石牆。救出矮人後,矮人鐵匠願幫你鑄劍(把 Skull 骷髏頭給鐵匠)——這是製自由之劍的關鍵一環。
 
@@ -693,7 +704,9 @@
 
 ### 5.14 Siege Camp 軍營 + Byzanople 拜占儂市 & 地下指揮部
 
-![Siege Camp 軍營 + Byzanople 拜占儂市 + 地下指揮部](softworld_images/sw27-048.jpg)
+![City of Byzanople 拜占儂市(臨摹地圖)](softworld_images/maps_svg/sw27-048_byzanople.svg)
+![Byzanople Dungeon 地下指揮部(臨摹地圖)](softworld_images/maps_svg/sw27-048_byzanople_dungeon.svg)
+![Siege Camp 軍營(臨摹地圖)](softworld_images/maps_svg/sw27-048_siege_camp.svg)
 
 **簡介(拜占儂市)**:城牆上殘破旗幟仍飛揚,四周圍繞納達軍隊。城牆上射下的羽箭與熱油可造成 1~5 天傷害(休息恢復)。可用 Strength 力量或撬棍開石塊下到地下指揮部。劇情見 **Prince Jordan 喬丹王子**;王子不信任你(怕是納達奸細),會給「投降 surrender」選項,拒絕後可下指揮部。
 
@@ -773,7 +786,8 @@
 
 ### 5.15 Kingshome 京雄城 & 地牢 + Freeport 自由港(起首)
 
-![Kingshome 京雄城 & 地牢 + Freeport 自由港](softworld_images/sw27-049.jpg)
+![Kingshome 京雄城(臨摹地圖)](softworld_images/maps_svg/sw27-049_kingshome.svg)
+![Kingshome Dungeon 京雄城地牢(臨摹地圖)](softworld_images/maps_svg/sw27-049_kingshome_dungeon.svg)
 
 **簡介(京雄城)**:王城。如今不准陌生人進入,一隊垃圾守衛在新城牆上把守。King 國王早已失蹤,城已荒廢,但有少數寶物。**京雄城地牢**守衛不嚴,可分批打散,值得取的東西不少。
 
@@ -821,7 +835,9 @@
 
 ### 5.16 Freeport 自由港(續)+ Royal Game Preserve 皇家專有獵區 + Scorpion Bridge 蠍橋 + College of Magic(起首)
 
-![Freeport 自由港 + Royal Game Preserve 皇家專有獵區 + Scorpion Bridge 蠍橋 + College of Magic](softworld_images/sw27-050.jpg)
+![Freeport 自由港(臨摹地圖)](softworld_images/maps_svg/sw27-050_freeport.svg)
+![Royal Game Preserve 皇家專有獵區(臨摹地圖)](softworld_images/maps_svg/sw27-050_royal_game_preserve.svg)
+![Scorpion Bridge 蠍橋(臨摹地圖)](softworld_images/maps_svg/sw27-050_scorpion_bridge.svg)
 
 **簡介(自由港續)**:由昔日英雄 **Roba 羅拔**所建。城在一座海島上,島四周海水受魔法作用而沸騰,須等傳送之劍方能入島之門。
 
@@ -863,7 +879,8 @@
 
 ### 5.17 College of Magic 魔法學院(七道測驗)+ Dragon Valley 龍谷(起首)
 
-![College of Magic 魔法學院 + Dragon Valley 龍谷](softworld_images/sw27-051.jpg)
+![College of Magic 魔法學院(臨摹地圖)](softworld_images/maps_svg/sw27-051_college_of_magic.svg)
+![Dragon Valley 龍谷(臨摹地圖)](softworld_images/maps_svg/sw27-051_dragon_valley.svg)
 
 **簡介(魔法學院)**:須通過七道測驗,才能找到 **Spectacles 光譜眼鏡**。七道測驗:
 
@@ -897,7 +914,9 @@
 
 ### 5.18 Dragon Valley 龍谷(續)+ Sunken Ruins 沉沒之城 + Pilgrim Dock 朝聖者碼頭(起首)
 
-![Dragon Valley 龍谷 + Sunken Ruins 沉沒之城 + Pilgrim Dock 朝聖者碼頭](softworld_images/sw27-052.jpg)
+![Pilgrim Dock 朝聖者碼頭(臨摹地圖)](softworld_images/maps_svg/sw27-052_pilgrim_dock.svg)
+![Sunken Ruins 沉沒之城-陸上(臨摹地圖)](softworld_images/maps_svg/sw27-052_sunken_ruins_above.svg)
+![Sunken Ruins 沉沒之城-水下(臨摹地圖)](softworld_images/maps_svg/sw27-052_sunken_ruins_below.svg)
 
 **簡介(龍谷續)**:Dragon Tooth 龍牙是不錯的武器(可攻擊 60 呎外敵人);Dragon Eye 龍眼與 Dragon Tears 龍淚也珍貴。見到 **Dragon Queen 龍后**就快回家。
 
@@ -934,7 +953,7 @@
 
 ### 5.19 Nisir 尼塞山 + Depth of Nisir 尼塞山腹(起首)
 
-![Nisir 尼塞山 + Depth of Nisir 尼塞山腹](softworld_images/sw27-053.jpg)
+![Nisir 尼塞山(臨摹地圖)](softworld_images/maps_svg/sw27-053_nisir.svg)
 
 **簡介(尼塞山)**:有兩種方式可抵達(搭朝聖船/經 Magan 地底世界)。山上可遇朝聖者(pilgrim),可要求他們把你藏起來(hiding),避開逃命(run)即可。尼塞山有永恆之神(Universal God)的神殿,可施 **Inferno 地獄之火**法術。
 
@@ -956,7 +975,7 @@
 
 ### 5.20 Depth of Nisir 尼塞山腹深處 — 決戰 Namtar 納達 + 結局
 
-![Depth of Nisir 尼塞山腹深處 決戰 Namtar 納達 + 結局](softworld_images/sw27-054.jpg)
+![Depth of Nisir 尼塞山腹(臨摹地圖)](softworld_images/maps_svg/sw27-054_depth_of_nisir.svg)
 
 **簡介(尼塞山腹深處)**:陷阱多且不規則,收到「the floor is moving」訊息要回原位。進入時施 **Mystic Vision 神祕視覺**看清地形;先到房間左側 → 向東 → 向南到底,施 Soften Stone 穿牆,再向南到底 → 再 Soften Stone,即可走到 6 號處。在原處把生命與法力補足。若未走出尼塞山,可施 **Dragon Gem 龍寶石**召喚龍后飛出。
 
