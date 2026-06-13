@@ -17,6 +17,7 @@
 // 用法: verify_op58 <bundle_dir> [max_area]
 #include <cstdio>
 #include <cstdlib>
+#include <algorithm>
 #include <map>
 #include <optional>
 #include <set>
@@ -39,6 +40,7 @@ struct Stats {
   long other_halt = 0;   // 其它未實作 opcode halt
   std::set<int> missing_tags;          // op_58 取不到的目標 tag
   std::map<int, long> missing_tag_cnt; // 各 tag 的 halt 次數
+  std::map<int, long> unimpl_hist;     // 未實作 opcode 直方圖(last_unimpl→halt 次數)
 };
 
 // 跑一關所有事件 tile;mode=0 → BEFORE(舊 11 tag、無 level-self),mode=1 → AFTER。
@@ -97,6 +99,9 @@ void run_area(const std::string& bundle, int area, res::BundleProvider& prov,
     } else if (s.halted && ip.last_unimpl() != 0 && ip.last_unimpl() != 0x58) {
       ++st.other_halt;
     }
+    // 未實作 opcode 直方圖(含 0x58;0=非未實作所致的 halt)。
+    if (s.halted && ip.last_unimpl() != 0)
+      st.unimpl_hist[ip.last_unimpl()]++;
   }
 }
 
@@ -169,6 +174,19 @@ int main(int argc, char** argv) {
   std::printf("op_58 halt:  前 %ld 次  →  後 %ld 次\n", before.op58_halt, after.op58_halt);
   std::printf("其它未實作 opcode halt:  前 %ld  →  後 %ld\n\n",
               before.other_halt, after.other_halt);
+
+  // 未實作 opcode 直方圖(AFTER):依 halt 次數排序輸出,供補齊優先排序。
+  std::printf("-- AFTER 未實作 opcode 直方圖(halt 次數,含 0x58)--\n");
+  {
+    std::vector<std::pair<int, long>> v(after.unimpl_hist.begin(),
+                                        after.unimpl_hist.end());
+    std::sort(v.begin(), v.end(),
+              [](const auto& a, const auto& b) { return a.second > b.second; });
+    if (v.empty()) std::printf("  (無)\n");
+    for (const auto& [op, n] : v)
+      std::printf("  op_%02X x%ld\n", op, n);
+    std::printf("\n");
+  }
 
   if (!track.missing_tags.empty()) {
     std::printf("-- AFTER 殘餘 op_58 失敗目標 tag 分類 --\n");
