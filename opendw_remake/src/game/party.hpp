@@ -54,6 +54,13 @@ public:
   // 從原始位元組(N×512)建立(供測試)。
   static Party from_records(const std::vector<std::uint8_t>& bytes);
 
+  // 從一組 512B 原始 record 建立(供讀檔還原;不過濾空槽 → 與存檔內容一一對應)。
+  static Party from_raw_records(
+      const std::vector<std::array<std::uint8_t, 512>>& records);
+
+  // 取每名角色的完整 512B 原始 record(供存檔;與 at(i) 同順序)。
+  std::vector<std::array<std::uint8_t, 512>> raw_records() const;
+
   std::size_t size() const { return members_.size(); }
   const CharacterRecord& at(std::size_t i) const { return members_.at(i); }
 
