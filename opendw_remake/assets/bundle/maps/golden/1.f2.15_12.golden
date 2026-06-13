@@ -1,0 +1,16 @@
+# golden_compose lvl=/home/anr2/tmp/longcat/opendw_dragon_wars_cht/opendw_remake/assets/bundle/maps/1.lvl facing=2 x=15 y=12
+# di : sample(x,y) word_11C6 : 5A56[di] 5A56[di+0xC]
+di=11 (x= 15 y= 11) 11C6=0x1000 : wall=0x00 ground=0x10
+di=10 (x= 15 y= 12) 11C6=0x1000 : wall=0x00 ground=0x10
+di= 9 (x= 15 y= 13) 11C6=0x1000 : wall=0x00 ground=0x10
+di= 8 (x= 14 y= 11) 11C6=0x1000 : wall=0x11 ground=0x10
+di= 7 (x= 14 y= 12) 11C6=0x1001 : wall=0x00 ground=0x10
+di= 6 (x= 14 y= 13) 11C6=0x1000 : wall=0x00 ground=0x10
+di= 5 (x= 13 y= 11) 11C6=0x1010 : wall=0x00 ground=0x10
+di= 4 (x= 13 y= 12) 11C6=0x1000 : wall=0x00 ground=0x10
+di= 3 (x= 13 y= 13) 11C6=0x1000 : wall=0x00 ground=0x10
+di= 2 (x= 12 y= 11) 11C6=0x1000 : wall=0x00 ground=0x10
+di= 1 (x= 12 y= 12) 11C6=0x1000 : wall=0x00 ground=0x10
+di= 0 (x= 12 y= 13) 11C6=0x1200 : wall=0x00 ground=0x12
+5A56[0..11] = 00 00 00 00 00 00 00 00 11 00 00 00
+5A56[12..23]= 12 10 10 10 10 10 10 10 10 10 10 10

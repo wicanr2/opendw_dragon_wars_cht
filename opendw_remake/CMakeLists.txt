@@ -41,7 +41,8 @@ add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
-add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp)
+add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp src/render/viewport_compose.cpp)
+target_link_libraries(dwr_render PUBLIC dwr_resource)
 add_library(dwr_i18n STATIC src/i18n/strings.cpp src/i18n/string_table.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
@@ -107,3 +108,7 @@ target_link_libraries(level_events PRIVATE dwr_vm)
 # viewport 解碼對拍:remake ViewportDecoder vs golden .vpmem (byte-for-byte)。
 add_executable(verify_viewport tools/verify/verify_viewport.cpp)
 target_link_libraries(verify_viewport PRIVATE dwr_render)
+
+# viewport 組景 step1 對拍:remake sample_fov vs golden_compose (FOV 取樣 + 牆 nibble)。
+add_executable(verify_fov tools/verify/verify_fov.cpp)
+target_link_libraries(verify_fov PRIVATE dwr_render dwr_resource)
