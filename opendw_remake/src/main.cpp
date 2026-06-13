@@ -11,6 +11,7 @@
 //
 // 用法:opendw_remake [--bundle DIR] [--font RAW] [--atlas ATLAS] [--menu TSV]
 //                     [--pc N] [--sprite NAME] [--frames N] [--dump PPM] [--press CH]
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <cctype>
@@ -25,6 +26,7 @@
 #include "render/sprite.hpp"
 #include "render/picture.hpp"
 #include "render/sdl_video.hpp"
+#include "resource/level.hpp"
 #include "i18n/strings.hpp"
 using namespace dw;
 
@@ -47,26 +49,11 @@ static void draw_mixed(render::Framebuffer& fb, const render::Font8x8& font,
 
 struct Opt { char hot; std::string label; };   // 快捷字母 + 在地化文字
 
-// F:測試地圖(真實 viewport 地圖資料抽取為後續步驟;此處先驗證移動/朝向骨架)。
-// '#'=牆 '.'=可走。16×12。
-static const char* kMap[] = {
-  "################",
-  "#....#.....#..S#",   // S = 起點(視為可走)
-  "#.##.#.###.#.#.#",
-  "#.#..#...#...#.#",
-  "#.#.####.#####.#",
-  "#.#....#......##",
-  "#.####.#.####..#",
-  "#......#.#..#..#",
-  "######.#.#.##..#",
-  "#......#.#.....#",
-  "#.######.#####.#",
-  "################",
-};
-static constexpr int kMapW = 16, kMapH = 12;
-static bool walkable(int x, int y) {
-  if (x < 0 || y < 0 || x >= kMapW || y >= kMapH) return false;
-  return kMap[y][x] != '#';
+// tile 型(word_11C8)→ framebuffer 顏色:0=void/牆、1=地面、其他=特殊/事件格。
+static std::uint8_t tile_color(std::uint8_t t) {
+  if (t == 0) return 8;            // 牆/void = 灰
+  if (t == 1) return 1;            // 地面 = 深藍
+  return (std::uint8_t)(t & 0x0F); // 特殊格 = 以 tile 值當調色盤索引(各類各色)
 }
 
 int main(int argc, char** argv) {
@@ -74,7 +61,7 @@ int main(int argc, char** argv) {
   std::string font_raw = "assets/fonts/dw8x8.bin";
   std::string atlas = "assets/fonts/cjk24.atlas";
   std::string menu_tsv = "assets/i18n/zh-TW/menu.tsv";
-  int start_pc = 20, max_frames = -1, press = 0;
+  int start_pc = 20, max_frames = -1, press = 0, map_area = -1;
   std::string dump, sprite_name, scene_name;
   for (int i = 1; i < argc; ++i) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
@@ -87,6 +74,7 @@ int main(int argc, char** argv) {
     else if (eq("--dump") && i + 1 < argc) dump = argv[++i];
     else if (eq("--sprite") && i + 1 < argc) sprite_name = argv[++i];
     else if (eq("--scene") && i + 1 < argc) scene_name = argv[++i];
+    else if (eq("--map") && i + 1 < argc) map_area = std::atoi(argv[++i]);   // 直接進某區地圖
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
   }
 
@@ -94,7 +82,7 @@ int main(int argc, char** argv) {
   if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }
   const bool scene_mode = !scene_name.empty();
   const bool sprite_mode = !sprite_name.empty();
-  const bool menu_mode = !scene_mode && !sprite_mode;
+  const bool menu_mode = !scene_mode && !sprite_mode && map_area < 0;
   render::Framebuffer fb;
 
   std::optional<render::CjkFont> cjk;
@@ -103,9 +91,24 @@ int main(int argc, char** argv) {
   int sel = 0;
   enum { S_MENU, S_BRANCH, S_GAME } state = S_MENU;
   std::string branch_label;
-  int px = 14, py = 1, dir = 3;   // 玩家位置/朝向(0=N,1=E,2=S,3=W);起點在 'S'
+  int px = 0, py = 0, dir = 1;     // 玩家位置/朝向(0=N,1=E,2=S,3=W)
   const int dx4[4] = {0, 1, 0, -1}, dy4[4] = {-1, 0, 1, 0};
   const char* dirch = "^>v<";
+  std::optional<res::Level> level;
+
+  // 進入某區地圖:載入真實關卡 .lvl + 找第一個可走格當起點
+  auto enter_map = [&](int area) {
+    level = res::Level::load_file(bundle + "/maps/" + std::to_string(area) + ".lvl");
+    if (!level) { std::fprintf(stderr, "level load failed: area %d\n", area); return false; }
+    px = py = 0; dir = 1;
+    for (int y = 0; y < level->h && py == 0 && px == 0; ++y)
+      for (int x = 0; x < level->w; ++x)
+        if (level->tile(x, y) == 1) { px = x; py = y; y = level->h; break; }
+    std::fprintf(stderr, "enter map area %d: \"%s\" %dx%d start=(%d,%d)\n",
+                 area, level->name.c_str(), level->w, level->h, px, py);
+    return true;
+  };
+  if (map_area >= 0) { if (!enter_map(map_area)) return 1; state = S_GAME; }
 
   if (scene_mode) {
     // ── E:全螢幕場景圖(從 bundle .pic 載解壓資料,title_adjust 去交錯)──
@@ -128,7 +131,7 @@ int main(int argc, char** argv) {
     sp->blit(fb, (render::kW - sp->w) / 2, (render::kH - sp->h) / 2, 6);
     font->draw_string(fb, 8, 8, sprite_name.c_str(), 15, 0);
     std::fprintf(stderr, "sprite %s %dx%d (bundle, no DATA1)\n", sprite_name.c_str(), sp->w, sp->h);
-  } else {
+  } else if (menu_mode) {
     // ── B:VM 在地化選單 → D:快捷字母選項 ──
     cjk = render::CjkFont::load(atlas);
     auto tr = i18n::Strings::load(menu_tsv);
@@ -164,7 +167,7 @@ int main(int argc, char** argv) {
     if (press) for (std::size_t i = 0; i < opts.size(); ++i)
       if (opts[i].hot == press) {
         sel = (int)i;
-        if (opts[i].hot == 'B') { px = 14; py = 1; dir = 3; state = S_GAME; }  // 開始新遊戲→地圖
+        if (opts[i].hot == 'B') { enter_map(1); state = S_GAME; }  // 開始新遊戲→波卡城
         else { state = S_BRANCH; branch_label = opts[i].label; }
       }
   }
@@ -197,23 +200,28 @@ int main(int argc, char** argv) {
     font->draw_string(fb, 16, 156, "Esc: back   Q: quit", 8, 1);
   };
   auto draw_game = [&]() {
-    // F:測試地圖俯視圖 + 玩家朝向(移動鍵對齊說明書,見 docs/CONTROLS.md)
+    // F:真實關卡俯視圖(從 .lvl 解出的 tile 格)+ 玩家朝向。移動鍵見 docs/CONTROLS.md。
     fb.clear(0);
-    const int cs = 11, ox = (render::kW - kMapW * cs) / 2, oy = 16;
-    for (int my = 0; my < kMapH; ++my)
-      for (int mx = 0; mx < kMapW; ++mx) {
-        std::uint8_t c = (kMap[my][mx] == '#') ? 8 : 1;   // 牆=灰,地=藍
-        for (int j = 1; j < cs; ++j) for (int i = 1; i < cs; ++i)
-          fb.put(ox + mx * cs + i, oy + my * cs + j, c);
+    if (!level) return;
+    int W = level->w, H = level->h;
+    int cs = std::min(11, std::min(300 / (W ? W : 1), 150 / (H ? H : 1)));
+    if (cs < 2) cs = 2;
+    int ox = (render::kW - W * cs) / 2, oy = 14;
+    for (int y = 0; y < H; ++y)
+      for (int x = 0; x < W; ++x) {
+        std::uint8_t c = tile_color(level->tile(x, y));
+        for (int j = 0; j < cs - 1; ++j) for (int i = 0; i < cs - 1; ++i)
+          fb.put(ox + x * cs + i, oy + y * cs + j, c);
       }
-    // 玩家(朝向字元)
-    font->draw_char(fb, ox + px * cs + 2, oy + py * cs + 2, (std::uint8_t)dirch[dir], 14, 1);
-    font->draw_string(fb, 8, oy + kMapH * cs + 8, "I:fwd  J/L:turn  K:door  Esc:menu", 7, 0);
+    font->draw_char(fb, ox + px * cs, oy + py * cs, (std::uint8_t)dirch[dir], 15, 0);  // 玩家
+    // 標題(關卡名為 ASCII,可用 8×8 字)+ 控制提示
+    font->draw_string(fb, 8, 4, level->name.c_str(), 14, 0);
+    font->draw_string(fb, 8, oy + H * cs + 6, "I:fwd  J/L:turn  K:door  Esc:back", 7, 0);
   };
   auto render_now = [&]() {
-    if (!menu_mode) return;
+    if (state == S_GAME) { draw_game(); return; }   // 地圖(--map 或選單 B 進入)
+    if (!menu_mode) return;                          // sprite/scene:靜態,已畫
     if (state == S_MENU) draw_menu();
-    else if (state == S_GAME) draw_game();
     else draw_branch();
   };
   render_now();
@@ -231,7 +239,18 @@ int main(int argc, char** argv) {
     vid.present(fb);
     render::Input in = vid.poll();
     if (in.quit) break;
-    if (!menu_mode) { if (in.back) break; }              // sprite 檢視:Esc/Q 離開
+    if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
+      if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
+      else {
+        if (in.left  || in.key == 'J') dir = (dir + 3) % 4;   // 左轉
+        if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // 右轉
+        if (in.up    || in.key == 'I') {                      // 前進
+          int nx = px + dx4[dir], ny = py + dy4[dir];
+          if (level && level->walkable(nx, ny)) { px = nx; py = ny; }
+        }
+        if (in.key == 'K') std::fprintf(stderr, "open door (stub)\n");
+      }
+    } else if (!menu_mode) { if (in.back) break; }       // sprite/scene 檢視:Esc/Q 離開
     else if (state == S_MENU) {
       if (in.back) break;                                // 選單按 Esc = 離開
       int n = (int)opts.size();
@@ -243,20 +262,9 @@ int main(int argc, char** argv) {
         if (trig >= 0) {
           sel = trig;
           std::fprintf(stderr, "selected [%c] %s\n", opts[trig].hot, opts[trig].label.c_str());
-          if (opts[trig].hot == 'B') { px = 14; py = 1; dir = 3; state = S_GAME; }  // 開始新遊戲→地圖
+          if (opts[trig].hot == 'B') { enter_map(1); state = S_GAME; }  // 開始新遊戲→波卡城(area 1)
           else { state = S_BRANCH; branch_label = opts[trig].label; }
         }
-      }
-    } else if (state == S_GAME) {                        // F:地圖移動(對齊說明書)
-      if (in.back) state = S_MENU;                       // Esc 返回選單
-      else {
-        if (in.left  || in.key == 'J') dir = (dir + 3) % 4;   // 左轉
-        if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // 右轉
-        if (in.up    || in.key == 'I') {                      // 前進
-          int nx = px + dx4[dir], ny = py + dy4[dir];
-          if (walkable(nx, ny)) { px = nx; py = ny; }
-        }
-        if (in.key == 'K') std::fprintf(stderr, "open door (stub)\n");
       }
     } else {                                             // S_BRANCH
       if (in.back || in.select) state = S_MENU;
