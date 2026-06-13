@@ -1,5 +1,7 @@
 #include "interpreter.hpp"
 
+#include <string>
+
 #include "../resource/text_codec.hpp"
 
 namespace dw::vm {
@@ -678,14 +680,6 @@ void Interpreter::op58_xcall() {
   s_.ax += (std::uint16_t)(s_.fetch8() << 8);
   std::uint16_t src_offset = s_.ax;
 
-  // push 返回框(si = 當前 pc;word_3AE8;dl 待定)。
-  VmState::CallFrame fr;
-  fr.script = s_.script;        // 返回後仍跑當前腳本
-  fr.pc = s_.pc;                // si = 返回 offset
-  fr.data_bytes = s_.data_bytes;
-  fr.script_res = s_.script_res;
-  fr.data_res = s_.data_res;
-
   // 載入目標資源 bytes。tag_item = 資源 tag/section。
   std::vector<std::uint8_t> bytes;
   if (!load_resource(tag_item, bytes)) {
@@ -695,7 +689,29 @@ void Interpreter::op58_xcall() {
     s_.halted = true;
     return;
   }
-  fr.dl = 0xFF;  // opendw:cache miss(resource_load)→ dl=0xFF;命中且 usage_type==2 亦 0xFF。
+
+  // --- 對齊 opendw op_58(@0x4239)的 byte-stack 紀律 ---
+  // 1) push_word(si):si = 返回 offset(當前 pc)。
+  std::uint16_t si = static_cast<std::uint16_t>(s_.pc);
+  s_.push_word(si);
+  // 2) push_byte(word_3AE8):返回後要還原的程式資源索引。
+  s_.push_byte(static_cast<std::uint8_t>(s_.script_res));
+  // 3) push_byte(dl):usage_type 旗標。remake 無 usage_type 概念 → 比照
+  //    cache-miss(resource_load)語意用 0xFF;對段落號 N 無影響(op_55 只把它 pop 丟棄)。
+  std::uint8_t dl = 0xFF;
+  s_.push_byte(dl);
+
+  // call_stack 僅用來保存「返回後要還原的 script/data bytes vector」
+  // (resource_provider 用 index 反查 section bytes 可能不可靠)。
+  // si/word_3AE8/dl 的「值」已在 byte-stack 上(供 op_55 peek);
+  // op_59 會先從 byte-stack pop 回它們(平衡堆疊),再從 call_stack 取回 bytes。
+  VmState::CallFrame fr;
+  fr.script = std::move(s_.script);   // 返回後仍跑當前腳本 bytes
+  fr.pc = si;                          // si = 返回 offset(備援)
+  fr.data_bytes = std::move(s_.data_bytes);
+  fr.script_res = s_.script_res;
+  fr.data_res = s_.data_res;
+  fr.dl = dl;
   s_.call_stack.push_back(std::move(fr));
 
   // 切到目標資源:word_3AE8 = word_3AEA = 目標 → running_script/word_3ADF 同一份。
@@ -709,14 +725,26 @@ void Interpreter::op58_xcall() {
 // op_59:op_58 的返回(對照 op_59 @0x41C8)。pop context(dl/word_3AE8/si),切回上層。
 void Interpreter::op59_xret() {
   if (s_.call_stack.empty()) { s_.halted = true; return; }  // 無對應 call → 收尾
+
+  // --- 對齊 opendw op_59(@0x41C8)的 byte-stack 紀律 ---
+  // opendw:ah!=stack[sp] → resource_set_flagged(word_3AE8)。remake 不模擬
+  //   資源 flagged 狀態,略此副作用,但仍須照樣 pop 以平衡堆疊。
+  // cpu.ax = pop_word(); ah = ax>>8; word_3AE8 = word_3AEA = ah;(dl 在低位,丟棄)
+  std::uint16_t w = s_.pop_word();
+  std::uint8_t restored_script_res = (w & 0xFF00) >> 8;  // = 原 word_3AE8
+  // si = pop_word();
+  std::uint16_t si = s_.pop_word();
+
   VmState::CallFrame fr = std::move(s_.call_stack.back());
   s_.call_stack.pop_back();
-  // opendw 的 ah!=stack[sp] 檢查屬資源旗標處理,remake 不模擬資源 flagged 狀態,略。
+
+  // opendw 靠 word_3AE8 重新 resolve running_script(populate_3ADD_and_3ADF)。
+  // remake 用 call_stack 保存的 bytes vector 還原(等價、且不依賴 provider 反查)。
   s_.script = std::move(fr.script);
   s_.data_bytes = std::move(fr.data_bytes);
-  s_.script_res = fr.script_res;
+  s_.script_res = restored_script_res;  // 對齊 opendw:來自 byte-stack pop 的 word_3AE8
   s_.data_res = fr.data_res;
-  s_.pc = fr.pc;  // si:返回 offset
+  s_.pc = si;  // si:返回 offset(來自 byte-stack)
 }
 
 // run_script(對照 run_script @0x6413):push run_script 框、切資源、從 src_offset 跑到 op_5A。
@@ -1045,6 +1073,16 @@ void Interpreter::op89_wait_event() {
   s_.halted = true; // 無輸入可分支 → 結束該事件段
 }
 
+// op_81(print_number @0x48C5):cpu.ax = word_3AE2; print_number(ax)。
+//   opendw 走 convert_number_to_string → string_byte_handler_func(append_string),
+//   把數字字元 emit 到與文字同一條輸出流。remake 走 i18n/UTF-8,不複刻 0xB0-based
+//   DOS digit 編碼,直接把 N(=r2)轉十進位字串,以哨兵 offset(kNumberSink)emit,
+//   讓呼叫端可辨識「這是數字,不是字典字串」。
+void Interpreter::op81_print_number() {
+  s_.ax = s_.r2;
+  if (msg_sink_) msg_sink_(kNumberSink, std::to_string(s_.r2));
+}
+
 // op_16:bx = gs[op] | gs[op+1]<<8 + r4;data[bx] = r2(byte;word 模式再寫 +1)。
 void Interpreter::op16_data_gsoff_from_r2() {
   std::uint8_t al = s_.fetch8();
@@ -1170,6 +1208,7 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x7C] = &Interpreter::op7C_ui_header_data;
   t[0x88] = &Interpreter::op88_wait_escape;
   t[0x89] = &Interpreter::op89_wait_event;
+  t[0x81] = &Interpreter::op81_print_number;
   return t;
 }();
 #undef OP

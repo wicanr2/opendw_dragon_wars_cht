@@ -17,6 +17,11 @@ public:
 
   // 字串輸出 sink:VM 執行 op_77/78/7B 時,以 (字串起始 offset, 解出的英文原文) 回呼。
   // 呼叫端據 (section,offset) 查 bundle 字串表 / i18n,渲染在地化文字。
+  //
+  // op_81(print_number)也走同一條 sink,但 offset 用哨兵值 kNumberSink:
+  //   呼叫端見到此 offset 即知「字串本身就是已格式化的十進位數字(段落號 N)」,
+  //   不要再拿去查字典 / i18n,直接輸出即可。
+  static constexpr std::size_t kNumberSink = static_cast<std::size_t>(-1);
   using MessageSink = std::function<void(std::size_t offset, const std::string&)>;
   void set_message_sink(MessageSink sink) { msg_sink_ = std::move(sink); }
 
@@ -159,6 +164,7 @@ private:
   // --- 互動等待:headless 抽取無鍵盤輸入,讀完 operand 後停止該段(非整體 halt 邏輯) ---
   void op88_wait_escape();     // 0x88  wait_for_escape_key:抽取期視為段落結束
   void op89_wait_event();      // 0x89  wait_event:讀 flags(2B)後結束該段(無輸入可分支)
+  void op81_print_number();    // 0x81  print_number:把 word_3AE2(N)以十進位 emit
 
   // 切換 running_script / word_3ADF 到資源 idx(對照 populate_3ADD_and_3ADF)。
   // 用 resource_provider 取 bytes;成功回 true。

@@ -29,6 +29,7 @@
 #include "render/viewport_compose.hpp"
 #include "render/sdl_video.hpp"
 #include "resource/level.hpp"
+#include "resource/paragraphs.hpp"
 #include "i18n/strings.hpp"
 using namespace dw;
 
@@ -123,6 +124,12 @@ int main(int argc, char** argv) {
   // 事件 script 經 op_58 載入的 tag 聯集已預先抽進 bundle(見 manifest event_script_tags)。
   res::BundleProvider event_provider(bundle);
 
+  // Read paragraph 段落書(防拷手冊繁中全文):隨 locale 載 bundle/paragraphs/<locale>/。
+  // 缺檔則 book 為空 → run_event 回退顯示「Read paragraph N」(對齊原版)。
+  auto book = res::ParagraphBook::load(bundle + "/paragraphs", locale);
+  if (book) std::fprintf(stderr, "paragraphs: loaded %zu (locale=%s)\n", book->size(), locale.c_str());
+  else std::fprintf(stderr, "paragraphs: none for locale=%s (fallback to 'Read paragraph N')\n", locale.c_str());
+
   // 踩到特殊格 → 跑該關事件腳本,回傳 emit 的文字(對拍 opendw op_71/run_level_script)。
   // 對齊 level_events:設 script_res/data_res = level_res,並掛 resource_provider 讓 op_58 能跑。
   auto run_event = [&](std::uint8_t tv) -> std::string {
@@ -135,19 +142,45 @@ int main(int argc, char** argv) {
     st.script_res = level_res;
     st.data_res = level_res;
     st.pc = pc;
-    // op_58 / 子 script:依 tag 從 bundle 載(自包含)。
+    // op_58 / 子 script / op_0F 跨資源讀:依 tag 從 bundle 載(自包含)。
+    // Read paragraph 流程的段落號 N 是 op_0F 從「關卡資源本身」(index=level_res)
+    // 的回返 offset 讀出的;關卡資源 = 這份 .lvl,bundle/scripts 沒有它 → 直接回傳
+    // level bytes,讓 op_0F 取得正確 N(對齊 DATA1Provider 以 index 解析同一份資源)。
     st.resource_provider =
         [&](int tag) -> std::optional<std::vector<std::uint8_t>> {
+      if (tag == level_res) return level->data();
       return event_provider.load(tag);
     };
     vm::Interpreter ip(st);
     std::string out;
+    bool read_para_pending = false;   // 上一段 emit 是「Read paragraph 」前綴
     // 逐段 emit 個別在地化(tr 以單條英文原文為鍵;查不到回退英文),再以空白接起。
     // 對拍 op_71 的多條 emit:整句拼接前先翻譯,避免「拼好的長句」查不到鍵。
-    ip.set_message_sink([&](std::size_t, const std::string& s) {
+    //
+    // 防拷段落內嵌:op_78 emit「Read paragraph 」字串 → op_81 emit 段落號 N
+    // (offset == kNumberSink)。攔到 N → 從段落書取繁中原文取代整條訊息;
+    // 無段落書或查無 N 則回退顯示「Read paragraph N」(對齊原版防拷字樣)。
+    ip.set_message_sink([&](std::size_t offset, const std::string& s) {
       if (s.empty()) return;
+      if (offset == vm::Interpreter::kNumberSink) {
+        if (read_para_pending) {
+          read_para_pending = false;
+          int n = std::atoi(s.c_str());
+          std::optional<std::string> para;
+          if (book) para = book->text(n);
+          if (para) { out = *para; }                       // 顯示段落繁中原文
+          else { out += s; }                               // 回退:「Read paragraph N」
+          return;
+        }
+        if (!out.empty()) out += ' ';
+        out += s;                                           // 一般數字輸出(非段落)
+        return;
+      }
+      std::string t = tr->tr(s);
+      // 偵測「Read paragraph 」前綴(原文判定,翻譯前):此後緊接的數字即段落號。
+      if (s.rfind("Read paragraph", 0) == 0) read_para_pending = true;
       if (!out.empty()) out += ' ';
-      out += tr->tr(s);
+      out += t;
     });
     ip.run();
     return out;
@@ -331,7 +364,8 @@ int main(int argc, char** argv) {
       const std::string& z = event_msg;
       int my = hint_y + 12, mx0 = 4, mx = mx0, maxx = render::kW - 4;
       const char* p = z.c_str();
-      while (*p) {
+      // 段落可能很長(Read paragraph 全文):超出畫面底部即停(fb.put 本身已 clip)。
+      while (*p && my < render::kH) {
         std::uint32_t cp = render::utf8_next(p);
         if (cp == ' ' && mx > maxx - 24) { mx = mx0; my += 13; continue; }   // 詞界換行
         if (cp < 0x80) { font->draw_char(fb, mx, my + 2, (std::uint8_t)cp, 15, 0); mx += 8; }
@@ -362,7 +396,8 @@ int main(int argc, char** argv) {
       const std::string& z = event_msg;
       int my = 158, mx0 = 4, mx = mx0, maxx = render::kW - 4;
       const char* p = z.c_str();
-      while (*p) {
+      // 段落可能很長(Read paragraph 全文):超出畫面底部即停(fb.put 本身已 clip)。
+      while (*p && my < render::kH) {
         std::uint32_t cp = render::utf8_next(p);
         if (cp == ' ' && mx > maxx - 24) { mx = mx0; my += 13; continue; }   // 詞界換行
         if (cp < 0x80) { font->draw_char(fb, mx, my + 2, (std::uint8_t)cp, 15, 0); mx += 8; }
