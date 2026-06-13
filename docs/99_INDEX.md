@@ -68,7 +68,7 @@
 | [36_SOFTWORLD_26.md](36_SOFTWORLD_26.md) | ✅ | 《軟體世界》26 期攻略轉寫 |
 | [37_SOFTWORLD_27.md](37_SOFTWORLD_27.md) | ✅ | 《軟體世界》27 期攻略轉寫 |
 | [38_SOFTWORLD_WALKTHROUGH.md](38_SOFTWORLD_WALKTHROUGH.md) | ✅ | **《軟體世界》三期攻略 · 圖文整合版**(21 掃描頁 + 逐地點事件表 + 訊息↔手冊段落擴充) |
-| [39_SOFTWORLD_FULLTEXT_AND_MAPS.md](39_SOFTWORLD_FULLTEXT_AND_MAPS.md) | ✅ | **三期攻略 · 逐頁全文 + 切割地圖 + 重繪 SVG**(21 頁逐字轉寫 + 39 切割圖 + 39 重繪向量圖) |
+| [39_SOFTWORLD_FULLTEXT_AND_MAPS.md](39_SOFTWORLD_FULLTEXT_AND_MAPS.md) | ✅ | **三期攻略 · 逐頁全文 + 純方格切圖 + 臨摹向量圖**(21 頁逐字轉寫 + 39 切圖[像素複製·無中文] + 39 potrace 臨摹 SVG) |
 
 ## 參考 / 建置 / 測試 (40–60)
 

@@ -10,7 +10,7 @@
 >
 > 遊戲地名/人名/物品/法術一律**保留英文原名 + CONTEXT 中譯**;譯名衝突一律以 `CONTEXT.md` 為準,衝突處標「待確認」不擅自定案。掃描不清處保留原轉寫的 `〔?〕`。
 >
-> **姊妹檔**:[`39_SOFTWORLD_FULLTEXT_AND_MAPS.md`](39_SOFTWORLD_FULLTEXT_AND_MAPS.md) —— 逐頁**全文逐字轉寫**(可複製)+ 每張地圖**切割掃描圖 + 重繪 SVG 向量圖**並列。本檔(38)重可讀導讀,39 重忠實存檔與素材。
+> **姊妹檔**:[`39_SOFTWORLD_FULLTEXT_AND_MAPS.md`](39_SOFTWORLD_FULLTEXT_AND_MAPS.md) —— 逐頁**全文逐字轉寫**(可複製)+ 每張地圖**純方格切圖(像素複製、無中文)+ potrace 臨摹高畫質向量圖**並列。本檔(38)重可讀導讀,39 重忠實存檔與素材。
 
 ---
 
