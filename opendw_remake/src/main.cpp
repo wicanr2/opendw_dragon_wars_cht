@@ -35,6 +35,7 @@
 #include "render/picture.hpp"
 #include "render/viewport.hpp"
 #include "render/viewport_compose.hpp"
+#include "render/minimap.hpp"
 #include "render/sdl_video.hpp"
 #include "resource/level.hpp"
 #include "resource/paragraphs.hpp"
@@ -222,6 +223,8 @@ int main(int argc, char** argv) {
   int read_para = -1;             // --read-para N:直接開段落 N 進捲動 overlay(headless 驗證長段落)
   int para_scroll = 0;            // --para-scroll N:dump 前先「逐頁」下捲 N 次(headless 驗證跨頁無遺漏)
   int char_sheet = -1;            // --char-sheet N:直接開第 N 名(1-based)角色屬性表(headless 驗證)
+  int automap_area = -1;          // --automap N:headless 直接開第 N 區俯視平面地圖(`?` 鍵功能)
+  int mm_seed = 0;                // --mm-seed:0=全圖探索(預設) 1=只玩家格 2=不 seed
   std::string dump, sprite_name, scene_name;
   std::string save_path = "save/slot0.sav";  // 存/讀檔預設路徑(cwd 可寫處;見 .gitignore)
   std::string load_path;        // --load <path>:啟動即讀檔還原(進遊戲)
@@ -245,6 +248,8 @@ int main(int argc, char** argv) {
     else if (eq("--sprite") && i + 1 < argc) sprite_name = argv[++i];
     else if (eq("--scene") && i + 1 < argc) scene_name = argv[++i];
     else if (eq("--map") && i + 1 < argc) map_area = std::atoi(argv[++i]);   // 直接進某區地圖
+    else if (eq("--automap") && i + 1 < argc) automap_area = std::atoi(argv[++i]);  // headless 開俯視地圖
+    else if (eq("--mm-seed") && i + 1 < argc) mm_seed = std::atoi(argv[++i]); // 探索旗標 seeding
     else if (eq("--at") && i + 2 < argc) { at_x = std::atoi(argv[++i]); at_y = std::atoi(argv[++i]); }  // 玩家落點(測試)
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
     else if (eq("--msg-page") && i + 1 < argc) msg_page = std::atoi(argv[++i]);   // 訊息檢視先翻到第 N 頁再 dump
@@ -267,8 +272,9 @@ int main(int argc, char** argv) {
   const bool scene_mode = !scene_name.empty();
   const bool sprite_mode = !sprite_name.empty();
   const bool encounter_mode = encounter_id >= 0;
+  const bool automap_mode = automap_area >= 0;
   const bool menu_mode = !scene_mode && !sprite_mode && !viewport_mode &&
-                         !encounter_mode && map_area < 0;
+                         !encounter_mode && map_area < 0 && !automap_mode;
   render::Framebuffer fb;
 
   // 多國語系:i18n 字串表由 locale 推導,F4 可即時重載切換。
@@ -316,7 +322,7 @@ int main(int argc, char** argv) {
   std::string header, header_en;   // header_en = 提示英文源(F4 重譯)
   std::vector<Opt> opts;
   int sel = 0;
-  enum { S_MENU, S_BRANCH, S_GAME, S_COMBAT } state = S_MENU;
+  enum { S_MENU, S_BRANCH, S_GAME, S_COMBAT, S_MAP } state = S_MENU;
   std::string branch_label, branch_label_en;   // branch 英文源(F4 重譯)
 
   // F4 切語系後,用各 widget 暫存的英文源重新 tr() 在地化(選單/branch/事件)。
@@ -586,6 +592,12 @@ int main(int argc, char** argv) {
     }
   }
 
+  // --automap N:headless 直接進第 N 區的俯視平面地圖(`?` 鍵功能)。
+  if (automap_mode) {
+    if (!enter_map(automap_area)) return 1;
+    state = S_MAP;
+  }
+
   // ── --selftest-save:headless round-trip 自測(不開 SDL,印 PASS/FAIL 後結束)──
   // 流程:進 area 1 → 走幾步 + 改 game_state/party → 存檔A → 讀回 → 再存檔B
   //       → 逐欄位比對(area/x/y/facing/game_state[256]/party records)且 A、B byte-for-byte 相同。
@@ -652,6 +664,17 @@ int main(int argc, char** argv) {
 
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
   render::ComponentStore comps(bundle + "/components");
+
+  // 俯視平面地圖(`?` 鍵 → S_MAP)。與第一人稱共用 comps;載 minimap/玩家標記模板。
+  render::Minimap minimap;
+  bool minimap_ok = minimap.load_templates(bundle + "/viewport/minimap.bin",
+                                           bundle + "/viewport/data6820.bin");
+  bool minimap_dirty = true;   // px/py 或 area 變動後需重畫;進 S_MAP 時觸發一次。
+  auto minimap_seed = [&]() {
+    return mm_seed == 1 ? render::Minimap::Seed::kPlayer
+         : mm_seed == 2 ? render::Minimap::Seed::kNone
+                        : render::Minimap::Seed::kAll;
+  };
   std::vector<std::uint8_t> vpt[4];
   bool vpt_ok = false;
   if (fp_mode) {
@@ -1140,6 +1163,21 @@ int main(int argc, char** argv) {
       tl.add(8, 150, "I:fwd  J/L:turn  K:door  V:stats  S:save  Esc:back", 7, PX_UI);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
+  // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:
+  //   Minimap::render 組 minimap viewport_memory(已對拍 golden 36864B),
+  //   再 blit 到 framebuffer 左上(對齊原版 draw_rectangle(1,0,39,192) 清空區)。
+  auto draw_automap = [&]() {
+    fb.clear(0);
+    if (!level) return;
+    if (minimap_ok && minimap_dirty) {
+      minimap.render(*level, px, py, comps, minimap_seed());
+      minimap_dirty = false;
+    }
+    if (minimap_ok) minimap.to_framebuffer(fb, /*ox=*/1, /*oy=*/8, /*rows=*/0xC0);
+    if (!para.active) tl.add(8, 2, level->name, 14, PX_UI);   // 文字層:關卡名
+    add_lang_badge();
+    tl.add(8, 188, tr.tr("Map  -  Esc: back"), 7, PX_UI);     // 圖例(i18n)
+  };
   // sprite/scene/viewport 靜態檢視:像素層已於前面建好;文字層每幀補上標籤。
   auto draw_static_text = [&]() {
     if (sprite_mode) tl.add(8, 4, sprite_name, 15, PX_UI);
@@ -1147,6 +1185,7 @@ int main(int argc, char** argv) {
   auto render_now = [&]() {
     tl.clear();                                      // 每幀重建文字層
     if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面
+    if (state == S_MAP) { draw_automap(); return; }       // 俯視平面地圖(`?`)
     if (state == S_GAME) {
       if (fp_mode) draw_game_fp(); else draw_game();
       if (msg.active) draw_msg_overlay();            // 一般事件訊息框疊在地圖/viewport 上層
@@ -1266,8 +1305,19 @@ int main(int argc, char** argv) {
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;                                          // 戰鬥期間不處理移動
     }
+    // 俯視平面地圖(S_MAP):Esc / `?` 關閉回遊戲;--automap headless 直接 dump 後退出。
+    if (state == S_MAP) {
+      if (in.back || in.key == '?') {
+        if (automap_mode) break;        // --automap headless:dump 完即離開
+        state = S_GAME;
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;
+    }
     if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
       if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
+      // `?`:顯示俯視平面地圖(手冊)。進 S_MAP;觸發重畫。
+      else if (in.key == '?') { minimap_dirty = true; state = S_MAP; }
       // S=儲存遊戲(手冊):寫檔 + 訊息提示(i18n「已儲存」/「存檔失敗」)。
       else if (in.key == 'S') {
         bool ok = do_save();

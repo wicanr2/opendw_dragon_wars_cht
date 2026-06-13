@@ -19,6 +19,10 @@
 
 ## 狀態
 - ✅ 資料層抽出(本目錄,自包含)。
-- ⏳ 描線核心 port(`decode_viewport_data` 等)→ 先以 minimap(`?` 平面地圖)為首個可
-  golden 對拍的 in-game 畫面目標,再推進第一人稱主視圖。UI 框件(com 0x6AE0,`ui_pieces`)
-  另行抽取。
+- ✅ 描線核心 port(`decode_viewport_data` 等)完成,第一人稱主視圖 byte-for-byte 對拍。
+- ✅ **minimap(`?` 俯視平面地圖)**已 port + byte-for-byte 對拍:
+  - `minimap.bin`(com 0x695C)= minimap 每格空地磚模板,`draw_minimap_segment` 用。
+  - `data6820.bin`(com 0x6820)= 玩家位置標記,`draw_minimap_from_data6820` 用。
+  - 實作 `src/render/minimap.{hpp,cpp}`;golden `tools_build/minimap_golden/`;
+    ctest `verify_automap_l1`(area 1 三點 PASS);截圖 `docs/automap_demo/`。
+- ⏳ UI 框件(com 0x6AE0,`ui_pieces`)另行抽取。
