@@ -46,7 +46,7 @@ static std::vector<std::string> lines_of(const std::string& s) {
   o.push_back(c); return o;
 }
 
-struct Opt { char hot; std::string label; };   // 快捷字母 + 在地化文字
+struct Opt { char hot; std::string label; std::string en; };  // 快捷字母 + 在地化文字 + 英文源(F4 重譯用)
 
 // tile 型(word_11C8)→ framebuffer 顏色:0=void/牆、1=地面、其他=特殊/事件格。
 static std::uint8_t tile_color(std::uint8_t t) {
@@ -58,7 +58,10 @@ static std::uint8_t tile_color(std::uint8_t t) {
 int main(int argc, char** argv) {
   std::string bundle = "assets/bundle";
   std::string font_raw = "assets/fonts/dw8x8.bin";
-  std::string locale = "zh-TW";   // 多國語系:i18n 取 assets/i18n/<locale>/;未來 ja 等
+  // 多國語系:F4 即時循環切換。清單固定 {zh-TW, en, ja};--locale 設定起始語系。
+  // 加語言 = 在此清單加一項 + 加 assets/i18n/<locale>/ 資料夾,不改邏輯。
+  const std::vector<std::string> locales = {"zh-TW", "en", "ja"};
+  std::string locale = "zh-TW";   // i18n 取 assets/i18n/<locale>/(可 --locale 改起始)
   std::string menu_tsv;           // 空 = 由 locale 推導
   // 文字層 host TTF(雙層渲染);可 --font-ttf 覆寫(為日後日文/Noto 留路)。
   std::string font_ttf = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc";
@@ -96,21 +99,55 @@ int main(int argc, char** argv) {
   const bool menu_mode = !scene_mode && !sprite_mode && !viewport_mode && map_area < 0;
   render::Framebuffer fb;
 
-  // 多國語系:i18n 字串表由 locale 推導(可 --locale ja 切換)。
-  // 文字渲染改走 SDL2_ttf 高解析文字層(雙層),不再用 cjk24 atlas。
-  if (menu_tsv.empty()) menu_tsv = "assets/i18n/" + locale + "/menu.tsv";
-  auto tr = i18n::Strings::load(menu_tsv);          // tr() 查不到則回退英文 → 未翻譯也能顯示
-  if (!tr) { std::fprintf(stderr, "i18n load failed (locale=%s)\n", locale.c_str()); return 1; }
-  // 併入事件文字譯表(events.tsv):踩到事件格時的在地化來源(同 locale)。可缺檔。
-  std::string events_tsv = "assets/i18n/" + locale + "/events.tsv";
-  if (tr->merge(events_tsv))
-    std::fprintf(stderr, "i18n: merged %s (total %zu)\n", events_tsv.c_str(), tr->size());
+  // 多國語系:i18n 字串表由 locale 推導,F4 可即時重載切換。
+  // 文字渲染走 SDL2_ttf 高解析文字層(雙層,wqy-zenhei 通吃中/日 kana+kanji)。
+  //   zh-TW:繁中 TSV;en:passthrough(TSV 無條目 → tr() 回退英文源);
+  //   ja:示範日文 TSV(其餘回退英文)。缺檔不崩潰,退回空表(全英文 passthrough)。
+  const bool locale_overridden = !menu_tsv.empty();   // 顯式 --menu 則不隨 F4 改
+  // 目前語系字串表(tr() 查無 → 回退英文)+ 段落書,皆隨 locale 重載。
+  i18n::Strings tr;
+  std::optional<res::ParagraphBook> book;
+  std::string locale_tag;   // 角落指示用(繁中 / EN / 日)
+  // 找起始 locale 在清單中的索引(--locale 指定);找不到視為自訂,從 0 開始循環。
+  int locale_idx = 0;
+  for (std::size_t i = 0; i < locales.size(); ++i)
+    if (locales[i] == locale) { locale_idx = (int)i; break; }
 
-  std::string header;
+  // 載入指定 locale 的字串表(menu + events)+ 段落書。供啟動與 F4 重載共用。
+  auto load_locale = [&](const std::string& loc) {
+    locale = loc;
+    std::string mtsv = locale_overridden ? menu_tsv : ("assets/i18n/" + loc + "/menu.tsv");
+    auto loaded = i18n::Strings::load(mtsv);
+    tr = loaded ? *loaded : i18n::Strings{};          // 缺檔 → 空表(全英文 passthrough)
+    std::string etsv = "assets/i18n/" + loc + "/events.tsv";
+    if (tr.merge(etsv))
+      std::fprintf(stderr, "i18n: merged %s (total %zu)\n", etsv.c_str(), tr.size());
+    // Read paragraph 段落書(隨 locale);缺檔則回退「Read paragraph N」。
+    book = res::ParagraphBook::load(bundle + "/paragraphs", loc);
+    if (book) std::fprintf(stderr, "paragraphs: loaded %zu (locale=%s)\n", book->size(), loc.c_str());
+    else std::fprintf(stderr, "paragraphs: none for locale=%s (fallback to 'Read paragraph N')\n", loc.c_str());
+    // 角落語系指示(可讀短標)。
+    if (loc == "zh-TW") locale_tag = "[繁中]";
+    else if (loc == "en") locale_tag = "[EN]";
+    else if (loc == "ja") locale_tag = "[日]";
+    else locale_tag = "[" + loc + "]";
+    std::fprintf(stderr, "locale = %s %s\n", loc.c_str(), locale_tag.c_str());
+  };
+  load_locale(locales.empty() ? locale : locales[locale_idx]);
+
+  std::string header, header_en;   // header_en = 提示英文源(F4 重譯)
   std::vector<Opt> opts;
   int sel = 0;
   enum { S_MENU, S_BRANCH, S_GAME } state = S_MENU;
-  std::string branch_label;
+  std::string branch_label, branch_label_en;   // branch 英文源(F4 重譯)
+
+  // F4 切語系後,用各 widget 暫存的英文源重新 tr() 在地化(選單/branch/事件)。
+  auto relocalize = [&]() {
+    if (!header_en.empty()) header = tr.tr(header_en);
+    for (auto& o : opts) o.label = tr.tr(o.en);
+    if (!branch_label_en.empty()) branch_label = tr.tr(branch_label_en);
+    // 事件文字:重跑該關事件腳本(在地化來源已換)。其餘畫面即時重繪自動套用。
+  };
   int px = 0, py = 0, dir = 1;     // 玩家位置/朝向(0=N,1=E,2=S,3=W)
   const int dx4[4] = {0, 1, 0, -1}, dy4[4] = {-1, 0, 1, 0};
   const char* dirch = "^>v<";
@@ -124,11 +161,7 @@ int main(int argc, char** argv) {
   // 事件 script 經 op_58 載入的 tag 聯集已預先抽進 bundle(見 manifest event_script_tags)。
   res::BundleProvider event_provider(bundle);
 
-  // Read paragraph 段落書(防拷手冊繁中全文):隨 locale 載 bundle/paragraphs/<locale>/。
-  // 缺檔則 book 為空 → run_event 回退顯示「Read paragraph N」(對齊原版)。
-  auto book = res::ParagraphBook::load(bundle + "/paragraphs", locale);
-  if (book) std::fprintf(stderr, "paragraphs: loaded %zu (locale=%s)\n", book->size(), locale.c_str());
-  else std::fprintf(stderr, "paragraphs: none for locale=%s (fallback to 'Read paragraph N')\n", locale.c_str());
+  // 段落書 book 已於 load_locale 載入(隨 F4 切語系重載)。
 
   // 踩到特殊格 → 跑該關事件腳本,回傳 emit 的文字(對拍 opendw op_71/run_level_script)。
   // 對齊 level_events:設 script_res/data_res = level_res,並掛 resource_provider 讓 op_58 能跑。
@@ -176,7 +209,7 @@ int main(int argc, char** argv) {
         out += s;                                           // 一般數字輸出(非段落)
         return;
       }
-      std::string t = tr->tr(s);
+      std::string t = tr.tr(s);
       // 偵測「Read paragraph 」前綴(原文判定,翻譯前):此後緊接的數字即段落號。
       if (s.rfind("Read paragraph", 0) == 0) read_para_pending = true;
       if (!out.empty()) out += ' ';
@@ -294,11 +327,11 @@ int main(int argc, char** argv) {
     std::vector<std::string> en;
     for (auto& ln : lines_of(menu)) if (!ln.empty()) en.push_back(ln);
     std::size_t first_opt = 0;
-    if (en.size() > 1) { header = tr->tr(en[0]); first_opt = 1; }   // 第一行為提示
+    if (en.size() > 1) { header_en = en[0]; header = tr.tr(en[0]); first_opt = 1; }   // 第一行為提示
     for (std::size_t i = first_opt; i < en.size(); ++i) {
       char hot = 0;
       for (char ch : en[i]) if (std::isalpha((unsigned char)ch)) { hot = std::toupper((unsigned char)ch); break; }
-      opts.push_back({hot, tr->tr(en[i])});
+      opts.push_back({hot, tr.tr(en[i]), en[i]});   // 存英文源供 F4 重譯
     }
     std::fprintf(stderr, "menu: header=\"%s\" options=%zu (hotkeys:", header.c_str(), opts.size());
     for (auto& o : opts) std::fprintf(stderr, " %c", o.hot ? o.hot : '?');
@@ -309,7 +342,7 @@ int main(int argc, char** argv) {
       if (opts[i].hot == press) {
         sel = (int)i;
         if (opts[i].hot == 'B') { enter_map(1); state = S_GAME; }  // 開始新遊戲→波卡城
-        else { state = S_BRANCH; branch_label = opts[i].label; }
+        else { state = S_BRANCH; branch_label = opts[i].label; branch_label_en = opts[i].en; }
       }
   }
 
@@ -326,8 +359,13 @@ int main(int argc, char** argv) {
   const int PX_BODY  = 24 * scale / 3;   // CJK 內文(選單/事件/段落)
   const int PX_UI    = 16 * scale / 3;   // ASCII UI(關卡名/控制提示)
 
-  // 文字層:大標題「火龍之戰」(置於虛擬 (8,6))。
-  auto add_title = [&]() { tl.add(8, 6, "火龍之戰", 14, PX_TITLE); };
+  // 文字層:大標題走 tr("Dragon Wars")(zh→火龍之戰、en→Dragon Wars、ja→ドラゴンウォーズ)。
+  auto add_title = [&]() { tl.add(8, 6, tr.tr("Dragon Wars"), 14, PX_TITLE); };
+  // 文字層:角落語系指示 + F4 提示(每幀重繪,即時反映當前語系)。
+  auto add_lang_badge = [&]() {
+    tl.add(render::kW - 56, 2, locale_tag, 11, PX_UI);   // 右上角:[繁中]/[EN]/[日]
+    tl.add(render::kW - 78, 13, "F4:lang", 8, PX_UI * 3 / 4);
+  };
 
   // 文字層:多行段落/事件文字(虛擬座標,自動換行)。回傳是否畫滿到底。
   auto add_wrapped = [&](const std::string& z, int vx, int vy, int max_vw, int line_h,
@@ -342,6 +380,7 @@ int main(int argc, char** argv) {
   auto draw_menu = [&]() {
     fb.clear(1);
     add_title();
+    add_lang_badge();
     int y = 40;
     if (!header.empty()) { tl.add(16, y, header, 7, PX_BODY); y += 14; }
     for (std::size_t i = 0; i < opts.size(); ++i) {
@@ -358,6 +397,7 @@ int main(int argc, char** argv) {
   auto draw_branch = [&]() {
     fb.clear(1);
     add_title();
+    add_lang_badge();
     tl.add(16, 60, branch_label, 14, PX_BODY);
     tl.add(16, 110, "(game screen - to be implemented)", 7, PX_UI);
     tl.add(16, 140, "Esc: back   Q: quit", 8, PX_UI);
@@ -379,6 +419,7 @@ int main(int argc, char** argv) {
     font->draw_char(fb, ox + px * cs, oy + py * cs, (std::uint8_t)dirch[dir], 15, 0);  // 玩家(像素層)
     // 文字層:關卡名 + 控制提示 + 事件文字(自動換行)。
     tl.add(8, 2, level->name, 14, PX_UI);
+    add_lang_badge();
     int hint_y = oy + H * cs + 6;
     tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
     if (!event_msg.empty())
@@ -397,6 +438,7 @@ int main(int argc, char** argv) {
     dec.to_framebuffer(fb);   // 160×136 @ (16,8)(像素層)
     // 文字層:關卡名 + 控制提示 + viewport 下方事件/段落文字(自動換行)。
     tl.add(8, 2, level->name, 14, PX_UI);
+    add_lang_badge();
     tl.add(8, 150, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
     if (!event_msg.empty())
       add_wrapped(event_msg, 4, 158, render::kW - 8, 13, 15, PX_BODY);
@@ -427,6 +469,16 @@ int main(int argc, char** argv) {
     vid.present(fb);
     render::Input in = vid.poll();
     if (in.quit) break;
+    // F4:即時循環切換語系 → 重載字串/段落書 → 重譯所有 widget。
+    // 因每幀重繪(render_now),畫面立即變為新語言;事件文字重跑該關腳本重譯。
+    if (in.cycle_lang && !locales.empty()) {
+      locale_idx = (locale_idx + 1) % (int)locales.size();
+      load_locale(locales[locale_idx]);
+      relocalize();                                      // 選單/branch 重譯
+      if (state == S_GAME && level && last_event_tile > 1)
+        event_msg = run_event((std::uint8_t)last_event_tile);  // 事件文字換語言
+      continue;                                          // 本幀不再處理其他輸入
+    }
     if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
       if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
       else {
@@ -457,7 +509,7 @@ int main(int argc, char** argv) {
           sel = trig;
           std::fprintf(stderr, "selected [%c] %s\n", opts[trig].hot, opts[trig].label.c_str());
           if (opts[trig].hot == 'B') { enter_map(1); state = S_GAME; }  // 開始新遊戲→波卡城(area 1)
-          else { state = S_BRANCH; branch_label = opts[trig].label; }
+          else { state = S_BRANCH; branch_label = opts[trig].label; branch_label_en = opts[trig].en; }
         }
       }
     } else {                                             // S_BRANCH

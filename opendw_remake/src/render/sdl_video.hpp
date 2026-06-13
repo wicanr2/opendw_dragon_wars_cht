@@ -28,6 +28,7 @@ struct Input {
   bool left = false;     // ←
   bool right = false;    // →
   bool select = false;   // Enter / Space(輔助選取)
+  bool cycle_lang = false; // F4:即時循環切換語系(zh-TW → en → ja → …)
   int  key = 0;          // 本幀按下的字母鍵(大寫 ASCII,如 'B'/'C'/'I'/'U'…),供快捷字母
 };
 

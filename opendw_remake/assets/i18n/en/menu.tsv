@@ -1,0 +1,4 @@
+# en — passthrough locale。tr() 查無對應即回退英文原文(VM emit 的英文)。
+# 此檔刻意只放註解(無 english<TAB>chinese 條目),代表「直接用英文原文」。
+# 唯一例外:標題走 tr("Dragon Wars"),en 顯示英文原名。
+Dragon Wars	Dragon Wars
