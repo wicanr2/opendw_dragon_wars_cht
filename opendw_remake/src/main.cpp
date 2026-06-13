@@ -38,6 +38,7 @@
 #include "resource/level.hpp"
 #include "resource/paragraphs.hpp"
 #include "i18n/strings.hpp"
+#include "game/party.hpp"
 using namespace dw;
 
 static std::vector<std::string> lines_of(const std::string& s) {
@@ -211,6 +212,8 @@ int main(int argc, char** argv) {
   const int dx4[4] = {0, 1, 0, -1}, dy4[4] = {-1, 0, 1, 0};
   const char* dirch = "^>v<";
   std::optional<res::Level> level;
+  // 預設 4 人隊伍(Muskels/Theb/Elendil/Cheetah),自包含 bundle 資產;進遊戲即顯示在右側面板。
+  game::Party party = game::Party::load_default(bundle);
   int level_res = -1;             // 當前關卡資源 index(= area + 0x46;= word_3AE8)
   std::string event_msg;          // 踩到事件格時跑 script emit 的文字(原文,F4 重排用)
   int last_event_tile = -1;       // 對拍 op_71:tile 值變了才觸發
@@ -525,6 +528,8 @@ int main(int argc, char** argv) {
           fb.put(ox + x * cs + i, oy + y * cs + j, c);
       }
     font->draw_char(fb, ox + px * cs, oy + py * cs, (std::uint8_t)dirch[dir], 15, 0);  // 玩家(像素層)
+    // 右側隊伍狀態面板(同 fp 模式;像素層狀態條 + 文字層角色名)。
+    party.draw_status_panel(fb, tl, PX_UI);
     // 文字層:關卡名 + 控制提示 + 事件文字(自動換行)。
     tl.add(8, 2, level->name, 14, PX_UI);
     add_lang_badge();
@@ -544,6 +549,9 @@ int main(int argc, char** argv) {
     if (vpt_ok)
       dec.compose_frame(vpt[0].data(), vpt[1].data(), vpt[2].data(), vpt[3].data());
     dec.to_framebuffer(fb);   // 160×136 @ (16,8)(像素層)
+    // 右側隊伍狀態面板(port 自 opendw draw_player_status_panel):
+    //   像素層 = 狀態條(HP/暈眩/法力);文字層 = 角色名(PX_UI 字級)。
+    party.draw_status_panel(fb, tl, PX_UI);
     // 文字層:關卡名 + 控制提示 + viewport 下方事件/段落文字(自動換行)。
     tl.add(8, 2, level->name, 14, PX_UI);
     add_lang_badge();
