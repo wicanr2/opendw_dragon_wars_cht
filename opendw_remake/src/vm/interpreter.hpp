@@ -157,6 +157,18 @@ private:
   void op14_data_from_r2();    // 0x14  data[operand] = r2
   void op15_data_off_from_r2();// 0x15  data[operand + r4] = r2
   void op16_data_gsoff_from_r2();// 0x16 data[gs[op]+r4] = r2
+  void op18_data_gsidx_from_r2();// 0x18 data[(gs[op1]|gs[op1+1]<<8)+op2] = r2(byte/word)
+
+  // --- 乘/除法子系統(對照 engine.c word_11C0..11CC + multiply_16bit/divide_16bit)---
+  void op33_mul_gs();          // 0x33  11C2=gs[op],11C4=gs[op+2],11C0=r2 → multiply → 存 gs
+  void op34_mul_imm();         // 0x34  11C2=operand(byte/word),11C4=hi → compute_division_vars
+  void op35_div_gs();          // 0x35  11C6=gs[op],11C8=gs[op+2],11C0=r2 → divide → 存 gs
+  void op36_div_imm();         // 0x36  11C6=r2,11C0=operand(byte/word) → divide → 存 gs
+  void mul16(std::uint16_t set_11C4);  // multiply_16bit
+  void div16();                        // divide_16bit(32-bit long division)
+  void compute_division_vars();        // 11C0=r2; multiply_16bit(11C4); save_gamestate_vars
+  void save_gamestate_vars();          // 結果寫 gs[0x37..0x3A] + r2
+  void divide_and_save_results();      // divide_16bit; gs[0x3B/0x3C]=11CA; save_gamestate_vars
 
   // --- batch 9:gs 複製 + 資料資源字串 emit ---
   void op19_gs_copy();         // 0x19  gs[op2] = gs[op1](byte/word)

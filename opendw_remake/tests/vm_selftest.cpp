@@ -158,6 +158,56 @@ int main() {
           s.cf==1 && (s.flags & kCarry)==0 && s.halted);
   }
 
+  // --- batch 13:資料寫 op_18 + 乘/除法子系統 op_33/34/35/36(逐行對照 engine.c)---
+  // S: op_18 data 寫(gs 索引 + operand):gs[0x20]=0x05 → base=5;operand2=3 → di=8;
+  //    byte 模式寫 data[8]=r2 低位。先 op_09 設 r2=0x2A。
+  {
+    VmState s; s.game_state[0x20]=0x05; s.game_state[0x21]=0x00;
+    s.script={0x09,0x2A, 0x18,0x20,0x03, 0x5A};
+    s.data_bytes.assign(16,0);
+    Interpreter(s).run();
+    check("op18 data[(gs idx)+op2]=r2 (data[8]==0x2A)",
+          s.data_bytes.size()>8 && s.data_bytes[8]==0x2A && s.halted);
+  }
+
+  // T: op_34 乘法(imm):r2=6,operand=7 → 11C6 = 6*7 = 42;存 gs[0x37]=42、r2=42。
+  {
+    VmState s;
+    s.script={0x09,0x06, 0x34,0x07, 0x5A};
+    Interpreter(s).run();
+    check("op34 乘法 6*7=42 → gs[0x37]==42、r2==42",
+          s.game_state[0x37]==42 && (s.r2 & 0xFF)==42 && s.halted);
+  }
+
+  // U: op_36 除法(imm):r2=100,divisor=7 → 商 14;存 gs[0x37]=14、r2=14。
+  {
+    VmState s;
+    s.script={0x09,0x64, 0x36,0x07, 0x5A};
+    Interpreter(s).run();
+    check("op36 除法 100/7=14 → gs[0x37]==14、r2==14",
+          s.game_state[0x37]==14 && (s.r2 & 0xFF)==14 && s.halted);
+  }
+
+  // V: op_33 乘法(gs):gs[0x10..0x11]=8(11C2),gs[0x12..0x13]=0(11C4),r2=5 → 8*5=40。
+  {
+    VmState s; s.game_state[0x10]=8; s.game_state[0x11]=0;
+    s.game_state[0x12]=0; s.game_state[0x13]=0;
+    s.script={0x09,0x05, 0x33,0x10, 0x5A};
+    Interpreter(s).run();
+    check("op33 乘法 gs:8*5=40 → gs[0x37]==40",
+          s.game_state[0x37]==40 && s.halted);
+  }
+
+  // W: op_35 除法(gs):gs[0x10..0x11]=50(11C6),gs[0x12..0x13]=0(11C8),r2=4 → 50/4=12。
+  {
+    VmState s; s.game_state[0x10]=50; s.game_state[0x11]=0;
+    s.game_state[0x12]=0; s.game_state[0x13]=0;
+    s.script={0x09,0x04, 0x35,0x10, 0x5A};
+    Interpreter(s).run();
+    check("op35 除法 gs:50/4=12 → gs[0x37]==12",
+          s.game_state[0x37]==12 && s.halted);
+  }
+
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);
   return fails ? 1 : 0;
 }

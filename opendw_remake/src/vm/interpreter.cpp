@@ -592,8 +592,21 @@ void Interpreter::op5A_ret() {
     s_.halted = true;
   }
 }
-// op_8A:隨機遭遇(戰鬥);remake 尚無戰鬥 → 先 halt。
-void Interpreter::op8A_encounter() { s_.halted = true; }
+// op_8A:隨機遭遇(對照 op_8A @0x498E → trigger_random_encounter @0x4C47)。
+//   opendw 的 trigger_random_encounter 僅:byte_4F0F=怪物id、載入圖形資源、
+//   init_monster_animation、byte_4F2B=0xFF —— 全是「圖形/動畫」副作用,
+//   **不寫任何戰鬥數值到 game_state/char_data**(已逐行確認 engine.c:4818)。
+//   故 headless 結算路徑可略過圖形:只記錄怪物 id(= word_3AE2 低位)後繼續。
+//   預設(headless_encounter=false)維持 halt,既有測試/遊戲流程不變。
+void Interpreter::op8A_encounter() {
+  s_.ax = s_.r2;  // 對照 op_8A:cpu.ax = word_3AE2
+  if (s_.headless_encounter) {
+    s_.encounter_monster_id = static_cast<std::uint8_t>(s_.r2 & 0xFF);
+    // 不 halt:略過圖形載入(render leaf),讓戰鬥腳本繼續跑結算。
+    return;
+  }
+  s_.halted = true;
+}
 
 // --- batch 5:跨資源 call / 資料資源存取 / 流程 / PRNG ---
 
@@ -779,6 +792,8 @@ void Interpreter::run_script(int script_index, std::uint16_t src_offset) {
          s_.pc < s_.script.size()) {
     std::size_t at = s_.pc;
     std::uint8_t op = s_.fetch8();
+    s_.ax = op;  // 對照 opendw run_script @0x3ACF(cpu.ax = op_code; cpu.bx = cpu.ax)
+    s_.bx = op;
     if (trace_) trace_->record({at, op, s_.r2, s_.r4, s_.flags, s_.mode});
     Handler h = kImpl[op];
     if (!h) { last_unimpl_ = op; s_.halted = true; break; }
@@ -1309,6 +1324,146 @@ void Interpreter::op16_data_gsoff_from_r2() {
   }
 }
 
+// op_18(@0x3D1A):data[(gs[op1] | gs[op1+1]<<8) + op2] = r2(byte;word 模式再寫 +1)。
+//   對照 opendw op_18:di = gs[index] | gs[index+1]<<8;di += 第二 operand;
+//   word_3ADF->bytes[di] = r2 低位;若 byte_3AE1 != (ax>>8) 再寫高位。
+//   注意 word 模式判定用 (ax>>8):dispatch 已把 ax 設為 opcode(高位 0),
+//   讀第一 operand 後 ax 高位仍 0,故 byte 模式(mode=0)時不寫高位(與 oracle 一致)。
+void Interpreter::op18_data_gsidx_from_r2() {
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al;
+  std::uint16_t index = s_.ax;
+  std::uint16_t di = s_.game_state[index & 0xFF];
+  di += (std::uint16_t)(s_.game_state[(index + 1) & 0xFF] << 8);
+  al = s_.fetch8();
+  di += al;
+  s_.di = di;
+  auto& d = s_.data_bytes;
+  s_.cx = s_.r2;
+  if (di < d.size()) d[di] = s_.cx & 0xFF;
+  if (s_.mode != ((s_.ax & 0xFF00) >> 8)) {
+    if ((std::size_t)(di + 1) < d.size()) d[di + 1] = (s_.cx & 0xFF00) >> 8;
+  }
+}
+
+// ── 乘/除法子系統(逐行對照 engine.c)──────────────────────────────
+// multiply_16bit(@0x6520):11C6:11C8 = 11C2 * 11C0 (+ 11C4*11C0 高位)。
+void Interpreter::mul16(std::uint16_t set_11C4) {
+  s_.w11C4 = set_11C4;
+  std::uint32_t result = (std::uint32_t)s_.w11C2 * s_.w11C0;
+  s_.w11C6 = result & 0xFFFF;
+  s_.w11C8 = (result & 0xFFFF0000u) >> 16;
+  result = (std::uint32_t)s_.w11C4 * s_.w11C0;
+  s_.w11C8 += result & 0xFFFF;
+}
+
+// save_gamestate_vars(@0x3F2F):gs[0x39/0x3A]=11C8、gs[0x37/0x38]=11C6,r2=11C6(byte/word)。
+void Interpreter::save_gamestate_vars() {
+  set_gs(57, s_.w11C8 & 0xFF);          // gs[0x39]
+  set_gs(58, (s_.w11C8 & 0xFF00) >> 8); // gs[0x3A]
+  std::uint16_t ax = s_.w11C6;
+  set_gs(55, ax & 0xFF);                // gs[0x37]
+  set_gs(56, (ax & 0xFF00) >> 8);       // gs[0x38]
+  s_.r2 = (s_.r2 & 0xFF00) | (ax & 0xFF);
+  if (s_.mode != 0) s_.r2 = ax;         // byte_3AE1 != 0 → word
+}
+
+// compute_division_vars(@0x3F23):11C0=r2; multiply_16bit(11C4); save。
+void Interpreter::compute_division_vars() {
+  s_.w11C0 = s_.r2;
+  mul16(s_.w11C4);
+  save_gamestate_vars();
+}
+
+// divide_16bit(@0x6539):32-bit long division(11C6:11C8 / 11C0 → 商 11C6、餘 11CA:11CC)。
+void Interpreter::div16() {
+  int old_carry = 0, carry = 0;
+  s_.w11CA = 0; s_.w11CC = 0;
+  for (int i = 0; i < 0x20; ++i) {
+    carry = (s_.w11C6 & 0x8000) ? 1 : 0;
+    s_.w11C6 = (std::uint16_t)(s_.w11C6 << 1);
+    old_carry = carry;
+    carry = (s_.w11C8 & 0x8000) ? 1 : 0;
+    s_.w11C8 = (std::uint16_t)((s_.w11C8 << 1) + old_carry);
+    old_carry = carry;
+    carry = (s_.w11CA & 0x8000) ? 1 : 0;
+    s_.w11CA = (std::uint16_t)((s_.w11CA << 1) + old_carry);
+    old_carry = carry;
+    carry = (s_.w11CC & 0x8000) ? 1 : 0;
+    s_.w11CC = (std::uint16_t)((s_.w11CC << 1) + old_carry);
+    old_carry = carry;
+
+    std::uint16_t ax = s_.w11CA, old16 = ax;
+    ax = (std::uint16_t)(ax - s_.w11C0);
+    carry = (ax > old16) ? 1 : 0;
+    std::uint16_t bx = s_.w11CC; old16 = bx;
+    bx = (std::uint16_t)(bx - carry);
+    carry = (bx > old16) ? 1 : 0;
+    if (carry != 1) { s_.w11CA = ax; s_.w11CC = bx; s_.w11C6++; }
+  }
+}
+
+// divide_and_save_results(@0x...):divide; gs[0x3B/0x3C]=11CA; save。
+void Interpreter::divide_and_save_results() {
+  div16();
+  std::uint16_t ax = s_.w11CA;
+  set_gs(0x3B, ax & 0xFF);
+  set_gs(0x3C, (ax & 0xFF00) >> 8);
+  save_gamestate_vars();
+}
+
+// op_33(@0x3EF8):11C2=gs[op](word),11C4=gs[op+2](word),11C0=r2 → multiply → save。
+void Interpreter::op33_mul_gs() {
+  std::uint8_t al = s_.fetch8();
+  std::uint16_t bx = al;
+  s_.bx = bx;
+  s_.w11C2 = (std::uint16_t)(s_.game_state[bx & 0xFF] |
+                             (s_.game_state[(bx + 1) & 0xFF] << 8));
+  s_.w11C4 = (std::uint16_t)(s_.game_state[(bx + 2) & 0xFF] |
+                             (s_.game_state[(bx + 3) & 0xFF] << 8));
+  s_.w11C0 = s_.r2;
+  mul16(s_.w11C4);          // 對照 op_33:multiply_16bit(word_11C4)
+  save_gamestate_vars();
+}
+
+// op_34(@0x3F3F):11C2=operand(byte;word 模式再讀高位),11C4=高位 → compute_division_vars。
+void Interpreter::op34_mul_imm() {
+  std::uint8_t al = s_.fetch8();
+  s_.w11C2 = (s_.w11C2 & 0xFF00) | al;
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;  // dispatch 已設 ax=opcode → ah=0
+  std::uint8_t hi = ah;
+  if (s_.mode != ah) al = s_.fetch8();      // byte_3AE1 != ah → 讀高位
+  s_.w11C2 = (std::uint16_t)((al << 8) | (s_.w11C2 & 0xFF));
+  al = hi;
+  s_.w11C4 = (std::uint16_t)((hi << 8) | al);
+  compute_division_vars();
+}
+
+// op_35(@0x3F66):11C6=gs[op](word),11C8=gs[op+2](word),11C0=r2 → divide → save。
+void Interpreter::op35_div_gs() {
+  std::uint8_t al = s_.fetch8();
+  std::uint16_t bx = al;
+  s_.bx = bx;
+  s_.w11C6 = (std::uint16_t)(s_.game_state[bx & 0xFF] |
+                             (s_.game_state[(bx + 1) & 0xFF] << 8));
+  s_.w11C8 = (std::uint16_t)(s_.game_state[(bx + 2) & 0xFF] |
+                             (s_.game_state[(bx + 3) & 0xFF] << 8));
+  s_.w11C0 = s_.r2;
+  divide_and_save_results();
+}
+
+// op_36(@0x3F8D):11C6=r2,11C8=0,11C0=operand(byte;word 模式再讀高位)→ divide → save。
+void Interpreter::op36_div_imm() {
+  s_.cx = s_.r2;
+  s_.w11C6 = s_.cx;
+  std::uint8_t ah = 0;
+  s_.w11C8 = 0;
+  std::uint8_t al = s_.fetch8();
+  if (s_.mode != 0) ah = s_.fetch8();  // byte_3AE1 != 0 → word
+  s_.w11C0 = (std::uint16_t)((ah << 8) | al);
+  divide_and_save_results();
+}
+
 // --- dispatch 表 ---
 #define OP(n, m) [n] = &Interpreter::m
 const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
@@ -1411,6 +1566,11 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x14] = &Interpreter::op14_data_from_r2;
   t[0x15] = &Interpreter::op15_data_off_from_r2;
   t[0x16] = &Interpreter::op16_data_gsoff_from_r2;
+  t[0x18] = &Interpreter::op18_data_gsidx_from_r2;
+  t[0x33] = &Interpreter::op33_mul_gs;
+  t[0x34] = &Interpreter::op34_mul_imm;
+  t[0x35] = &Interpreter::op35_div_gs;
+  t[0x36] = &Interpreter::op36_div_imm;
   // batch 9:gs 複製 + 資料資源字串 emit
   t[0x19] = &Interpreter::op19_gs_copy;
   t[0x7A] = &Interpreter::op7A_emit_data_string;
@@ -1444,6 +1604,12 @@ int Interpreter::run(long max_steps) {
   while (!s_.halted && s_.pc < s_.script.size()) {
     std::size_t at = s_.pc;
     std::uint8_t op = s_.fetch8();
+    // 對照 opendw run_script(@0x3ACF):每次 dispatch 都 `cpu.ax = op_code; cpu.bx = cpu.ax`
+    //   (opcode 進 al,高位元組清 0)。多個 opcode(如 op_09 的 byte/word 模式判定
+    //   `byte_3AE1 != (ax>>8)`)依賴此清零;漏設會讓 ax 高位殘留上一指令的值,
+    //   進而多吃一個 operand 而 desync(戰鬥腳本 res3 @0x6aa 即因此誤判)。
+    s_.ax = op;
+    s_.bx = op;
     if (trace_) trace_->record({at, op, s_.r2, s_.r4, s_.flags, s_.mode});
     Handler h = kImpl[op];
     if (!h) { last_unimpl_ = op; s_.halted = true; break; }  // 未實作 → 停
