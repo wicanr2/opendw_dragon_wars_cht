@@ -286,6 +286,10 @@ int main(int argc, char** argv) {
     st.data_res = level_res;
     st.pc = pc;
     st.game_state = game_state;   // 以持久遊戲狀態為初值(旗標跨事件累積)
+    // 對拍 op_71:腳本可能讀玩家位置/朝向(gs[0]/gs[1]/gs[3])來決定分支。
+    // 進腳本前同步當前 px/py/dir 與 gs[2]=current_area,跑完由 sync_relocation 比對回寫。
+    st.game_state[0] = (std::uint8_t)px; st.game_state[1] = (std::uint8_t)py;
+    st.game_state[2] = (std::uint8_t)current_area; st.game_state[3] = (std::uint8_t)dir;
     // op_58 / 子 script / op_0F 跨資源讀:依 tag 從 bundle 載(自包含)。
     // Read paragraph 流程的段落號 N 是 op_0F 從「關卡資源本身」(index=level_res)
     // 的回返 offset 讀出的;關卡資源 = 這份 .lvl,bundle/scripts 沒有它 → 直接回傳
@@ -341,9 +345,67 @@ int main(int argc, char** argv) {
     for (int y = 0; y < level->h && py == 0 && px == 0; ++y)
       for (int x = 0; x < level->w; ++x)
         if (level->tile(x, y) == 1) { px = x; py = y; y = level->h; break; }
+    // 同步 VM game_state 的位置/區域欄位(對拍 opendw:gs[0]=X gs[1]=Y gs[2]=area gs[3]=facing)。
+    // 換場偵測(sync_relocation)以 gs[2] 為真值,故進場時即建立一致狀態。
+    game_state[0] = (std::uint8_t)px; game_state[1] = (std::uint8_t)py;
+    game_state[2] = (std::uint8_t)area; game_state[3] = (std::uint8_t)dir;
     std::fprintf(stderr, "enter map area %d: \"%s\" %dx%d start=(%d,%d)\n",
                  area, level->name.c_str(), level->w, level->h, px, py);
     return true;
+  };
+
+  // sync_relocation — 跑完事件腳本後,對拍 opendw load_level_resources 的「poll」:
+  //   事件腳本(op_71→run_level_script→run_script)用 op_12/op_11 寫 gs[2]=新 area、
+  //   gs[0]/gs[1]=入口 X/Y、gs[3]=朝向(逆向證據:probe_areaswitch,area 23→0、area 27 內部傳送)。
+  //   opendw 每幀 refresh_viewport→load_level_resources 比對 gs[2] vs gs[0x57],變了就
+  //   resource_load(area+0x46)+ read_level_metadata 重載;此處等價地比對 gs[2] vs current_area。
+  //
+  // 回傳值:0=無變化、1=同區傳送(只挪 px/py/dir)、2=換 area(重載 .lvl)、-1=因 wrap 邊界跳過。
+  //
+  // 鐵則:opendw 對 boundary flag bit1(gs[0x23]&2)的 wrap 分支與兩張已載入地圖互換
+  //   皆 exit(1) 未實作。remake 走乾淨版重載(跳過那個 decompile 缺口),但目標地圖
+  //   若標記 wrap(flag&2)則明確跳過 + log,不假裝支援。
+  auto sync_relocation = [&]() -> int {
+    int old_area = current_area;
+    int new_area = game_state[2];
+    int gx = game_state[0], gy = game_state[1], gf = game_state[3] & 3;
+    if (new_area == current_area) {
+      // 同區:事件可能傳送玩家(area 27 樓梯/陷阱)。位置變了才挪。
+      if (gx != px || gy != py || gf != dir) {
+        if (level && level->in_bounds(gx, gy) ? true : false) { px = gx; py = gy; }
+        else { px = gx; py = gy; }   // 越界值保留(對拍:gs 直接寫入,邊界檢查在移動時才夾)
+        dir = gf;
+        std::fprintf(stderr, "relocate (same area %d) -> (%d,%d) dir=%d\n", current_area, px, py, dir);
+        return 1;
+      }
+      return 0;
+    }
+    // 換 area:先看目標地圖是否走 wrap 邊界(opendw 未實作 → 跳過)。
+    auto dst = res::Level::load_file(bundle + "/maps/" + std::to_string(new_area) + ".lvl");
+    if (!dst) {
+      std::fprintf(stderr, "area switch %d->%d SKIPPED: target .lvl missing\n", current_area, new_area);
+      game_state[2] = (std::uint8_t)current_area;   // 還原,避免反覆觸發
+      return -1;
+    }
+    if (dst->flags & 0x2) {                          // gs[0x23] bit1 = wrap(opendw exit(1))
+      std::fprintf(stderr, "area switch %d->%d SKIPPED: target uses wrap boundary (flag&2), "
+                   "opendw leaves this unimplemented\n", current_area, new_area);
+      game_state[2] = (std::uint8_t)current_area;
+      return -1;
+    }
+    // 乾淨重載(等價 load_level_resources 的 resource_load(area+0x46) + read_level_metadata)。
+    if (!enter_map(new_area)) {
+      game_state[2] = (std::uint8_t)current_area;
+      return -1;
+    }
+    // 套用事件指定的入口座標/朝向(enter_map 預設落在第一可走格,這裡覆寫成腳本值)。
+    px = gx; py = gy; dir = gf;
+    game_state[0] = (std::uint8_t)px; game_state[1] = (std::uint8_t)py; game_state[3] = (std::uint8_t)dir;
+    last_event_tile = -1; event_msg.clear();         // 新區不立即重觸發進入格事件
+    std::fprintf(stderr, "AREA SWITCH %d->%d entry=(%d,%d) dir=%d%s\n",
+                 old_area, new_area, px, py, dir,
+                 (level && !level->in_bounds(px, py)) ? "  [WARN entry out of bounds]" : "");
+    return 2;
   };
 
   // ── 存檔/讀檔(對齊手冊 S=儲存遊戲 / C=繼續舊遊戲)──
@@ -404,6 +466,7 @@ int main(int argc, char** argv) {
       if (tv > 1) {
         event_msg = run_event((std::uint8_t)tv); last_event_tile = tv;
         std::fprintf(stderr, "at (%d,%d) tile=0x%02X event=\"%s\"\n", px, py, tv, event_msg.c_str());
+        sync_relocation();   // 事件可能換 area / 傳送(headless 也套用,供 --map+--at 驗證)
       }
     }
   }
@@ -887,7 +950,13 @@ int main(int argc, char** argv) {
           int tv = level->tile(px, py);
           if (tv > 1 && tv != last_event_tile) {
             event_msg = run_event((std::uint8_t)tv); last_event_tile = tv;
-            open_msg(event_msg);                         // 進訊息檢視(暫停移動)
+            // 對拍 load_level_resources:事件可能寫 gs[2]/gs[0..1]/gs[3] → 換 area 或傳送。
+            int reloc = sync_relocation();   // 2=換 area(已重載) 1=同區傳送 -1=wrap 跳過
+            if (reloc == 2) {
+              // 換 area:事件文字仍顯示(若有),但事件格判定改用新區的格子。
+              if (level) { int ntv = level->tile(px, py); last_event_tile = (ntv > 1) ? ntv : -1; }
+            }
+            if (!event_msg.empty()) open_msg(event_msg);   // 進訊息檢視(暫停移動)
           } else if (tv <= 1) { last_event_tile = -1; event_msg.clear(); }
         }
       }
