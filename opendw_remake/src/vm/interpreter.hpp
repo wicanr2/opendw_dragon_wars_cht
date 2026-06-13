@@ -20,6 +20,11 @@ public:
   using MessageSink = std::function<void(std::size_t offset, const std::string&)>;
   void set_message_sink(MessageSink sink) { msg_sink_ = std::move(sink); }
 
+  // 跨資源 call(op_58/op_5C)的資源提供者。等同直接設 VmState::resource_provider。
+  void set_resource_provider(VmState::ResourceProvider p) {
+    s_.resource_provider = std::move(p);
+  }
+
   // 執行直到 halt(op_5A)或 pc 越界。回傳執行的指令數。
   int run();
 
@@ -110,8 +115,55 @@ private:
   void op74_draw_frame();      // 0x74  畫框,消耗 4 byte(x,y,w,h)
   void op75_ui_full();         // 0x75  ui_draw_full(無 operand)
   void op76_draw_pattern();    // 0x76  draw_pattern(無 operand)
-  void op5A_ret();             // 0x5A  script 結束/返回 → halt
+  void op5A_ret();             // 0x5A  script 結束/返回(有 run_script 框→return,否則 halt)
   void op8A_encounter();       // 0x8A  隨機遭遇 → 先 halt(尚無戰鬥)
+
+  // --- batch 5:跨資源 call / 資料資源存取 / 流程 / PRNG ---
+  void op0C_r2_from_data();    // 0x0C  word_3AE2 = data[operand] & mode 高位遮罩
+  void op1C_data_store();      // 0x1C  data[operand] = imm(byte/word)
+  void op40_cmp_r4_imm();      // 0x40  cmp byte(r4), imm → 設旗標
+  void op43_jump_above();      // 0x43  (flags & 0x41)==1 → jmp
+  void op4D_prng();            // 0x4D  偽隨機:r2 = (ax*r2) 高位
+  void op58_xcall();           // 0x58  跨資源 script call(push context、切資源、跳 src_offset)
+  void op59_xret();            // 0x59  op_58 的返回(pop context)
+  void op5C_party_loop();      // 0x5C  依 gs[0x1F] 重複 run_script(子 script 迴圈)
+  void op62_scan_char();       // 0x62  掃描隊伍角色屬性(無 party 資料→消耗 operand、設旗標)
+
+  // --- batch 6:byte 堆疊存取 / 資料資源讀 / 比較 / viewport ---
+  void op03_pop_data_res();    // 0x03  pop byte → word_3AEA(切資料資源)
+  void op04_push_script_res(); // 0x04  push byte(word_3AE8)
+  void op0D_r2_from_data_off();// 0x0D  r2 = data[operand + r4](2-byte,mode 遮罩)
+  void op3F_cmp_r4_gs();       // 0x3F  cmp byte(r4) vs gs[operand] → 設旗標
+  void op55_peek_pop_r2();     // 0x55  peek word→r2、pop byte(word 模式再 pop)
+  void op56_push_r2();         // 0x56  push r2(byte/word)
+  void op8B_refresh_viewport();// 0x8B  refresh_viewport(render,VM 無副作用)
+
+  // --- batch 7:gamestate/資源讀 + r4 byte 堆疊 ---
+  void op0B_r2_from_gs_off();  // 0x0B  r2 = gs[operand + r4](2-byte,mode 遮罩)
+  void op0F_r2_from_res();     // 0x0F  從 gs 指定的資源/偏移讀 word → r2
+  void op93_push_r4();         // 0x93  push byte(r4)
+  void op94_pop_r4();          // 0x94  pop byte → r4
+
+  // --- batch 8:gs-索引資料讀寫(word_3ADF)+ gs offset 寫 ---
+  void op10_r2_from_data_gs(); // 0x10  r2 = data[gs[op1] + op2]
+  void op13_gs_off_from_r2();  // 0x13  gs[operand + r4] = r2
+  void op14_data_from_r2();    // 0x14  data[operand] = r2
+  void op15_data_off_from_r2();// 0x15  data[operand + r4] = r2
+  void op16_data_gsoff_from_r2();// 0x16 data[gs[op]+r4] = r2
+
+  // --- batch 9:gs 複製 + 資料資源字串 emit ---
+  void op19_gs_copy();         // 0x19  gs[op2] = gs[op1](byte/word)
+  void op7A_emit_data_string();// 0x7A  從 data[r2] 解字串 emit、r2=next
+  void op7C_ui_header_data();  // 0x7C  set_ui_header(data, r2):同 7A 解字串 emit
+
+  // --- 互動等待:headless 抽取無鍵盤輸入,讀完 operand 後停止該段(非整體 halt 邏輯) ---
+  void op88_wait_escape();     // 0x88  wait_for_escape_key:抽取期視為段落結束
+  void op89_wait_event();      // 0x89  wait_event:讀 flags(2B)後結束該段(無輸入可分支)
+
+  // 切換 running_script / word_3ADF 到資源 idx(對照 populate_3ADD_and_3ADF)。
+  // 用 resource_provider 取 bytes;成功回 true。
+  bool load_resource(int idx, std::vector<std::uint8_t>& out);
+  void run_script(int script_index, std::uint16_t src_offset);  // 對照 run_script
 
   // 輔助
   void set_gs(std::uint16_t idx, std::uint8_t val);
