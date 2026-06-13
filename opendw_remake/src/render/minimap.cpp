@@ -248,21 +248,32 @@ struct MinimapComposer {
     if ((byte_551E & 0x80) == 0x80) { byte_551E = 0; word_11C6 &= 0x3000; }
   }
 
+  // 標記 (xx,yy) 為 seen (對齊 oracle refresh_viewport:
+  // data_5521[word_551F+1] |= 0x8;boundary 命中 → byte_551E 觸發,視為 cf=1 不設)。
+  void mark_seen(std::uint8_t xx, std::uint8_t yy) {
+    bx = xx; dx = yy; byte_551E = 0;
+    get_map_tile_data();
+    if (byte_551E == 0 && word_551F + 1 < map.size()) map[word_551F + 1] |= 0x8;
+  }
+
   void seed_explored(Minimap::Seed seed) {
     if (seed == Minimap::Seed::kNone) return;
-    auto mark = [&](std::uint8_t xx, std::uint8_t yy) {
-      bx = xx; dx = yy; byte_551E = 0;
-      get_map_tile_data();
-      // 等同 refresh_viewport: data_5521[word_551F+1] |= 0x8 (cf==0 才設;
-      // boundary 命中時 byte_551E 觸發,word_11C6 已被改寫,視為 cf=1 不設)。
-      if (byte_551E == 0 && word_551F + 1 < map.size()) map[word_551F + 1] |= 0x8;
-    };
     if (seed == Minimap::Seed::kPlayer) {
-      mark(gx, gy);
+      mark_seen(gx, gy);
     } else {  // kAll
       for (std::uint8_t yy = 0; yy < bound_h; ++yy)
-        for (std::uint8_t xx = 0; xx < bound_w; ++xx) mark(xx, yy);
+        for (std::uint8_t xx = 0; xx < bound_w; ++xx) mark_seen(xx, yy);
     }
+    byte_551E = 0;
+  }
+
+  // 從外部 seen bitmap (row-major, w*h;非 0 = seen) 套用探索旗標。
+  void seed_from_bitmap(const std::uint8_t* seen, int sw, int sh) {
+    if (!seen) return;
+    for (int yy = 0; yy < sh && yy < bound_h; ++yy)
+      for (int xx = 0; xx < sw && xx < bound_w; ++xx)
+        if (seen[(std::size_t)yy * sw + xx])
+          mark_seen((std::uint8_t)xx, (std::uint8_t)yy);
     byte_551E = 0;
   }
 
@@ -413,32 +424,52 @@ bool Minimap::load_templates(const std::string& minimap_bin, const std::string& 
   return a && b;
 }
 
-void Minimap::render(const res::Level& level, int px, int py,
-                     const ComponentStore& comps, Seed seed) {
-  reset();
-
-  // 元件表 (= read_level_metadata + cache_resources 的選擇部分,共用第一人稱)。
-  LevelComponents lc = parse_level_components(level);
-
-  DecodeCtx ctx;
-  ctx.viewport_memory = mem.data();
-  ctx.init_offsets(0x90);
-  ctx.byte_104E = 0;
-
+namespace {
+// 共用 setup:建 composer + 載模板 (避免 render / render_with_seen 重複)。
+MinimapComposer make_composer(const res::Level& level, int px, int py,
+                              const LevelComponents& lc, const ComponentStore& comps,
+                              DecodeCtx& ctx,
+                              const std::vector<std::uint8_t>& mm_tmpl,
+                              const std::vector<std::uint8_t>& pl_tmpl) {
   MinimapComposer mc(level, lc, comps, ctx);
   mc.gx = static_cast<std::uint8_t>(px);
   mc.gy = static_cast<std::uint8_t>(py);
   mc.byte_1960 = static_cast<std::uint8_t>(px);
   mc.byte_1961 = static_cast<std::uint8_t>(py);
+  mc.minimap_vp = mm_tmpl.data();
+  mc.minimap_vp_len = mm_tmpl.size();
+  mc.data_6820 = pl_tmpl.data();
+  mc.data_6820_len = pl_tmpl.size();
+  return mc;
+}
+}  // namespace
 
-  // minimap viewport 模板 (com 0x695C) + 玩家標記 (com 0x6820)。
-  // 從 ComponentStore 同層 bundle 的 viewport/ 取;這裡由呼叫端先 set。
-  mc.minimap_vp = minimap_template_.data();
-  mc.minimap_vp_len = minimap_template_.size();
-  mc.data_6820 = player_template_.data();
-  mc.data_6820_len = player_template_.size();
-
+void Minimap::render(const res::Level& level, int px, int py,
+                     const ComponentStore& comps, Seed seed) {
+  reset();
+  LevelComponents lc = parse_level_components(level);
+  DecodeCtx ctx;
+  ctx.viewport_memory = mem.data();
+  ctx.init_offsets(0x90);
+  ctx.byte_104E = 0;
+  MinimapComposer mc =
+      make_composer(level, px, py, lc, comps, ctx, minimap_template_, player_template_);
   mc.seed_explored(seed);
+  mc.draw_minimap_first_pass();
+}
+
+void Minimap::render_with_seen(const res::Level& level, int px, int py,
+                               const ComponentStore& comps,
+                               const std::uint8_t* seen, int seen_w, int seen_h) {
+  reset();
+  LevelComponents lc = parse_level_components(level);
+  DecodeCtx ctx;
+  ctx.viewport_memory = mem.data();
+  ctx.init_offsets(0x90);
+  ctx.byte_104E = 0;
+  MinimapComposer mc =
+      make_composer(level, px, py, lc, comps, ctx, minimap_template_, player_template_);
+  mc.seed_from_bitmap(seen, seen_w, seen_h);
   mc.draw_minimap_first_pass();
 }
 

@@ -74,6 +74,9 @@ bool save(const SaveState& st, const std::filesystem::path& path) {
   put_u16(b, static_cast<std::uint16_t>(st.party_records.size()));
   for (const auto& rec : st.party_records)
     b.insert(b.end(), rec.begin(), rec.end());
+  // v2:fog of war seen bitmap(u32 長度 + bytes)。
+  put_u32(b, static_cast<std::uint32_t>(st.seen_blob.size()));
+  b.insert(b.end(), st.seen_blob.begin(), st.seen_blob.end());
 
   // 自動建立上層目錄(如 save/)。
   std::error_code ec;
@@ -117,9 +120,9 @@ bool load(const std::filesystem::path& path, SaveState& out) {
     std::fprintf(stderr, "savegame: bad magic: %s\n", path.string().c_str());
     return false;
   }
-  // 校驗版本。
+  // 校驗版本(接受 v1 / v2;v1 無 seen_blob)。
   std::uint16_t ver;
-  if (!rd.get_u16(ver) || ver != kSaveVersion) {
+  if (!rd.get_u16(ver) || ver < 1 || ver > kSaveVersion) {
     std::fprintf(stderr, "savegame: unsupported version %u: %s\n", ver,
                  path.string().c_str());
     return false;
@@ -136,6 +139,14 @@ bool load(const std::filesystem::path& path, SaveState& out) {
   st.party_records.resize(party_n);
   for (auto& rec : st.party_records)
     if (!rd.get_bytes(rec.data(), rec.size())) return false;
+
+  // v2:fog of war seen bitmap(向後相容:v1 無此段 → seen 為空)。
+  if (ver >= 2) {
+    std::uint32_t seen_len;
+    if (!rd.get_u32(seen_len)) return false;
+    st.seen_blob.resize(seen_len);
+    if (seen_len && !rd.get_bytes(st.seen_blob.data(), seen_len)) return false;
+  }
 
   out = std::move(st);
   return true;

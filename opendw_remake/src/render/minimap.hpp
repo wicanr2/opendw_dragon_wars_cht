@@ -69,10 +69,18 @@ public:
   //   level     — 目前關卡。
   //   px,py     — 玩家地圖座標 (game_state.unknown[0]=x, [1]=y)。
   //   comps     — 元件 sprite 資源 (與第一人稱共用 bundle)。
-  //   seed      — 探索旗標 seeding。
+  //   seed      — 探索旗標 seeding (測試 / golden 用:kAll/kPlayer/kNone)。
   // 完成後 mem 即 viewport_memory,可 to_framebuffer 上螢幕。
   void render(const res::Level& level, int px, int py,
               const ComponentStore& comps, Seed seed = Seed::kAll);
+
+  // 遊戲內 fog of war:用呼叫端維護的 seen bitmap (row-major, w*h bytes;
+  // 非 0 = 該格已看過) 決定哪些格揭露。seen 累積對齊 oracle
+  // (refresh_viewport 每步只標記玩家當前格;見 game::SeenMap)。
+  //   seen_w/seen_h 應 = level.w/level.h;seen 為 nullptr 時等同全不揭露。
+  void render_with_seen(const res::Level& level, int px, int py,
+                        const ComponentStore& comps,
+                        const std::uint8_t* seen, int seen_w, int seen_h);
 
   // 把 mem blit 到 framebuffer。
   // 原版 set_viewport_size + ui_update_viewport 會把 0x90-stride 的 mem
