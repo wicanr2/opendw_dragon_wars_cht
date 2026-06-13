@@ -48,8 +48,8 @@ add_library(dwr_i18n STATIC src/i18n/strings.cpp src/i18n/string_table.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
-# --- game 模組(隊伍角色資料 + 右側狀態面板渲染)---
-add_library(dwr_game STATIC src/game/party.cpp)
+# --- game 模組(隊伍角色資料 + 右側狀態面板渲染 + 戰鬥結算)---
+add_library(dwr_game STATIC src/game/party.cpp src/game/combat.cpp)
 target_include_directories(dwr_game PUBLIC src)
 target_link_libraries(dwr_game PUBLIC dwr_render)
 
@@ -90,7 +90,8 @@ if(SDL2_FOUND)
   add_executable(opendw_remake
     src/main.cpp
     src/render/sdl_video.cpp
-    src/render/text_layer.cpp)
+    src/render/text_layer.cpp
+    src/game/party_panel.cpp)
   target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n dwr_game dwr_save SDL2::SDL2)
   if(DWR_HAVE_TTF)
     target_include_directories(opendw_remake PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
@@ -143,6 +144,16 @@ target_link_libraries(level_events PRIVATE dwr_vm)
 add_executable(extract_eventscripts tools/extract/extract_eventscripts.cpp)
 target_link_libraries(extract_eventscripts PRIVATE dwr_vm)
 
+# tools/extract:怪物記錄(res31)→ bundle/monsters/monsters.bin(自包含)。
+add_executable(extract_monsters tools/extract/extract_monsters.cpp)
+target_link_libraries(extract_monsters PRIVATE dwr_resource)
+
+# tools/verify:戰鬥切片確定性 PASS/FAIL(怪物萃取 vs oracle 名單 + RNG + 結算可重現)。
+add_executable(verify_combat tools/verify/verify_combat.cpp)
+target_link_libraries(verify_combat PRIVATE dwr_game)
+add_test(NAME verify_combat
+         COMMAND verify_combat ${CMAKE_SOURCE_DIR}/assets/bundle)
+
 # tools/verify:掃所有關卡找會改 gs[2](area)/入口 gs[0/1/3] 的事件(換場逆向)。
 add_executable(probe_areaswitch tools/verify/probe_areaswitch.cpp)
 target_link_libraries(probe_areaswitch PRIVATE dwr_vm)
@@ -182,7 +193,8 @@ target_link_libraries(verify_fp_sweep PRIVATE dwr_render dwr_resource)
 # 文字層(名字)需 SDL2_ttf,故此工具同 opendw_remake 條件下建。
 if(SDL2_FOUND AND DWR_HAVE_TTF)
   add_executable(verify_party_panel tools/verify/verify_party_panel.cpp
-    src/render/text_layer.cpp)
+    src/render/text_layer.cpp
+    src/game/party_panel.cpp)
   target_link_libraries(verify_party_panel PRIVATE dwr_game SDL2::SDL2)
   target_include_directories(verify_party_panel PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
   target_link_libraries(verify_party_panel PRIVATE ${SDL2_TTF_LIBRARIES})

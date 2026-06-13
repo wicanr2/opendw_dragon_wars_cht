@@ -24,58 +24,15 @@ std::string read_name(const std::uint8_t* p) {
   return s;
 }
 
-// 狀態條色(對照 opendw color_data[] = {00,FF,CC,AA,99} & 0x0F)。
-//   draw_player_stat 傳入 color idx:2=HP、3=暈眩、4=法力。
-constexpr std::uint8_t kBarColorHp    = 0x0C;  // color_data[2]=0xCC → 亮紅
-constexpr std::uint8_t kBarColorStun  = 0x0A;  // color_data[3]=0xAA → 亮綠
-constexpr std::uint8_t kBarColorPower = 0x09;  // color_data[4]=0x99 → 亮藍
-constexpr std::uint8_t kBgColor       = 0x00;  // byte_1BE5 背景(color_data[0]=0x00 → 黑)
-
-// 原版幾何(直接映射到 320×200 線性 framebuffer):
-//   - get_line_offset(y) = y*320,故 y 即掃描線。
-//   - 狀態條:ui_draw_horizontal_line x 單位 = 4 px(x<<2 byte off,2px/iter)。
-//     範圍 word_36C0=0x36 .. word_36C2=0x4E → 像素 54*4=216 .. 78*4=312(寬 96px)。
-//   - 名字列頂 y = char*0x10 + 0x20(char0=32, char1=48, char2=64, char3=80)。
-constexpr int kRowStride = 0x10;   // 16 掃描線/角色
-constexpr int kRowTop    = 0x20;   // 第一列頂(y=32)
-constexpr int kBarX0px   = 0x36 * 4;  // 216
-constexpr int kBarX1px   = 0x4E * 4;  // 312
-constexpr int kBarUnitPx = 4;         // 每條長度單位 = 4px
-constexpr int kNameXpx   = 0x1B * 8;  // draw_character x<<3,x=0x1B → 216
-
 // 狀態 bitmask → 文字(對照 unknown_1BC1[0..3]={02,04,80,01} 與 str_table_status)。
 // 檢查順序與 opendw 一致(si 3→0),回傳第一個命中的狀態字串;無則回 nullptr。
+// 註:狀態條/名字渲染已拆到 party_panel.cpp(相依 SDL),此 TU 保持純資料。
 const char* status_text(std::uint8_t st) {
   if (st & 0x01) return "dead";       // si=3
   if (st & 0x80) return "stunned";    // si=2
   if (st & 0x04) return "poisoned";   // si=1
   if (st & 0x02) return "chained";    // si=0
   return nullptr;
-}
-
-void hline(render::Framebuffer& fb, int x0px, int x1px, int y, std::uint8_t color) {
-  for (int x = x0px; x < x1px; ++x) fb.put(x, y, color);
-}
-
-// 對照 draw_player_stat(6599):畫一條狀態條(亮色比例 + 黑色剩餘),雙掃描線。
-void draw_stat_bar(render::Framebuffer& fb, int y, std::uint16_t cur,
-                   std::uint16_t max_val, std::uint8_t bar_color) {
-  int filled_units = 0;  // 對照 cpu.ax:預設 = cur(夾在 0..23+ 範圍)
-  if (cur != 0 && max_val != 0) {
-    filled_units = (cur * 23) / max_val + 1;     // (cur*23)/max + 1
-  } else {
-    filled_units = cur ? cur : 0;
-  }
-  int split_px = kBarX0px + filled_units * kBarUnitPx;  // word_36C2 = 0x36 + units
-  if (split_px > kBarX1px) split_px = kBarX1px;
-  // 亮色段(雙線:y、y+1)
-  hline(fb, kBarX0px, split_px, y, bar_color);
-  hline(fb, kBarX0px, split_px, y + 1, bar_color);
-  // 剩餘黑色段
-  if (split_px < kBarX1px) {
-    hline(fb, split_px, kBarX1px, y, kBgColor);
-    hline(fb, split_px, kBarX1px, y + 1, kBgColor);
-  }
 }
 
 }  // namespace
@@ -153,32 +110,6 @@ Party Party::load_default(const std::filesystem::path& bundle_dir) {
   return from_records(buf);
 }
 
-void Party::draw_status_panel(render::Framebuffer& fb, render::TextLayer& tl,
-                              int name_px) const {
-  // 對照 draw_player_status_panel:最多 7 列,但實際依隊伍人數。
-  for (std::size_t i = 0; i < members_.size() && i < 7; ++i) {
-    const CharacterRecord& c = members_.at(i);
-    int row_top = static_cast<int>(i) * kRowStride + kRowTop;  // y of name baseline area
-
-    // ── 文字層:角色名字(列頂)。原版 append_spaces 置中,這裡靠左對齊條起點。──
-    // 名字字級小一點以容入面板;白色(15)。
-    tl.add(kNameXpx, row_top, c.name.empty() ? "?" : c.name, 15, name_px);
-
-    const char* st = status_text(c.status);
-    if (st) {
-      // 異常狀態:原版於 row_top+8 顯示 "<name> is <status>";這裡顯示狀態字。
-      char buf[48];
-      std::snprintf(buf, sizeof buf, "is %s", st);
-      tl.add(kNameXpx, row_top + 8, buf, 12, name_px);  // 亮紅提示
-      continue;  // 異常時原版不畫三條狀態條
-    }
-
-    // ── 像素層:三條狀態條(HP/暈眩/法力)。──
-    // 對照 draw_player_stat y_adjust:HP +8、暈眩 +0x0B、法力 +0x0E。
-    draw_stat_bar(fb, row_top + 0x08, c.health, c.max_health, kBarColorHp);
-    draw_stat_bar(fb, row_top + 0x0B, c.stun, c.max_stun, kBarColorStun);
-    draw_stat_bar(fb, row_top + 0x0E, c.power, c.max_power, kBarColorPower);
-  }
-}
+// Party::draw_status_panel 已移至 party_panel.cpp(相依 render::TextLayer / SDL)。
 
 }  // namespace dw::game
