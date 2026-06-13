@@ -1071,7 +1071,7 @@ int main(int argc, char** argv) {
     enc.rng = game::CombatRng((std::uint16_t)combat_seed);
     if (party.size() > 0) enc.hero = game::Combatant::from_player(party.at(0));
     else { enc.hero.name = "Hero"; enc.hero.is_player = true; enc.hero.hp = enc.hero.max_hp = 20;
-           enc.hero.attack = 5; enc.hero.dmg_dice = 1; enc.hero.dmg_sides = 6; }
+           enc.hero.av = 5; enc.hero.dv = 5; enc.hero.ac = 0; enc.hero.dmg_dice = 1; enc.hero.dmg_sides = 6; }
     enc.mon = game::Combatant::from_monster(monsters[idx]);
     state = S_COMBAT;
     std::fprintf(stderr, "begin_encounter: '%s' hero_hp=%d mon_hp=%d\n",

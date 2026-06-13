@@ -57,20 +57,32 @@ std::vector<MonsterRecord> MonsterTable::load(
   return parse(blob);
 }
 
+int str_damage_bonus(int strength) {
+  // SDA:「STR 愈大傷害愈大」,確切曲線未記。暫用每 4 點 STR +1(類 D&D)。待 DOS 校準。
+  return strength / 4;
+}
+
 Combatant Combatant::from_player(const CharacterRecord& c) {
   Combatant u;
   u.name = c.name;
   u.is_player = true;
-  u.hp = c.health;
-  u.max_hp = c.max_health;
-  // 命中加值:以等級 + 力量綜合(remake 暫定;原版命中公式藏 bytecode,待逆出)。
-  u.attack = static_cast<int>(c.level) + (c.strength / 4);
-  // AC:player_record 0x5B armor_class — party.hpp 目前未拆出該欄,以 dexterity 近似。
-  u.defense = c.dexterity / 4;
-  // 傷害:remake 暫定 1d4 + 力量加值;待逆出武器/傷害骰欄位。
-  u.dmg_dice = 1;
-  u.dmg_sides = 4;
-  u.dmg_bonus = c.strength / 8;
+  // HP=Stun(SDA):戰鬥傷害作用於 STUN → 載入 STUN 為耐打值。
+  u.hp = c.stun;
+  u.max_hp = c.max_stun;
+  // AV/DV/AC:依 fraterrisus 欄位 + SDA 公式(stored 為 0 時回退 DEX/4;見 party.cpp)。
+  u.av = c.effective_av();
+  u.dv = c.effective_dv();
+  u.ac = c.effective_ac();
+  // 傷害骰:解碼主武器主傷害骰(fraterrisus);無武器 → 徒手回退。
+  EquipItem w = c.main_weapon();
+  if (w.present && w.primary_dmg.valid()) {
+    u.dmg_dice = w.primary_dmg.count;
+    u.dmg_sides = w.primary_dmg.sides;
+  } else {
+    u.dmg_dice = kUnarmedDice;
+    u.dmg_sides = kUnarmedSides;
+  }
+  u.dmg_bonus = str_damage_bonus(c.strength);  // STR 傷害修正
   u.status = c.status;
   return u;
 }
@@ -87,8 +99,9 @@ Combatant Combatant::from_monster(const MonsterRecord& m) {
   auto nz = [](std::uint8_t v, int dflt) { return v ? static_cast<int>(v) : dflt; };
   u.max_hp = nz(m.attr[0], 4);
   u.hp = u.max_hp;
-  u.attack = static_cast<int>(m.attr[1]);
-  u.defense = static_cast<int>(m.attr[2]);
+  u.av = static_cast<int>(m.attr[1]);          // 暫定:命中
+  u.dv = static_cast<int>(m.attr[2]);          // 暫定:閃避
+  u.ac = static_cast<int>(m.attr[6]);          // 暫定:護甲(0 = 無減傷)
   u.dmg_dice = nz(m.attr[3], 1);
   u.dmg_sides = nz(m.attr[4], 4);
   u.dmg_bonus = static_cast<int>(m.attr[5]);
@@ -99,14 +112,19 @@ Combatant Combatant::from_monster(const MonsterRecord& m) {
 AttackResult resolve_attack(Combatant& attacker, Combatant& target,
                             CombatRng& rng) {
   AttackResult r;
-  // d20 命中骰(RNG 副作用順序固定:先命中)。
-  r.to_hit_roll = 1 + static_cast<int>(rng.below(20));
-  r.to_hit_need = 10 + target.defense;
-  r.hit = (r.to_hit_roll + attacker.attack) >= r.to_hit_need;
+  // 命中:2dN 小骰(暫定;待 DOS 校準,見 combat.hpp ToHit 參數)。
+  // hit ⇔ roll + attacker.av >= kToHitBase + target.dv。
+  // RNG 副作用順序固定:先擲命中,命中才擲傷害 → 可重現。
+  r.to_hit_roll = rng.roll(kToHitDiceCount, kToHitDie);
+  r.to_hit_need = kToHitBase + target.dv;
+  r.hit = (r.to_hit_roll + attacker.av) >= r.to_hit_need;
   if (r.hit) {
-    r.damage = rng.roll(attacker.dmg_dice, attacker.dmg_sides) +
-               attacker.dmg_bonus;
+    // 傷害:武器主傷害骰 + STR 修正 − 目標 AC(AC 先扣;SDA)。
+    int raw_dmg = rng.roll(attacker.dmg_dice, attacker.dmg_sides) +
+                  attacker.dmg_bonus;
+    r.damage = raw_dmg - target.ac;  // AC 先從物理傷害扣除
     if (r.damage < 0) r.damage = 0;
+    // 作用於 STUN(HP=Stun);STUN≤0 → 死亡。
     target.hp -= r.damage;
     if (target.hp <= 0) {
       target.hp = 0;

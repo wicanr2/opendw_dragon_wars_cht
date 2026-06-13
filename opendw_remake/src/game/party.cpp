@@ -42,6 +42,99 @@ const char* Party::status_key(std::uint8_t status) {
   return st ? st : "normal";
 }
 
+// ── 傷害骰解碼(fraterrisus)──────────────────────────────────────────────
+DamageDice decode_damage_dice(std::uint8_t encoded) {
+  DamageDice d;
+  if (encoded == 0) return d;  // 0 = 無傷害骰
+  // 高 3 bit = 骰面 index → 面數。
+  static const int kSides[8] = {4, 6, 8, 10, 12, 20, 30, 100};
+  int sides_idx = (encoded >> 5) & 0x07;
+  int count = (encoded & 0x07) + 1;  // 低 3 bit = 骰數 − 1
+  d.sides = kSides[sides_idx];
+  d.count = count;
+  return d;
+}
+
+namespace {
+// 從 record raw 取物品欄第 slot 格(每格 23B,首格 @ [236])的 EquipItem。
+// fraterrisus 11-byte bit-packed:bit offset 從該格起。LSB-first。
+EquipItem parse_equip(const std::uint8_t* rec, int slot) {
+  EquipItem e;
+  const int base = 236 + slot * 23;
+  if (base + 11 > 512) return e;
+  const std::uint8_t* q = rec + base;
+  // 全 0(無物品)→ present=false。
+  bool any = false;
+  for (int i = 0; i < 11; ++i) if (q[i]) { any = true; break; }
+  if (!any) return e;
+  e.present = true;
+  // bit helper:取 [lo,hi] inclusive bit 區段(LSB-first across bytes)。
+  auto bits = [&](int lo, int hi) -> std::uint32_t {
+    std::uint32_t v = 0;
+    for (int b = lo; b <= hi; ++b) {
+      int byte = b >> 3, bit = b & 7;
+      if (q[byte] & (1u << bit)) v |= (1u << (b - lo));
+    }
+    return v;
+  };
+  e.equipped = bits(0, 0) != 0;
+  bool av_neg = bits(8, 8) != 0;
+  int av = static_cast<int>(bits(24, 27));
+  e.av_mod = av_neg ? -av : av;
+  e.ac_mod = static_cast<int>(bits(28, 31));
+  e.item_type = static_cast<std::uint8_t>(bits(40, 44));  // 低 5 bit
+  e.primary_dmg = decode_damage_dice(static_cast<std::uint8_t>(bits(64, 71)));
+  return e;
+}
+}  // namespace
+
+EquipItem CharacterRecord::main_weapon() const {
+  return parse_equip(raw.data(), 0);
+}
+
+// 武器類型 → 對應武器技能 index;非武器(或一般)回 -1。
+static int weapon_skill_index(std::uint8_t item_type) {
+  switch (item_type) {
+    case 0x03: return kSkillAxe;
+    case 0x04: return kSkillFlail;
+    case 0x05: return kSkillSword;
+    case 0x06: return kSkillTwoHand;
+    case 0x07: return kSkillMace;       // 錘
+    case 0x08: return kSkillBow;
+    case 0x09: return kSkillCrossbow;
+    case 0x0A: return kSkillCrossbow;   // 槍(以弩技能近似;docs 未細分)
+    case 0x0B: return kSkillThrown;
+    default:   return -1;
+  }
+}
+
+int CharacterRecord::effective_av() const {
+  // SDA:base AV = DEX/4;最終 AV =(base ± 武器 AV 修正)+ 武器技能(1:1 隱形)。
+  // stored av(>0)代表原版已 runtime 算好 → 直接採用(起始隊伍為 0,走計算路徑)。
+  EquipItem w = main_weapon();
+  int skill_bonus = 0;
+  if (w.present) {
+    int si = weapon_skill_index(w.item_type);
+    if (si >= 0) skill_bonus = skills[si];
+  }
+  if (av > 0) return static_cast<int>(av) + skill_bonus;
+  int base = dexterity / 4;
+  return base + (w.present ? w.av_mod : 0) + skill_bonus;
+}
+
+int CharacterRecord::effective_dv() const {
+  // SDA:base DV = DEX/4(與 AV 同源)。stored dv>0 採用。
+  if (dv > 0) return static_cast<int>(dv);
+  return dexterity / 4;
+}
+
+int CharacterRecord::effective_ac() const {
+  // stored ac>0 採用;否則由裝備 AC 修正累加(起始隊伍無裝備 → 0)。
+  if (ac > 0) return static_cast<int>(ac);
+  EquipItem w = main_weapon();
+  return w.present ? w.ac_mod : 0;
+}
+
 CharacterRecord Party::parse_record(const std::uint8_t* p) {
   CharacterRecord r;
   std::memcpy(r.raw.data(), p, 512);
@@ -53,9 +146,15 @@ CharacterRecord Party::parse_record(const std::uint8_t* p) {
   r.health = rd16(p, 0x14); r.max_health = rd16(p, 0x16);
   r.stun = rd16(p, 0x18); r.max_stun = rd16(p, 0x1A);
   r.power = rd16(p, 0x1C); r.max_power = rd16(p, 0x1E);
-  r.status = p[0x4C];
-  r.gender = p[0x4E];
-  r.level = rd16(p, 0x4F);
+  // skills[32-58] / spells[60-67](fraterrisus）
+  std::memcpy(r.skills.data(), p + 32, 27);
+  std::memcpy(r.spells.data(), p + 60, 8);
+  r.status = p[0x4C];          // [76]
+  r.gender = p[0x4E];          // [78]
+  r.level = rd16(p, 0x4F);     // [79]
+  r.xp = p[80];                // [80]
+  r.gold8 = p[81];             // [81](fraterrisus gold;見 hpp 註)
+  r.av = p[82]; r.dv = p[83]; r.ac = p[84]; r.flags = p[85];
   r.gold = static_cast<std::uint32_t>(p[0x55] | (p[0x56] << 8) |
                                       (p[0x57] << 16) | (p[0x58] << 24));
   return r;

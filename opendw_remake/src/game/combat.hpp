@@ -3,17 +3,23 @@
 // Deep module:對外露 (1) 載入怪物、(2) 可 seed 的 RNG、(3) 單次物理攻擊結算;
 // 內部隱藏怪物 blob 格式、op_4D PRNG 演算法、to-hit/傷害模型。
 //
-// ── Oracle 對齊狀態(務必誠實)──────────────────────────────────────────
+// ── 對齊狀態(務必誠實)────────────────────────────────────────────────
 //  • 怪物資料:byte-for-byte 對齊 opendw monster_info.cpp 對 res31 的走訪
 //    (record+0x00..0x20 屬性 + record+0x21 5-bit 名)。已知 attr[0x0B]=sprite 基底。
 //  • RNG:忠實移植 opendw engine.c op_prng(@0x4132)+ update_random_seed(@0x2CF5)。
 //    opendw 用 sys_ticks() 當亂源(非確定);本實作以「可 seed 的遞增 tick」取代
 //    (與 remake VM vm_state.fake_ticks 同策略),故可確定性對拍。
-//  • to-hit / 傷害 / HP 扣減 / 死亡:**opendw C 碼未實作戰鬥結算**(只到載圖+動畫,
-//    見 check_random_encounter_timer @0x4D5C)。真正公式藏在原版 res-script bytecode,
-//    opendw 尚未逆出。因此本模組的結算公式是 **remake 的乾淨室模型**,不是 oracle 移植;
-//    其「確定性」可驗證(固定 seed → 固定結果),但「數值是否等同原版」無 oracle 可對。
-//    待後續逆出 bytecode 戰鬥 primitive(op_5D/5E/61 + 算術 op)後再對齊真值。
+//  • 戰鬥結算公式來源 = **fraterrisus 資料格式 + SDA 戰鬥機制 + 臺灣中文版手冊**
+//    (彙整於 docs/44_DATA_FORMATS_AND_MECHANICS.md / docs/33_MANUAL_TRANSCRIPTION.md):
+//      - 命中:攻擊者 AV vs 目標 DV;base AV/DV = DEX÷4;AV 含武器技能(1:1 隱形)。
+//      - 傷害:解碼武器主傷害骰(高3bit 骰面 / 低3bit 骰數-1)+ STR 修正 − 目標 AC。
+//      - AC 先從物理傷害扣除,再作用於 STUN(HP=Stun);STUN≤0 → status bit0(死亡)。
+//    這些是 **依規格 grounded 的實作**,非 opendw byte-for-byte 移植(opendw C 碼未實作
+//    戰鬥結算,只到載圖+動畫,見 check_random_encounter_timer @0x4D5C;真正 bytecode
+//    結算 op 尚未逆出)。因此 **不可宣稱為 oracle 真值**。
+//  • ⚠ **to-hit 骰分布為暫定**:SDA 只記「AV vs DV、疑似小骰 D&D-like」,未給確切骰式。
+//    本實作採參數化小骰(見 ToHitModel),**待 docs/43_DOS_PLAYTEST.md 的 DOS 實機觀察校準**。
+//    其「確定性」可驗證(固定 seed → 固定結果),但確切骰分布尚待校準。
 // ──────────────────────────────────────────────────────────────────────
 #pragma once
 
@@ -106,27 +112,35 @@ class CombatRng {
 
 // ── 戰鬥單位 ───────────────────────────────────────────────────────────
 // 把 CharacterRecord / MonsterRecord 投影成統一的戰鬥屬性視圖。
-// 注意:怪物 21 bytes 的逐欄語意未由 oracle 確認,以下 from_monster 的對映是
-//       **remake 暫定假設**(已標 TODO),僅為驅動確定性結算切片,非原版真值。
+// 玩家側:av/dv/ac/傷害骰 依 fraterrisus+SDA 規格(見 from_player)。
+// 怪物側:21 bytes 逐欄語意未由 oracle 確認,from_monster 的對映是 **remake 暫定假設**
+//         (已標 TODO),僅為驅動結算切片,非原版真值。
+//
+// HP=Stun(SDA):戰鬥傷害作用於 STUN;故 hp 欄載入角色 STUN 值。
 struct Combatant {
   std::string name;
   bool is_player = false;
-  int hp = 0;          // 當前生命
+  int hp = 0;          // 當前耐打值(=STUN;SDA「HP=Stun」)
   int max_hp = 0;
-  int attack = 0;      // 命中加值(技能/等級綜合)
-  int defense = 0;     // AC / 閃避(被命中難度)
-  int dmg_dice = 1;    // 傷害骰數
-  int dmg_sides = 4;   // 傷害骰面
-  int dmg_bonus = 0;   // 傷害固定加值
-  std::uint8_t status = 0;  // 對照 player_record 0x4C bitfield
+  int av = 0;          // 攻擊值(命中);SDA base = DEX/4 + 武器技能 ± 武器 AV 修正
+  int dv = 0;          // 防禦值(閃避);SDA base = DEX/4
+  int ac = 0;          // 護甲等級;先從物理傷害扣除
+  int dmg_dice = 1;    // 主武器傷害骰數(徒手回退 1d2)
+  int dmg_sides = 2;   // 主武器傷害骰面
+  int dmg_bonus = 0;   // STR 傷害修正
+  std::uint8_t status = 0;  // 對照 player_record 0x4C bitfield(bit0 dead)
 
   bool alive() const { return hp > 0 && (status & 0x01) == 0; }
 
-  // 由玩家角色投影(欄位語意已由 oracle 確認,見 party.hpp)。
+  // 由玩家角色投影(av/dv/ac/傷害骰 grounded in fraterrisus+SDA,見 party.hpp/.cpp)。
   static Combatant from_player(const CharacterRecord& c);
   // 由怪物投影(stat 對映為 remake 暫定,見上註解)。
   static Combatant from_monster(const MonsterRecord& m);
 };
+
+// STR → 傷害修正(SDA:「STR 愈大傷害愈大」,但未給確切曲線)。
+// 暫用簡單線性:每 4 點 STR +1 傷害(類 D&D)。**待 DOS 校準**。
+int str_damage_bonus(int strength);
 
 // 單次攻擊結算結果(供逐回合對拍 / log)。
 struct AttackResult {
@@ -139,12 +153,21 @@ struct AttackResult {
 };
 
 // 解算 attacker → target 的一次物理攻擊(會改 target.hp / status)。
-//   命中模型(remake 乾淨室,可確定性對拍):
-//     to_hit_roll = 1 + rng.below(20)            // d20
-//     hit  ⇔  to_hit_roll + attacker.attack >= 10 + target.defense
-//     damage = roll(dmg_dice, dmg_sides) + dmg_bonus  (命中才擲)
-//     target.hp -= damage;  hp<=0 → status |= 0x01 (dead)
+// grounded in docs/44(fraterrisus+SDA);to-hit 骰分布為暫定(見檔頭與 ToHitModel)。
+//   命中:roll = 2dN(N=kToHitDie,暫定);hit ⇔ roll + attacker.av >= kToHitBase + target.dv。
+//         **此骰式為暫定,待 docs/43_DOS_PLAYTEST.md 的 DOS 實機校準**。
+//   傷害:dmg = roll(主武器傷害骰) + STR 修正 − target.ac(AC 先扣);min 0。
+//         dmg 作用於 target.hp(=STUN);hp<=0 → status|=0x01(死亡)。
 // RNG 副作用順序固定(先擲命中,命中才擲傷害),確保可重現。
 AttackResult resolve_attack(Combatant& attacker, Combatant& target, CombatRng& rng);
+
+// to-hit 暫定參數(集中於此,便於 DOS 校準後一處調整)。
+// SDA 只記「AV vs DV、疑似小骰 D&D-like」,確切骰式未知 → 以下為 remake 暫定。
+inline constexpr int kToHitDie = 10;   // 每顆骰面數(2d10)
+inline constexpr int kToHitDiceCount = 2;
+inline constexpr int kToHitBase = 11;  // 命中門檻基數(roll+av >= base+dv)
+// 徒手(無武器)傷害骰:暫定 1d2(SDA/手冊未明列徒手骰)。
+inline constexpr int kUnarmedDice = 1;
+inline constexpr int kUnarmedSides = 2;
 
 }  // namespace dw::game

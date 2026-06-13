@@ -1,14 +1,19 @@
 // verify_combat — 戰鬥切片的確定性 PASS/FAIL 驗證(ctest)。
 //
-// 三組對拍(均 deterministic):
-//  A. 怪物萃取:從 bundle/monsters/monsters.bin 載入,逐筆名字與 attr[0x0B](sprite 基底)
-//     對 **oracle 名單**(opendw monster_info.cpp 走訪 res31 的輸出 / doc 26)逐項相等。
-//     —— 此為真 oracle 對拍(opendw 確實會解出這些名字)。
-//  B. RNG:CombatRng 對「op_4D PRNG 演算法」(opendw op_prng @0x4132 的忠實移植,
-//     即 remake VM vm_state/interpreter op4D_prng)逐步相等。本檔內聯一份等價參考實作,
-//     證明 CombatRng 與 oracle 演算法在固定 seed/tick 下序列一致。
-//  C. 結算可重現:固定 seed + 固定隊伍 + 固定怪物,跑 N 回合,兩次執行逐回合
-//     (命中/傷害/HP)完全一致 → 證明結算路徑確定性(數值真值待 bytecode 逆出,見 combat.hpp)。
+// 對拍(均 deterministic):
+//  A.  怪物萃取:從 bundle/monsters/monsters.bin 載入,逐筆名字與 attr[0x0B](sprite 基底)
+//      對 **oracle 名單**(opendw monster_info.cpp 走訪 res31 的輸出 / doc 26)逐項相等。
+//      —— 此為真 oracle 對拍(opendw 確實會解出這些名字)。
+//  A2. CharacterRecord 戰鬥欄位(AV/DV/AC/XP/skills/inventory):對拍真實 default_party.bin。
+//      起始隊伍 stored AV/DV/AC=0(原版 runtime 計算)→ 驗 effective DV==DEX/4(SDA base 公式)。
+//  A3. 傷害骰解碼:fraterrisus 編碼(高3bit 骰面/低3bit 骰數-1)→ 骰式對照表幾筆相等。
+//  B.  RNG:CombatRng 對「op_4D PRNG 演算法」(opendw op_prng @0x4132 的忠實移植,
+//      即 remake VM vm_state/interpreter op4D_prng)逐步相等。本檔內聯一份等價參考實作,
+//      證明 CombatRng 與 oracle 演算法在固定 seed/tick 下序列一致。
+//  C.  結算可重現:固定 seed + 固定隊伍 + 固定怪物,跑 N 回合,兩次執行逐回合
+//      (命中/傷害/HP)完全一致 → 證明結算路徑確定性。
+//      註:結算公式 grounded in docs/44(fraterrisus+SDA+手冊),非 opendw byte-for-byte;
+//      to-hit 骰分布為暫定,待 DOS 校準(見 combat.hpp 檔頭)。不宣稱 oracle 真值。
 //
 // 用法:verify_combat <bundle_dir>
 // 退出碼:0=PASS,非 0=FAIL。
@@ -83,6 +88,65 @@ int main(int argc, char** argv) {
       }
     }
     check(all, "all monster names match oracle byte-for-byte");
+  }
+
+  std::printf("== A2. CharacterRecord combat fields (byte-grounded, fraterrisus 512B) ==\n");
+  {
+    auto party = Party::load_default(bundle);
+    check(party.size() == 4, "default party has 4 members");
+    // 印出 4 員 AV/DV/AC,並檢查 effective AV/DV ≈ DEX/4(SDA base 公式)。
+    // 註:起始隊伍的 stored av/dv/ac 欄為 0(原版 runtime 計算),故 effective 走 DEX/4 路徑。
+    bool stored_zero = true, eff_dex4 = true;
+    for (std::size_t i = 0; i < party.size(); ++i) {
+      const auto& c = party.at(i);
+      int base = c.dexterity / 4;
+      std::printf("    %-8s DEX=%2d stored[av=%u dv=%u ac=%u xp=%u] "
+                  "eff[av=%d dv=%d ac=%d] DEX/4=%d\n",
+                  c.name.c_str(), c.dexterity, c.av, c.dv, c.ac, c.xp,
+                  c.effective_av(), c.effective_dv(), c.effective_ac(), base);
+      if (c.av != 0 || c.dv != 0 || c.ac != 0) stored_zero = false;
+      // 起始隊伍無武器/無 stored → effective_av/dv 應等於 DEX/4(武器技能 0)。
+      if (c.effective_dv() != base) eff_dex4 = false;
+    }
+    check(stored_zero,
+          "starting party stored AV/DV/AC are 0 (runtime-computed, per SDA)");
+    check(eff_dex4, "effective DV == DEX/4 for all members (SDA base formula)");
+    // skills[32-58] 已解析:至少一員有非 0 技能(rec0 起始有技能點配置)。
+    bool any_skill = false;
+    for (std::size_t i = 0; i < party.size(); ++i)
+      for (auto s : party.at(i).skills) if (s) any_skill = true;
+    check(any_skill, "skills[32-58] parsed (some member has non-zero skill)");
+    // 起始隊伍無裝備 → 主武器欄 present=false(inventory 區全 0)。
+    bool no_weapon = true;
+    for (std::size_t i = 0; i < party.size(); ++i)
+      if (party.at(i).main_weapon().present) no_weapon = false;
+    check(no_weapon, "starting party has no equipped weapon (inventory all 0)");
+  }
+
+  std::printf("== A3. damage-dice decode (fraterrisus encoding) ==\n");
+  {
+    struct Case { std::uint8_t enc; int count; int sides; const char* label; };
+    // 高 3bit 骰面 {d4,d6,d8,d10,d12,d20,d30,d100};低 3bit 骰數-1。
+    // 註:enc==0(=「1d4」的純編碼)在物品欄語境保留為「空欄/無骰」,故不列為傷害骰 case。
+    const Case cases[] = {
+        {0b000'00'001, 2, 4,  "0x01 = 2d4"},     // 最低 d4 但骰數>1(避開 enc==0 空欄)
+        {0b101'00'001, 2, 20, "0xA1 = 2d20"},    // docs/44 範例
+        {0b001'00'000, 1, 6,  "0x20 = 1d6"},
+        {0b011'00'010, 3, 10, "0x62 = 3d10"},
+        {0b111'00'111, 8, 100,"0xE7 = 8d100"},
+    };
+    bool all = true;
+    for (const auto& c : cases) {
+      DamageDice d = decode_damage_dice(c.enc);
+      bool ok = d.count == c.count && d.sides == c.sides;
+      if (!ok) {
+        std::printf("    %s: got %dd%d\n", c.label, d.count, d.sides);
+        all = false;
+      }
+    }
+    check(all, "damage-dice encoding -> dice table correct (5 cases)");
+    DamageDice z = decode_damage_dice(0);
+    check(!z.valid(), "encoded 0 -> no dice (valid()==false)");
   }
 
   std::printf("== B. CombatRng == oracle op_4D PRNG algorithm ==\n");
