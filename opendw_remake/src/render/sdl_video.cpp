@@ -38,15 +38,21 @@ void SdlVideo::present(const Framebuffer& fb) {
   SDL_RenderPresent(ren_);
 }
 
-bool SdlVideo::poll() {
+Input SdlVideo::poll() {
+  Input in;
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
-    if (e.type == SDL_QUIT) return false;
-    if (e.type == SDL_KEYDOWN &&
-        (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q))
-      return false;
+    if (e.type == SDL_QUIT) { in.quit = true; continue; }
+    if (e.type != SDL_KEYDOWN) continue;
+    switch (e.key.keysym.sym) {
+      case SDLK_ESCAPE: case SDLK_q: in.quit = true; break;
+      case SDLK_UP:     case SDLK_k: in.up = true; break;
+      case SDLK_DOWN:   case SDLK_j: in.down = true; break;
+      case SDLK_RETURN: case SDLK_SPACE: in.select = true; break;
+      default: break;
+    }
   }
-  return true;
+  return in;
 }
 
 void SdlVideo::close() {

@@ -13,12 +13,20 @@ struct SDL_Texture;
 
 namespace dw::render {
 
+// 一幀內收到的輸入事件(互動骨架用)。
+struct Input {
+  bool quit = false;     // 關窗 / ESC / Q
+  bool up = false;       // ↑ / K
+  bool down = false;     // ↓ / J
+  bool select = false;   // Enter / Space
+};
+
 class SdlVideo {
 public:
   ~SdlVideo();
   bool open(int scale = 3, const char* title = "OpenDW Remake — 火龍之戰");
   void present(const Framebuffer& fb);   // 上傳 + 放大顯示
-  bool poll();                           // 處理事件;false = 要結束(關窗/ESC/Q)
+  Input poll();                          // 收集本幀事件(in.quit=true 表示要結束)
   void close();
 
   // 驗證用:把目前 framebuffer→RGB 的結果讀回(headless 對拍 PPM)。
