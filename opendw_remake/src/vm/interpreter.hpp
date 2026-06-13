@@ -178,6 +178,15 @@ private:
   void op83_print_char();      // 0x83  把 word_3AE2 以 byte/word 模式 emit(印字,無 operand)
   void op90_sound_effect();    // 0x90  op_sound_effect:讀 1B operand(音效),VM 僅消耗 operand
 
+  // --- batch 12:角色資料存取(char_data = data_C960)---
+  void op5D_get_char_data();   // 0x5D  r2 = char_data[(sel<<8)+prop](byte/word);讀屬性
+  void op5E_set_char_data();   // 0x5E  char_data[(sel<<8)+prop] = r2(byte/word);寫屬性 + gs[idx+0x18]
+  void op5F_or_char_data();    // 0x5F  char_data[(sel<<8)+bx] |= bitmask(設角色 bit 屬性)
+  void op60_and_char_data();   // 0x60  char_data[(sel<<8)+bx] &= ~bitmask(清角色 bit 屬性)
+  void op61_test_char_prop();  // 0x61  test char_data[player*512 + bx] & bitmask → 設 sf/zf/cf
+  // 角色資料定址輔助:回傳「當前角色 record 的頁高位(selector=gs[idx+0x0A])」。
+  std::uint16_t char_record_base();  // = selector << 8(char_data 內的 record 起點)
+
   // 切換 running_script / word_3ADF 到資源 idx(對照 populate_3ADD_and_3ADF)。
   // 用 resource_provider 取 bytes;成功回 true。
   bool load_resource(int idx, std::vector<std::uint8_t>& out);

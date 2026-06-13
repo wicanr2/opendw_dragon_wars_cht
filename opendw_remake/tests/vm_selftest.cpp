@@ -100,6 +100,64 @@ int main() {
     check("op90 消耗 1B operand、r2 不受影響(=8)", s.r2 == 0x08 && s.halted);
   }
 
+  // --- batch 12:角色資料存取 op_5D/5E/5F/60/61/62(已對拍 opendw oracle,逐指令一致)---
+  // 共用 seed:當前角色=player0(gs[6]=0)、selector=gs[0x0A]=2 → record base 0x200;
+  //   op_61 用 (selector>>1)*512 = 0x200(與 5D 一致);party size gs[0x1F]=2。
+
+  // M: op_5D 讀屬性:char[0x200+0x0C]=0x12 → r2=0x12;op_24;op_5D 0x0D 讀 0x34。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2;
+    s.char_data[0x200+0x0C]=0x12; s.char_data[0x200+0x0D]=0x34;
+    s.script={0x01, 0x5D,0x0C, 0x24, 0x5D,0x0D, 0x5A};
+    Interpreter(s).run();
+    check("op5D 讀角色屬性 0x0D=0x34", s.r2==0x34 && s.halted);
+  }
+
+  // N: op_5E 寫屬性:r2=0x99 → op_5E 0x0D 寫 char[0x200+0x0D];op_5D 0x0D 讀回 0x99。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2;
+    s.script={0x01, 0x09,0x99, 0x5E,0x0D, 0x5D,0x0D, 0x5A};
+    Interpreter(s).run();
+    check("op5E 寫角色屬性後讀回=0x99",
+          s.char_data[0x200+0x0D]==0x99 && s.r2==0x99 && s.halted);
+  }
+
+  // O: op_5F 設 bit:r2=1(mask 0x40)→ op_5F 0x21 設 char[0x200+0x21] bit6。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2;
+    s.script={0x01, 0x09,0x01, 0x5F,0x21, 0x5A};
+    Interpreter(s).run();
+    check("op5F 設角色 bit(char[0x221]|=0x40)", s.char_data[0x200+0x21]==0x40 && s.halted);
+  }
+
+  // P: op_60 清 bit:預設 char[0x200+0x21]=0x40 → op_60 0x21 清 bit6 → 0x00。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2; s.char_data[0x200+0x21]=0x40;
+    s.script={0x01, 0x09,0x01, 0x60,0x21, 0x5A};
+    Interpreter(s).run();
+    check("op60 清角色 bit(char[0x221]&=~0x40)", s.char_data[0x200+0x21]==0x00 && s.halted);
+  }
+
+  // Q: op_61 測 bit:char[0x200+0x20]=0x40,r2=1(mask 0x40)→ test 命中(非零)→ zf=0,cf=0。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2; s.char_data[0x200+0x20]=0x40;
+    s.script={0x01, 0x09,0x01, 0x61,0x20, 0x5A};
+    Interpreter(s).run();
+    check("op61 測角色 bit 命中 → zf=0、cf=0",
+          (s.flags & kZero)==0 && (s.flags & kCarry)==0 && s.halted);
+  }
+
+  // R: op_62 掃描:party2 人,strength(0x0C):player0(rec 0)=0、player1(rec 512)=0x07;
+  //    門檻 cl=0x08 → 皆未達 → 迴圈結束 set cf;word_3AE6 不寫(僅 cpu.cf=1)。
+  {
+    VmState s; s.game_state[0x1F]=2;
+    s.char_data[0*512+0x0C]=0x00; s.char_data[1*512+0x0C]=0x07;
+    s.script={0x01, 0x62,0x0C,0x08, 0x5A};
+    Interpreter(s).run();
+    check("op62 全未達門檻 → cf=1、word_3AE6 不設 carry",
+          s.cf==1 && (s.flags & kCarry)==0 && s.halted);
+  }
+
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);
   return fails ? 1 : 0;
 }

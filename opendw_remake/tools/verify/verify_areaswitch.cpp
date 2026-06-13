@@ -142,22 +142,28 @@ int main(int argc, char** argv) {
   case_intra(bundle, 27, 19, 10, 1, 18, 21, "area27 樓梯 0x20 (19,10)->(18,21)");
   case_intra(bundle, 27, 18, 21, 1, 19, 10, "area27 樓梯 0x21 (18,21)->(19,10) 回程");
 
-  // ── 案例 7:area 23「Mystic Wood」tile 0x04@(5,7) → 換 area 0「Dilmun」──
-  // 偵測到 gs[2] 23->0(真實換場),但目標 area 0 是 wrap-world(flag&2),opendw 未實作
-  //   → 規範行為:跳過 + 不換場(reloc=-1),current_area 維持 23。
+  // ── 案例 7:area 23「Mystic Wood」tile 0x04@(5,7) — 林間空地敘述事件(非換場)──
+  // 腳本序列:op_73 → op_62(scan_char dl=0x20 cl=01)→ op_42(jc)→ op_74/7D/78/89。
+  // batch12 起 op_62 為「忠實掃描」(對拍 opendw byte-identical):party 無成員的
+  //   property[0x20] >= 1 → 未命中 → 迴圈結束僅設 cpu.cf=1、**不寫 word_3AE6**;
+  //   故 op_42(讀 word_3AE6 的 carry bit)**不跳轉** → 落入空地敘述文字分支,
+  //   gs[2] 維持 23(不換場)。此與 oracle 逐指令一致(見 build_trace_oracle_batch10.sh
+  //   對拍:op_62→op_42 兩側 word_3AE6 皆 0、皆不跳)。
+  // 註:舊版此案例 exp gs[2]=0,係依賴「op_62 stub 永遠 flags|=carry」的錯誤行為使
+  //   op_42 誤跳到換場分支;補完忠實 op_62 後修正為 gs[2]=23(不換場)。
   {
     World w(bundle);
     if (w.enter_map(23)) {
       w.px = 5; w.py = 7;
       std::string msg = w.run_event(w.level->tile(5,7));
-      int wrote_area = w.gs[2];                        // relocate 前:腳本寫入的目標 area
+      int wrote_area = w.gs[2];                        // relocate 前:腳本是否改 area
       int r = w.sync_relocation();
-      bool ok = (wrote_area == 0) && (r == -1) && (w.current_area == 23);
+      bool ok = (wrote_area == 23) && (r == 0) && (w.current_area == 23);
       char buf[220]; std::snprintf(buf,sizeof buf,
-        "腳本寫 gs[2]=%d(exp 0,真實偵測到換場);目標 Dilmun=wrap-world → reloc=%d(exp -1 跳過);"
+        "敘述事件不換場:gs[2]=%d(exp 23,op_62 未命中→op_42 不跳);reloc=%d(exp 0);"
         "current_area=%d(exp 23) emit=\"%.30s\"", wrote_area, r, w.current_area, msg.c_str());
-      check("area23->0 換場偵測 + wrap 目標跳過", ok, buf);
-    } else check("area23->0 換場偵測 + wrap 目標跳過", false, "enter_map");
+      check("area23 空地敘述事件(op_62 忠實→不誤換場)", ok, buf);
+    } else check("area23 空地敘述事件(op_62 忠實→不誤換場)", false, "enter_map");
   }
 
   // ── 案例 8:普通地面不誤觸發 relocate(area 1 Purgatory 的 tile==1 地面格 → reloc=0)──
