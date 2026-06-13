@@ -33,6 +33,8 @@ run "段落檢視器"      --read-para 88
 run "段落捲動"        --read-para 88 --para-scroll 1
 run "角色表"          --char-sheet 0
 run "遭遇畫面"        --encounter 12 --combat-seed 4660
+run "俯視地圖(fog)"  --map 1 --automap 1
+run "俯視地圖(探索)" --automap 1 --mm-seed 2
 run "日文 FP"         --map 1 --fp --locale ja
 run "viewport"        --viewport
 
