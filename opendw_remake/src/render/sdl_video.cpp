@@ -50,6 +50,8 @@ Input SdlVideo::poll() {
       case SDLK_ESCAPE: in.back = true; break;     // Esc = 離開子畫面 / 繼續訊息
       case SDLK_UP:     in.up = true; break;
       case SDLK_DOWN:   in.down = true; break;
+      case SDLK_LEFT:   in.left = true; break;
+      case SDLK_RIGHT:  in.right = true; break;
       case SDLK_RETURN: case SDLK_SPACE: in.select = true; break;
       default:
         if (k >= SDLK_a && k <= SDLK_z) in.key = 'A' + (k - SDLK_a);  // 字母→大寫快捷鍵
