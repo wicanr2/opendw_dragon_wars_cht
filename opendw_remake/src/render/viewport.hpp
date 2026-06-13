@@ -3,6 +3,8 @@
 #include <array>
 #include <cstdint>
 
+#include "render/framebuffer.hpp"
+
 // 第一人稱 viewport 解碼器。
 //
 // 忠實 port 自 Devin Smith 的 opendw C 反組譯 (src/lib/ui.c) 的
@@ -40,6 +42,30 @@ public:
               int ypos = 0,
               std::uint16_t word_1053 = 0x50,
               std::uint8_t byte_104E = 0);
+
+  // 把 viewport_memory blit 到 framebuffer。
+  //
+  // port 自 opendw ui_update_viewport (ui.c:519)。viewport_memory 為
+  // 136 列 × 80 byte,每 byte 含 2 像素 (hi nibble = 左、lo nibble = 右)。
+  // 視窗左上角 = (ox, oy),原版預設 (16, 8) — 對應
+  //   line_num = viewport_initial_offset(0) + 8;framebuffer offset =
+  //   get_line_offset(line_num) + 0x10 = line_num*320 + 16。
+  // 視窗大小 = 160 × 136 像素 (80 byte × 2 px/byte × 136 列)。
+  void to_framebuffer(render::Framebuffer& fb, int ox = 16, int oy = 8) const;
+
+  // 組合靜態框架 (透視框線 / 地板網格) 到 viewport_memory。
+  //
+  // port 自 opendw update_viewport (ui.c:1081):
+  //   1. 清左右邊界 nibble (每列 mem[di] &= 0x0F、mem[di+0x4F] &= 0xF0,di += 0x50)。
+  //   2. byte_104E = 0;vidx 3→0,各 decode 對應象限模板,
+  //      xpos/ypos 取自 viewport_metadata[vidx*4 + 2/3]。
+  //
+  // 四個象限模板 (vp0..vp3) 由呼叫端載入後傳入。本函式不負責 reset;
+  // 呼叫端應先 reset(0)。
+  void compose_frame(const std::uint8_t* vp0,
+                     const std::uint8_t* vp1,
+                     const std::uint8_t* vp2,
+                     const std::uint8_t* vp3);
 };
 
 } // namespace dw::render

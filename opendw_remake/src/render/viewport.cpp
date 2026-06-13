@@ -498,6 +498,47 @@ void ViewportDecoder::reset(std::uint8_t fill) {
   mem.fill(fill);
 }
 
+// port 自 opendw ui_update_viewport (ui.c:519)。
+void ViewportDecoder::to_framebuffer(render::Framebuffer& fb, int ox, int oy) const {
+  constexpr int rows = 0x88;  // viewport_height = 136
+  constexpr int cols = 0x50;  // viewport_width  = 80 (byte/列)
+  const std::uint8_t* src = mem.data();
+  for (int y = 0; y < rows; ++y) {
+    int fx = ox;
+    for (int x = 0; x < cols; ++x) {
+      std::uint8_t al = *src++;
+      std::uint8_t hi = (al >> 4) & 0x0F;  // 左像素
+      std::uint8_t lo = al & 0x0F;         // 右像素
+      fb.put(fx++, oy + y, hi);
+      fb.put(fx++, oy + y, lo);
+    }
+  }
+}
+
+// port 自 opendw update_viewport (ui.c:1081)。
+void ViewportDecoder::compose_frame(const std::uint8_t* vp0,
+                                    const std::uint8_t* vp1,
+                                    const std::uint8_t* vp2,
+                                    const std::uint8_t* vp3) {
+  // 0xCAD:清左右邊界 nibble (136 列,di 步進 0x50)。
+  std::uint16_t di = 0;
+  for (int i = 0; i < 0x88; ++i) {
+    mem[di] &= 0x0F;
+    mem[di + 0x4F] &= 0xF0;
+    di += 0x50;
+  }
+
+  // 0xCBF:vidx 3→0,各象限模板 decode 進同一個 mem。
+  //   xpos/ypos 取自 viewport_metadata[vidx*4 + 2/3] (與 opendw 一致)。
+  const std::uint8_t* tmpl[4] = {vp0, vp1, vp2, vp3};
+  for (int vidx = 3; vidx >= 0; --vidx) {
+    int idx = vidx << 2;
+    int xpos = viewport_metadata[idx + 2];
+    int ypos = viewport_metadata[idx + 3];
+    decode(tmpl[vidx], xpos, ypos, /*word_1053=*/0x50, /*byte_104E=*/0);
+  }
+}
+
 void ViewportDecoder::decode(const std::uint8_t* tmpl,
                              int xpos,
                              int ypos,

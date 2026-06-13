@@ -25,6 +25,7 @@
 #include "render/framebuffer.hpp"
 #include "render/sprite.hpp"
 #include "render/picture.hpp"
+#include "render/viewport.hpp"
 #include "render/sdl_video.hpp"
 #include "resource/level.hpp"
 #include "i18n/strings.hpp"
@@ -64,6 +65,7 @@ int main(int argc, char** argv) {
   std::string menu_tsv;           // 空 = 由 locale 推導
   int start_pc = 20, max_frames = -1, press = 0, map_area = -1;
   std::string dump, sprite_name, scene_name;
+  bool viewport_mode = false;   // --viewport:顯示原版第一人稱 viewport 靜態框架
   for (int i = 1; i < argc; ++i) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
     if (eq("--bundle") && i + 1 < argc) bundle = argv[++i];
@@ -78,13 +80,14 @@ int main(int argc, char** argv) {
     else if (eq("--scene") && i + 1 < argc) scene_name = argv[++i];
     else if (eq("--map") && i + 1 < argc) map_area = std::atoi(argv[++i]);   // 直接進某區地圖
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
+    else if (eq("--viewport")) viewport_mode = true;   // 顯示原版 viewport 靜態框架
   }
 
   auto font = render::Font8x8::load_table(font_raw);
   if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }
   const bool scene_mode = !scene_name.empty();
   const bool sprite_mode = !sprite_name.empty();
-  const bool menu_mode = !scene_mode && !sprite_mode && map_area < 0;
+  const bool menu_mode = !scene_mode && !sprite_mode && !viewport_mode && map_area < 0;
   render::Framebuffer fb;
 
   // 多國語系:i18n 字串表由 locale 推導(可 --locale ja 切換);CJK atlas 可隨 locale 替換。
@@ -132,7 +135,28 @@ int main(int argc, char** argv) {
   };
   if (map_area >= 0) { if (!enter_map(map_area)) return 1; state = S_GAME; }
 
-  if (scene_mode) {
+  if (viewport_mode) {
+    // ── 原版第一人稱 viewport 靜態框架(port 自 opendw ui_update_viewport +
+    //     update_viewport)。從 bundle 載 4 象限模板 vp0..vp3,compose 進
+    //     viewport_memory,再 blit 到 framebuffer (16,8),160×136 視窗。──
+    auto load_vp = [&](const std::string& name) -> std::vector<std::uint8_t> {
+      std::string path = bundle + "/viewport/" + name + ".bin";
+      std::FILE* f = std::fopen(path.c_str(), "rb");
+      if (!f) { std::fprintf(stderr, "viewport open failed: %s\n", path.c_str()); return {}; }
+      std::vector<std::uint8_t> buf; int c;
+      while ((c = std::fgetc(f)) != EOF) buf.push_back((std::uint8_t)c);
+      std::fclose(f);
+      return buf;
+    };
+    auto v0 = load_vp("vp0"), v1 = load_vp("vp1"), v2 = load_vp("vp2"), v3 = load_vp("vp3");
+    if (v0.empty() || v1.empty() || v2.empty() || v3.empty()) return 1;
+    render::ViewportDecoder vd;
+    vd.reset(0);
+    vd.compose_frame(v0.data(), v1.data(), v2.data(), v3.data());
+    fb.clear(0);
+    vd.to_framebuffer(fb);   // 預設原點 (16, 8)
+    std::fprintf(stderr, "viewport frame composed (vp0..vp3, 160x136 @ 16,8)\n");
+  } else if (scene_mode) {
     // ── E:全螢幕場景圖(從 bundle .pic 載解壓資料,title_adjust 去交錯)──
     std::string path = scene_name.find('/') != std::string::npos
                          ? scene_name : bundle + "/scenes/" + scene_name + ".pic";
