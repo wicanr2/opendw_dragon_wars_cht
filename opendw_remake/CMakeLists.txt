@@ -48,6 +48,11 @@ add_library(dwr_i18n STATIC src/i18n/strings.cpp src/i18n/string_table.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
+# --- game 模組(隊伍角色資料 + 右側狀態面板渲染)---
+add_library(dwr_game STATIC src/game/party.cpp)
+target_include_directories(dwr_game PUBLIC src)
+target_link_libraries(dwr_game PUBLIC dwr_render)
+
 # golden 測試:remake 渲染 title,與 golden 對拍(見 tools_build/render_golden.sh)。
 add_executable(render_title tools/verify/render_title.cpp)
 target_link_libraries(render_title PRIVATE dwr_render dwr_resource)
@@ -77,7 +82,7 @@ if(SDL2_FOUND)
     src/main.cpp
     src/render/sdl_video.cpp
     src/render/text_layer.cpp)
-  target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n SDL2::SDL2)
+  target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n dwr_game SDL2::SDL2)
   if(DWR_HAVE_TTF)
     target_include_directories(opendw_remake PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
     target_link_libraries(opendw_remake PRIVATE ${SDL2_TTF_LIBRARIES})
@@ -147,6 +152,16 @@ target_link_libraries(verify_fp PRIVATE dwr_render dwr_resource)
 # 全 40 關第一人稱像素對拍廣度掃描 (每關多可走格 × 4 朝向)。
 add_executable(verify_fp_sweep tools/verify/verify_fp_sweep.cpp)
 target_link_libraries(verify_fp_sweep PRIVATE dwr_render dwr_resource)
+
+# 隊伍狀態面板:載 bundle 預設隊伍,印 record 欄位 + dump 像素層(狀態條)PPM。
+# 文字層(名字)需 SDL2_ttf,故此工具同 opendw_remake 條件下建。
+if(SDL2_FOUND AND DWR_HAVE_TTF)
+  add_executable(verify_party_panel tools/verify/verify_party_panel.cpp
+    src/render/text_layer.cpp)
+  target_link_libraries(verify_party_panel PRIVATE dwr_game SDL2::SDL2)
+  target_include_directories(verify_party_panel PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
+  target_link_libraries(verify_party_panel PRIVATE ${SDL2_TTF_LIBRARIES})
+endif()
 
 # tools/extract:抽各關用到的牆/地/天空元件資源 → bundle/components/<tag>.bin。
 add_executable(extract_components tools/extract/extract_components.cpp)

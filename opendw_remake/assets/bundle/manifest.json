@@ -22,5 +22,7 @@
     "strings/6.tsv"
   ],
   "sprites": "sprites/manifest.json",
+  "party": "party/default_party.bin",
+  "party_note": "進遊戲預設 4 人隊伍(Muskels/Theb/Elendil/Cheetah),抽自 DATA1 @ 0x2E26 起 4×512B player_record(opendw player.c 佈局)。slot 4-6 為 0xFF 空槽未含入。供右側狀態面板(game::Party)載入,不需 DATA1。",
   "note": "remake 執行期讀此 bundle,不需原始磁碟檔。對話改 strings/*.tsv,sprite 改 sprites/*.png(轉回 .spr)。"
 }
