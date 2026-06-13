@@ -200,6 +200,13 @@ target_link_libraries(verify_i18n PRIVATE dwr_i18n)
 add_test(NAME verify_i18n
          COMMAND verify_i18n ${CMAKE_SOURCE_DIR}/assets/i18n)
 
+# app 層整合 smoke:headless 跑遍 main.cpp 各模式,斷言不崩 + dump 確定性。
+if(TARGET opendw_remake)
+  add_test(NAME smoke_app
+           COMMAND bash ${CMAKE_SOURCE_DIR}/tools/verify/smoke_test.sh
+                   $<TARGET_FILE:opendw_remake> ${CMAKE_SOURCE_DIR})
+endif()
+
 # viewport 解碼對拍:remake ViewportDecoder vs golden .vpmem (byte-for-byte)。
 add_executable(verify_viewport tools/verify/verify_viewport.cpp)
 target_link_libraries(verify_viewport PRIVATE dwr_render)
