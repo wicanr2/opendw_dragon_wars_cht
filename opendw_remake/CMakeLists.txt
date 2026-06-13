@@ -94,3 +94,7 @@ target_link_libraries(verify_provider PRIVATE dwr_resource)
 # 完整閉環:bundle bytecode → VM op_78 → i18n → 渲染。
 add_executable(render_vm_text tools/verify/render_vm_text.cpp)
 target_link_libraries(render_vm_text PRIVATE dwr_vm dwr_render dwr_i18n)
+
+# tools/extract:關卡(level)資源解析(R4 真實地圖)。
+add_executable(extract_level tools/extract/extract_level.cpp)
+target_link_libraries(extract_level PRIVATE dwr_resource)
