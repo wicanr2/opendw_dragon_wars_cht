@@ -42,7 +42,7 @@ add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
-add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp src/render/viewport_compose.cpp)
+add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp src/render/viewport_compose.cpp src/render/minimap.cpp)
 target_link_libraries(dwr_render PUBLIC dwr_resource)
 add_library(dwr_i18n STATIC src/i18n/strings.cpp src/i18n/string_table.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
@@ -252,6 +252,15 @@ if(SDL2_FOUND AND DWR_HAVE_TTF)
   target_include_directories(verify_party_panel PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
   target_link_libraries(verify_party_panel PRIVATE ${SDL2_TTF_LIBRARIES})
 endif()
+
+# 俯視 automap 像素對拍:remake Minimap vs golden_minimap .mmem (byte-for-byte)。
+add_executable(verify_automap tools/verify/verify_automap.cpp)
+target_link_libraries(verify_automap PRIVATE dwr_render dwr_resource)
+add_test(NAME verify_automap_l1
+         COMMAND verify_automap ${CMAKE_SOURCE_DIR}/assets/bundle/maps/1.lvl
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/maps/golden
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/viewport
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/components)
 
 # tools/extract:抽各關用到的牆/地/天空元件資源 → bundle/components/<tag>.bin。
 add_executable(extract_components tools/extract/extract_components.cpp)

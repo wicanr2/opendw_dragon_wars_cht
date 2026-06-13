@@ -100,7 +100,10 @@ Input SdlVideo::poll() {
       case SDLK_PAGEDOWN: in.pgdown = true; break;   // PgDn = 段落下翻一頁
       case SDLK_F4:     in.cycle_lang = true; break;  // F4 = 循環切換語系
       default:
-        if (k >= SDLK_a && k <= SDLK_z) in.key = 'A' + (k - SDLK_a);  // 字母→大寫快捷鍵
+        // `?`(Shift+/ 或 SDLK_QUESTION)= 顯示俯視平面地圖(對齊原版手冊)。
+        if (k == SDLK_QUESTION ||
+            (k == SDLK_SLASH && (e.key.keysym.mod & KMOD_SHIFT))) in.key = '?';
+        else if (k >= SDLK_a && k <= SDLK_z) in.key = 'A' + (k - SDLK_a);  // 字母→大寫快捷鍵
         else if (k >= SDLK_0 && k <= SDLK_9) in.key = '0' + (k - SDLK_0);
         break;
     }
