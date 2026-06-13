@@ -44,12 +44,17 @@ Input SdlVideo::poll() {
   while (SDL_PollEvent(&e)) {
     if (e.type == SDL_QUIT) { in.quit = true; continue; }
     if (e.type != SDL_KEYDOWN) continue;
-    switch (e.key.keysym.sym) {
-      case SDLK_ESCAPE: case SDLK_q: in.quit = true; break;
-      case SDLK_UP:     case SDLK_k: in.up = true; break;
-      case SDLK_DOWN:   case SDLK_j: in.down = true; break;
+    SDL_Keycode k = e.key.keysym.sym;
+    switch (k) {
+      case SDLK_q:      in.quit = true; break;     // Q = 離開遊戲(手冊)
+      case SDLK_ESCAPE: in.back = true; break;     // Esc = 離開子畫面 / 繼續訊息
+      case SDLK_UP:     in.up = true; break;
+      case SDLK_DOWN:   in.down = true; break;
       case SDLK_RETURN: case SDLK_SPACE: in.select = true; break;
-      default: break;
+      default:
+        if (k >= SDLK_a && k <= SDLK_z) in.key = 'A' + (k - SDLK_a);  // 字母→大寫快捷鍵
+        else if (k >= SDLK_0 && k <= SDLK_9) in.key = '0' + (k - SDLK_0);
+        break;
     }
   }
   return in;
