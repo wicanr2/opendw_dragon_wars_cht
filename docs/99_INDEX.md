@@ -64,10 +64,10 @@
 | [32_EN_MANUAL_TEXT.md](32_EN_MANUAL_TEXT.md) | ✅ | 英文手冊 OCR(粗糙待校,英文段落唯一來源) |
 | [33_MANUAL_TRANSCRIPTION.md](33_MANUAL_TRANSCRIPTION.md) | ✅ | **中文手冊視覺精確轉寫**(取代 30/31) |
 | [34_READ_PARAGRAPHS.md](34_READ_PARAGRAPHS.md) | ✅ | **Read Paragraph 段落精確轉寫** |
-| [35_SOFTWORLD_25.md](35_SOFTWORLD_25.md) | ✅ | 《軟體世界》25 期攻略轉寫 |
-| [36_SOFTWORLD_26.md](36_SOFTWORLD_26.md) | ✅ | 《軟體世界》26 期攻略轉寫 |
-| [37_SOFTWORLD_27.md](37_SOFTWORLD_27.md) | ✅ | 《軟體世界》27 期攻略轉寫 |
-| [38_SOFTWORLD_WALKTHROUGH.md](38_SOFTWORLD_WALKTHROUGH.md) | ✅ | **《軟體世界》三期攻略 · 圖文整合版**(21 掃描頁 + 逐地點事件表 + 訊息↔手冊段落擴充) |
+| [35_SOFTWORLD_25.md](35_SOFTWORLD_25.md) | ✅ | 《軟體世界》25 期攻略轉寫(原始·備查,正本見 38/39) |
+| [36_SOFTWORLD_26.md](36_SOFTWORLD_26.md) | ✅ | 《軟體世界》26 期攻略轉寫(原始·備查,正本見 38/39) |
+| [37_SOFTWORLD_27.md](37_SOFTWORLD_27.md) | ✅ | 《軟體世界》27 期攻略轉寫(原始·備查,正本見 38/39) |
+| [38_SOFTWORLD_WALKTHROUGH.md](38_SOFTWORLD_WALKTHROUGH.md) | ✅ | **《軟體世界》三期攻略 · 圖文整合版(正本)**(逐地點臨摹地圖 + 事件表 + 訊息↔手冊段落擴充) |
 | [39_SOFTWORLD_FULLTEXT_AND_MAPS.md](39_SOFTWORLD_FULLTEXT_AND_MAPS.md) | ✅ | **三期攻略 · 逐頁全文 + 純方格切圖 + 臨摹向量圖**(21 頁逐字轉寫 + 39 切圖[像素複製·無中文] + 39 potrace 臨摹 SVG) |
 
 ## 參考 / 建置 / 測試 (40–60)

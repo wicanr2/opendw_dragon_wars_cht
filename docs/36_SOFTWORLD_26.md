@@ -1,5 +1,7 @@
 # 36 — 軟體世界 第026期(1991-05)火龍之戰攻略(二)
 
+> **註**:本檔為《軟體世界》第 26 期攻略的**原始逐頁轉寫,備查用**。內容已整合進導讀版 [`38_SOFTWORLD_WALKTHROUGH.md`](38_SOFTWORLD_WALKTHROUGH.md)(按地點 + 事件表 + 手冊段落 + 臨摹地圖)與逐頁全文檔 [`39_SOFTWORLD_FULLTEXT_AND_MAPS.md`](39_SOFTWORLD_FULLTEXT_AND_MAPS.md)(逐字全文 + 純方格切圖 + 臨摹向量圖)。**正本以 38 / 39 為準。**
+
 ## 來源
 
 - 刊物:《軟體世界》第 26 期(1991 年 5 月),純掃描 PDF 無文字層。
