@@ -112,3 +112,6 @@ target_link_libraries(verify_viewport PRIVATE dwr_render)
 # viewport 組景 step1 對拍:remake sample_fov vs golden_compose (FOV 取樣 + 牆 nibble)。
 add_executable(verify_fov tools/verify/verify_fov.cpp)
 target_link_libraries(verify_fov PRIVATE dwr_render dwr_resource)
+
+add_executable(verify_compose tools/verify/verify_compose.cpp)
+target_link_libraries(verify_compose PRIVATE dwr_render dwr_resource)
