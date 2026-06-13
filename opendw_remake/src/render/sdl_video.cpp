@@ -96,6 +96,7 @@ Input SdlVideo::poll() {
       case SDLK_LEFT:   in.left = true; break;
       case SDLK_RIGHT:  in.right = true; break;
       case SDLK_RETURN: case SDLK_SPACE: in.select = true; break;
+      case SDLK_F4:     in.cycle_lang = true; break;  // F4 = 循環切換語系
       default:
         if (k >= SDLK_a && k <= SDLK_z) in.key = 'A' + (k - SDLK_a);  // 字母→大寫快捷鍵
         else if (k >= SDLK_0 && k <= SDLK_9) in.key = '0' + (k - SDLK_0);
