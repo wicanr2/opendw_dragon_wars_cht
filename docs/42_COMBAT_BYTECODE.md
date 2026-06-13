@@ -102,3 +102,32 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
 ./probe_combat_script /app/assets/bundle 3 300000
 # → ran 300000 steps; halted=0 ...(headless_keys={0xC6,0xC1})
 ```
+
+---
+
+## 9. 更新(2026-06-14,第三輪:怪物 roster 機制逆向 + verify_combat_script)
+
+### 目標與結果
+目標:讓怪物成為參戰角色、攻擊迴圈實扣 HP、達成 `verify_combat_script` 逐回合 HP 對拍 oracle byte-identical。
+結果:**未達成 byte-identical HP**(走 fallback)。根因:「怪物 roster pipeline 未完整逆向」+「無可獨立執行的 opendw 可對拍一場完整戰鬥」。已 commit:確定性執行守護 `verify_combat_script`(ctest)+ 本輪逆向發現。
+
+### 怪物→參戰角色(roster)機制(oracle 行號)
+- `gs[0x1F]` = **參戰人數**(戰鬥期含怪物);opendw C **不寫**(engine.c:2538 只讀),由 res3 bytecode 設。res3 @0x0013 `op_19 0x1f,0x20`(備份 party 數到 gs[0x20])、@0x00BE 還原 → 戰鬥期 gs[0x1F] 會被擴張含怪物。
+- **遭遇表**:res3 data @**0x04C6** = `{0x03D6, 0x0412, 0x044E, 0x048A, 0, …}`(對應 monster_info.cpp `script_data[]`),每項 = res3 內某怪物群定義 offset。
+- **setup 鏈**:res3 主流程 `call 0x04F1`(遭遇 setup:`op_0F` 從 `resource_idx(gs[0x5A])->bytes` + `gs[0x58/0x59]` offset + `op_4D` RNG 走訪)+ `call 0x06B5`(`op_0D 0x04C6`:由遭遇 id 查 0x4C6 表 → 怪物群定義)。`gs[0x5A]` = 關卡資源 `(gs[4]+0x1E)` 之 index(engine.c:5452,綁 map/level 載入)。
+- **怪物資料來源**:res31(2177B;= monster_info.cpp 解析對象)。本輪已抽進 bundle(`scripts/31.bin`)。
+
+### 為何空轉(實測根因)
+注入 F→A 後,迴圈在 **res4 @0x491 的 op_89(每角色動作提示)** 無限重提示:因 **roster 為空**(gs[0x1F] 仍只 4 名隊員、怪物未進 char_data 槽),攻擊執行子程式(res3 `call 0x0FAC`)無有效目標,回合無法完成 → 動作提示反覆重入。手動把怪物塞進 char_data slot4 + gs[0x1F]=5 **仍空轉**:因 bytecode 自身的 roster 簿記(gs[0x6A..0x6F]、gs[0x72]/gs[0x75] 兩側「尚有可動者」旗標、gs[0x8B..0x8F];由 sub 0x0669 清零、由遭遇 setup 填)未被正確建立。
+
+### 還差什麼(精確 gap)
+1. **完整逆向遭遇→roster pipeline**:res3@0x4C6 遭遇表項 → 怪物群定義格式 → RNG 決定數量/種類 → 寫 res31 怪物屬性進 char_data 怪物槽 + 設 gs[0x1F]/選擇子 gs[0x0A+i]/roster 簿記。**opendw 自身只部分 RE**(monster_info.cpp `sub_6B5` 留 TODO),需從 res31 格式 + bytecode 走訪逐步補齊。
+2. **op_51**(`op_51 0x04ea`,sub 0x071b 用於 roster 初始化)等 roster 路徑 opcode 尚未實作(本輪未觸發到 halt,因更早就在 res4 動作提示空轉)。
+3. **對拍 oracle 的根本限制**:opendw 需完整遊戲狀態(map/level/save)才能跑戰鬥,**無法獨立跑一場戰鬥輸出逐回合 char_data** 供 byte-diff。即使 roster 補齊,byte-identical 對拍仍需先有「可獨立執行並 dump char_data 的 oracle 路徑」(在 opendw 加 headless 戰鬥入口 + instrumentation)。
+
+### 本輪交付
+- `verify_combat_script`(ctest):固定 seed+隊伍+鍵跑 res3 bytecode 到攻擊迴圈,驗 **指令軌跡兩次執行 byte-identical + 全程無缺 opcode**(守護戰鬥 bytecode 路徑不回歸)。**明確不驗 HP-vs-oracle**(roster gap)。
+- 抽 res31(2177B)、res4(248B)戰鬥資源進 bundle(自包含)。
+
+### combat.cpp placeholder 狀態
+- **仍維持乾淨室標示,不可移除**。一場戰鬥仍未跑出怪物 HP 變化(roster 空 → 空轉),戰鬥數值未經原版 bytecode 驗證為 oracle 真值。嚴守鐵則:未跑通+對拍前不謊稱 oracle。
