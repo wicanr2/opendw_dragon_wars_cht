@@ -1,5 +1,7 @@
 # OpenDW Dragon Wars 中文化專案
 
+[![CI](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml/badge.svg)](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml)
+
 OpenDW 是 Interplay 1989/1990 年遊戲 **Dragon Wars** 的開源重製版。
 本專案旨在將 OpenDW 中文化（繁體中文），並整合 SDL2 顯示層。
 

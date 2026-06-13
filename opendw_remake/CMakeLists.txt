@@ -213,6 +213,16 @@ add_test(NAME render_sweep
          COMMAND bash ${CMAKE_SOURCE_DIR}/tools/verify/render_sweep.sh
                  $<TARGET_FILE_DIR:verify_fp_sweep> ${CMAKE_SOURCE_DIR})
 
+# viewport 中間階段對拍(level 1):compose(FOV→繪製指令)+ fp(最終 viewport_memory)。
+# render_sweep 只驗最終像素;這兩個守護 compose/select 中間階段不漂移。
+add_test(NAME verify_compose_l1
+         COMMAND verify_compose ${CMAKE_SOURCE_DIR}/assets/bundle/maps/1.lvl
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/maps/golden)
+add_test(NAME verify_fp_l1
+         COMMAND verify_fp ${CMAKE_SOURCE_DIR}/assets/bundle/maps/1.lvl
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/maps/golden
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/components)
+
 # viewport 解碼對拍:remake ViewportDecoder vs golden .vpmem (byte-for-byte)。
 add_executable(verify_viewport tools/verify/verify_viewport.cpp)
 target_link_libraries(verify_viewport PRIVATE dwr_render)
