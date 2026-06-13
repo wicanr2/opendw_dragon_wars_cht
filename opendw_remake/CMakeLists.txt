@@ -154,6 +154,11 @@ target_link_libraries(verify_combat PRIVATE dwr_game)
 add_test(NAME verify_combat
          COMMAND verify_combat ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# tools/verify:把原版戰鬥腳本(res 3)餵進 remake VM 的調查工具(gap 分析,非 ctest)。
+#   印跑了幾步、停在哪個 opcode/pc。見 docs/42_COMBAT_BYTECODE.md。
+add_executable(probe_combat_script tools/verify/probe_combat_script.cpp)
+target_link_libraries(probe_combat_script PRIVATE dwr_vm dwr_game)
+
 # tools/verify:怪物圖區渲染 vs oracle golden(byte-for-byte;sprite 渲染管線無漂移)。
 add_executable(verify_encounter_golden tools/verify/verify_encounter_golden.cpp)
 target_link_libraries(verify_encounter_golden PRIVATE dwr_render)

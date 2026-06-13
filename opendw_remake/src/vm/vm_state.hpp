@@ -100,6 +100,21 @@ struct VmState {
   std::uint16_t random_seed = 0x1234;
   std::uint16_t fake_ticks = 0;
 
+  // 乘/除法運算工作區(對照 engine.c word_11C0..word_11CC)。
+  //   op_33/35(gs 取多位元組)、op_34/36(operand)設定運算元,
+  //   multiply_16bit / divide_16bit 用這組暫存,結果回存 game_state[0x37..0x3C]。
+  //   屬純算術子系統(戰鬥傷害/縮放),無 I/O。
+  std::uint16_t w11C0 = 0, w11C2 = 0, w11C4 = 0, w11C6 = 0, w11C8 = 0,
+                w11CA = 0, w11CC = 0;
+
+  // op_8A(隨機遭遇)行為控制。
+  //   預設 halt(維持「remake 尚無戰鬥 → 停」的既有語意,既有測試依賴此)。
+  //   headless_encounter=true 時:op_8A 不 halt,只記錄怪物 id(對照 opendw
+  //   trigger_random_encounter 僅設 byte_4F0F/4F29/4F2B 等「圖形/動畫」狀態,
+  //   不影響戰鬥數值),讓「原版戰鬥腳本」能在無圖形子系統下繼續跑結算路徑。
+  bool headless_encounter = false;
+  std::uint8_t encounter_monster_id = 0xFF;  // op_8A 記錄的怪物 id(= word_3AE2 低位)
+
   // 取下一個 byte / word(LE),前進 pc。
   std::uint8_t fetch8() { return pc < script.size() ? script[pc++] : 0; }
   std::uint16_t fetch16() {
