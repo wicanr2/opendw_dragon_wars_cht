@@ -61,11 +61,30 @@ add_executable(render_cjk_demo tools/verify/render_cjk_demo.cpp)
 target_link_libraries(render_cjk_demo PRIVATE dwr_render)
 
 # --- R2 SDL2 開窗 app(可選:偵測到 SDL2 才建)---
+# 雙層渲染:像素層(framebuffer 整數放大)+ 文字層(SDL2_ttf 高解析 CJK)。
+# SDL2_ttf 只供 opendw_remake target;其他 verify_*/extract_* 不需 SDL。
 find_package(SDL2 QUIET)
 if(SDL2_FOUND)
-  add_executable(opendw_remake src/main.cpp src/render/sdl_video.cpp)
+  find_package(PkgConfig QUIET)
+  set(DWR_HAVE_TTF FALSE)
+  if(PkgConfig_FOUND)
+    pkg_check_modules(SDL2_TTF QUIET SDL2_ttf)
+    if(SDL2_TTF_FOUND)
+      set(DWR_HAVE_TTF TRUE)
+    endif()
+  endif()
+  add_executable(opendw_remake
+    src/main.cpp
+    src/render/sdl_video.cpp
+    src/render/text_layer.cpp)
   target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n SDL2::SDL2)
-  message(STATUS "SDL2 found: opendw_remake app enabled")
+  if(DWR_HAVE_TTF)
+    target_include_directories(opendw_remake PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
+    target_link_libraries(opendw_remake PRIVATE ${SDL2_TTF_LIBRARIES})
+    message(STATUS "SDL2 + SDL2_ttf found: opendw_remake two-layer renderer enabled")
+  else()
+    message(FATAL_ERROR "SDL2_ttf not found (required for text layer). Install libsdl2-ttf-dev.")
+  endif()
 else()
   message(STATUS "SDL2 not found: skip opendw_remake app (only build/test libs)")
 endif()
