@@ -15,6 +15,11 @@
 
 namespace dw::render {
 
+DecodeBranchCounters& decode_branch_counters() {
+  static DecodeBranchCounters counters;
+  return counters;
+}
+
 namespace {
 
 // 解碼期間的執行狀態,對應 golden_decode.c 的 file-global。
@@ -469,18 +474,23 @@ void decode_viewport_data(DecodeCtx& ctx, const unsigned char* data, viewport_da
   // 0xD78 offset
   switch (bx) {
   case 0:
+    decode_branch_counters().process_quadrant++;
     process_quadrant(ctx, vp, ctx.viewport_memory);
     break;
   case 2:
+    decode_branch_counters().word_mode++;
     draw_viewport_word_mode(ctx, vp, ctx.viewport_memory);
     break;
   case 4:
+    decode_branch_counters().neg_x++;
     draw_viewport_neg_x(ctx, vp, ctx.viewport_memory);
     break;
   case 6:
+    decode_branch_counters().neg_x_alt++;
     draw_viewport_neg_x_alt(ctx, vp, ctx.viewport_memory);
     break;
   case 8:
+    decode_branch_counters().flip_y++;
     draw_viewport_flip_y(ctx, vp, ctx.viewport_memory);
     break;
   default:

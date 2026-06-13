@@ -18,6 +18,25 @@
 
 namespace dw::render {
 
+// decode_viewport_data 五個分派分支的命中計數 (診斷/覆蓋率用)。
+// 對應 opendw bx switch:0/2/4/6/8。verify 工具用它檢查全 40 關掃描
+// 是否確實行使過 word_mode/neg_x/neg_x_alt/flip_y 等較少見分支。
+struct DecodeBranchCounters {
+  long process_quadrant = 0;  // bx==0
+  long word_mode = 0;         // bx==2
+  long neg_x = 0;             // bx==4
+  long neg_x_alt = 0;         // bx==6
+  long flip_y = 0;            // bx==8
+
+  void reset() { *this = DecodeBranchCounters{}; }
+  long total() const {
+    return process_quadrant + word_mode + neg_x + neg_x_alt + flip_y;
+  }
+};
+
+// 全域分支計數器 (單執行緒 verify 工具用;render 主流程不依賴它)。
+DecodeBranchCounters& decode_branch_counters();
+
 class ViewportDecoder {
 public:
   // 0x4F11 viewport_memory:10880 bytes (136 × 80)。
