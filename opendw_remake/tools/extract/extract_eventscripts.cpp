@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
         return prov->load(tag);
       };
       dw::vm::Interpreter ip(st);
-      ip.run();  // 不需 message sink,只關心 provider 被請求的 tag
+      ip.run(200000);  // 加上限:壞跳轉/跨資源迴圈不會無限跑(只關心被請求的 tag)
     }
   }
 

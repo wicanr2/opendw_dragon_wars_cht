@@ -31,7 +31,9 @@ public:
   }
 
   // 執行直到 halt(op_5A)或 pc 越界。回傳執行的指令數。
-  int run();
+  // max_steps>0 時加上指令數上限(達上限即停,halted 不設);供事件掃描/重放避免
+  // 跨資源迴圈/壞跳轉造成的無限執行。<=0(預設)為無上限,行為與舊版相同。
+  int run(long max_steps = 0);
 
   // 已實作的 opcode 集合(R1 batch 1);未實作者執行會 halt 並記錄。
   bool implemented(std::uint8_t op) const { return kImpl[op] != nullptr; }

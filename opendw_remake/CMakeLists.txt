@@ -153,6 +153,12 @@ target_link_libraries(verify_areaswitch PRIVATE dwr_vm)
 add_test(NAME verify_areaswitch
          COMMAND verify_areaswitch ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# tools/verify:op_58 跨資源 halt 統計(補齊前/後)+ 確定性 PASS/FAIL(ctest)。
+add_executable(verify_op58 tools/verify/verify_op58.cpp)
+target_link_libraries(verify_op58 PRIVATE dwr_vm)
+add_test(NAME verify_op58
+         COMMAND verify_op58 ${CMAKE_SOURCE_DIR}/assets/bundle)
+
 # viewport 解碼對拍:remake ViewportDecoder vs golden .vpmem (byte-for-byte)。
 add_executable(verify_viewport tools/verify/verify_viewport.cpp)
 target_link_libraries(verify_viewport PRIVATE dwr_render)

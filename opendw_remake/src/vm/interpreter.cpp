@@ -1,6 +1,11 @@
 #include "interpreter.hpp"
 
 #include <string>
+// 註:game_state 為 256-byte 區(對照 opendw struct game_state.unknown[256])。
+// op_2D/op_2F 等以 cpu.bx 索引時,opendw 在 bx>255 會讀到結構外記憶體(UB,
+// 正常遊玩 bx<=256)。remake 將所有 game_state 索引一律遮成 8-bit(與本檔其他
+// 既有 `(bx+1) & 0xFF` 站點一致),避免在跨資源事件掃描/重放時越界 crash;
+// 對 bx<=255 的合法路徑語意不變(回歸測試不受影響)。
 
 #include "../resource/text_codec.hpp"
 
@@ -274,7 +279,7 @@ void Interpreter::op39_or_gs() {
   std::uint8_t al = s_.fetch8();
   s_.ax = (s_.ax & 0xFF00) | al;
   s_.bx = s_.ax;
-  s_.ax = s_.game_state[s_.bx];
+  s_.ax = s_.game_state[s_.bx & 0xFF];
   s_.ax += s_.game_state[(s_.bx + 1) & 0xFF] << 8;
   s_.ax |= s_.r2;
   std::uint8_t ah = ((s_.ax & 0xFF00) >> 8) & s_.mode;
@@ -296,7 +301,7 @@ void Interpreter::op3A_or_imm() {
 void Interpreter::op3B_xor_gs() {
   std::uint8_t al = s_.fetch8();
   s_.bx = al;
-  s_.ax = s_.game_state[s_.bx];
+  s_.ax = s_.game_state[s_.bx & 0xFF];
   s_.ax += s_.game_state[(s_.bx + 1) & 0xFF] << 8;
   s_.ax = s_.ax ^ s_.r2;
   std::uint8_t ah = ((s_.ax & 0xFF00) >> 8) & s_.mode;
@@ -366,7 +371,7 @@ void Interpreter::op47_jns() {  // SF clear → jump
 
 void Interpreter::op4E_set_gs_bit() {
   get_bit_mask(s_.r2 & 0xFF);
-  std::uint8_t val = s_.game_state[s_.bx];
+  std::uint8_t val = s_.game_state[s_.bx & 0xFF];
   val |= (s_.ax & 0xFF);
   set_gs(s_.bx, val);
 }
@@ -374,16 +379,16 @@ void Interpreter::op4E_set_gs_bit() {
 void Interpreter::op4F_clr_gs_bit() {
   get_bit_mask(s_.r2 & 0xFF);
   std::uint8_t al = ~(s_.ax & 0xFF);
-  std::uint8_t val = s_.game_state[s_.bx] & al;
+  std::uint8_t val = s_.game_state[s_.bx & 0xFF] & al;
   set_gs(s_.bx, val);
 }
 
 void Interpreter::op50_test_gs_bit() {
   get_bit_mask(s_.r2 & 0xFF);
   std::uint8_t al = s_.ax & 0xFF;
-  s_.zf = (s_.game_state[s_.bx] & al) == 0;
+  s_.zf = (s_.game_state[s_.bx & 0xFF] & al) == 0;
   s_.cf = 0;
-  s_.sf = (s_.game_state[s_.bx] & al) >= 0x80;
+  s_.sf = (s_.game_state[s_.bx & 0xFF] & al) >= 0x80;
   std::uint16_t flags = 0;
   flags |= s_.sf << 7;
   flags |= s_.zf << 6;
@@ -407,7 +412,7 @@ void Interpreter::op2F_rcr_add_gs() {
   s_.flags = s_.flags >> 1;
   std::uint8_t al = s_.fetch8();
   s_.ax = (s_.ax & 0xFF00) | al; s_.bx = s_.ax;
-  s_.cx = s_.game_state[s_.bx];
+  s_.cx = s_.game_state[s_.bx & 0xFF];
   s_.cx += (s_.game_state[(s_.bx + 1) & 0xFF] << 8);
   if (s_.mode != (s_.ax >> 8)) {
     std::uint16_t tmp = s_.r2 + s_.cx;
@@ -441,7 +446,7 @@ void Interpreter::op31_rcr_sub_gs() {
   s_.flags = (s_.flags & 0xFF00) | ((s_.flags & 0xFF) >> 1);
   std::uint8_t al = s_.fetch8();
   s_.ax = (s_.ax & 0xFF00) | al; s_.bx = s_.ax;
-  s_.cx = s_.game_state[s_.bx];
+  s_.cx = s_.game_state[s_.bx & 0xFF];
   s_.cx += s_.game_state[(s_.bx + 1) & 0xFF] << 8;
   std::uint8_t ah = (s_.ax & 0xFF00) >> 8;
   unsigned int tmp;
@@ -486,8 +491,8 @@ void Interpreter::op48_set_gs_msb() {
   s_.flags &= 0xBF;  // clear_sign_flag()(opendw 實際清 0x40)
   std::uint8_t al = s_.fetch8();
   s_.ax = (s_.ax & 0xFF00) | al; s_.bx = s_.ax;
-  if (s_.game_state[s_.bx] < 0x80) {
-    set_gs(s_.bx, s_.game_state[s_.bx] | 0x80);
+  if (s_.game_state[s_.bx & 0xFF] < 0x80) {
+    set_gs(s_.bx, s_.game_state[s_.bx & 0xFF] | 0x80);
     s_.flags |= 0x40;  // set_sign_flag()(實際設 0x40)
   }
 }
@@ -512,7 +517,7 @@ void Interpreter::op66_test_gs() {
   std::uint8_t al = s_.fetch8();
   s_.ax = (s_.ax & 0xFF00) | al; s_.bx = s_.ax;
   s_.zf = 0; s_.cf = 0; s_.sf = 0;
-  s_.cx = s_.game_state[s_.bx];
+  s_.cx = s_.game_state[s_.bx & 0xFF];
   s_.cx += (s_.game_state[(s_.bx + 1) & 0xFF] << 8);
   if (s_.mode == (s_.ax >> 8)) {
     std::uint8_t cl = s_.cx & 0xFF;
@@ -541,14 +546,14 @@ void Interpreter::op9A_set_gs_ff() {
 void Interpreter::op9B_set_gs_bit() {
   std::uint8_t al = s_.fetch8();
   get_bit_mask(al);
-  set_gs(s_.bx, s_.game_state[s_.bx] | (s_.ax & 0xFF));
+  set_gs(s_.bx, s_.game_state[s_.bx & 0xFF] | (s_.ax & 0xFF));
 }
 
 void Interpreter::op9D_test_gs_bit() {
   std::uint8_t al = s_.fetch8();
   get_bit_mask(al);
   s_.cf = 0;
-  s_.zf = (s_.game_state[s_.bx] & s_.ax) == 0 ? 1 : 0;
+  s_.zf = (s_.game_state[s_.bx & 0xFF] & s_.ax) == 0 ? 1 : 0;
   set_flags();
 }
 
@@ -1213,7 +1218,7 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
 }();
 #undef OP
 
-int Interpreter::run() {
+int Interpreter::run(long max_steps) {
   int steps = 0;
   // 初始化資料資源:populate_3ADD_and_3ADF 後 word_3ADF == running_script(同一份)。
   // 呼叫端通常只設 s.script;此處讓 word_3ADF(data_bytes)預設指向同一份。
@@ -1226,6 +1231,7 @@ int Interpreter::run() {
     if (!h) { last_unimpl_ = op; s_.halted = true; break; }  // 未實作 → 停
     (this->*h)();
     ++steps;
+    if (max_steps > 0 && steps >= max_steps) break;  // 上限保護(掃描/重放用)
   }
   return steps;
 }
