@@ -53,6 +53,29 @@ int main() {
     check("op99 r2=0→ZF", (s.flags & kZero) != 0);
   }
 
+  // --- batch 10:op_7D / op_80 / op_8C(已對拍 opendw oracle,逐指令一致)---
+
+  // G: op_80(advance_cursor)讀 1 byte operand,不動 r2/r4/flags/mode。
+  //    [0]=01 byte mode  [1]=09 07 r2=7  [3]=80 05 advance(吃 1B)  [5]=24 inc r2→8  [6]=5A
+  {
+    VmState s = run({0x01, 0x09, 0x07, 0x80, 0x05, 0x24, 0x80, 0x0A, 0x5A});
+    check("op80 消耗 1B operand、r2 不受影響(=8)", s.r2 == 0x08 && s.halted);
+  }
+
+  // H: op_7D(write_character_name)無 operand,headless 不動 r2/r4/flags(僅算 ax/bx)。
+  {
+    VmState s = run({0x01, 0x09, 0x07, 0x7D, 0x24, 0x7D, 0x5A});
+    check("op7D 無 operand、r2 不受影響(=8)", s.r2 == 0x08 && s.halted);
+  }
+
+  // I: op_8C(prompt_no_yes)headless key=0 → flags = reserved|carry = 0x03(zf=0,cf=1)。
+  {
+    VmState s = run({0x01, 0x09, 0x07, 0x8C, 0x5A});
+    check("op8C headless key=0 → flags=0x03(carry,非 zero)",
+          (s.flags & kCarry) != 0 && (s.flags & kZero) == 0 &&
+          (s.flags & kSign) == 0 && (s.flags & kReserved) != 0);
+  }
+
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);
   return fails ? 1 : 0;
 }

@@ -1088,6 +1088,55 @@ void Interpreter::op81_print_number() {
   if (msg_sink_) msg_sink_(kNumberSink, std::to_string(s_.r2));
 }
 
+// op_7D(write_character_name @0x483B / 0x3610):輸出「當前角色名」。
+//   oracle:bx = game_state[6];ax = 0xC960;ah += game_state[bx+10];bx = ax;
+//          player = get_player_data(val>>1);逐 byte | 0x80 輸出直到該 byte 高位為 0。
+//   無 operand;不改 r2/r4/flags/game_state。VM 可見副作用僅 cpu.ax/cpu.bx。
+//   remake 為 headless(無 party 角色資料)→ 忠實算 ax/bx,但不解 player 名(無資料);
+//   名字輸出走 msg_sink_ 才有意義,這裡無資料可解,emit 略過(對拍只比 r2/r4/flags/gs)。
+void Interpreter::op7D_char_name() {
+  s_.bx = s_.game_state[6];
+  s_.ax = 0xC960;
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;
+  std::uint8_t val = s_.game_state[(s_.bx + 10) & 0xFF];
+  ah += val;
+  s_.ax = (std::uint16_t)((ah << 8) | (s_.ax & 0xFF));
+  s_.bx = s_.ax;
+  // 無 party 資料 → 不逐 byte 輸出角色名(headless)。r2/r4/flags/game_state 不變。
+}
+
+// op_80(advance_cursor @0x487F):讀 1 byte operand(欄寬/游標位置),ui_draw_string()
+//   後 al += draw_rect.x、append_spaces(al)。VM 可見副作用:消耗 1 operand + cpu.ax。
+//   不改 r2/r4/flags/game_state。remake 渲染由 framebuffer 自理,VM 僅正確消耗 operand。
+void Interpreter::op80_advance_cursor() {
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al;
+  // ui_draw_string() / append_spaces 為渲染副作用,VM 狀態不變。
+}
+
+// op_8C(prompt_no_yes @0x49A5):畫「N/Y」提示、wait_for_event 取鍵,依鍵值設旗標。
+//   oracle:key=='Y'(0xD9)→ cf=1,zf=1;否則 zf=0,key>0xD9 → cf=0 else cf=1。
+//          最後 word_3AE6 = sf<<7 | zf<<6 | 1<<1 | cf。無 operand。
+//   headless 無鍵盤 → 取「無輸入」key=0(< 0xD9)的確定性分支:zf=0、cf=1、sf=0,
+//   即 word_3AE6 = 0x03(reserved|carry)。對拍時 oracle 喂同一 key=0 取得同一結果。
+void Interpreter::op8C_prompt_no_yes() {
+  std::uint16_t key = 0;  // headless:無鍵盤輸入
+  if (key == 0xD9) {      // 'Y'
+    s_.cf = 1;
+    s_.zf = 1;
+  } else {                // 'N' / 無輸入
+    s_.zf = 0;
+    s_.cf = ((key & 0xFF) > 0xD9) ? 0 : 1;
+  }
+  s_.sf = 0;
+  std::uint16_t f = 0;
+  f |= (std::uint16_t)(s_.sf << 7);
+  f |= (std::uint16_t)(s_.zf << 6);
+  f |= kReserved;
+  f |= (std::uint16_t)(s_.cf << 0);
+  s_.flags = f;
+}
+
 // op_16:bx = gs[op] | gs[op+1]<<8 + r4;data[bx] = r2(byte;word 模式再寫 +1)。
 void Interpreter::op16_data_gsoff_from_r2() {
   std::uint8_t al = s_.fetch8();
@@ -1214,6 +1263,10 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x88] = &Interpreter::op88_wait_escape;
   t[0x89] = &Interpreter::op89_wait_event;
   t[0x81] = &Interpreter::op81_print_number;
+  // batch 10:文字輸出 / 互動提示(逐字對照 opendw)
+  t[0x7D] = &Interpreter::op7D_char_name;
+  t[0x80] = &Interpreter::op80_advance_cursor;
+  t[0x8C] = &Interpreter::op8C_prompt_no_yes;
   return t;
 }();
 #undef OP

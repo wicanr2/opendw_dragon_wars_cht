@@ -168,6 +168,11 @@ private:
   void op89_wait_event();      // 0x89  wait_event:讀 flags(2B)後結束該段(無輸入可分支)
   void op81_print_number();    // 0x81  print_number:把 word_3AE2(N)以十進位 emit
 
+  // --- batch 10:文字輸出 / 互動提示(逐字對照 opendw,VM 狀態效應對齊)---
+  void op7D_char_name();       // 0x7D  write_character_name:輸出當前角色名(無 operand)
+  void op80_advance_cursor();  // 0x80  advance_cursor:讀 1B operand、ui_draw_string + 補空白
+  void op8C_prompt_no_yes();   // 0x8C  prompt_no_yes:Y/N 提示,依鍵值設 word_3AE6 旗標
+
   // 切換 running_script / word_3ADF 到資源 idx(對照 populate_3ADD_and_3ADF)。
   // 用 resource_provider 取 bytes;成功回 true。
   bool load_resource(int idx, std::vector<std::uint8_t>& out);
