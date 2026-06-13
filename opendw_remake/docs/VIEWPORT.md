@@ -101,3 +101,22 @@
 
 > 結論:in-game 第一人稱 viewport 已**完整逆向、byte 級可執行**;剩下是機械式翻譯
 > 上列函式/表 + 逐階段 golden。資料層(phase 1)已入庫。
+
+---
+
+## 完整 in-game 渲染管線(三層,全部逆向完成,零未知)
+
+**① 組景 / FOV 投影 — `refresh_viewport`(engine.c:5180)**:這才是「從 tile 畫牆」的核心。
+- `load_level_resources` + `set_ui_header(關卡名)`。
+- 取玩家**朝向** `game_state[3]` → FOV 走訪表 `cpu.si = data_5303[facing]`;深度迴圈 `di = 0xB`(11 格)。
+- 每步用玩家**位置** `game_state[0]=x` / `game_state[1]=y` + FOV pattern → `get_map_tile_data(x,y)` 取 `word_11C6`(牆屬性)。
+- 依牆屬性 + 距離槽,選關卡**牆面元件** sprite(`data_56E5`/`data_59E4` 元件索引、`data_5897` 元件型)→ `draw_sprite_to_viewport(&vp, sprite_offset)`(engine.c:5512)畫進 `viewport_memory`。
+- 特例:`data_5897[..]==1` 畫天空 tile;否則填地板列(`data_575C` 兩色交替,88 列)。
+
+**② 靜態框架 — `update_viewport`(ui.c:1081)**:把 4 象限模板(vp0-3,固定 `viewport_metadata` 的 xpos/ypos)用 `decode_viewport_data` 畫進 viewport_memory(透視地板/側框線),**非牆**。先清左右邊界 nibble。
+
+**③ 上螢幕 — `ui_update_viewport`(ui.c:517)**:viewport_memory(160×136,2px/byte)→ framebuffer,每 byte 拆 hi/lo nibble = 2 像素色,寫到 `get_line_offset(line_num)+0x10`(viewport 視窗 80×136 byte = 160×136 px)。
+
+> 需要的額外資料(port 時抽/複製):`data_5303`(FOV 走訪表,依朝向)、`viewport_metadata`(ui.c:129)、`offsets[]`(get_offset 列位移表,offsets.c)、`data_575C`(地板兩色)、4 張遮罩表。`draw_sprite_to_viewport`(engine.c:5512)= 牆面 sprite blit(與已驗證 sprite blit 同原理)。
+>
+> **整條 in-game 畫面管線(refresh_viewport 組景 → update_viewport 框架 → ui_update_viewport 上螢幕)已 100% 逆向**。port 執行 = 翻譯這三層 + FOV/模板資料 + 逐階段 golden 對拍 opendw。
