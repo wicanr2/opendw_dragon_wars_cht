@@ -818,18 +818,34 @@ void Interpreter::op5C_party_loop() {
   s_.pc = resume_pc;  // jmp 0x3AC7:回主 script 續跑
 }
 
-// op_62:掃描隊伍角色屬性(對照 op_scan_for_char @0x43BF)。
-//   原版讀玩家資料(get_player_data_byte)+ gs[0x1F]。remake 抽取期無 party 角色資料,
-//   忠實消耗 2 byte operand,並依「掃不到」語意設 carry(cpu.cf=1),讓後續流程能繼續。
+// op_62(op_scan_for_char @0x43BF):掃描隊伍找「屬性 dl >= 門檻 cl」的第一名角色。
+//   開頭 byte_3AE6 >>= 1;讀 dl(property offset)、cl(threshold);
+//   迴圈 bx=0..gs[0x1F]-1:設 gs[6]=bx;data = get_player_data_byte(bx, dl)
+//                          = char_data[bx*512 + dl];
+//     若 data >= cl → byte_3AE6 <<= 1(還原)、return(命中,不設 carry);
+//   迴圈走完未命中 → cpu.cf = 1(注意:oracle 此分支「不」呼叫 set_flags,
+//     僅設 cpu.cf;word_3AE6 維持迴圈中 >>1 後的值,carry bit 由後續指令解讀)。
 void Interpreter::op62_scan_char() {
-  // byte_3AE6 >>= 1(對照原版開頭)。
-  std::uint8_t b6 = (s_.flags & 0xFF) >> 1;
-  s_.flags = (s_.flags & 0xFF00) | b6;
-  s_.fetch8();  // dl(property offset)
-  s_.fetch8();  // cl(threshold)
-  // 無 party 資料 → 視為掃描到底未命中:set carry(對照迴圈結束 cpu.cf=1)。
-  s_.cf = 1;
-  s_.flags |= kCarry;
+  std::uint8_t b6 = (std::uint8_t)((s_.flags & 0xFF) >> 1);  // byte_3AE6 >>= 1
+  s_.flags = (std::uint16_t)((s_.flags & 0xFF00) | b6);
+  std::uint8_t dl = s_.fetch8();   // property offset
+  std::uint8_t cl = s_.fetch8();   // threshold
+  s_.dx = dl;
+  std::uint16_t bx = 0;
+  std::uint8_t limit = s_.game_state[0x1F];
+  for (; bx < limit; ++bx) {
+    set_gs(6, (std::uint8_t)bx);
+    std::uint32_t addr = (std::uint32_t)bx * 512u + dl;
+    std::uint8_t data = (addr < s_.char_data.size()) ? s_.char_data[addr] : 0;
+    if (data >= cl) {
+      std::uint8_t b6b = (std::uint8_t)((s_.flags & 0xFF) << 1);  // byte_3AE6 <<= 1(還原)
+      s_.flags = (std::uint16_t)((s_.flags & 0xFF00) | b6b);
+      return;  // 命中:不設 carry
+    }
+  }
+  s_.cf = 1;          // 未命中:僅設 cpu.cf=1。
+  // 注意:oracle 此分支「不」呼叫 set_flags,也不寫 word_3AE6 → flags 維持迴圈中
+  //   byte_3AE6 >>= 1 後的值(carry 只活在 cpu.cf,由後續指令解讀)。不可在此 |= kCarry。
 }
 
 // --- batch 6:byte 堆疊存取 / 資料資源讀 / 比較 / viewport ---
@@ -1185,6 +1201,97 @@ void Interpreter::op90_sound_effect() {
   // dispatch_sound_effect 為音效副作用,VM 狀態不變。
 }
 
+// --- batch 12:角色資料存取(char_data = data_C960)---
+
+// 當前角色 record 起點(char_data 內偏移)。對照 get_character_data:
+//   di = game_state[6];selector = game_state[di + 0x0A];record 頁高位 = selector。
+//   oracle bx = 0xC960;bh += selector → 絕對位址 (0xC9+selector)<<8 | 0x60;
+//   減 0xC960 後 = (selector<<8)。即 char_data 內 record 起點 = selector << 8。
+std::uint16_t Interpreter::char_record_base() {
+  std::uint8_t player_idx = s_.game_state[6];
+  std::uint8_t selector = s_.game_state[(player_idx + 0x0A) & 0xFF];
+  return (std::uint16_t)(selector << 8);
+}
+
+// op_5D(get_character_data @0x42D8):讀當前角色屬性 → word_3AE2。
+//   addr = (selector<<8) + operand;cx = char_data[addr];
+//   word_3AE2 = cx & 0xFF;若 byte_3AE1 != 0(word 模式)→ word_3AE2 = cx(連高位)。
+//   注意:oracle 高位來自 cx,而 cx 只讀了 1 byte → 高位實為 cx 原值高位(此處 cx=單 byte
+//   讀取後高位為 0;word 模式時 word_3AE2 高位 = 0)。忠實對齊:cx 僅取 char_data[addr] 單 byte。
+void Interpreter::op5D_get_char_data() {
+  std::uint16_t base = char_record_base();
+  std::uint8_t al = s_.fetch8();            // property offset
+  s_.ax = (s_.ax & 0xFF00) | al;
+  std::uint16_t addr = (std::uint16_t)(base + al);
+  std::uint8_t cl = (addr < s_.char_data.size()) ? s_.char_data[addr] : 0;
+  s_.cx = cl;                                // cx = char_data[addr](高位 0)
+  s_.r2 = (std::uint16_t)(s_.cx & 0xFF);
+  if (s_.mode != 0) {                        // byte_3AE1 != 0 → word 模式
+    s_.r2 = (std::uint16_t)((s_.cx & 0xFF00) | (s_.r2 & 0xFF));
+  }
+}
+
+// op_5E(set_character_data @0x4322):把 word_3AE2 寫回當前角色屬性。
+//   oracle:game_state[di + 0x18] = ah(cpu.ax 高位,此時 ax 低位=gs[6]、高位=0 → 寫 0);
+//   addr = (selector<<8) + operand;char_data[addr] = word_3AE2 低位;
+//   若 byte_3AE1 != 0(word 模式)→ char_data[addr+1] = word_3AE2 高位。
+void Interpreter::op5E_set_char_data() {
+  std::uint8_t player_idx = s_.game_state[6];
+  s_.ax = (s_.ax & 0xFF00) | player_idx;
+  s_.di = s_.ax;
+  // gs[di + 0x18] = ax 高位(此刻為 0)。忠實對齊 oracle。
+  set_gs((std::uint16_t)(s_.di + 0x18), (std::uint8_t)((s_.ax & 0xFF00) >> 8));
+  std::uint16_t base = char_record_base();
+  std::uint8_t al = s_.fetch8();             // property offset
+  s_.ax = (s_.ax & 0xFF00) | al;
+  std::uint16_t addr = (std::uint16_t)(base + al);
+  s_.cx = s_.r2;
+  if (addr < s_.char_data.size()) s_.char_data[addr] = (std::uint8_t)(s_.cx & 0xFF);
+  if (s_.mode != 0) {                         // word 模式:寫高位
+    if ((std::size_t)(addr + 1) < s_.char_data.size())
+      s_.char_data[addr + 1] = (std::uint8_t)((s_.cx & 0xFF00) >> 8);
+  }
+}
+
+// op_5F(op_or_char_data @0x4372):設角色 bit 屬性。
+//   get_bit_mask(word_3AE2):讀 1 operand → bx=byte offset、ax=bit mask;
+//   cx = gs[6];ch(0xC9)+= gs[cx+0x0A] → record 頁;di = (ch<<8|0x60) = record 起點+0x60;
+//   char_data[(bx + di) - 0xC960] |= mask  →  = char_data[(selector<<8) + bx] |= mask。
+void Interpreter::op5F_or_char_data() {
+  get_bit_mask((std::uint8_t)s_.r2);          // 吃 1 operand,設 bx/ax
+  std::uint16_t base = char_record_base();    // selector<<8
+  std::uint16_t addr = (std::uint16_t)(base + s_.bx);
+  std::uint8_t mask = (std::uint8_t)(s_.ax & 0xFF);
+  if (addr < s_.char_data.size()) s_.char_data[addr] |= mask;
+}
+
+// op_60(op_and_char_data @0x438B):清角色 bit 屬性(mask 取反後 AND)。
+void Interpreter::op60_and_char_data() {
+  get_bit_mask((std::uint8_t)s_.r2);
+  std::uint16_t base = char_record_base();
+  std::uint16_t addr = (std::uint16_t)(base + s_.bx);
+  std::uint8_t mask = (std::uint8_t)(~(s_.ax & 0xFF));
+  if (addr < s_.char_data.size()) s_.char_data[addr] &= mask;
+}
+
+// op_61(test_player_property @0x43A6):測角色 bit 屬性 → 設 sf/zf/cf。
+//   get_bit_mask(word_3AE2) → bx=byte offset、ax=mask;
+//   val = gs[gs[6] + 0x0A](= selector);player = data_C960 + (val>>1)*512;
+//   test = player[bx] & mask;cf=0;sf = test>=0x80;zf = test==0;set_flags()。
+void Interpreter::op61_test_char_prop() {
+  get_bit_mask((std::uint8_t)s_.r2);
+  std::uint8_t player_idx = s_.game_state[6];
+  std::uint8_t val = s_.game_state[(player_idx + 0x0A) & 0xFF];  // selector
+  std::uint32_t player_off = (std::uint32_t)(val >> 1) * 512u;   // get_player_data(val>>1)
+  std::uint32_t addr = player_off + s_.bx;
+  std::uint8_t test_val = (addr < s_.char_data.size()) ? s_.char_data[addr] : 0;
+  std::uint8_t test_result = (std::uint8_t)(test_val & (s_.ax & 0xFF));
+  s_.cf = 0;
+  s_.sf = (test_result >= 0x80) ? 1 : 0;
+  s_.zf = (test_result == 0) ? 1 : 0;
+  set_flags();
+}
+
 // op_16:bx = gs[op] | gs[op+1]<<8 + r4;data[bx] = r2(byte;word 模式再寫 +1)。
 void Interpreter::op16_data_gsoff_from_r2() {
   std::uint8_t al = s_.fetch8();
@@ -1319,6 +1426,12 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x0E] = &Interpreter::op0E_r2_from_data_gsoff;
   t[0x83] = &Interpreter::op83_print_char;
   t[0x90] = &Interpreter::op90_sound_effect;
+  // batch 12:角色資料存取(char_data = data_C960)
+  t[0x5D] = &Interpreter::op5D_get_char_data;
+  t[0x5E] = &Interpreter::op5E_set_char_data;
+  t[0x5F] = &Interpreter::op5F_or_char_data;
+  t[0x60] = &Interpreter::op60_and_char_data;
+  t[0x61] = &Interpreter::op61_test_char_prop;
   return t;
 }();
 #undef OP

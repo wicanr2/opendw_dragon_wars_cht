@@ -33,6 +33,16 @@ struct VmState {
   // 256-byte 遊戲狀態(對照 game_state.unknown[])
   std::array<std::uint8_t, 256> game_state{};
 
+  // 角色資料塊(對照 opendw player.c `data_C960[0xE00]`:7 槽 × 512B player_record;
+  //   實際前 4 槽為 party 角色)。op_5D/5E/5F/60/61/62 透過此塊讀寫角色屬性。
+  //   定址法(對照 get_character_data/set_character_data @engine.c:2568/2601):
+  //     player_idx = game_state[6](當前角色 0..3);
+  //     selector   = game_state[player_idx + 0x0A](= record_index*2,record 頁高位元);
+  //     絕對 offset = (selector << 8) + property_offset。
+  //   op_61(test)另用 get_player_data((selector)>>1)*512 + bx 定址(見 interpreter.cpp)。
+  static constexpr std::size_t kCharDataSize = 0xE00;
+  std::array<std::uint8_t, kCharDataSize> char_data{};  // = data_C960
+
   // 位元組定址堆疊(忠實對照 opendw cpu.stack[256] + sp:向下成長,
   //   push_byte: --sp; pop_byte: sp++)。op_53/54 用 push_word/pop_word(2 byte),
   //   op_04/03/56/55 用 byte/word 級存取,共用同一堆疊。
