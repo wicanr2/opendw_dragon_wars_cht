@@ -27,6 +27,13 @@ std::optional<Strings> Strings::load(const std::filesystem::path& tsv) {
   return s;
 }
 
+bool Strings::merge(const std::filesystem::path& tsv) {
+  auto other = load(tsv);
+  if (!other) return false;
+  for (auto& [k, v] : other->map_) map_[k] = v;  // 新檔覆寫
+  return true;
+}
+
 std::string Strings::tr(const std::string& english) const {
   auto it = map_.find(english);
   return it != map_.end() ? it->second : english;  // 回退英文

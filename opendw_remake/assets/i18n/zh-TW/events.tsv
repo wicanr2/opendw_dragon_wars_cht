@@ -1,0 +1,16 @@
+# english	chinese — 事件格文字在地化(踩到特殊格 → run_event emit → tr)。
+# 鍵 = VM 解出的英文原文(逐條 emit);譯文源自 docs/15_TRANSLATION_DRAFT.md / CONTEXT.md。
+# 注意:部分鍵含結尾空白(對齊 VM emit),勿手動 trim。
+Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.	你們被剝奪了所有財物，赤身裸體、手無寸鐵地被丟進波卡城的貧民窟——這是奉深淵之獸納達之命。
+The stone walls of Purgatory stand as a monument to shattered lives and broken dreams.	波卡城的石牆，是無數破碎生命與幻滅夢想的永恆見證。
+You smell the sea. This section of wall must border on the harbor.	你聞到海的氣味。這段城牆想必是緊鄰著港口。
+A breeze crawls in from the harbor, bearing a sickly stench.	一陣微風從港口飄來，夾帶著令人作嘔的惡臭。
+A great chorus of voices issues up from the west.	一片巨大的人聲喧嘩從西方湧起。
+You hear the lusty shouts of a large crowd coming from the east.	你聽見東方傳來一大群人縱情的吶喊。
+You hear the bloodthirsty howls of a great crowd from behind the wall to the north.	你聽見北面牆後傳來一大群人嗜血的嚎叫。
+The sea is cold and rough. Only a good swimmer has a chance out here.	海水冰冷而洶湧。在這裡，只有游泳高手才能有一線生機。
+There's a gap in the city wall. Far below, you see the water of the harbor through which you entered this dreaded isle. 	城牆上有一處缺口。遠遠在下方，你看見了當初進入這座令人生畏的孤島時所通過的港口水域。
+Is freedom from Purgatory worth a long dive into what might be shallow water, then a desperate swim through the harbor?	波卡城的自由，值得你縱身躍入那深度不明的水中，再拼死游過港口嗎？
+Ahead lay odd waters.	前方是詭異的水域。
+The crowd grows wild with the hope of more victims.	人群因渴望更多犧牲者而陷入瘋狂。
+You feel strangely energized!	你感到一股奇異的力量湧上全身！

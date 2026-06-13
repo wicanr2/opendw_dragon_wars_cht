@@ -65,6 +65,7 @@ int main(int argc, char** argv) {
   std::string locale = "zh-TW";   // 多國語系:i18n 取 assets/i18n/<locale>/;未來 ja 等
   std::string menu_tsv;           // 空 = 由 locale 推導
   int start_pc = 20, max_frames = -1, press = 0, map_area = -1;
+  int at_x = -1, at_y = -1;       // --at x y:把玩家放到指定格(headless 驗證事件文字)
   std::string dump, sprite_name, scene_name;
   bool viewport_mode = false;   // --viewport:顯示原版第一人稱 viewport 靜態框架
   bool fp_mode = false;         // --fp:S_GAME 用第一人稱 viewport(取代俯視彩格)
@@ -81,6 +82,7 @@ int main(int argc, char** argv) {
     else if (eq("--sprite") && i + 1 < argc) sprite_name = argv[++i];
     else if (eq("--scene") && i + 1 < argc) scene_name = argv[++i];
     else if (eq("--map") && i + 1 < argc) map_area = std::atoi(argv[++i]);   // 直接進某區地圖
+    else if (eq("--at") && i + 2 < argc) { at_x = std::atoi(argv[++i]); at_y = std::atoi(argv[++i]); }  // 玩家落點(測試)
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
     else if (eq("--viewport")) viewport_mode = true;   // 顯示原版 viewport 靜態框架
     else if (eq("--fp")) fp_mode = true;               // 第一人稱 viewport(透視牆面)
@@ -98,6 +100,10 @@ int main(int argc, char** argv) {
   auto cjk = render::CjkFont::load(atlas);          // 全模式共用(選單/地圖/事件文字)
   auto tr = i18n::Strings::load(menu_tsv);          // tr() 查不到則回退英文 → 未翻譯也能顯示
   if (!cjk || !tr) { std::fprintf(stderr, "atlas/i18n load failed (locale=%s)\n", locale.c_str()); return 1; }
+  // 併入事件文字譯表(events.tsv):踩到事件格時的在地化來源(同 locale)。可缺檔。
+  std::string events_tsv = "assets/i18n/" + locale + "/events.tsv";
+  if (tr->merge(events_tsv))
+    std::fprintf(stderr, "i18n: merged %s (total %zu)\n", events_tsv.c_str(), tr->size());
 
   std::string header;
   std::vector<Opt> opts;
@@ -108,18 +114,41 @@ int main(int argc, char** argv) {
   const int dx4[4] = {0, 1, 0, -1}, dy4[4] = {-1, 0, 1, 0};
   const char* dirch = "^>v<";
   std::optional<res::Level> level;
+  int level_res = -1;             // 當前關卡資源 index(= area + 0x46;= word_3AE8)
   std::string event_msg;          // 踩到事件格時跑 script emit 的文字
   int last_event_tile = -1;       // 對拍 op_71:tile 值變了才觸發
 
-  // 踩到特殊格 → 跑該關事件腳本,回傳 emit 的文字(對拍 opendw op_71/run_level_script)
+  // 事件腳本跨資源 call(op_58)的資源提供者:從 bundle 載(自包含,不需 DATA1)。
+  // tag = DATA1 section;BundleProvider 讀 assets/bundle/scripts/<tag>.bin(解壓後)。
+  // 事件 script 經 op_58 載入的 tag 聯集已預先抽進 bundle(見 manifest event_script_tags)。
+  res::BundleProvider event_provider(bundle);
+
+  // 踩到特殊格 → 跑該關事件腳本,回傳 emit 的文字(對拍 opendw op_71/run_level_script)。
+  // 對齊 level_events:設 script_res/data_res = level_res,並掛 resource_provider 讓 op_58 能跑。
   auto run_event = [&](std::uint8_t tv) -> std::string {
     if (!level) return "";
     std::uint16_t pc = level->script_pc(tv);
     if (pc == 0 || pc >= level->data().size()) return "";
-    vm::VmState st; st.script = level->data(); st.pc = pc;
+    vm::VmState st;
+    st.script = level->data();
+    st.data_bytes = level->data();
+    st.script_res = level_res;
+    st.data_res = level_res;
+    st.pc = pc;
+    // op_58 / 子 script:依 tag 從 bundle 載(自包含)。
+    st.resource_provider =
+        [&](int tag) -> std::optional<std::vector<std::uint8_t>> {
+      return event_provider.load(tag);
+    };
     vm::Interpreter ip(st);
     std::string out;
-    ip.set_message_sink([&](std::size_t, const std::string& s) { if (!out.empty()) out += ' '; out += s; });
+    // 逐段 emit 個別在地化(tr 以單條英文原文為鍵;查不到回退英文),再以空白接起。
+    // 對拍 op_71 的多條 emit:整句拼接前先翻譯,避免「拼好的長句」查不到鍵。
+    ip.set_message_sink([&](std::size_t, const std::string& s) {
+      if (s.empty()) return;
+      if (!out.empty()) out += ' ';
+      out += tr->tr(s);
+    });
     ip.run();
     return out;
   };
@@ -128,6 +157,7 @@ int main(int argc, char** argv) {
   auto enter_map = [&](int area) {
     level = res::Level::load_file(bundle + "/maps/" + std::to_string(area) + ".lvl");
     if (!level) { std::fprintf(stderr, "level load failed: area %d\n", area); return false; }
+    level_res = area + 0x46;       // 關卡資源 index(對拍 level_events:word_3AE8)
     px = py = 0; dir = 1;
     for (int y = 0; y < level->h && py == 0 && px == 0; ++y)
       for (int x = 0; x < level->w; ++x)
@@ -136,7 +166,19 @@ int main(int argc, char** argv) {
                  area, level->name.c_str(), level->w, level->h, px, py);
     return true;
   };
-  if (map_area >= 0) { if (!enter_map(map_area)) return 1; state = S_GAME; }
+  if (map_area >= 0) {
+    if (!enter_map(map_area)) return 1;
+    state = S_GAME;
+    // --at:把玩家放到指定格;若是事件格(tile>1)立刻跑事件腳本(headless 驗證)。
+    if (at_x >= 0 && at_y >= 0 && level && level->in_bounds(at_x, at_y)) {
+      px = at_x; py = at_y;
+      int tv = level->tile(px, py);
+      if (tv > 1) {
+        event_msg = run_event((std::uint8_t)tv); last_event_tile = tv;
+        std::fprintf(stderr, "at (%d,%d) tile=0x%02X event=\"%s\"\n", px, py, tv, event_msg.c_str());
+      }
+    }
+  }
 
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
   render::ComponentStore comps(bundle + "/components");
@@ -284,17 +326,17 @@ int main(int argc, char** argv) {
     font->draw_string(fb, 8, 4, level->name.c_str(), 14, 0);
     int hint_y = oy + H * cs + 6;
     font->draw_string(fb, 8, hint_y, "I:fwd  J/L:turn  K:door  Esc:back", 7, 0);
-    // 踩到事件格 → 顯示事件文字(走 i18n,可切語系;查不到回退英文,以 8×8 自動換行)
+    // 踩到事件格 → 顯示事件文字(已於 run_event 在地化;英文 8×8、中文 12×12 半尺寸,自動換行)
     if (!event_msg.empty()) {
-      std::string z = tr->tr(event_msg);
-      int my = hint_y + 12, mx0 = 8, mx = mx0, maxx = render::kW - 8;
+      const std::string& z = event_msg;
+      int my = hint_y + 12, mx0 = 4, mx = mx0, maxx = render::kW - 4;
       const char* p = z.c_str();
       while (*p) {
         std::uint32_t cp = render::utf8_next(p);
-        if (cp == ' ' && mx > maxx - 40) { mx = mx0; my += 10; continue; }   // 粗略換行
-        if (cp < 0x80) { font->draw_char(fb, mx, my, (std::uint8_t)cp, 15, 0); mx += 8; }
-        else { cjk->draw(fb, mx, my - 8, cp, 15); mx += 24; }
-        if (mx > maxx) { mx = mx0; my += 10; }
+        if (cp == ' ' && mx > maxx - 24) { mx = mx0; my += 13; continue; }   // 詞界換行
+        if (cp < 0x80) { font->draw_char(fb, mx, my + 2, (std::uint8_t)cp, 15, 0); mx += 8; }
+        else { cjk->draw_half(fb, mx, my, cp, 15); mx += 12; }
+        if (mx > maxx) { mx = mx0; my += 13; }
       }
     }
   };
@@ -313,9 +355,20 @@ int main(int argc, char** argv) {
     // UI:關卡名 + 控制提示
     font->draw_string(fb, 8, 4, level->name.c_str(), 14, 0);
     font->draw_string(fb, 8, 150, "I:fwd  J/L:turn  K:door  Esc:back", 7, 0);
+    // 事件文字:viewport 下方訊息區(已於 run_event 在地化;可切語系)。
+    // 320×200 下空間有限:中文用半尺寸 12×12(draw_half,每行約 26 字)、英文 8×8,
+    // 自動換行,讓整句事件文字落在 viewport 下方可見區。
     if (!event_msg.empty()) {
-      std::string z = tr->tr(event_msg);
-      draw_mixed(fb, *font, *cjk, 8, 162, z, 15, 0);
+      const std::string& z = event_msg;
+      int my = 158, mx0 = 4, mx = mx0, maxx = render::kW - 4;
+      const char* p = z.c_str();
+      while (*p) {
+        std::uint32_t cp = render::utf8_next(p);
+        if (cp == ' ' && mx > maxx - 24) { mx = mx0; my += 13; continue; }   // 詞界換行
+        if (cp < 0x80) { font->draw_char(fb, mx, my + 2, (std::uint8_t)cp, 15, 0); mx += 8; }
+        else { cjk->draw_half(fb, mx, my, cp, 15); mx += 12; }
+        if (mx > maxx) { mx = mx0; my += 13; }
+      }
     }
   };
   auto render_now = [&]() {

@@ -19,6 +19,10 @@ public:
   // 在像素 (px,py) 畫一個中文字(24×24);set 像素=color。回傳是否有該字。
   bool draw(Framebuffer& fb, int px, int py, std::uint32_t codepoint, std::uint8_t color) const;
 
+  // 半尺寸(12×12)畫一個中文字:24×24 點陣 2×2 區塊只要任一點亮即點亮(OR 降採樣,
+  // 保留筆畫連通性)。供 320×200 訊息區排較長句子用(每行約 26 字)。
+  bool draw_half(Framebuffer& fb, int px, int py, std::uint32_t codepoint, std::uint8_t color) const;
+
   // 混排畫一行 UTF-8:ASCII 用 8×8(需傳入 Font8x8),中文用 24×24。回傳結束 x。
   // (為避免循環相依,實際混排在 demo/呼叫端做;此處只提供單字。)
 

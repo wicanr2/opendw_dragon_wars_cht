@@ -43,5 +43,24 @@
 ## remake 實作狀態
 
 - **選單**:`B`/`C` 快捷字母 + ↑↓/Enter 輔助、`Esc`/`Q` 離開 —— 已實作(D)。
-- **移動**:`B`(開始新遊戲)→ 進入地圖視圖;`I`/↑ 前進、`J`/← 左轉、`L`/→ 右轉、`K` 開門(stub)、`Esc` 返回選單 —— 已實作(F,目前用內建測試地圖)。
-- **指令**(C/U/X/O/D/?/S):待真實 viewport / 地圖資料接入後對齊。
+- **移動**:`B`(開始新遊戲)→ 進入地圖視圖;`I`/↑ 前進、`J`/← 左轉、`L`/→ 右轉、`K` 開門(stub)、`Esc` 返回選單 —— 已實作(F,真實關卡 .lvl)。
+- **第一人稱 viewport**:`--fp` → S_GAME 用透視牆面 viewport(對拍 opendw,verify_fp 4/4、40 關 sweep 154/154)。
+- **事件文字**:踩到事件格(tile>1,對拍 op_71:值變才觸發)→ 跑該關事件 script(VM op_58 跨資源 call 從 bundle 載資源,自包含)→ emit 首批文字 → 逐段 i18n 在地化(`tr()`,可切語系,查不到回退英文)→ 在 viewport 下方訊息區顯示(英文 8×8、中文 12×12 半尺寸 CJK,自動換行)。移動 / `Esc` 清除。
+- **指令**(C/U/X/O/D/?/S):待戰鬥 / 法術系統接入後對齊。
+
+## 測試 / headless 旗標
+
+| 旗標 | 用途 |
+|---|---|
+| `--map <area>` | 直接載入某區關卡(0..39),進 S_GAME |
+| `--fp` | S_GAME 用第一人稱 viewport(取代俯視彩格) |
+| `--at <x> <y>` | 把玩家放到指定格;若為事件格立刻跑事件腳本(headless 驗證) |
+| `--frames N` | 跑 N 幀後結束(`0` = 只 dump 不開窗) |
+| `--dump <PPM>` | 把當前 framebuffer 輸出成 PPM(轉 PNG 用 dwimg) |
+| `--locale <id>` | 切語系(預設 zh-TW;i18n 取 `assets/i18n/<id>/`) |
+
+範例(自包含,不需 DATA1;SDL dummy driver):
+
+```
+SDL_VIDEODRIVER=dummy opendw_remake --map 1 --fp --at 13 20 --frames 0 --dump /tmp/ev.ppm
+```
