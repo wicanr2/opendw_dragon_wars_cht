@@ -2,8 +2,11 @@
 
 #include <array>
 #include <cstdint>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "render/viewport.hpp"
 #include "resource/level.hpp"
 
 // 第一人稱 viewport「組景」第一步:FOV tile 取樣 + 牆面 nibble 推導。
@@ -74,5 +77,34 @@ struct DrawCmd {
 // 產出繪製指令序列。先不畫像素;每筆只記「選了哪個元件 (tag) + 畫在哪」。
 std::vector<DrawCmd> compose_draw_sequence(const res::Level& level, int x, int y,
                                            int facing);
+
+// ---------------------------------------------------------------------------
+// Step 3:把繪製指令序列「實際畫成像素」進 viewport_memory。
+//
+// 元件資源由 tag (= DATA1 section) 取得;bytes 為已解壓的元件資源
+// ([size:2 LE][payload] 串接)。app 從 bundle (assets/bundle/components/<tag>.bin)
+// 載入;harness/golden 也讀同一份 bundle,確保 byte-identical。
+class ComponentStore {
+public:
+  // 從目錄載入所有 <tag>.bin (lazy:get() 時才真正讀檔)。
+  explicit ComponentStore(std::string dir) : dir_(std::move(dir)) {}
+
+  // 回傳 tag 對應元件資源 bytes (已解壓);找不到回 nullptr。
+  const std::vector<std::uint8_t>* get(int tag) const;
+
+private:
+  std::string dir_;
+  mutable std::map<int, std::vector<std::uint8_t>> cache_;
+  mutable std::map<int, bool> missing_;
+};
+
+// 組景並畫進 viewport_memory:reset → refresh_viewport 全流程
+// (sample_fov + 元件選擇 + sky/ground/other sprite blit)。
+// 對拍基準:golden_pixel.c 的 viewport_memory (10880B byte-for-byte)。
+// 完成後呼叫端可 dec.to_framebuffer(fb) 上螢幕。
+//
+// facing: 0=N 1=E 2=S 3=W。
+void render_first_person(const res::Level& level, int x, int y, int facing,
+                         ViewportDecoder& dec, const ComponentStore& comps);
 
 }  // namespace dw::render

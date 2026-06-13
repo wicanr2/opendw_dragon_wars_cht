@@ -17,15 +17,20 @@ GOLD_DIR="${MAPS}/golden"
 LVL="${1:-${MAPS}/1.lvl}"          # area 1 = Purgatory
 BASE="$(basename "${LVL}" .lvl)"
 
+COMP_DIR="${MAPS%/maps}/components"   # assets/bundle/components(step3 元件 bin)
+
 mkdir -p "${WORK}" "${GOLD_DIR}"
 cp "${SCRIPT_DIR}/golden_compose.c" "${WORK}/golden_compose.c"
 cp "${SCRIPT_DIR}/golden_select.c"  "${WORK}/golden_select.c"
+cp "${SCRIPT_DIR}/golden_pixel.c"   "${WORK}/golden_pixel.c"
 
 echo "== compile (docker dwsdl, gcc) =="
 docker run --rm -v "${LONGCAT}:${LONGCAT}" -w "${WORK}" dwsdl \
   gcc -O0 -g -std=c11 -Wall -Wextra -o "${WORK}/golden_compose" "${WORK}/golden_compose.c"
 docker run --rm -v "${LONGCAT}:${LONGCAT}" -w "${WORK}" dwsdl \
   gcc -O0 -g -std=c11 -Wall -Wextra -o "${WORK}/golden_select" "${WORK}/golden_select.c"
+docker run --rm -v "${LONGCAT}:${LONGCAT}" -w "${WORK}" dwsdl \
+  gcc -O0 -g -std=c11 -Wall -Wextra -o "${WORK}/golden_pixel" "${WORK}/golden_pixel.c"
 
 # 測試組合 (facing x y) — 與 verify_fov.cpp 內 cases[] 一致。
 CASES=(
@@ -50,5 +55,17 @@ for c in "${CASES[@]}"; do
     "${WORK}/golden_select" "${LVL}" "${facing}" "${x}" "${y}" "${sel}"
   echo "---- f${facing} (${x},${y}) [select] ----"
   cat "${sel}"
+  # step3: 完整 refresh_viewport → viewport_memory 10880B (.vpmem)。
+  #   需先有 bundle/components/<tag>.bin (用 remake extract_components 抽,見下方註解)。
+  vpm="${GOLD_DIR}/${BASE}.f${facing}.${x}_${y}.vpmem"
+  if [ -d "${COMP_DIR}" ]; then
+    docker run --rm -v "${LONGCAT}:${LONGCAT}" -w "${WORK}" dwsdl \
+      "${WORK}/golden_pixel" "${LVL}" "${facing}" "${x}" "${y}" "${COMP_DIR}" "${vpm}"
+    echo "---- f${facing} (${x},${y}) [pixel] wrote $(basename "${vpm}") ----"
+  else
+    echo "!! ${COMP_DIR} 不存在,跳過 step3 (.vpmem)。先跑:"
+    echo "   build_sdl/extract_components <data_dir> ${COMP_DIR} 1"
+  fi
 done
 echo "== done =="
+echo "step3 對拍: build_sdl/verify_fp ${LVL} ${GOLD_DIR} ${COMP_DIR}"
