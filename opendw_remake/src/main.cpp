@@ -19,6 +19,7 @@
 //                     [--font-ttf PATH] [--pc N] [--sprite NAME] [--frames N]
 //                     [--dump PPM] [--press CH] [--map N] [--fp] [--at X Y]
 #include <algorithm>
+#include <array>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -39,6 +40,7 @@
 #include "resource/paragraphs.hpp"
 #include "i18n/strings.hpp"
 #include "game/party.hpp"
+#include "game/savegame.hpp"
 using namespace dw;
 
 static std::vector<std::string> lines_of(const std::string& s) {
@@ -157,6 +159,9 @@ int main(int argc, char** argv) {
   int read_para = -1;             // --read-para N:直接開段落 N 進訊息檢視(headless 驗證長段落)
   int char_sheet = -1;            // --char-sheet N:直接開第 N 名(1-based)角色屬性表(headless 驗證)
   std::string dump, sprite_name, scene_name;
+  std::string save_path = "save/slot0.sav";  // 存/讀檔預設路徑(cwd 可寫處;見 .gitignore)
+  std::string load_path;        // --load <path>:啟動即讀檔還原(進遊戲)
+  bool selftest_save = false;   // --selftest-save:headless round-trip 自測(印 PASS/FAIL)
   bool viewport_mode = false;   // --viewport:顯示原版第一人稱 viewport 靜態框架
   bool fp_mode = false;         // --fp:S_GAME 用第一人稱 viewport(取代俯視彩格)
   for (int i = 1; i < argc; ++i) {
@@ -178,6 +183,9 @@ int main(int argc, char** argv) {
     else if (eq("--msg-page") && i + 1 < argc) msg_page = std::atoi(argv[++i]);   // 訊息檢視先翻到第 N 頁再 dump
     else if (eq("--read-para") && i + 1 < argc) read_para = std::atoi(argv[++i]); // 直接開段落 N 進訊息檢視
     else if (eq("--char-sheet") && i + 1 < argc) char_sheet = std::atoi(argv[++i]); // 直接開第 N 名角色屬性表
+    else if (eq("--load") && i + 1 < argc) load_path = argv[++i];        // 啟動讀檔還原
+    else if (eq("--save-path") && i + 1 < argc) save_path = argv[++i];   // 覆寫存/讀檔路徑
+    else if (eq("--selftest-save")) selftest_save = true;               // round-trip 自測
     else if (eq("--viewport")) viewport_mode = true;   // 顯示原版 viewport 靜態框架
     else if (eq("--fp")) fp_mode = true;               // 第一人稱 viewport(透視牆面)
   }
@@ -249,6 +257,10 @@ int main(int argc, char** argv) {
   // 預設 4 人隊伍(Muskels/Theb/Elendil/Cheetah),自包含 bundle 資產;進遊戲即顯示在右側面板。
   game::Party party = game::Party::load_default(bundle);
   int level_res = -1;             // 當前關卡資源 index(= area + 0x46;= word_3AE8)
+  int current_area = -1;          // 當前所在區域(存檔用;= level_res - 0x46)
+  // 持久 VM 遊戲狀態(對拍 opendw game_state.unknown[256]):跨事件保留,存檔/讀檔的核心欄位。
+  // run_event 跑事件腳本時以此為初值並回寫,使旗標(門/開關/劇情)能持久累積。
+  std::array<std::uint8_t, 256> game_state{};
   std::string event_msg;          // 踩到事件格時跑 script emit 的文字(原文,F4 重排用)
   int last_event_tile = -1;       // 對拍 op_71:tile 值變了才觸發
   MsgViewer msg;                  // 訊息/段落檢視器(分頁捲動;active 時暫停移動)
@@ -273,6 +285,7 @@ int main(int argc, char** argv) {
     st.script_res = level_res;
     st.data_res = level_res;
     st.pc = pc;
+    st.game_state = game_state;   // 以持久遊戲狀態為初值(旗標跨事件累積)
     // op_58 / 子 script / op_0F 跨資源讀:依 tag 從 bundle 載(自包含)。
     // Read paragraph 流程的段落號 N 是 op_0F 從「關卡資源本身」(index=level_res)
     // 的回返 offset 讀出的;關卡資源 = 這份 .lvl,bundle/scripts 沒有它 → 直接回傳
@@ -314,6 +327,7 @@ int main(int argc, char** argv) {
       out += t;
     });
     ip.run();
+    game_state = st.game_state;   // 回寫:事件對遊戲狀態的修改持久保留
     return out;
   };
 
@@ -322,6 +336,7 @@ int main(int argc, char** argv) {
     level = res::Level::load_file(bundle + "/maps/" + std::to_string(area) + ".lvl");
     if (!level) { std::fprintf(stderr, "level load failed: area %d\n", area); return false; }
     level_res = area + 0x46;       // 關卡資源 index(對拍 level_events:word_3AE8)
+    current_area = area;
     px = py = 0; dir = 1;
     for (int y = 0; y < level->h && py == 0 && px == 0; ++y)
       for (int x = 0; x < level->w; ++x)
@@ -330,6 +345,48 @@ int main(int argc, char** argv) {
                  area, level->name.c_str(), level->w, level->h, px, py);
     return true;
   };
+
+  // ── 存檔/讀檔(對齊手冊 S=儲存遊戲 / C=繼續舊遊戲)──
+  // 把目前完整可還原狀態打包成 SaveState(自包含)。
+  auto capture_state = [&]() {
+    game::SaveState s;
+    s.area = current_area;
+    s.x = px; s.y = py; s.facing = dir;
+    s.game_state = game_state;
+    s.party_records = party.raw_records();
+    return s;
+  };
+  // 把 SaveState 套回目前遊戲(重載該 area + 還原位置/朝向/game_state/party)。回傳是否成功。
+  auto apply_state = [&](const game::SaveState& s) {
+    if (s.area < 0 || !enter_map(s.area)) {
+      std::fprintf(stderr, "load: invalid/unloadable area %d\n", s.area);
+      return false;
+    }
+    px = s.x; py = s.y; dir = s.facing;
+    game_state = s.game_state;
+    party = game::Party::from_raw_records(s.party_records);
+    last_event_tile = -1; event_msg.clear();   // 不在讀檔當下重觸發事件
+    state = S_GAME;
+    std::fprintf(stderr, "load applied: area=%d (%d,%d) dir=%d party=%zu\n",
+                 s.area, px, py, dir, party.size());
+    return true;
+  };
+  // 存檔到 save_path:打包 → 寫檔。回傳是否成功(供 S 鍵提示)。
+  auto do_save = [&]() {
+    bool ok = game::save(capture_state(), save_path);
+    std::fprintf(stderr, "save -> %s: %s\n", save_path.c_str(), ok ? "OK" : "FAIL");
+    return ok;
+  };
+  // 從 path 讀檔並套用。回傳是否成功(供 --load / 選單 C)。
+  auto do_load = [&](const std::string& path) {
+    game::SaveState s;
+    if (!game::load(path, s)) {
+      std::fprintf(stderr, "load <- %s: FAIL (missing/bad)\n", path.c_str());
+      return false;
+    }
+    return apply_state(s);
+  };
+
   if (map_area >= 0) {
     if (!enter_map(map_area)) return 1;
     state = S_GAME;
@@ -349,6 +406,70 @@ int main(int argc, char** argv) {
         std::fprintf(stderr, "at (%d,%d) tile=0x%02X event=\"%s\"\n", px, py, tv, event_msg.c_str());
       }
     }
+  }
+
+  // ── --selftest-save:headless round-trip 自測(不開 SDL,印 PASS/FAIL 後結束)──
+  // 流程:進 area 1 → 走幾步 + 改 game_state/party → 存檔A → 讀回 → 再存檔B
+  //       → 逐欄位比對(area/x/y/facing/game_state[256]/party records)且 A、B byte-for-byte 相同。
+  if (selftest_save) {
+    if (!enter_map(1)) { std::printf("FAIL: enter_map(1)\n"); return 1; }
+    state = S_GAME;
+    // 走幾步(沿可走格)+ 改朝向。
+    for (int s = 0; s < 5; ++s) {
+      dir = (dir + 1) % 4;
+      int nx = px + dx4[dir], ny = py + dy4[dir];
+      if (level && level->walkable(nx, ny)) { px = nx; py = ny; }
+    }
+    // 改點 game_state(確定性樣式)。
+    for (int i = 0; i < 256; ++i) game_state[i] = (std::uint8_t)((i * 7 + 3) & 0xFF);
+    // 改 party 第一名角色的金幣與血量(經由 raw record;確保 raw 與欄位都覆蓋到)。
+    {
+      auto recs = party.raw_records();
+      if (!recs.empty()) {
+        recs[0][0x55] = 0x39; recs[0][0x56] = 0x05;  // gold = 0x0539
+        recs[0][0x14] = 0x2A; recs[0][0x15] = 0x00;  // health = 42
+        party = game::Party::from_raw_records(recs);
+      }
+    }
+    game::SaveState before = capture_state();
+    std::string p = "save/_selftest.sav";
+    if (!game::save(before, p)) { std::printf("FAIL: save A\n"); return 1; }
+    game::SaveState loaded;
+    if (!game::load(p, loaded)) { std::printf("FAIL: load\n"); return 1; }
+    // 逐欄位比對(loaded vs before)。
+    auto field_ok = [&]() {
+      if (loaded.area != before.area || loaded.x != before.x ||
+          loaded.y != before.y || loaded.facing != before.facing) return false;
+      if (loaded.game_state != before.game_state) return false;
+      if (loaded.party_records.size() != before.party_records.size()) return false;
+      for (std::size_t i = 0; i < loaded.party_records.size(); ++i)
+        if (loaded.party_records[i] != before.party_records[i]) return false;
+      return true;
+    };
+    bool fields = field_ok();
+    // 再存一份(B),比對兩檔 byte-for-byte。
+    std::string p2 = "save/_selftest_b.sav";
+    if (!game::save(loaded, p2)) { std::printf("FAIL: save B\n"); return 1; }
+    auto read_all = [](const std::string& fp) {
+      std::vector<std::uint8_t> v; std::FILE* f = std::fopen(fp.c_str(), "rb");
+      if (!f) return v; int c; while ((c = std::fgetc(f)) != EOF) v.push_back((std::uint8_t)c);
+      std::fclose(f); return v;
+    };
+    bool bytes_eq = read_all(p) == read_all(p2);
+    std::printf("fields: area=%d (%d,%d) dir=%d gs[256] party=%zu\n",
+                loaded.area, loaded.x, loaded.y, loaded.facing,
+                loaded.party_records.size());
+    std::printf("field-by-field match: %s\n", fields ? "yes" : "NO");
+    std::printf("save->load->save byte-for-byte: %s\n", bytes_eq ? "yes" : "NO");
+    bool pass = fields && bytes_eq;
+    std::printf("%s: save round-trip\n", pass ? "PASS" : "FAIL");
+    return pass ? 0 : 1;
+  }
+
+  // --load <path>:啟動即讀檔還原(進遊戲);失敗則回退到一般選單流程。
+  if (!load_path.empty()) {
+    if (do_load(load_path)) { /* state = S_GAME(已於 apply_state 設) */ }
+    else std::fprintf(stderr, "load: falling back to menu\n");
   }
 
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
@@ -641,7 +762,7 @@ int main(int argc, char** argv) {
     add_lang_badge();
     int hint_y = oy + H * cs + 6;
     if (!msg.active && !sheet.active)                    // 訊息檢視 / 屬性表期間隱藏控制提示(避免穿透框)
-      tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  V:stats  Esc:back", 7, PX_UI);
+      tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  V:stats  S:save  Esc:back", 7, PX_UI);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -662,7 +783,7 @@ int main(int argc, char** argv) {
     tl.add(8, 2, level->name, 14, PX_UI);
     add_lang_badge();
     if (!msg.active && !sheet.active)                    // 訊息檢視 / 屬性表期間隱藏控制提示(避免穿透框)
-      tl.add(8, 150, "I:fwd  J/L:turn  K:door  V:stats  Esc:back", 7, PX_UI);
+      tl.add(8, 150, "I:fwd  J/L:turn  K:door  V:stats  S:save  Esc:back", 7, PX_UI);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // sprite/scene/viewport 靜態檢視:像素層已於前面建好;文字層每幀補上標籤。
@@ -743,6 +864,12 @@ int main(int argc, char** argv) {
     }
     if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
       if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
+      // S=儲存遊戲(手冊):寫檔 + 訊息提示(i18n「已儲存」/「存檔失敗」)。
+      else if (in.key == 'S') {
+        bool ok = do_save();
+        open_msg(tr.tr(ok ? "Game saved." : "Save failed."));
+        last_event_tile = -1;                            // 提示非事件格,離格不重觸發
+      }
       // V=查看角色屬性表(手冊);數字 1-4 直接選該角色開表(暫停移動)。
       else if (in.key == 'V') { sheet.open((int)party.size(), 0); }
       else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
@@ -777,6 +904,14 @@ int main(int argc, char** argv) {
           sel = trig;
           std::fprintf(stderr, "selected [%c] %s\n", opts[trig].hot, opts[trig].label.c_str());
           if (opts[trig].hot == 'B') { enter_map(1); state = S_GAME; }  // 開始新遊戲→波卡城(area 1)
+          else if (opts[trig].hot == 'C') {           // 繼續舊遊戲(手冊 C):有存檔→讀檔進遊戲;無→提示
+            if (do_load(save_path)) { /* state=S_GAME(apply_state 已設) */ }
+            else {
+              state = S_BRANCH;
+              branch_label_en = "No saved game.";
+              branch_label = tr.tr(branch_label_en);
+            }
+          }
           else { state = S_BRANCH; branch_label = opts[trig].label; branch_label_en = opts[trig].en; }
         }
       }

@@ -116,6 +116,23 @@ Party Party::from_records(const std::vector<std::uint8_t>& bytes) {
   return party;
 }
 
+Party Party::from_raw_records(
+    const std::vector<std::array<std::uint8_t, 512>>& records) {
+  Party party;
+  // 讀檔還原:逐筆解析,不過濾空槽 — 存什麼、讀回什麼,順序與內容一一對應,
+  // 確保存→讀→存 byte-for-byte 一致。
+  for (const auto& rec : records)
+    party.members_.push_back(parse_record(rec.data()));
+  return party;
+}
+
+std::vector<std::array<std::uint8_t, 512>> Party::raw_records() const {
+  std::vector<std::array<std::uint8_t, 512>> out;
+  out.reserve(members_.size());
+  for (const auto& m : members_) out.push_back(m.raw);
+  return out;
+}
+
 Party Party::load_default(const std::filesystem::path& bundle_dir) {
   std::filesystem::path p = bundle_dir / "party" / "default_party.bin";
   std::FILE* f = std::fopen(p.string().c_str(), "rb");

@@ -2,3 +2,8 @@
 build/
 build_*/
 *.ppm
+
+# 實際存檔(執行期產生於 cwd 的 save/;只入庫格式/工具/測試,不入庫存檔本身)
+save/
+*.sav
+_verify_save_tmp/

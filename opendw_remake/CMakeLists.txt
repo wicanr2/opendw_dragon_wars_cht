@@ -53,6 +53,15 @@ add_library(dwr_game STATIC src/game/party.cpp)
 target_include_directories(dwr_game PUBLIC src)
 target_link_libraries(dwr_game PUBLIC dwr_render)
 
+# --- save 模組(存檔/讀檔;自包含,無 render/SDL 相依,可獨立測試)---
+add_library(dwr_save STATIC src/game/savegame.cpp)
+target_include_directories(dwr_save PUBLIC src)
+
+# 存檔 round-trip 自測(不需 SDL;印 PASS/FAIL)。
+add_executable(verify_save tools/verify/verify_save.cpp)
+target_link_libraries(verify_save PRIVATE dwr_save)
+add_test(NAME verify_save COMMAND verify_save)
+
 # golden 測試:remake 渲染 title,與 golden 對拍(見 tools_build/render_golden.sh)。
 add_executable(render_title tools/verify/render_title.cpp)
 target_link_libraries(render_title PRIVATE dwr_render dwr_resource)
@@ -82,7 +91,7 @@ if(SDL2_FOUND)
     src/main.cpp
     src/render/sdl_video.cpp
     src/render/text_layer.cpp)
-  target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n dwr_game SDL2::SDL2)
+  target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n dwr_game dwr_save SDL2::SDL2)
   if(DWR_HAVE_TTF)
     target_include_directories(opendw_remake PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
     target_link_libraries(opendw_remake PRIVATE ${SDL2_TTF_LIBRARIES})
