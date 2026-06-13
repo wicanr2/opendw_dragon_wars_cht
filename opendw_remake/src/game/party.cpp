@@ -80,6 +80,11 @@ void draw_stat_bar(render::Framebuffer& fb, int y, std::uint16_t cur,
 
 }  // namespace
 
+const char* Party::status_key(std::uint8_t status) {
+  const char* st = status_text(status);
+  return st ? st : "normal";
+}
+
 CharacterRecord Party::parse_record(const std::uint8_t* p) {
   CharacterRecord r;
   std::memcpy(r.raw.data(), p, 512);

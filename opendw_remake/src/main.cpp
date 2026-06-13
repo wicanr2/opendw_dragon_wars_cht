@@ -104,6 +104,35 @@ struct MsgViewer {
   }
 };
 
+// CharSheet — 角色屬性表檢視子狀態(對齊原版手冊 V=查看人物特質 / X=屬性畫面)。
+//
+// Deep module:對外只露 open/close/active/select + 取當前角色 index。內部隱藏
+//   「選哪名角色」狀態;版面(框 + 各屬性列)由 main 的 draw 函式統一以 MsgViewer
+//   風格的底框 + 文字層繪製。多語(F4)即時重排:畫面每幀重繪 → 自動套用新語系標籤。
+//
+// 進入:in-game / 選單按 V(或數字 1-4 直接選該角色)。
+// 切換:↑↓ 或數字 1-4 換角色;Esc 關閉。
+struct CharSheet {
+  bool active = false;
+  int idx = 0;           // 當前檢視的角色(0-based)
+  int count = 0;         // 隊伍人數(夾住 idx)
+
+  void open(int n, int start = 0) {
+    count = n < 1 ? 0 : n;
+    idx = start;
+    if (count > 0) { if (idx < 0) idx = 0; if (idx >= count) idx = count - 1; }
+    active = count > 0;
+  }
+  void close() { active = false; }
+  void prev() { if (count > 0) idx = (idx - 1 + count) % count; }
+  void next() { if (count > 0) idx = (idx + 1) % count; }
+  // 數字鍵 1-count 直選;越界忽略。回傳是否命中。
+  bool select(int n) {
+    if (n >= 1 && n <= count) { idx = n - 1; return true; }
+    return false;
+  }
+};
+
 // tile 型(word_11C8)→ framebuffer 顏色:0=void/牆、1=地面、其他=特殊/事件格。
 static std::uint8_t tile_color(std::uint8_t t) {
   if (t == 0) return 8;            // 牆/void = 灰
@@ -126,6 +155,7 @@ int main(int argc, char** argv) {
   int at_x = -1, at_y = -1;       // --at x y:把玩家放到指定格(headless 驗證事件文字)
   int msg_page = 0;               // --msg-page N:訊息檢視器先翻到第 N 頁再 dump(headless 驗證分頁)
   int read_para = -1;             // --read-para N:直接開段落 N 進訊息檢視(headless 驗證長段落)
+  int char_sheet = -1;            // --char-sheet N:直接開第 N 名(1-based)角色屬性表(headless 驗證)
   std::string dump, sprite_name, scene_name;
   bool viewport_mode = false;   // --viewport:顯示原版第一人稱 viewport 靜態框架
   bool fp_mode = false;         // --fp:S_GAME 用第一人稱 viewport(取代俯視彩格)
@@ -147,6 +177,7 @@ int main(int argc, char** argv) {
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
     else if (eq("--msg-page") && i + 1 < argc) msg_page = std::atoi(argv[++i]);   // 訊息檢視先翻到第 N 頁再 dump
     else if (eq("--read-para") && i + 1 < argc) read_para = std::atoi(argv[++i]); // 直接開段落 N 進訊息檢視
+    else if (eq("--char-sheet") && i + 1 < argc) char_sheet = std::atoi(argv[++i]); // 直接開第 N 名角色屬性表
     else if (eq("--viewport")) viewport_mode = true;   // 顯示原版 viewport 靜態框架
     else if (eq("--fp")) fp_mode = true;               // 第一人稱 viewport(透視牆面)
   }
@@ -182,6 +213,9 @@ int main(int argc, char** argv) {
     std::string etsv = "assets/i18n/" + loc + "/events.tsv";
     if (tr.merge(etsv))
       std::fprintf(stderr, "i18n: merged %s (total %zu)\n", etsv.c_str(), tr.size());
+    std::string ctsv = "assets/i18n/" + loc + "/chars.tsv";   // 角色屬性表標籤(V/X 畫面)
+    if (tr.merge(ctsv))
+      std::fprintf(stderr, "i18n: merged %s (total %zu)\n", ctsv.c_str(), tr.size());
     // Read paragraph 段落書(隨 locale);缺檔則回退「Read paragraph N」。
     book = res::ParagraphBook::load(bundle + "/paragraphs", loc);
     if (book) std::fprintf(stderr, "paragraphs: loaded %zu (locale=%s)\n", book->size(), loc.c_str());
@@ -218,6 +252,7 @@ int main(int argc, char** argv) {
   std::string event_msg;          // 踩到事件格時跑 script emit 的文字(原文,F4 重排用)
   int last_event_tile = -1;       // 對拍 op_71:tile 值變了才觸發
   MsgViewer msg;                  // 訊息/段落檢視器(分頁捲動;active 時暫停移動)
+  CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
 
   // 事件腳本跨資源 call(op_58)的資源提供者:從 bundle 載(自包含,不需 DATA1)。
   // tag = DATA1 section;BundleProvider 讀 assets/bundle/scripts/<tag>.bin(解壓後)。
@@ -488,6 +523,77 @@ int main(int argc, char** argv) {
     }
   };
 
+  // ── 角色屬性表框幾何(320×200 虛擬座標)──
+  // 落在畫面中央偏左(避開右側隊伍面板區),框較高以容納所有屬性列。
+  const int CS_X = 8, CS_Y = 20, CS_W = 200, CS_H = render::kH - CS_Y - 8;
+  const int CS_PAD = 6;
+  const int CS_LINE_H = PX_BODY / scale + 3;   // 屬性列行距(虛擬座標)
+  const int CS_VAL_X = CS_X + CS_PAD + 70;     // 數值欄起點(標籤右側)
+
+  // 畫角色屬性表底框(像素層)。
+  auto fill_char_sheet = [&]() {
+    for (int y = CS_Y; y < CS_Y + CS_H && y < render::kH; ++y)
+      for (int x = CS_X; x < CS_X + CS_W && x < render::kW; ++x)
+        fb.put(x, y, 1);                                 // 深藍實心底
+    for (int x = CS_X; x < CS_X + CS_W; ++x) {           // 上下邊框
+      fb.put(x, CS_Y, 15); fb.put(x, CS_Y + CS_H - 1, 15);
+    }
+    for (int y = CS_Y; y < CS_Y + CS_H; ++y) {           // 左右邊框
+      fb.put(CS_X, y, 15); fb.put(CS_X + CS_W - 1, y, 15);
+    }
+  };
+
+  // 畫角色屬性表:底框(像素層)+ 角色名 + 各屬性列(標籤 i18n / 數值 cur/max)(文字層)。
+  // 標籤一律走 tr()(查無回退英文);數值逐項取自 CharacterRecord(沿用既有 record 解析)。
+  auto draw_char_sheet = [&]() {
+    if (!sheet.active || sheet.idx < 0 || sheet.idx >= (int)party.size()) return;
+    const auto& c = party.at((std::size_t)sheet.idx);
+    fill_char_sheet();
+    int tx = CS_X + CS_PAD;
+    int y = CS_Y + CS_PAD;
+    // 標題列:「角色 N/總數  名字」。
+    char head[64];
+    std::snprintf(head, sizeof head, "%s %d/%d", tr.tr("Character").c_str(),
+                  sheet.idx + 1, (int)party.size());
+    tl.add(tx, y, head, 14, PX_BODY);
+    tl.add(CS_VAL_X, y, c.name.empty() ? "?" : c.name, 15, PX_BODY);
+    y += CS_LINE_H + 2;
+
+    // 一列:標籤(i18n)+ cur/max 數值。
+    auto row = [&](const char* label_en, int cur, int max_v) {
+      tl.add(tx, y, tr.tr(label_en), 7, PX_BODY);        // 標籤(灰白)
+      char buf[24];
+      std::snprintf(buf, sizeof buf, "%d/%d", cur, max_v);
+      tl.add(CS_VAL_X, y, buf, 15, PX_BODY);             // 數值(白)
+      y += CS_LINE_H;
+    };
+    // 一列:標籤 + 單一數值(等級/金幣/狀態)。
+    auto row1 = [&](const char* label_en, const std::string& val, std::uint8_t col = 15) {
+      tl.add(tx, y, tr.tr(label_en), 7, PX_BODY);
+      tl.add(CS_VAL_X, y, val, col, PX_BODY);
+      y += CS_LINE_H;
+    };
+
+    row("Strength",  c.strength,  c.max_strength);
+    row("Dexterity", c.dexterity, c.max_dexterity);
+    row("Intel",     c.intel,     c.max_intel);
+    row("Spirit",    c.spirit,    c.max_spirit);
+    row("Health",    c.health,    c.max_health);
+    row("Stun",      c.stun,      c.max_stun);
+    row("Power",     c.power,     c.max_power);
+    row1("Level",    std::to_string(c.level));
+    row1("Gold",     std::to_string(c.gold));
+    row1("Status",   tr.tr(game::Party::status_key(c.status)),
+         c.status ? 12 : 11);                            // 異常亮紅,正常亮綠
+    // 性別(原版 record 0x4E:0 男 / 1 女)。
+    row1("Gender", tr.tr(c.gender ? "Female" : "Male"), 7);
+
+    // 底部操作提示。
+    int iy = CS_Y + CS_H - CS_LINE_H - 2;
+    tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
+    tl.add(CS_VAL_X, iy, "1-4  Up/Down  Esc", 8, PX_UI);
+  };
+
   auto draw_menu = [&]() {
     fb.clear(1);
     add_title();
@@ -534,8 +640,8 @@ int main(int argc, char** argv) {
     tl.add(8, 2, level->name, 14, PX_UI);
     add_lang_badge();
     int hint_y = oy + H * cs + 6;
-    if (!msg.active)                                     // 訊息檢視期間隱藏控制提示(避免穿透訊息框)
-      tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
+    if (!msg.active && !sheet.active)                    // 訊息檢視 / 屬性表期間隱藏控制提示(避免穿透框)
+      tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  V:stats  Esc:back", 7, PX_UI);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -555,8 +661,8 @@ int main(int argc, char** argv) {
     // 文字層:關卡名 + 控制提示 + viewport 下方事件/段落文字(自動換行)。
     tl.add(8, 2, level->name, 14, PX_UI);
     add_lang_badge();
-    if (!msg.active)                                     // 訊息檢視期間隱藏控制提示(避免穿透訊息框)
-      tl.add(8, 150, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
+    if (!msg.active && !sheet.active)                    // 訊息檢視 / 屬性表期間隱藏控制提示(避免穿透框)
+      tl.add(8, 150, "I:fwd  J/L:turn  K:door  V:stats  Esc:back", 7, PX_UI);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // sprite/scene/viewport 靜態檢視:像素層已於前面建好;文字層每幀補上標籤。
@@ -568,6 +674,7 @@ int main(int argc, char** argv) {
     if (state == S_GAME) {
       if (fp_mode) draw_game_fp(); else draw_game();
       if (msg.active) draw_msg_overlay();            // 訊息檢視器疊在地圖/viewport 上層
+      if (sheet.active) draw_char_sheet();           // 角色屬性表疊在最上層
       return;
     }
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
@@ -581,6 +688,12 @@ int main(int argc, char** argv) {
     for (int p = 0; p < msg_page && msg.active; ++p) msg.advance();
     std::fprintf(stderr, "msg viewer: %d lines, %d/page → %d pages; showing page %d\n",
                  (int)msg.lines.size(), msg.lines_per_page, msg.page_count(), msg.page + 1);
+  }
+  // --char-sheet N:headless 直接開第 N 名(1-based)角色屬性表(驗證屬性值 / 在地化 / 版面)。
+  if (state == S_GAME && char_sheet >= 1 && party.size() > 0) {
+    sheet.open((int)party.size(), char_sheet - 1);
+    std::fprintf(stderr, "char sheet: showing character %d/%zu (\"%s\")\n",
+                 sheet.idx + 1, party.size(), party.at((std::size_t)sheet.idx).name.c_str());
   }
   render_now();
 
@@ -609,6 +722,17 @@ int main(int argc, char** argv) {
       }
       continue;                                          // 本幀不再處理其他輸入
     }
+    // 角色屬性表啟用時:接管輸入(切角色/關閉),暫停移動。
+    //   ↑↓ 或數字 1-4 切角色;Esc 關閉。F4(語系)已於上方處理。
+    if (sheet.active) {
+      if (in.back) { sheet.close(); }                    // Esc:關閉回遊戲
+      else if (in.up) sheet.prev();
+      else if (in.down) sheet.next();
+      else if (in.key >= '1' && in.key <= '9') sheet.select(in.key - '0');
+      else if (in.key == 'V') sheet.close();             // V 再按一次 → 關閉
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;                                          // 屬性表期間不處理移動
+    }
     // 訊息檢視器啟用時:接管輸入(翻頁/關閉),暫停移動,翻頁鍵不誤觸移動。
     if (msg.active) {
       if (in.back) { msg.close(); }                      // Esc:直接關閉回遊戲
@@ -619,6 +743,10 @@ int main(int argc, char** argv) {
     }
     if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
       if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
+      // V=查看角色屬性表(手冊);數字 1-4 直接選該角色開表(暫停移動)。
+      else if (in.key == 'V') { sheet.open((int)party.size(), 0); }
+      else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
+        sheet.open((int)party.size(), in.key - '1');
       else {
         if (in.left  || in.key == 'J') dir = (dir + 3) % 4;   // 左轉
         if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // 右轉

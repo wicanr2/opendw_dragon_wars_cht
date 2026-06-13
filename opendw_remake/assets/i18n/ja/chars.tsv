@@ -1,0 +1,21 @@
+# 角色屬性表標籤(示範:日本語)。其餘 tr() 回退英文原文。
+# english	japanese
+Character	キャラクター
+Strength	筋力
+Dexterity	敏捷
+Intel	知力
+Spirit	精神
+Health	生命力
+Stun	気絶
+Power	魔力
+Level	レベル
+Gold	所持金
+Status	状態
+Gender	性別
+Male	男
+Female	女
+dead	死亡
+chained	拘束
+poisoned	毒
+stunned	気絶
+normal	正常

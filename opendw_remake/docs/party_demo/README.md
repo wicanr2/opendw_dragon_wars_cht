@@ -61,6 +61,19 @@ status bitfield(對照 `unknown_1BC1[0..3]={02,04,80,01}` + `str_table_status`):
   - `party_pixel.png` — 像素層獨立 dump(狀態條位置/顏色)。
 - 回歸:`vm_selftest` 全綠、`verify_fp` 4/4 byte-for-byte、`verify_compose` 4/4 — 像素層 viewport 不退化。
 
+## 角色屬性表檢視(char sheet,對齊手冊 V=查看人物特質 / X=屬性畫面)
+
+in-game(`--fp` 或俯視)按 **`V`** 開啟屬性表(或直接按數字 **1-4** 選該角色);
+表內 **↑↓ / 1-4** 切角色、**Esc** 關閉。多語(F4)即時重排(畫面每幀重繪,標籤自動套新語系)。
+
+- 子狀態 `CharSheet`(`src/main.cpp`):只持有「選哪名角色 + 隊伍人數」,版面由 `draw_char_sheet`
+  以 MsgViewer 風格底框 + 文字層繪製(框 8,20 起 200×172,避開右側隊伍面板)。
+- 屬性值取自 `game::CharacterRecord`(沿用既有 record 解析,逐項對照本檔欄位佈局)。
+- 標籤走 i18n:`assets/i18n/<locale>/chars.tsv`(力量/敏捷/智力/精神/生命/暈眩值/法力/等級/金幣/狀態/性別),
+  `tr()` 查無回退英文。en passthrough、ja 示範。狀態鍵 `Party::status_key()`(dead/chained/poisoned/stunned/normal)。
+- headless 驗證:`opendw_remake --map 1 --fp --locale <loc> --char-sheet N --frames 1 --dump x.ppm`
+  (`SDL_VIDEODRIVER=dummy`)。圖檔:`char_sheet_{zh,en,ja}_*.png`(各語系一名角色;值對照下表)。
+
 ## 資料正確性註記
 
 - Muskels(STR 21)、Theb(DEX 24)為戰士型 → power 0/0,面板只 2 條(HP+暈眩,無法力藍條)。

@@ -57,6 +57,10 @@ public:
   std::size_t size() const { return members_.size(); }
   const CharacterRecord& at(std::size_t i) const { return members_.at(i); }
 
+  // status bitfield → 英文狀態鍵(供 i18n tr() 在地化);正常回 "normal"。
+  // 檢查順序與 opendw 一致(dead > stunned > poisoned > chained)。
+  static const char* status_key(std::uint8_t status);
+
   // 在畫面右側畫隊伍狀態面板(對拍 opendw draw_player_status_panel)。
   //   - 像素層:每名角色一列底框 + HP(亮紅)/暈眩(亮綠)/法力(亮藍)狀態條
   //   - 文字層:角色名字(置中於列頂),異常狀態以文字標示("is dead" 等)
