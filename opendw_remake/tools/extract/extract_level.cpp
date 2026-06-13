@@ -79,6 +79,22 @@ int main(int argc, char** argv) {
     return 0;
   }
 
+  if (cmd == "grid") {
+    if (argc < 4) { std::fprintf(stderr, "grid needs <res_index>\n"); return 2; }
+    int idx = std::atoi(argv[3]);
+    auto r = arc->load(idx); if (!r) { std::fprintf(stderr, "load failed\n"); return 1; }
+    const auto& b = *r; Level L = parse(b);
+    std::printf("=== res 0x%02X \"%s\" %dx%d  grid@0x%zX ===\n", idx, L.name.c_str(), L.H, L.W, L.grid);
+    auto cell = [&](int x, int y) -> std::size_t { return L.grid + (std::size_t)(L.W-1-x)*3*L.H + (std::size_t)y*3; };
+    std::printf("--- word_11C6 低 byte(b[off])每格 1 hex ---\n");
+    for (int y = 0; y < L.H; ++y) { for (int x = 0; x < L.W; ++x) { std::size_t o=cell(x,y); std::printf("%X", o+2<b.size()? (b[o]&0xF):0); } std::printf("\n"); }
+    std::printf("--- word_11C6 高 byte(b[off+1]) ---\n");
+    for (int y = 0; y < L.H; ++y) { for (int x = 0; x < L.W; ++x) { std::size_t o=cell(x,y); std::printf("%X", o+2<b.size()? (b[o+1]&0xF):0); } std::printf("\n"); }
+    std::printf("--- 第3 byte(b[off+2], word_11C8)---\n");
+    for (int y = 0; y < L.H; ++y) { for (int x = 0; x < L.W; ++x) { std::size_t o=cell(x,y); std::printf("%X", o+2<b.size()? (b[o+2]&0xF):0); } std::printf("\n"); }
+    return 0;
+  }
+
   if (cmd == "parse") {
     if (argc < 4) { std::fprintf(stderr, "parse needs <res_index>\n"); return 2; }
     int idx = std::atoi(argv[3]);
