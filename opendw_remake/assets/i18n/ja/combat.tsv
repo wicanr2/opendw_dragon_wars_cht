@@ -1,0 +1,17 @@
+# 戦闘画面 UI ラベル + モンスター名（示範；無対応は英語へフォールバック）。
+# english	japanese
+Encounter	遭遇
+Will the party:	パーティは：
+Fight	戦う
+Quickly fight	素早く戦う
+Run	逃げる
+Advance	前進
+Attack	攻撃
+F:Fight  R:Run	F:戦う  R:逃げる
+The party flees!	パーティは逃げ出した！
+Robber	盗賊
+Wild Dog	野犬
+Spider	クモ
+Wolf	オオカミ
+Humbaba	フンババ
+Gladiator	剣闘士

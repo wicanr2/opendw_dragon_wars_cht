@@ -41,6 +41,7 @@
 #include "i18n/strings.hpp"
 #include "game/party.hpp"
 #include "game/savegame.hpp"
+#include "game/combat.hpp"
 using namespace dw;
 
 static std::vector<std::string> lines_of(const std::string& s) {
@@ -164,6 +165,9 @@ int main(int argc, char** argv) {
   bool selftest_save = false;   // --selftest-save:headless round-trip 自測(印 PASS/FAIL)
   bool viewport_mode = false;   // --viewport:顯示原版第一人稱 viewport 靜態框架
   bool fp_mode = false;         // --fp:S_GAME 用第一人稱 viewport(取代俯視彩格)
+  int encounter_id = -1;        // --encounter N:直接進遭遇畫面(怪物表 index N)
+  unsigned combat_seed = 0x1234;// --combat-seed N:結算 RNG 種子(確定性)
+  int combat_rounds = 0;        // --combat-rounds N:dump 前自動打 N 回合(headless 驗證戰報)
   for (int i = 1; i < argc; ++i) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
     if (eq("--bundle") && i + 1 < argc) bundle = argv[++i];
@@ -188,6 +192,9 @@ int main(int argc, char** argv) {
     else if (eq("--selftest-save")) selftest_save = true;               // round-trip 自測
     else if (eq("--viewport")) viewport_mode = true;   // 顯示原版 viewport 靜態框架
     else if (eq("--fp")) fp_mode = true;               // 第一人稱 viewport(透視牆面)
+    else if (eq("--encounter") && i + 1 < argc) encounter_id = std::atoi(argv[++i]);  // 進遭遇畫面(怪物 index)
+    else if (eq("--combat-seed") && i + 1 < argc) combat_seed = (unsigned)std::strtoul(argv[++i], nullptr, 0);
+    else if (eq("--combat-rounds") && i + 1 < argc) combat_rounds = std::atoi(argv[++i]);  // dump 前自動打 N 回合
   }
   if (scale < 1) scale = 1;
 
@@ -195,7 +202,9 @@ int main(int argc, char** argv) {
   if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }
   const bool scene_mode = !scene_name.empty();
   const bool sprite_mode = !sprite_name.empty();
-  const bool menu_mode = !scene_mode && !sprite_mode && !viewport_mode && map_area < 0;
+  const bool encounter_mode = encounter_id >= 0;
+  const bool menu_mode = !scene_mode && !sprite_mode && !viewport_mode &&
+                         !encounter_mode && map_area < 0;
   render::Framebuffer fb;
 
   // 多國語系:i18n 字串表由 locale 推導,F4 可即時重載切換。
@@ -224,6 +233,9 @@ int main(int argc, char** argv) {
     std::string ctsv = "assets/i18n/" + loc + "/chars.tsv";   // 角色屬性表標籤(V/X 畫面)
     if (tr.merge(ctsv))
       std::fprintf(stderr, "i18n: merged %s (total %zu)\n", ctsv.c_str(), tr.size());
+    std::string fbtsv = "assets/i18n/" + loc + "/combat.tsv";  // 戰鬥畫面 UI + 怪物名
+    if (tr.merge(fbtsv))
+      std::fprintf(stderr, "i18n: merged %s (total %zu)\n", fbtsv.c_str(), tr.size());
     // Read paragraph 段落書(隨 locale);缺檔則回退「Read paragraph N」。
     book = res::ParagraphBook::load(bundle + "/paragraphs", loc);
     if (book) std::fprintf(stderr, "paragraphs: loaded %zu (locale=%s)\n", book->size(), loc.c_str());
@@ -240,7 +252,7 @@ int main(int argc, char** argv) {
   std::string header, header_en;   // header_en = 提示英文源(F4 重譯)
   std::vector<Opt> opts;
   int sel = 0;
-  enum { S_MENU, S_BRANCH, S_GAME } state = S_MENU;
+  enum { S_MENU, S_BRANCH, S_GAME, S_COMBAT } state = S_MENU;
   std::string branch_label, branch_label_en;   // branch 英文源(F4 重譯)
 
   // F4 切語系後,用各 widget 暫存的英文源重新 tr() 在地化(選單/branch/事件)。
@@ -256,6 +268,8 @@ int main(int argc, char** argv) {
   std::optional<res::Level> level;
   // 預設 4 人隊伍(Muskels/Theb/Elendil/Cheetah),自包含 bundle 資產;進遊戲即顯示在右側面板。
   game::Party party = game::Party::load_default(bundle);
+  // 怪物表(res31 萃取,oracle 對拍 25 筆);遭遇畫面用。
+  std::vector<game::MonsterRecord> monsters = game::MonsterTable::load(bundle);
   int level_res = -1;             // 當前關卡資源 index(= area + 0x46;= word_3AE8)
   int current_area = -1;          // 當前所在區域(存檔用;= level_res - 0x46)
   // 持久 VM 遊戲狀態(對拍 opendw game_state.unknown[256]):跨事件保留,存檔/讀檔的核心欄位。
@@ -265,6 +279,23 @@ int main(int argc, char** argv) {
   int last_event_tile = -1;       // 對拍 op_71:tile 值變了才觸發
   MsgViewer msg;                  // 訊息/段落檢視器(分頁捲動;active 時暫停移動)
   CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
+
+  // ── 遭遇 / 戰鬥畫面狀態(S_COMBAT)──
+  // 怪物圖渲染對齊 oracle:畫進 160×136 viewport 區、blit 到 framebuffer (16,8)
+  //   (對照 opendw show_random_encounter → draw_random_encounter_graphic →
+  //    ui_update_viewport,ui.c:1254 / 517;viewport 0x50×0x88 @ get_line_offset+0x10)。
+  // 結算數值維持「乾淨室模型」(combat.hpp 已誠實標示),非 oracle 移植。
+  struct EncounterState {
+    bool active = false;
+    int monster_idx = -1;                 // monsters[] index
+    std::optional<render::Sprite> sprite;  // 怪物圖(bundle .spr;無則畫空框)
+    std::string mon_name_en;               // 怪物名英文原文(i18n 鍵)
+    game::Combatant hero, mon;             // 結算單位(hero=隊伍第 0 名)
+    game::CombatRng rng{0x1234};
+    std::vector<std::string> log;          // 逐回合戰鬥訊息(英文鍵化;tr 在地化)
+    bool fled = false;                     // 已逃跑
+    bool over = false;                     // 戰鬥結束(怪死 / 英雄死 / 逃跑)
+  } enc;
 
   // 事件腳本跨資源 call(op_58)的資源提供者:從 bundle 載(自包含,不需 DATA1)。
   // tag = DATA1 section;BundleProvider 讀 assets/bundle/scripts/<tag>.bin(解壓後)。
@@ -597,6 +628,14 @@ int main(int argc, char** argv) {
     sp->blit(fb, (render::kW - sp->w) / 2, (render::kH - sp->h) / 2, 6);
     // sprite 名稱標籤改走文字層(每幀 render_now → draw_static_text)。
     std::fprintf(stderr, "sprite %s %dx%d (bundle, no DATA1)\n", sprite_name.c_str(), sp->w, sp->h);
+  } else if (encounter_mode) {
+    // ── A':遭遇畫面 ──(像素層由 begin_encounter/draw_encounter 於下方 render 迴圈處理)
+    if (monsters.empty()) { std::fprintf(stderr, "monsters.bin missing\n"); return 1; }
+    if (encounter_id >= (int)monsters.size()) {
+      std::fprintf(stderr, "encounter id %d >= %zu monsters\n", encounter_id, monsters.size());
+      return 1;
+    }
+    // 實際進場由下方 begin_encounter(encounter_id) 完成(lambda 需先定義)。
   } else if (menu_mode) {
     // ── B:VM 在地化選單 → D:快捷字母選項 ──(tr 已於頂層依 locale 載入)
     res::BundleProvider bun(bundle);
@@ -803,6 +842,106 @@ int main(int argc, char** argv) {
     tl.add(16, 110, "(game screen - to be implemented)", 7, PX_UI);
     tl.add(16, 140, "Esc: back   Q: quit", 8, PX_UI);
   };
+  // ── 遭遇畫面:怪物 index → 可用 bundle sprite。──
+  // 誠實揭露:res31 record byte[0x0B] 推出的 sprite 編號與實際 sprite 資源有偏差
+  //   (docs/26_MONSTERS_AND_SPRITES.md 已記:需逐一視覺核對),故此處用「怪物名 → 已
+  //    視覺核對過的 bundle sprite」對照表;查無則回退第一個 spider/wolf,再無則畫空框。
+  //   sprite 圖渲染路徑本身(.spr indexed blit)已由 sprite_dump golden 對拍 oracle。
+  auto sprite_for_monster = [&](const std::string& name) -> std::optional<render::Sprite> {
+    auto load = [&](const char* file) {
+      return render::Sprite::load(bundle + "/sprites/" + file + ".spr");
+    };
+    // 名稱關鍵字 → 已核對 sprite 檔(視覺核對來源:docs/26 contact sheet)。
+    if (name.find("Spider") != std::string::npos) return load("196_spider");
+    if (name.find("Wolf") != std::string::npos)   return load("168_wolf");
+    if (name.find("Dog") != std::string::npos || name.find("hound") != std::string::npos)
+      return load("168_wolf");
+    if (name.find("Guard") != std::string::npos || name.find("Soldier") != std::string::npos ||
+        name.find("Keeper") != std::string::npos || name.find("Pikeman") != std::string::npos ||
+        name.find("Gladiator") != std::string::npos)
+      return load("152_guard");
+    if (name.find("Fanatic") != std::string::npos || name.find("Loon") != std::string::npos)
+      return load("222_fanatic");
+    if (name.find("Innocent") != std::string::npos || name.find("Accused") != std::string::npos)
+      return load("200_innocent_man");
+    // 其餘人類敵人(Robber/Bandit/Drunk/Cannibal/…)用 pikeman 立繪占位。
+    if (auto s = load("210_pikeman")) return s;
+    return load("196_spider");
+  };
+  // 進遭遇:設 sprite + 結算單位 + RNG(seed 來自 --combat-seed)。
+  auto begin_encounter = [&](int idx) {
+    if (idx < 0 || idx >= (int)monsters.size()) return;
+    enc = EncounterState{};
+    enc.active = true;
+    enc.monster_idx = idx;
+    enc.mon_name_en = monsters[idx].name;
+    enc.sprite = sprite_for_monster(monsters[idx].name);
+    enc.rng = game::CombatRng((std::uint16_t)combat_seed);
+    if (party.size() > 0) enc.hero = game::Combatant::from_player(party.at(0));
+    else { enc.hero.name = "Hero"; enc.hero.is_player = true; enc.hero.hp = enc.hero.max_hp = 20;
+           enc.hero.attack = 5; enc.hero.dmg_dice = 1; enc.hero.dmg_sides = 6; }
+    enc.mon = game::Combatant::from_monster(monsters[idx]);
+    state = S_COMBAT;
+    std::fprintf(stderr, "begin_encounter: '%s' hero_hp=%d mon_hp=%d\n",
+                 enc.mon_name_en.c_str(), enc.hero.hp, enc.mon.hp);
+  };
+  // 一個攻擊回合(隊伍先攻 → 怪反擊);把訊息(英文鍵)推進 enc.log。
+  auto combat_round = [&]() {
+    if (enc.over) return;
+    char buf[96];
+    auto ph = game::resolve_attack(enc.hero, enc.mon, enc.rng);
+    std::snprintf(buf, sizeof buf, "%s -> %s : %s%s", enc.hero.name.c_str(),
+                  enc.mon_name_en.c_str(), ph.hit ? "hit" : "miss",
+                  ph.hit ? (std::string(" ") + std::to_string(ph.damage)).c_str() : "");
+    enc.log.emplace_back(buf);
+    if (!enc.mon.alive()) {
+      std::snprintf(buf, sizeof buf, "%s slain", enc.mon_name_en.c_str());
+      enc.log.emplace_back(buf); enc.over = true; return;
+    }
+    auto pm = game::resolve_attack(enc.mon, enc.hero, enc.rng);
+    std::snprintf(buf, sizeof buf, "%s -> %s : %s%s", enc.mon_name_en.c_str(),
+                  enc.hero.name.c_str(), pm.hit ? "hit" : "miss",
+                  pm.hit ? (std::string(" ") + std::to_string(pm.damage)).c_str() : "");
+    enc.log.emplace_back(buf);
+    if (!enc.hero.alive()) enc.over = true;
+    // log 只保留最後 4 行(畫面空間)。
+    while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
+  };
+  // 畫遭遇畫面:怪物 sprite(viewport 區 @16,8)+ 怪名 + 隊伍面板 + 戰/逃選單 + log。
+  auto draw_encounter = [&]() {
+    fb.clear(0);
+    // 怪物圖:畫進 framebuffer (16,8),160×136(對齊 oracle viewport 區)。
+    if (enc.sprite) enc.sprite->blit(fb, 16, 8, 6);  // 6 = encounter 棕色背景透明
+    else { // 無 sprite → 畫空框(像素層),維持版面對齊。
+      for (int x = 16; x < 16 + 160; ++x) { fb.put(x, 8, 8); fb.put(x, 8 + 135, 8); }
+      for (int y = 8; y < 8 + 136; ++y) { fb.put(16, y, 8); fb.put(16 + 159, y, 8); }
+    }
+    // 怪物名(i18n;viewport 上方)。
+    tl.add(16, 2, tr.tr(enc.mon_name_en), 14, PX_UI);
+    // 右側隊伍狀態面板(沿用 party_panel)。
+    party.draw_status_panel(fb, tl, PX_UI);
+    add_lang_badge();
+    // 選單列(熱鍵對齊原版戰鬥選單資源 Section 0x12:Fight / Run):F=戰鬥 R=逃跑。
+    int menu_y = 8 + 136 + 4;
+    tl.add(16, menu_y, tr.tr("F:Fight  R:Run"), 11, PX_UI);
+    // 戰鬥 log(在地化:hit/miss/slain 走 tr;含數字部分原樣)。
+    int ly = menu_y + 14;
+    for (const auto& line : enc.log) {
+      // 把鍵化片段(hit/miss/slain/->)逐字保留;只翻可翻片段太細,這裡整行顯示英文鍵
+      // + 末行若 over 顯示在地化結果。簡化:整行直接顯示(英文戰報)。
+      tl.add(16, ly, line, 7, PX_UI); ly += 12;
+    }
+    if (enc.over) {
+      const char* res = enc.fled ? "The party flees!"
+                       : (!enc.mon.alive() ? "Fight" : "Fight");  // 勝/敗皆回提示
+      (void)res;
+      std::string tail = enc.fled ? tr.tr("The party flees!")
+                       : (!enc.mon.alive() ? (tr.tr(enc.mon_name_en) + " " + tr.tr("slain"))
+                                           : (enc.hero.name + " down"));
+      tl.add(16, ly, tail, 12, PX_UI);
+      tl.add(16, ly + 14, tr.tr("[ continue ]"), 8, PX_UI);
+    }
+  };
   auto draw_game = [&]() {
     // F:真實關卡俯視圖(從 .lvl 解出的 tile 格,像素層)+ 玩家朝向;文字走文字層。
     fb.clear(0);
@@ -855,6 +994,7 @@ int main(int argc, char** argv) {
   };
   auto render_now = [&]() {
     tl.clear();                                      // 每幀重建文字層
+    if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面
     if (state == S_GAME) {
       if (fp_mode) draw_game_fp(); else draw_game();
       if (msg.active) draw_msg_overlay();            // 訊息檢視器疊在地圖/viewport 上層
@@ -878,6 +1018,14 @@ int main(int argc, char** argv) {
     sheet.open((int)party.size(), char_sheet - 1);
     std::fprintf(stderr, "char sheet: showing character %d/%zu (\"%s\")\n",
                  sheet.idx + 1, party.size(), party.at((std::size_t)sheet.idx).name.c_str());
+  }
+  // --encounter N:進遭遇畫面(headless 可 --dump 驗證圖層;互動下 F 戰鬥 / R 逃跑)。
+  if (encounter_mode) {
+    begin_encounter(encounter_id);
+    for (int r = 0; r < combat_rounds && !enc.over; ++r) combat_round();  // 自動打 N 回合(驗證戰報)
+    if (combat_rounds > 0)
+      std::fprintf(stderr, "combat: %d rounds, hero_hp=%d mon_hp=%d over=%d\n",
+                   combat_rounds, enc.hero.hp, enc.mon.hp, enc.over);
   }
   render_now();
 
@@ -924,6 +1072,22 @@ int main(int argc, char** argv) {
         msg.advance();                                   // Space/Enter/↓/I:下一頁;末頁→關閉
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;                                          // 訊息檢視期間不處理移動
+    }
+    // 遭遇 / 戰鬥畫面:F=戰鬥(推進一回合)、R=逃跑、Esc/Space=結束後離開。
+    if (state == S_COMBAT) {
+      if (enc.over) {
+        if (in.back || in.select) {                      // 戰鬥已結束 → 離開遭遇
+          enc.active = false;
+          if (level) state = S_GAME; else break;          // 有地圖回遊戲,否則(--encounter)離開
+        }
+      } else if (in.key == 'R' || in.back) {              // R/Esc:逃跑
+        enc.fled = true; enc.over = true;
+        enc.log.emplace_back("The party flees!");
+      } else if (in.key == 'F' || in.select) {            // F/Enter:打一回合
+        combat_round();
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;                                          // 戰鬥期間不處理移動
     }
     if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
       if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
