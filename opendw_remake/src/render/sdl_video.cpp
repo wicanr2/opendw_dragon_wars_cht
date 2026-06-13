@@ -2,6 +2,8 @@
 
 #include <SDL.h>
 
+#include <cstdlib>
+
 namespace dw::render {
 
 std::vector<std::uint8_t> SdlVideo::to_rgb(const Framebuffer& fb) {
@@ -16,26 +18,67 @@ std::vector<std::uint8_t> SdlVideo::to_rgb(const Framebuffer& fb) {
 
 SdlVideo::~SdlVideo() { close(); }
 
-bool SdlVideo::open(int scale, const char* title) {
+bool SdlVideo::open(int scale, const char* title, const std::string& ttf_path, bool headless) {
   scale_ = scale;
+  headless_ = headless;
+  if (headless) {
+    // headless 合成:dummy video driver(不開實體視窗),供 --dump 讀回高解析畫面。
+    // SDL 2.0.x 無 SDL_HINT_VIDEODRIVER,改用環境變數(SDL_Init 前設定)。
+    setenv("SDL_VIDEODRIVER", "dummy", 1);
+  }
   if (SDL_Init(SDL_INIT_VIDEO) != 0) return false;
+  Uint32 wflags = headless ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN;
   win_ = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                          kW * scale, kH * scale, SDL_WINDOW_SHOWN);
+                          kW * scale, kH * scale, wflags);
   if (!win_) return false;
+  // software renderer:headless dummy driver 下 render-to-texture + ReadPixels 穩定。
   ren_ = SDL_CreateRenderer(win_, -1, SDL_RENDERER_SOFTWARE);
   if (!ren_) return false;
+  // 像素層 320×200 texture;nearest 放大維持像素正確性(整數倍)。
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");  // nearest
   tex_ = SDL_CreateTexture(ren_, SDL_PIXELFORMAT_RGB24,
                            SDL_TEXTUREACCESS_STREAMING, kW, kH);
-  return tex_ != nullptr;
+  if (!tex_) return false;
+  // 文字層:host TTF;失敗則文字層不可用,但不阻擋程式(回退到只有像素層)。
+  if (!ttf_path.empty()) {
+    if (!text_.open(ren_, ttf_path, scale_))
+      SDL_Log("text layer disabled (TTF open failed): %s", ttf_path.c_str());
+  }
+  return true;
+}
+
+void SdlVideo::compose(const Framebuffer& fb) {
+  // 1) 像素層:framebuffer → 320×200 texture → nearest 整數放大至全視窗。
+  auto rgb = to_rgb(fb);
+  SDL_UpdateTexture(tex_, nullptr, rgb.data(), kW * 3);
+  SDL_RenderClear(ren_);
+  SDL_RenderCopy(ren_, tex_, nullptr, nullptr);   // 放大到 kW*scale × kH*scale
+  // 2) 文字層:TextLayer 在視窗高解析原生繪製,疊在像素層之上(永不縮放)。
+  text_.flush();
 }
 
 void SdlVideo::present(const Framebuffer& fb) {
   if (!tex_) return;
-  auto rgb = to_rgb(fb);
-  SDL_UpdateTexture(tex_, nullptr, rgb.data(), kW * 3);
-  SDL_RenderClear(ren_);
-  SDL_RenderCopy(ren_, tex_, nullptr, nullptr);  // 縮放到視窗大小
+  compose(fb);
   SDL_RenderPresent(ren_);
+}
+
+bool SdlVideo::dump_ppm(const Framebuffer& fb, const std::string& path) {
+  if (!ren_ || !tex_) return false;
+  int w = kW * scale_, h = kH * scale_;
+  // 合成到 default render target,再 ReadPixels 取回高解析 RGB。
+  compose(fb);
+  std::vector<std::uint8_t> px(static_cast<std::size_t>(w) * h * 3);
+  if (SDL_RenderReadPixels(ren_, nullptr, SDL_PIXELFORMAT_RGB24, px.data(), w * 3) != 0) {
+    SDL_Log("RenderReadPixels failed: %s", SDL_GetError());
+    return false;
+  }
+  std::FILE* f = std::fopen(path.c_str(), "wb");
+  if (!f) return false;
+  std::fprintf(f, "P6\n%d %d\n255\n", w, h);
+  std::fwrite(px.data(), 1, px.size(), f);
+  std::fclose(f);
+  return true;
 }
 
 Input SdlVideo::poll() {
@@ -63,6 +106,7 @@ Input SdlVideo::poll() {
 }
 
 void SdlVideo::close() {
+  text_.close();
   if (tex_) { SDL_DestroyTexture(tex_); tex_ = nullptr; }
   if (ren_) { SDL_DestroyRenderer(ren_); ren_ = nullptr; }
   if (win_) { SDL_DestroyWindow(win_); win_ = nullptr; }

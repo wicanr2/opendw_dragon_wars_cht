@@ -1,18 +1,26 @@
-// main — OpenDW Remake app(R2 SDL2 開窗)。
+// main — OpenDW Remake app(雙層渲染:像素層 + 高解析 TTF 文字層)。
+//
+// 雙層架構(見 docs/adr/0002-two-layer-cjk-rendering.md):
+//   像素層:320×200 indexed framebuffer(viewport/sprite/scene/地圖 tile)→ 整數倍
+//           nearest 放大到視窗(預設 3× = 960×600),維持與原版像素級對拍。
+//   文字層:UI/選單/事件/段落/標題等 CJK + 在地化文字 → SdlVideo::text()(TextLayer),
+//           用 SDL2_ttf 載 wqy-zenhei 在視窗高解析原生繪製,疊在像素層之上,永不縮放。
 //
 // 已完成小段:
-//   B  bundle bytecode → VM op_78 → i18n 繁中 → CJK+8×8 渲染 → SDL 顯示(在地化選單)
+//   B  bundle bytecode → VM op_78 → i18n 繁中 → 文字層 → SDL 顯示(在地化選單)
 //   A  --sprite NAME:從 bundle 載 .spr 美術顯示在視窗(不碰 DATA1)
 //   C  互動骨架:poll() → Input 事件
 //   D  快捷字母選單 + 狀態分支,操作與說明書一致(見 docs/CONTROLS.md):
 //      B=開始新遊戲、C=繼續舊遊戲;↑↓/Enter 為輔助;Esc 返回 / Q 離開。
 //
-// 字型全部來自 assets(自包含:dw8x8.bin + cjk24.atlas),執行期不依賴原始遊戲檔。
+// 像素資產來自 bundle(自包含:dw8x8.bin + sprites/scenes/maps);文字字型用 host TTF。
 //
-// 用法:opendw_remake [--bundle DIR] [--font RAW] [--atlas ATLAS] [--menu TSV]
-//                     [--pc N] [--sprite NAME] [--frames N] [--dump PPM] [--press CH]
+// 用法:opendw_remake [--bundle DIR] [--font RAW] [--menu TSV] [--scale N]
+//                     [--font-ttf PATH] [--pc N] [--sprite NAME] [--frames N]
+//                     [--dump PPM] [--press CH] [--map N] [--fp] [--at X Y]
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <cctype>
 #include <optional>
@@ -21,7 +29,6 @@
 #include "resource/provider.hpp"
 #include "vm/interpreter.hpp"
 #include "render/font.hpp"
-#include "render/cjk_font.hpp"
 #include "render/framebuffer.hpp"
 #include "render/sprite.hpp"
 #include "render/picture.hpp"
@@ -39,17 +46,6 @@ static std::vector<std::string> lines_of(const std::string& s) {
   o.push_back(c); return o;
 }
 
-static void draw_mixed(render::Framebuffer& fb, const render::Font8x8& font,
-                       const render::CjkFont& cjk, int x, int y, const std::string& z,
-                       std::uint8_t col, std::uint8_t bg) {
-  const char* p = z.c_str();
-  while (*p) {
-    std::uint32_t cp = render::utf8_next(p);
-    if (cp < 0x80) { font.draw_char(fb, x, y + 8, (std::uint8_t)cp, col, bg); x += 8; }
-    else { cjk.draw(fb, x, y, cp, col); x += 24; }
-  }
-}
-
 struct Opt { char hot; std::string label; };   // 快捷字母 + 在地化文字
 
 // tile 型(word_11C8)→ framebuffer 顏色:0=void/牆、1=地面、其他=特殊/事件格。
@@ -62,9 +58,11 @@ static std::uint8_t tile_color(std::uint8_t t) {
 int main(int argc, char** argv) {
   std::string bundle = "assets/bundle";
   std::string font_raw = "assets/fonts/dw8x8.bin";
-  std::string atlas = "assets/fonts/cjk24.atlas";
   std::string locale = "zh-TW";   // 多國語系:i18n 取 assets/i18n/<locale>/;未來 ja 等
   std::string menu_tsv;           // 空 = 由 locale 推導
+  // 文字層 host TTF(雙層渲染);可 --font-ttf 覆寫(為日後日文/Noto 留路)。
+  std::string font_ttf = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc";
+  int scale = 3;                  // --scale N:視窗 = 320*N × 200*N(預設 3 → 960×600,CJK≈36px 原生)
   int start_pc = 20, max_frames = -1, press = 0, map_area = -1;
   int at_x = -1, at_y = -1;       // --at x y:把玩家放到指定格(headless 驗證事件文字)
   std::string dump, sprite_name, scene_name;
@@ -74,7 +72,8 @@ int main(int argc, char** argv) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
     if (eq("--bundle") && i + 1 < argc) bundle = argv[++i];
     else if (eq("--font") && i + 1 < argc) font_raw = argv[++i];
-    else if (eq("--atlas") && i + 1 < argc) atlas = argv[++i];
+    else if (eq("--font-ttf") && i + 1 < argc) font_ttf = argv[++i];   // 文字層 host TTF
+    else if (eq("--scale") && i + 1 < argc) scale = std::atoi(argv[++i]);  // 視窗整數倍率
     else if (eq("--menu") && i + 1 < argc) menu_tsv = argv[++i];
     else if (eq("--locale") && i + 1 < argc) locale = argv[++i];   // 切語系(zh-TW / ja / …)
     else if (eq("--pc") && i + 1 < argc) start_pc = std::atoi(argv[++i]);
@@ -88,6 +87,7 @@ int main(int argc, char** argv) {
     else if (eq("--viewport")) viewport_mode = true;   // 顯示原版 viewport 靜態框架
     else if (eq("--fp")) fp_mode = true;               // 第一人稱 viewport(透視牆面)
   }
+  if (scale < 1) scale = 1;
 
   auto font = render::Font8x8::load_table(font_raw);
   if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }
@@ -96,11 +96,11 @@ int main(int argc, char** argv) {
   const bool menu_mode = !scene_mode && !sprite_mode && !viewport_mode && map_area < 0;
   render::Framebuffer fb;
 
-  // 多國語系:i18n 字串表由 locale 推導(可 --locale ja 切換);CJK atlas 可隨 locale 替換。
+  // 多國語系:i18n 字串表由 locale 推導(可 --locale ja 切換)。
+  // 文字渲染改走 SDL2_ttf 高解析文字層(雙層),不再用 cjk24 atlas。
   if (menu_tsv.empty()) menu_tsv = "assets/i18n/" + locale + "/menu.tsv";
-  auto cjk = render::CjkFont::load(atlas);          // 全模式共用(選單/地圖/事件文字)
   auto tr = i18n::Strings::load(menu_tsv);          // tr() 查不到則回退英文 → 未翻譯也能顯示
-  if (!cjk || !tr) { std::fprintf(stderr, "atlas/i18n load failed (locale=%s)\n", locale.c_str()); return 1; }
+  if (!tr) { std::fprintf(stderr, "i18n load failed (locale=%s)\n", locale.c_str()); return 1; }
   // 併入事件文字譯表(events.tsv):踩到事件格時的在地化來源(同 locale)。可缺檔。
   std::string events_tsv = "assets/i18n/" + locale + "/events.tsv";
   if (tr->merge(events_tsv))
@@ -273,10 +273,10 @@ int main(int argc, char** argv) {
     if (!sp) { std::fprintf(stderr, "sprite load failed: %s\n", path.c_str()); return 1; }
     fb.clear(0);
     sp->blit(fb, (render::kW - sp->w) / 2, (render::kH - sp->h) / 2, 6);
-    font->draw_string(fb, 8, 8, sprite_name.c_str(), 15, 0);
+    // sprite 名稱標籤改走文字層(每幀 render_now → draw_static_text)。
     std::fprintf(stderr, "sprite %s %dx%d (bundle, no DATA1)\n", sprite_name.c_str(), sp->w, sp->h);
   } else if (menu_mode) {
-    // ── B:VM 在地化選單 → D:快捷字母選項 ──(cjk/tr 已於頂層依 locale 載入)
+    // ── B:VM 在地化選單 → D:快捷字母選項 ──(tr 已於頂層依 locale 載入)
     res::BundleProvider bun(bundle);
     auto sec0 = bun.load(0);
     if (!sec0) { std::fprintf(stderr, "bundle section 0 load failed: %s\n", bundle.c_str()); return 1; }
@@ -313,35 +313,57 @@ int main(int argc, char** argv) {
       }
   }
 
+  // ── 雙層渲染:像素層(framebuffer)由各 draw_* 建;文字層(CJK/ASCII)丟給 SdlVideo::text()。
+  //    headless 條件:有 --dump 且未設 DISPLAY → 用 dummy driver 合成高解析畫面。──
+  const bool headless = !dump.empty() && std::getenv("DISPLAY") == nullptr;
+  render::SdlVideo vid;
+  if (!vid.open(scale, "OpenDW Remake — 火龍之戰", font_ttf, headless)) {
+    std::fprintf(stderr, "SDL open failed\n"); return 1;
+  }
+  render::TextLayer& tl = vid.text();
+  // 原生字級(視窗 px)隨 scale 等比(基準為 scale=3):標題大字、CJK 內文、ASCII 提示。
+  const int PX_TITLE = 48 * scale / 3;   // 標題「火龍之戰」
+  const int PX_BODY  = 24 * scale / 3;   // CJK 內文(選單/事件/段落)
+  const int PX_UI    = 16 * scale / 3;   // ASCII UI(關卡名/控制提示)
+
+  // 文字層:大標題「火龍之戰」(置於虛擬 (8,6))。
+  auto add_title = [&]() { tl.add(8, 6, "火龍之戰", 14, PX_TITLE); };
+
+  // 文字層:多行段落/事件文字(虛擬座標,自動換行)。回傳是否畫滿到底。
+  auto add_wrapped = [&](const std::string& z, int vx, int vy, int max_vw, int line_h,
+                         std::uint8_t color, int px) {
+    for (const std::string& ln : tl.wrap(z, max_vw, px)) {
+      if (vy + line_h > render::kH) break;     // 超出畫面底部即停
+      tl.add(vx, vy, ln, color, px);
+      vy += line_h;
+    }
+  };
+
   auto draw_menu = [&]() {
     fb.clear(1);
-    { int x = 8; for (std::uint32_t cp : {U'火', U'龍', U'之', U'戰'}) { cjk->draw(fb, x, 8, cp, 14); x += 24; } }
-    int y = 48;
-    if (!header.empty()) { draw_mixed(fb, *font, *cjk, 16, y, header, 7, 1); y += 28; }
+    add_title();
+    int y = 40;
+    if (!header.empty()) { tl.add(16, y, header, 7, PX_BODY); y += 14; }
     for (std::size_t i = 0; i < opts.size(); ++i) {
       bool cur = (int)i == sel;
       std::uint8_t col = cur ? 14 : 15;
-      int x = 16;
-      if (cur) { font->draw_char(fb, x, y + 8, (std::uint8_t)'>', 14, 1); }
-      x = 36;
-      if (opts[i].hot) {                       // 快捷字母,如 "B)"
-        font->draw_char(fb, x, y + 8, (std::uint8_t)opts[i].hot, 11, 1); x += 8;
-        font->draw_char(fb, x, y + 8, (std::uint8_t)')', col, 1); x += 12;
-      }
-      draw_mixed(fb, *font, *cjk, x, y, opts[i].label, col, 1);
-      y += 28;
+      std::string line;
+      if (cur) line += "> ";
+      if (opts[i].hot) { line += opts[i].hot; line += ") "; }
+      line += opts[i].label;
+      tl.add(16, y, line, col, PX_BODY);
+      y += 14;
     }
   };
   auto draw_branch = [&]() {
     fb.clear(1);
-    { int x = 8; for (std::uint32_t cp : {U'火', U'龍', U'之', U'戰'}) { cjk->draw(fb, x, 8, cp, 14); x += 24; } }
-    draw_mixed(fb, *font, *cjk, 16, 70, branch_label, 14, 1);
-    // 提示用 ASCII(CJK atlas 僅含遊戲在地化字,避免缺字)
-    font->draw_string(fb, 16, 120, "(game screen - to be implemented)", 7, 1);
-    font->draw_string(fb, 16, 156, "Esc: back   Q: quit", 8, 1);
+    add_title();
+    tl.add(16, 60, branch_label, 14, PX_BODY);
+    tl.add(16, 110, "(game screen - to be implemented)", 7, PX_UI);
+    tl.add(16, 140, "Esc: back   Q: quit", 8, PX_UI);
   };
   auto draw_game = [&]() {
-    // F:真實關卡俯視圖(從 .lvl 解出的 tile 格)+ 玩家朝向。移動鍵見 docs/CONTROLS.md。
+    // F:真實關卡俯視圖(從 .lvl 解出的 tile 格,像素層)+ 玩家朝向;文字走文字層。
     fb.clear(0);
     if (!level) return;
     int W = level->w, H = level->h;
@@ -354,73 +376,51 @@ int main(int argc, char** argv) {
         for (int j = 0; j < cs - 1; ++j) for (int i = 0; i < cs - 1; ++i)
           fb.put(ox + x * cs + i, oy + y * cs + j, c);
       }
-    font->draw_char(fb, ox + px * cs, oy + py * cs, (std::uint8_t)dirch[dir], 15, 0);  // 玩家
-    // 標題(關卡名為 ASCII,可用 8×8 字)+ 控制提示
-    font->draw_string(fb, 8, 4, level->name.c_str(), 14, 0);
+    font->draw_char(fb, ox + px * cs, oy + py * cs, (std::uint8_t)dirch[dir], 15, 0);  // 玩家(像素層)
+    // 文字層:關卡名 + 控制提示 + 事件文字(自動換行)。
+    tl.add(8, 2, level->name, 14, PX_UI);
     int hint_y = oy + H * cs + 6;
-    font->draw_string(fb, 8, hint_y, "I:fwd  J/L:turn  K:door  Esc:back", 7, 0);
-    // 踩到事件格 → 顯示事件文字(已於 run_event 在地化;英文 8×8、中文 12×12 半尺寸,自動換行)
-    if (!event_msg.empty()) {
-      const std::string& z = event_msg;
-      int my = hint_y + 12, mx0 = 4, mx = mx0, maxx = render::kW - 4;
-      const char* p = z.c_str();
-      // 段落可能很長(Read paragraph 全文):超出畫面底部即停(fb.put 本身已 clip)。
-      while (*p && my < render::kH) {
-        std::uint32_t cp = render::utf8_next(p);
-        if (cp == ' ' && mx > maxx - 24) { mx = mx0; my += 13; continue; }   // 詞界換行
-        if (cp < 0x80) { font->draw_char(fb, mx, my + 2, (std::uint8_t)cp, 15, 0); mx += 8; }
-        else { cjk->draw_half(fb, mx, my, cp, 15); mx += 12; }
-        if (mx > maxx) { mx = mx0; my += 13; }
-      }
-    }
+    tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
+    if (!event_msg.empty())
+      add_wrapped(event_msg, 4, hint_y + 12, render::kW - 8, 13, 15, PX_BODY);
   };
-  // F+:第一人稱 viewport(透視牆面)。port 自 opendw refresh_viewport →
-  //   update_viewport(靜態框架)→ ui_update_viewport(上螢幕)。對拍 verify_fp 4/4。
+  // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
+  //   update_viewport(靜態框架)→ ui_update_viewport。對拍 verify_fp 4/4(像素層不變)。
   auto draw_game_fp = [&]() {
     fb.clear(0);
     if (!level) return;
     render::ViewportDecoder dec;
     // 牆面/地面/天空 sprite blit 進 viewport_memory(已對拍 golden 10880B)。
     render::render_first_person(*level, px, py, dir, dec, comps);
-    // 靜態透視框架疊上(vp0..vp3,= 原版 update_viewport)。
     if (vpt_ok)
       dec.compose_frame(vpt[0].data(), vpt[1].data(), vpt[2].data(), vpt[3].data());
-    dec.to_framebuffer(fb);   // 160×136 @ (16,8)
-    // UI:關卡名 + 控制提示
-    font->draw_string(fb, 8, 4, level->name.c_str(), 14, 0);
-    font->draw_string(fb, 8, 150, "I:fwd  J/L:turn  K:door  Esc:back", 7, 0);
-    // 事件文字:viewport 下方訊息區(已於 run_event 在地化;可切語系)。
-    // 320×200 下空間有限:中文用半尺寸 12×12(draw_half,每行約 26 字)、英文 8×8,
-    // 自動換行,讓整句事件文字落在 viewport 下方可見區。
-    if (!event_msg.empty()) {
-      const std::string& z = event_msg;
-      int my = 158, mx0 = 4, mx = mx0, maxx = render::kW - 4;
-      const char* p = z.c_str();
-      // 段落可能很長(Read paragraph 全文):超出畫面底部即停(fb.put 本身已 clip)。
-      while (*p && my < render::kH) {
-        std::uint32_t cp = render::utf8_next(p);
-        if (cp == ' ' && mx > maxx - 24) { mx = mx0; my += 13; continue; }   // 詞界換行
-        if (cp < 0x80) { font->draw_char(fb, mx, my + 2, (std::uint8_t)cp, 15, 0); mx += 8; }
-        else { cjk->draw_half(fb, mx, my, cp, 15); mx += 12; }
-        if (mx > maxx) { mx = mx0; my += 13; }
-      }
-    }
+    dec.to_framebuffer(fb);   // 160×136 @ (16,8)(像素層)
+    // 文字層:關卡名 + 控制提示 + viewport 下方事件/段落文字(自動換行)。
+    tl.add(8, 2, level->name, 14, PX_UI);
+    tl.add(8, 150, "I:fwd  J/L:turn  K:door  Esc:back", 7, PX_UI);
+    if (!event_msg.empty())
+      add_wrapped(event_msg, 4, 158, render::kW - 8, 13, 15, PX_BODY);
+  };
+  // sprite/scene/viewport 靜態檢視:像素層已於前面建好;文字層每幀補上標籤。
+  auto draw_static_text = [&]() {
+    if (sprite_mode) tl.add(8, 4, sprite_name, 15, PX_UI);
   };
   auto render_now = [&]() {
-    if (state == S_GAME) { if (fp_mode) draw_game_fp(); else draw_game(); return; }   // 地圖(--map 或選單 B 進入)
-    if (!menu_mode) return;                          // sprite/scene:靜態,已畫
+    tl.clear();                                      // 每幀重建文字層
+    if (state == S_GAME) { if (fp_mode) draw_game_fp(); else draw_game(); return; }
+    if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
     if (state == S_MENU) draw_menu();
     else draw_branch();
   };
   render_now();
 
   if (!dump.empty()) {
-    std::FILE* d = std::fopen(dump.c_str(), "wb");
-    if (d) { fb.write_ppm(d); std::fclose(d); std::fprintf(stderr, "dumped frame to %s\n", dump.c_str()); }
+    if (vid.dump_ppm(fb, dump))
+      std::fprintf(stderr, "dumped composed frame (%dx%d) to %s\n", vid.out_w(), vid.out_h(), dump.c_str());
+    else
+      std::fprintf(stderr, "dump failed: %s\n", dump.c_str());
   }
 
-  render::SdlVideo vid;
-  if (!vid.open(3)) { std::fprintf(stderr, "SDL open failed\n"); return 1; }
   int frames = 0;
   for (;;) {
     render_now();
