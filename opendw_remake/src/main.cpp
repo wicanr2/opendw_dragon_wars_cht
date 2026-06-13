@@ -43,6 +43,7 @@
 #include "game/party.hpp"
 #include "game/savegame.hpp"
 #include "game/combat.hpp"
+#include "game/seen_map.hpp"
 using namespace dw;
 
 static std::vector<std::string> lines_of(const std::string& s) {
@@ -224,7 +225,8 @@ int main(int argc, char** argv) {
   int para_scroll = 0;            // --para-scroll N:dump 前先「逐頁」下捲 N 次(headless 驗證跨頁無遺漏)
   int char_sheet = -1;            // --char-sheet N:直接開第 N 名(1-based)角色屬性表(headless 驗證)
   int automap_area = -1;          // --automap N:headless 直接開第 N 區俯視平面地圖(`?` 鍵功能)
-  int mm_seed = 0;                // --mm-seed:0=全圖探索(預設) 1=只玩家格 2=不 seed
+  int mm_seed = 0;                // --mm-seed:0=全圖探索 1=只玩家格 2=不 seed(測試/展示)
+  bool mm_seed_set = false;       // 是否顯式給 --mm-seed;否則遊戲內用真實 fog of war
   std::string dump, sprite_name, scene_name;
   std::string save_path = "save/slot0.sav";  // 存/讀檔預設路徑(cwd 可寫處;見 .gitignore)
   std::string load_path;        // --load <path>:啟動即讀檔還原(進遊戲)
@@ -249,7 +251,7 @@ int main(int argc, char** argv) {
     else if (eq("--scene") && i + 1 < argc) scene_name = argv[++i];
     else if (eq("--map") && i + 1 < argc) map_area = std::atoi(argv[++i]);   // 直接進某區地圖
     else if (eq("--automap") && i + 1 < argc) automap_area = std::atoi(argv[++i]);  // headless 開俯視地圖
-    else if (eq("--mm-seed") && i + 1 < argc) mm_seed = std::atoi(argv[++i]); // 探索旗標 seeding
+    else if (eq("--mm-seed") && i + 1 < argc) { mm_seed = std::atoi(argv[++i]); mm_seed_set = true; } // 探索旗標 seeding
     else if (eq("--at") && i + 2 < argc) { at_x = std::atoi(argv[++i]); at_y = std::atoi(argv[++i]); }  // 玩家落點(測試)
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
     else if (eq("--msg-page") && i + 1 < argc) msg_page = std::atoi(argv[++i]);   // 訊息檢視先翻到第 N 頁再 dump
@@ -342,6 +344,9 @@ int main(int argc, char** argv) {
   std::vector<game::MonsterRecord> monsters = game::MonsterTable::load(bundle);
   int level_res = -1;             // 當前關卡資源 index(= area + 0x46;= word_3AE8)
   int current_area = -1;          // 當前所在區域(存檔用;= level_res - 0x46)
+  // 俯視地圖 fog of war:per-area「已看過」格;玩家每步標記當前格(對齊
+  // opendw refresh_viewport,engine.c:5688)。存檔保存;換 area 各關獨立。
+  game::SeenMap seen;
   // 持久 VM 遊戲狀態(對拍 opendw game_state.unknown[256]):跨事件保留,存檔/讀檔的核心欄位。
   // run_event 跑事件腳本時以此為初值並回寫,使旗標(門/開關/劇情)能持久累積。
   std::array<std::uint8_t, 256> game_state{};
@@ -471,7 +476,14 @@ int main(int argc, char** argv) {
     game_state[2] = (std::uint8_t)area; game_state[3] = (std::uint8_t)dir;
     std::fprintf(stderr, "enter map area %d: \"%s\" %dx%d start=(%d,%d)\n",
                  area, level->name.c_str(), level->w, level->h, px, py);
+    // 進場即把起始格標記 seen(對齊 opendw:進關後第一次 refresh_viewport 標記玩家格)。
+    if (level) seen.mark(current_area, px, py, level->w, level->h);
     return true;
+  };
+  // 把玩家當前格標記為 seen(對齊 opendw refresh_viewport,engine.c:5688:
+  // 每幀只標記玩家站的那一格,非整個視野)。每次移動 / 換場後呼叫。
+  auto mark_seen_here = [&]() {
+    if (level) seen.mark(current_area, px, py, level->w, level->h);
   };
 
   // sync_relocation — 跑完事件腳本後,對拍 opendw load_level_resources 的「poll」:
@@ -536,10 +548,19 @@ int main(int argc, char** argv) {
     s.x = px; s.y = py; s.facing = dir;
     s.game_state = game_state;
     s.party_records = party.raw_records();
+    s.seen_blob = seen.serialize();   // fog of war 探索進度(per-area seen bitmap)
     return s;
   };
   // 把 SaveState 套回目前遊戲(重載該 area + 還原位置/朝向/game_state/party)。回傳是否成功。
   auto apply_state = [&](const game::SaveState& s) {
+    // 先還原 fog of war,再 enter_map(enter_map 會多標一格起始格,無害);
+    // 用副本還原後 enter_map 內 seen.mark 仍會把該關起始格補上。
+    if (!s.seen_blob.empty()) {
+      if (!seen.deserialize(s.seen_blob.data(), s.seen_blob.size()))
+        std::fprintf(stderr, "load: seen bitmap deserialize failed (ignored)\n");
+    } else {
+      seen.clear();   // v1 舊檔無 seen → 探索進度清空
+    }
     if (s.area < 0 || !enter_map(s.area)) {
       std::fprintf(stderr, "load: invalid/unloadable area %d\n", s.area);
       return false;
@@ -1170,7 +1191,14 @@ int main(int argc, char** argv) {
     fb.clear(0);
     if (!level) return;
     if (minimap_ok && minimap_dirty) {
-      minimap.render(*level, px, py, comps, minimap_seed());
+      // --mm-seed 顯式給值(測試/展示)→ 用 Seed 模式;否則用遊戲內真實 fog of war。
+      if (mm_seed_set) {
+        minimap.render(*level, px, py, comps, minimap_seed());
+      } else {
+        const std::vector<std::uint8_t>* bm = seen.bitmap(current_area);
+        minimap.render_with_seen(*level, px, py, comps,
+                                 bm ? bm->data() : nullptr, level->w, level->h);
+      }
       minimap_dirty = false;
     }
     if (minimap_ok) minimap.to_framebuffer(fb, /*ox=*/1, /*oy=*/8, /*rows=*/0xC0);
@@ -1333,7 +1361,10 @@ int main(int argc, char** argv) {
         if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // 右轉
         if (in.up    || in.key == 'I') {                      // 前進
           int nx = px + dx4[dir], ny = py + dy4[dir];
-          if (level && level->walkable(nx, ny)) { px = nx; py = ny; }
+          if (level && level->walkable(nx, ny)) {
+            px = nx; py = ny;
+            mark_seen_here();   // 對齊 refresh_viewport:踏上新格即標記 seen
+          }
         }
         if (in.key == 'K') std::fprintf(stderr, "open door (stub)\n");
         // 事件格(對拍 op_71:tile 值變了才觸發);事件文字 → 開訊息檢視器(分頁捲動)
@@ -1347,6 +1378,7 @@ int main(int argc, char** argv) {
               // 換 area:事件文字仍顯示(若有),但事件格判定改用新區的格子。
               if (level) { int ntv = level->tile(px, py); last_event_tile = (ntv > 1) ? ntv : -1; }
             }
+            if (reloc == 1 || reloc == 2) mark_seen_here();   // 傳送/換區後新格也標記 seen
             // Read Paragraph 事件 → 長段落捲動 overlay;一般事件 → 下半部分頁訊息框。
             if (event_para_n >= 0) {
               std::string full = para_text(event_para_n);   // 含 zh-TW 回退(en/ja 缺段落時)

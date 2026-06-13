@@ -52,6 +52,9 @@ SaveState make_state() {
     rec[0] = (std::uint8_t)('A' + r);          // 非空槽(name 起始;不可為 0x00/0xFF)
     s.party_records.push_back(rec);
   }
+  // v2:非平凡 fog of war seen blob(確定性內容,涵蓋空 byte 與高位)。
+  for (int i = 0; i < 137; ++i)
+    s.seen_blob.push_back((std::uint8_t)((i * 7 + 5) & 0xFF));
   return s;
 }
 
@@ -62,6 +65,7 @@ bool fields_equal(const SaveState& a, const SaveState& b) {
   if (a.party_records.size() != b.party_records.size()) return false;
   for (std::size_t i = 0; i < a.party_records.size(); ++i)
     if (a.party_records[i] != b.party_records[i]) return false;
+  if (a.seen_blob != b.seen_blob) return false;
   return true;
 }
 

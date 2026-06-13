@@ -34,11 +34,17 @@ struct SaveState {
 
   // 隊伍:每名角色一份 512-byte 原始 record(對拍 opendw player_record)。
   std::vector<std::array<std::uint8_t, 512>> party_records;
+
+  // 俯視地圖 fog of war:per-area seen bitmap 的序列化 bytes(game::SeenMap::serialize();
+  // 空 = 無探索進度)。v2 起納入存檔;v1 舊檔讀回時此欄為空(向後相容)。
+  std::vector<std::uint8_t> seen_blob;
 };
 
 // 存檔魔數 + 版本(寫在檔頭;load 嚴格校驗)。
+//   v1:area/x/y/facing + game_state[256] + party records。
+//   v2:追加 seen_blob(u32 長度 + bytes);可讀 v1(seen 視為空)。
 inline constexpr char     kSaveMagic[4] = {'D', 'W', 'S', 'V'};  // Dragon Wars SaVe
-inline constexpr std::uint16_t kSaveVersion = 1;
+inline constexpr std::uint16_t kSaveVersion = 2;
 
 // 把 SaveState 序列化寫到 path(會自動建立上層目錄)。回傳是否成功。
 bool save(const SaveState& st, const std::filesystem::path& path);

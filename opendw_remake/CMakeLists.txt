@@ -49,7 +49,7 @@ target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
 # --- game 模組(隊伍角色資料 + 右側狀態面板渲染 + 戰鬥結算)---
-add_library(dwr_game STATIC src/game/party.cpp src/game/combat.cpp)
+add_library(dwr_game STATIC src/game/party.cpp src/game/combat.cpp src/game/seen_map.cpp)
 target_include_directories(dwr_game PUBLIC src)
 target_link_libraries(dwr_game PUBLIC dwr_render)
 
@@ -259,6 +259,14 @@ target_link_libraries(verify_automap PRIVATE dwr_render dwr_resource)
 add_test(NAME verify_automap_l1
          COMMAND verify_automap ${CMAKE_SOURCE_DIR}/assets/bundle/maps/1.lvl
                  ${CMAKE_SOURCE_DIR}/assets/bundle/maps/golden
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/viewport
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/components)
+
+# fog of war seen 累積確定性驗證(走固定路徑 → seen 集合 = 預期聯集 + 揭露正確性)。
+add_executable(verify_seen tools/verify/verify_seen.cpp)
+target_link_libraries(verify_seen PRIVATE dwr_render dwr_resource dwr_game)
+add_test(NAME verify_seen_l1
+         COMMAND verify_seen ${CMAKE_SOURCE_DIR}/assets/bundle/maps/1.lvl
                  ${CMAKE_SOURCE_DIR}/assets/bundle/viewport
                  ${CMAKE_SOURCE_DIR}/assets/bundle/components)
 
