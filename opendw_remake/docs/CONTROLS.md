@@ -45,7 +45,12 @@
 - **選單**:`B`/`C` 快捷字母 + ↑↓/Enter 輔助、`Esc`/`Q` 離開 —— 已實作(D)。
 - **移動**:`B`(開始新遊戲)→ 進入地圖視圖;`I`/↑ 前進、`J`/← 左轉、`L`/→ 右轉、`K` 開門(stub)、`Esc` 返回選單 —— 已實作(F,真實關卡 .lvl)。
 - **第一人稱 viewport**:`--fp` → S_GAME 用透視牆面 viewport(對拍 opendw,verify_fp 4/4、40 關 sweep 154/154)。
-- **事件文字**:踩到事件格(tile>1,對拍 op_71:值變才觸發)→ 跑該關事件 script(VM op_58 跨資源 call 從 bundle 載資源,自包含)→ emit 首批文字 → 逐段 i18n 在地化(`tr()`,可切語系,查不到回退英文)→ 在 viewport 下方訊息區顯示(英文 8×8、中文 12×12 半尺寸 CJK,自動換行)。移動 / `Esc` 清除。
+- **事件文字 / 段落(訊息檢視器)**:踩到事件格(tile>1,對拍 op_71:值變才觸發)或 Read Paragraph → 跑該關事件 script(VM op_58 跨資源 call 從 bundle 載資源,自包含)/ 取段落原文 → 逐段 i18n 在地化(`tr()`,可切語系,查不到回退英文)→ 進入**訊息檢視器**子狀態:在畫面下半畫一個有底框+邊框的訊息框(像素層深藍實心底 + 白邊),內文走文字層 24px CJK,**自動換行 + 依框高分頁**(每頁約 7 行)。
+  - **翻頁**:`Space`/`Enter`/`↓`/`I` → 下一頁;最後一頁再按 → 關閉回遊戲。
+  - **關閉**:`Esc` → 直接關閉。
+  - **多頁指示**:還有後續頁時左下顯示 `▼ 頁碼/總頁數`(對齊原版「按 Esc 繼續」的多頁翻閱);末頁顯示 `[ 按鍵繼續 ]`。
+  - 檢視期間**暫停移動**(翻頁鍵 I/↓ 不誤觸前進),控制提示自動隱藏避免穿透訊息框。
+  - `F4` 切語系時以新文字就地重排當前頁(頁號夾在新總頁數範圍內)。短訊息(1 頁)按任一翻頁鍵即關。
 - **指令**(C/U/X/O/D/?/S):待戰鬥 / 法術系統接入後對齊。
 
 ## 測試 / headless 旗標
@@ -58,9 +63,16 @@
 | `--frames N` | 跑 N 幀後結束(`0` = 只 dump 不開窗) |
 | `--dump <PPM>` | 把當前 framebuffer 輸出成 PPM(轉 PNG 用 dwimg) |
 | `--locale <id>` | 切語系(預設 zh-TW;i18n 取 `assets/i18n/<id>/`) |
+| `--read-para <N>` | 直接開段落 N 進訊息檢視器(headless 驗證長段落分頁;需配 `--map`) |
+| `--msg-page <N>` | 訊息檢視器先翻到第 N 頁(0-based)再 dump(驗證分頁:第 1 頁含 ▼、第 2 頁續顯示) |
 
 範例(自包含,不需 DATA1;SDL dummy driver):
 
 ```
-SDL_VIDEODRIVER=dummy opendw_remake --map 1 --fp --at 13 20 --frames 0 --dump /tmp/ev.ppm
+# 事件短訊息(1 頁,踩事件格)
+SDL_VIDEODRIVER=dummy opendw_remake --map 1 --at 13 20 --frames 0 --dump /tmp/ev.ppm
+# 長段落分頁:第 1 頁(含 ▼)
+SDL_VIDEODRIVER=dummy opendw_remake --map 1 --read-para 88 --msg-page 0 --frames 0 --dump /tmp/p1.ppm
+# 長段落分頁:第 2 頁(翻一頁後)
+SDL_VIDEODRIVER=dummy opendw_remake --map 1 --read-para 88 --msg-page 1 --frames 0 --dump /tmp/p2.ppm
 ```

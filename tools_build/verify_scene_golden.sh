@@ -14,7 +14,7 @@ PIC="$RM/assets/bundle/scenes/29.pic"
 docker run --rm -v "$RM":/w -w /w dwsdl bash -c '
   cmake -S . -B build_golden -DCMAKE_BUILD_TYPE=Release >/dev/null 2>&1
   cmake --build build_golden --target opendw_remake -j2 >/dev/null 2>&1
-  SDL_VIDEODRIVER=dummy ./build_golden/opendw_remake --scene 29 --frames 1 --dump /w/_scene29.ppm >/dev/null 2>&1
+  SDL_VIDEODRIVER=dummy ./build_golden/opendw_remake --scene 29 --scale 1 --frames 1 --dump /w/_scene29.ppm >/dev/null 2>&1
   rm -rf build_golden'
 
 # 2) 獨立 Python golden(title_adjust 垂直 XOR delta 去交錯)
