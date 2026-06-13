@@ -377,7 +377,61 @@ viewport_memory + ui_update_viewport)。本檔補的是**組景層(refresh_viewp
 
 ---
 
-## 待確認清單(明確列出,附最佳推測 + 該看哪段)
+## Step 1 對拍結論(2026-06-13,golden_compose vs remake sample_fov)
+
+以 opendw 的 `refresh_viewport` 取樣段 + `move_player_on_map` + `get_map_tile_data`
++ `check_map_boundary_*` 抽成 standalone C oracle
+(`tools_build/viewport_compose_golden/golden_compose.c`),對 Purgatory(area 1,
+`maps/1.lvl`,h=w=34、flags=0x1C)固定 4 組 `(facing,x,y)` dump `data_5A56[0..23]`,
+remake `dw::render::sample_fov`(`src/render/viewport_compose.{hpp,cpp}`)逐 byte 對拍:
+
+| facing | (x,y) | 場景 | 結果 |
+|---|---|---|---|
+| 0 (N) | (10,10) | 面牆(near 槽有 wall nibble) | PASS |
+| 1 (E) | (10,10) | 面通道(wall 全 0) | PASS |
+| 2 (S) | (15,12) | 含 wall(旋轉分支 al==2) | PASS |
+| 3 (W) | (8,20) | 含 wall(旋轉分支 al>2) | PASS |
+
+→ **4/4 byte-for-byte 一致**。四個朝向各自命中 `move_player_on_map` 的不同 nibble
+旋轉分支(`al==0` 不旋轉、`al==1` E 旋轉、`al==2` S 直拼、`al>2` W 旋轉),全數對齊。
+
+### 待確認項的最終答案
+
+1. **`data_530B` 索引 −8 ?** → **不需要 −8**。opendw 的 C port 把 `data_530B` 當獨立
+   陣列,直接用 `data_5303[facing]`(0x16/0x2E/0x46/0x5E)當 index;0x5E=94,讀到
+   `data_530B[95]`,仍落在 96-entry 陣列內。本文件 §1.1 的「−8」是對「原版兩符號連續
+   記憶體」的推測,**不適用於 Devin Smith 的 C 反組譯**(也就是我們的 oracle)。
+   remake 比照 oracle,**直接用 0x16.. 不減 8**,取樣 (x,y) 序列(N 沿 +x 前進扇形、
+   E/W 沿 ±x 偏移、S 為 N 鏡像)幾何自洽 → 確認無誤。
+2. **facing 0/1/2/3 ↔ N/E/S/W** → 由 `state.h:41` 註解 + 取樣幾何雙重確認:
+   **0=N、1=E、2=S、3=W**。N(facing 0)「前方」沿 **+x**(col 增),取樣 dx 全為 +1..+3;
+   S 為其鏡像(dx 全負);E/W 前方沿 ±y(row),dx 在 −1..+1 間。
+3. **`word_11C6` bit 語意 + 牆面定位** → 牆面「四面有無」**不是**靠 `word_11C6` 的具名
+   bit 直讀,而是 `move_player_on_map` 把「當前格 / 右格(x+1)`&0x0F` / 上格(y−1)`&0xF0`」
+   三者拼成 `word_11CC`,再依 facing 做 nibble 旋轉寫進 `word_11CA`,低 byte → `data_5A56[di]`
+   (牆/門面)、高 byte `&0xF7` → `data_5A56[di+0xC]`(地面)。也就是 **`data_5A56[di]` 的
+   low nibble 已是「相對玩家朝向」的牆面旗標**,下游選 sprite 不需再考慮 facing。
+   Purgatory 觀測到的 nibble 值:地面 0x10/0x11/0x12(高 nibble 1 = 有地面,低 nibble
+   0/1/2 = 地面型);牆 nibble 0x10/0x11/0x01(低/高 nibble 各代表一面)。精確「型→sprite」
+   仍待 step 2 的 `data_56C6`/`data_56E5` 查表(每關不同)。
+   注意 `byte_551E` 邊界旗標:越界格 `word_11C6 &= 0x3000` 後再進旋轉,oracle 與 remake
+   都已含此路徑(`check_map_boundary_x/y`)。
+
+### 復現指令
+
+```
+# 產 golden(docker dwsdl)
+bash tools_build/viewport_compose_golden/build_run.sh
+# remake 對拍(docker dwsdl):4/4 PASS
+g++ -std=c++20 -Isrc src/resource/level.cpp src/resource/text_codec.cpp \
+    src/render/viewport_compose.cpp tools/verify/verify_fov.cpp -o /tmp/verify_fov
+/tmp/verify_fov assets/bundle/maps/1.lvl assets/bundle/maps/golden
+# 或 cmake target: verify_fov
+```
+
+---
+
+## 待確認清單(原始推測;最終答案見上方「Step 1 對拍結論」)
 
 1. **`data_530B` 索引 −8**:opendw 是否在 runtime 真的 −8?
    推測:port 一律用 −8 後 index(取樣序列自洽,N/S、E/W 互為鏡像)。

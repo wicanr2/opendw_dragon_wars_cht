@@ -29,6 +29,11 @@ public:
 
   // 關卡 bytecode(level 資源本身也是 script);供 VM 執行事件腳本。
   const std::vector<std::uint8_t>& data() const { return b_; }
+  // tile 格起點 offset(= read_level_metadata 解析完 header 後的 di;= data_5A04 基準)。
+  std::size_t grid() const { return grid_; }
+  // 原始 byte 存取(供 viewport_compose port 直接模擬 data_5521[di])。
+  std::uint8_t byte_at(std::size_t i) const { return i < b_.size() ? b_[i] : 0; }
+  std::size_t size() const { return b_.size(); }
   // 特殊格事件腳本入口(對拍 opendw op_71/run_level_script):
   //   script 表起點 = grid + w*3*h(= data_5A04[0]);entry = base + (tile_value+1)*2;
   //   該處 16-bit = script PC(level bytecode 內)。
