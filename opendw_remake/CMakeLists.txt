@@ -159,6 +159,13 @@ add_test(NAME verify_combat
 add_executable(probe_combat_script tools/verify/probe_combat_script.cpp)
 target_link_libraries(probe_combat_script PRIVATE dwr_vm dwr_game)
 
+# tools/verify:戰鬥 bytecode 確定性執行(res3 跑到攻擊迴圈、軌跡可重現、無缺 opcode)。
+#   注意:此 ctest 不驗 HP-vs-oracle(roster pipeline 未完整逆向,見 docs/42 §9)。
+add_executable(verify_combat_script tools/verify/verify_combat_script.cpp)
+target_link_libraries(verify_combat_script PRIVATE dwr_vm dwr_game)
+add_test(NAME verify_combat_script
+         COMMAND verify_combat_script ${CMAKE_SOURCE_DIR}/assets/bundle)
+
 # tools/verify:怪物圖區渲染 vs oracle golden(byte-for-byte;sprite 渲染管線無漂移)。
 add_executable(verify_encounter_golden tools/verify/verify_encounter_golden.cpp)
 target_link_libraries(verify_encounter_golden PRIVATE dwr_render)
