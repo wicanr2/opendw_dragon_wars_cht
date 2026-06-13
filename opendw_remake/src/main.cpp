@@ -23,6 +23,7 @@
 #include "render/cjk_font.hpp"
 #include "render/framebuffer.hpp"
 #include "render/sprite.hpp"
+#include "render/picture.hpp"
 #include "render/sdl_video.hpp"
 #include "i18n/strings.hpp"
 using namespace dw;
@@ -52,7 +53,7 @@ int main(int argc, char** argv) {
   std::string atlas = "assets/fonts/cjk24.atlas";
   std::string menu_tsv = "assets/i18n/zh-TW/menu.tsv";
   int start_pc = 20, max_frames = -1, press = 0;
-  std::string dump, sprite_name;
+  std::string dump, sprite_name, scene_name;
   for (int i = 1; i < argc; ++i) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
     if (eq("--bundle") && i + 1 < argc) bundle = argv[++i];
@@ -63,12 +64,15 @@ int main(int argc, char** argv) {
     else if (eq("--frames") && i + 1 < argc) max_frames = std::atoi(argv[++i]);
     else if (eq("--dump") && i + 1 < argc) dump = argv[++i];
     else if (eq("--sprite") && i + 1 < argc) sprite_name = argv[++i];
+    else if (eq("--scene") && i + 1 < argc) scene_name = argv[++i];
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
   }
 
   auto font = render::Font8x8::load_table(font_raw);
   if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }
-  const bool menu_mode = sprite_name.empty();
+  const bool scene_mode = !scene_name.empty();
+  const bool sprite_mode = !sprite_name.empty();
+  const bool menu_mode = !scene_mode && !sprite_mode;
   render::Framebuffer fb;
 
   std::optional<render::CjkFont> cjk;
@@ -78,7 +82,18 @@ int main(int argc, char** argv) {
   enum { S_MENU, S_BRANCH } state = S_MENU;
   std::string branch_label;
 
-  if (!menu_mode) {
+  if (scene_mode) {
+    // ── E:全螢幕場景圖(從 bundle .pic 載解壓資料,title_adjust 去交錯)──
+    std::string path = scene_name.find('/') != std::string::npos
+                         ? scene_name : bundle + "/scenes/" + scene_name + ".pic";
+    std::FILE* sf = std::fopen(path.c_str(), "rb");
+    if (!sf) { std::fprintf(stderr, "scene open failed: %s\n", path.c_str()); return 1; }
+    std::vector<std::uint8_t> data(32000);
+    std::size_t n = std::fread(data.data(), 1, data.size(), sf); std::fclose(sf);
+    if (n != data.size()) { std::fprintf(stderr, "scene size %zu != 32000: %s\n", n, path.c_str()); return 1; }
+    render::decode_fullscreen(fb, data);
+    std::fprintf(stderr, "scene %s rendered (bundle, no DATA1)\n", scene_name.c_str());
+  } else if (sprite_mode) {
     // ── A:sprite 檢視 ──
     std::string path = sprite_name.find('/') != std::string::npos
                          ? sprite_name : bundle + "/sprites/" + sprite_name + ".spr";

@@ -79,6 +79,10 @@ target_link_libraries(render_sprite_bundle PRIVATE dwr_render)
 add_executable(extract_strings tools/extract/extract_strings.cpp)
 target_link_libraries(extract_strings PRIVATE dwr_resource)
 
+# tools/extract:全螢幕場景圖資源(res N,解壓 32000B)→ bundle .pic。
+add_executable(extract_scene tools/extract/extract_scene.cpp)
+target_link_libraries(extract_scene PRIVATE dwr_resource)
+
 # 文字脫離 DATA1:從 bundle 字串表取選單渲染(英/中)。
 add_executable(render_menu_bundle tools/verify/render_menu_bundle.cpp)
 target_link_libraries(render_menu_bundle PRIVATE dwr_render dwr_i18n)
