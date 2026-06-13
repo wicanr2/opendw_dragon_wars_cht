@@ -291,9 +291,9 @@ int main(int argc, char** argv) {
     st.game_state[0] = (std::uint8_t)px; st.game_state[1] = (std::uint8_t)py;
     st.game_state[2] = (std::uint8_t)current_area; st.game_state[3] = (std::uint8_t)dir;
     // op_58 / 子 script / op_0F 跨資源讀:依 tag 從 bundle 載(自包含)。
-    // Read paragraph 流程的段落號 N 是 op_0F 從「關卡資源本身」(index=level_res)
-    // 的回返 offset 讀出的;關卡資源 = 這份 .lvl,bundle/scripts 沒有它 → 直接回傳
-    // level bytes,讓 op_0F 取得正確 N(對齊 DATA1Provider 以 index 解析同一份資源)。
+    // 註:BundleProvider 現已能自行把 level-self tag(area+0x46)解析成 maps/*.lvl,
+    //   所以下面的 `tag == level_res` 只是「直接用已載入的 level bytes」的快取捷徑
+    //   (byte-for-byte 等同 event_provider.load(level_res)),省一次檔案讀取。
     st.resource_provider =
         [&](int tag) -> std::optional<std::vector<std::uint8_t>> {
       if (tag == level_res) return level->data();

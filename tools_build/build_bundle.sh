@@ -12,9 +12,13 @@ W=/tmp/dwbuild
 mkdir -p "$OUT/scripts" "$OUT/strings" "$OUT/sprites"
 
 # 1) script bytecode + 內嵌字串表(script-bearing sections)
-#    含全 40 關事件 script 經 op_58 跨資源 call 載入的 tag 聯集(由 remake
-#    extract_eventscripts 掃描得出:0 1 3 5 8 9 10 11 17 19),讓 app run_event
-#    的 BundleProvider 不依賴 DATA1 也能跑 op_58。6 = 既有選單用 section。
+#    含全 40 關事件 script 經 op_58 跨資源 call 載入的 script tag 聯集(由 remake
+#    extract_eventscripts 掃描得出:1 3 5 8 9 10 11 17 19),讓 app run_event
+#    的 BundleProvider 不依賴 DATA1 也能跑 op_58。0/6 = 既有選單用 section。
+#    註:op_58 也常呼叫「關卡自身」資源(tag = area+0x46 = 0x46..0x6D),但那與
+#    maps/<area>.lvl byte-for-byte 相同(已用 verify_provider 對拍 oracle 確認),
+#    故 BundleProvider 對 0x46..0x6D 直接落 maps/*.lvl,不必把 40 份 .lvl 重複塞 scripts/。
+#    完整 op_58 目標清單與 halt 統計見 verify_op58 / extract_eventscripts。
 SECTIONS="0 1 3 5 6 8 9 10 11 17 19"
 docker run --rm -v "$REPO/opendw_remake":/app -v "$W":/o -w /app dwtools bash -c \
   'g++ -O1 -w -std=c++20 -Isrc src/resource/archive.cpp src/resource/decompress.cpp src/resource/text_codec.cpp tools/extract/extract_strings.cpp -o /o/extract_strings'
