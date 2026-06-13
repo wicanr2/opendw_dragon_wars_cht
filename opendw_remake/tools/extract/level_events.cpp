@@ -34,9 +34,7 @@ int main(int argc, char** argv) {
     int n = 0;
     ip.set_message_sink([&](std::size_t, const std::string& s) { std::printf("  emit: \"%s\"\n", s.c_str()); ++n; });
     int steps = ip.run();
-    std::size_t sp = st.pc;
-    int op = (sp < st.script.size()) ? st.script[sp] : -1;
-    if (n == 0) std::printf("  (跑 %d 步後停於 pc=0x%04zX op=0x%02X;未 emit)\n", steps, sp, op);
+    if (n == 0) std::printf("  (跑 %d 步,停於未實作 opcode 0x%02X;未 emit)\n", steps, ip.last_unimpl());
   }
   return 0;
 }

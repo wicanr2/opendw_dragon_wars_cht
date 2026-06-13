@@ -563,6 +563,20 @@ void Interpreter::op78_set_msg() { emit_string(); }
 void Interpreter::op7B_ui_header() { emit_string(); }            // header,文字路徑同
 void Interpreter::op77_draw_and_set() { emit_string(); }          // (draw_pattern 副作用屬 render,略)
 
+// --- batch 4:繪圖 / UI / 結束 ---
+// op_73:al=gs[0x3F]; gs[0x3E]=al(清/設事件旗標)
+void Interpreter::op73_clear_event() { set_gs(0x3E, s_.game_state[0x3F]); }
+// op_74:畫框,讀 4 byte(x,y,w,h)。remake 由 framebuffer 自行畫;VM 僅消耗 operand。
+void Interpreter::op74_draw_frame() { s_.fetch8(); s_.fetch8(); s_.fetch8(); s_.fetch8(); }
+// op_75:ui_draw_full(無 operand);繪圖屬 render,VM 無副作用。
+void Interpreter::op75_ui_full() {}
+// op_76:draw_pattern(無 operand)。
+void Interpreter::op76_draw_pattern() {}
+// op_5A:script 結束/返回(原版還原堆疊回上層;remake 單一 script 執行 → halt)。
+void Interpreter::op5A_ret() { s_.halted = true; }
+// op_8A:隨機遭遇(戰鬥);remake 尚無戰鬥 → 先 halt。
+void Interpreter::op8A_encounter() { s_.halted = true; }
+
 // --- dispatch 表 ---
 #define OP(n, m) [n] = &Interpreter::m
 const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
@@ -629,6 +643,13 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x77] = &Interpreter::op77_draw_and_set;
   t[0x78] = &Interpreter::op78_set_msg;
   t[0x7B] = &Interpreter::op7B_ui_header;
+  // batch 4:繪圖 / UI / 結束
+  t[0x73] = &Interpreter::op73_clear_event;
+  t[0x74] = &Interpreter::op74_draw_frame;
+  t[0x75] = &Interpreter::op75_ui_full;
+  t[0x76] = &Interpreter::op76_draw_pattern;
+  t[0x5A] = &Interpreter::op5A_ret;
+  t[0x8A] = &Interpreter::op8A_encounter;
   return t;
 }();
 #undef OP

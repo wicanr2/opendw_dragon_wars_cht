@@ -25,6 +25,8 @@ public:
 
   // 已實作的 opcode 集合(R1 batch 1);未實作者執行會 halt 並記錄。
   bool implemented(std::uint8_t op) const { return kImpl[op] != nullptr; }
+  // 最後一個導致 halt 的未實作 opcode(0=無)。
+  std::uint8_t last_unimpl() const { return last_unimpl_; }
 
 private:
   using Handler = void (Interpreter::*)();
@@ -101,6 +103,15 @@ private:
   void op78_set_msg();         // 0x78
   void op7B_ui_header();       // 0x7B
   void emit_string();          // 共用:在 pc 解字串、推進 pc、回呼 sink
+
+  // --- batch 4:繪圖 / UI / 結束(繪圖類在 remake 由 framebuffer 自行呈現,
+  //     VM 僅正確消耗 operand;script 結束/遭遇先當 halt)---
+  void op73_clear_event();     // 0x73  gs[0x3E]=gs[0x3F]
+  void op74_draw_frame();      // 0x74  畫框,消耗 4 byte(x,y,w,h)
+  void op75_ui_full();         // 0x75  ui_draw_full(無 operand)
+  void op76_draw_pattern();    // 0x76  draw_pattern(無 operand)
+  void op5A_ret();             // 0x5A  script 結束/返回 → halt
+  void op8A_encounter();       // 0x8A  隨機遭遇 → 先 halt(尚無戰鬥)
 
   // 輔助
   void set_gs(std::uint16_t idx, std::uint8_t val);
