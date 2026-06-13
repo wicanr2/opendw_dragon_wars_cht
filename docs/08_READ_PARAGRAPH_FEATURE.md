@@ -1,8 +1,14 @@
 # 規劃:Read Paragraph 段落內嵌顯示功能
 
-> **日期**：2026-06-10
+> **日期**：2026-06-10（規劃）/ 2026-06-13（已實作,自包含驗證通過）
 > **目標**：重製版遇到「Read paragraph N」時,直接在遊戲內顯示手冊段落文字,免去翻實體手冊。
-> **狀態**：規劃(待實作,依賴 #2 CJK 渲染)
+> **狀態**：✅ 已實作(自包含,無 DATA1)。段落號 N 來源逐指令對拍 opendw oracle;
+> 段落書 bundle `assets/bundle/paragraphs/<locale>/paragraphs.tsv`(147 段,自 `docs/34`);
+> VM op_58/59 對齊 opendw byte-stack + 新增 op_81(print_number)使 N 進輸出流;
+> app `run_event` 攔「Read paragraph 」+ N → 顯示段落繁中原文(回退「Read paragraph N」);
+> CJK atlas 擴至 1653 字涵蓋全段落;7 個觸發點 N=27/90/146/134/108/53/65 與地點吻合。
+> **未做**:長段落 scrollable overlay(目前 FP 訊息區僅約 3 行,長段落底部截斷)。
+> 截圖:`opendw_remake/docs/screenshots/r8_read_paragraph_zh.png`(Magic College + 段落 146)。
 
 ---
 

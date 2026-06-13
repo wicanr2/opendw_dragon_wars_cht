@@ -16,6 +16,7 @@ add_library(dwr_resource STATIC
   src/resource/decompress.cpp
   src/resource/provider.cpp
   src/resource/level.cpp
+  src/resource/paragraphs.cpp
 )
 target_include_directories(dwr_resource PUBLIC src)
 
