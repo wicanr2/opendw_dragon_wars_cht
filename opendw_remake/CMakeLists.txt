@@ -154,6 +154,18 @@ target_link_libraries(verify_combat PRIVATE dwr_game)
 add_test(NAME verify_combat
          COMMAND verify_combat ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# tools/verify:怪物圖區渲染 vs oracle golden(byte-for-byte;sprite 渲染管線無漂移)。
+add_executable(verify_encounter_golden tools/verify/verify_encounter_golden.cpp)
+target_link_libraries(verify_encounter_golden PRIVATE dwr_render)
+add_test(NAME verify_encounter_golden_spider
+         COMMAND verify_encounter_golden
+         ${CMAKE_SOURCE_DIR}/assets/bundle/sprites/196_spider.spr
+         ${CMAKE_SOURCE_DIR}/assets/bundle/sprites/golden/196_spider.viewport.ppm)
+add_test(NAME verify_encounter_golden_wolf
+         COMMAND verify_encounter_golden
+         ${CMAKE_SOURCE_DIR}/assets/bundle/sprites/168_wolf.spr
+         ${CMAKE_SOURCE_DIR}/assets/bundle/sprites/golden/168_wolf.viewport.ppm)
+
 # tools/verify:掃所有關卡找會改 gs[2](area)/入口 gs[0/1/3] 的事件(換場逆向)。
 add_executable(probe_areaswitch tools/verify/probe_areaswitch.cpp)
 target_link_libraries(probe_areaswitch PRIVATE dwr_vm)

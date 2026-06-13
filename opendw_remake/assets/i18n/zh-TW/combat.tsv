@@ -1,0 +1,40 @@
+# 戰鬥畫面 UI 標籤 + 怪物名 — 譯名以 CONTEXT.md「戰鬥 / Combat」「怪物」為準。
+# 選單選項源自原版戰鬥選單資源 Section 0x12（docs/24_SCRIPT_TEXT_MAPPING.md:136）。
+# english	chinese
+Encounter	遭遇戰
+Will the party:	隊伍要：
+Fight	戰鬥
+Quickly fight	快速戰鬥
+Run	逃跑
+Advance	前進
+Attack	攻擊
+F:Fight  R:Run	F:戰鬥  R:逃跑
+hit	命中
+miss	落空
+damage	傷害
+slain	擊殺
+The party flees!	隊伍逃離了！
+# 怪物名（res31，oracle 對拍）
+Robber	強盜
+King's Guard	禁衛軍
+Soldier	士兵
+Bandit	山賊
+Pikeman	長矛兵
+Loon	瘋子
+Fanatic	狂熱者
+Yonderboy	遠方少年
+Born Loser	天生輸家
+Unjustly Accused	蒙冤者
+Innocent Man	無辜者
+Giant Spider	巨蜘蛛
+Wild Dog	野狗
+Spider	蜘蛛
+Cannibal	食人者
+Big Dog	大狗
+Wild hound	野獵犬
+Rock Spider	岩蜘蛛
+Wolf	狼
+Jail Keeper	獄卒
+Drunk	醉漢
+Humbaba	胡姆巴巴
+Gladiator	鬥士
