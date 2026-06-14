@@ -136,6 +136,63 @@ int main(int argc, char** argv) {
     check(mn == 1 && mx == 4, "bytecode STR4 徒手範圍 [1,4](無 floor(3))");
   }
 
+  // ── to-hit 對拍 res3 bytecode(0x0F73):roll-under,門檻 = 13 + AV − def ──
+  //   直接跑 res3 to-hit 子程式,以受控 AV(gs[0x79])/ def(data[0x372])掃骰,
+  //   找「最大會命中的 roll」(= 門檻),對拍 combat.cpp 的 kToHitBase + AV − def。
+  std::printf("== to-hit 對拍 res3 bytecode(roll-under,門檻 13+AV−def)==\n");
+  {
+    res::BundleProvider prov(bundle);
+    auto sc = prov.load(3);
+    auto threshold = [&](int av, int def) -> int {
+      // 掃 seed 取 roll∈[3,18]→hit/miss,回傳最大命中 roll。
+      int maxhit = -1;
+      bool seen[19] = {false};
+      for (int s = 0; s < 200000; ++s) {
+        vm::VmState st;
+        st.script = *sc; st.data_bytes = *sc; st.script_res = 3; st.data_res = 3;
+        st.random_seed = (std::uint16_t)(0x0001 + s * 2654435761u);
+        st.fake_ticks = (std::uint16_t)(s * 40503u);
+        st.game_state[6] = 0; st.game_state[0x0A] = 0;
+        st.char_data[0x59] = 0; st.game_state[0x79] = (std::uint8_t)av;
+        st.game_state[0x84] = 0;
+        st.data_bytes[0x0372] = (std::uint8_t)def;
+        st.script[0x0372] = (std::uint8_t)def;
+        st.pc = 0x0F73;
+        vm::Trace tr; vm::Interpreter ip(st, &tr);
+        ip.run(60);
+        int roll = -1, hit = -1;
+        for (const auto& rc : tr.records()) {
+          if (rc.pc == 0x0F78) roll = (int)rc.r2;
+          if (rc.pc == 0x0FA8) hit = 1;
+          if (rc.pc == 0x0FAA) hit = 0;
+        }
+        if (roll >= 3 && roll <= 18 && !seen[roll]) {
+          seen[roll] = true;
+          if (hit == 1 && roll > maxhit) maxhit = roll;
+        }
+        bool all = true; for (int rr = 3; rr <= 18; ++rr) if (!seen[rr]) all = false;
+        if (all) break;
+      }
+      return maxhit;
+    };
+    // 對拍:bytecode 門檻 == combat.cpp 公式(夾在 [3,17];roll18 恆失手)。
+    struct Case { int av, def; } cases[] = {{0,0},{3,0},{5,5},{5,10},{5,15}};
+    bool all_ok = true;
+    for (auto& c : cases) {
+      int bt = threshold(c.av, c.def);
+      int expect = 13 + c.av - c.def;
+      if (expect > 17) expect = 17;     // roll 18 恆失手
+      if (expect < 3) expect = 3;       // roll 3 恆命中
+      char buf[96];
+      std::snprintf(buf, sizeof buf, "AV=%d def=%d:bytecode門檻=%d == 13+AV−def(夾)=%d",
+                    c.av, c.def, bt, expect);
+      bool ok = (bt == expect);
+      check(ok, buf);
+      if (!ok) all_ok = false;
+    }
+    (void)all_ok;
+  }
+
   std::printf("\n%s\n", g_fail == 0 ? "verify_combat_script: PASS"
                                     : "verify_combat_script: FAIL");
   return g_fail == 0 ? 0 : 1;

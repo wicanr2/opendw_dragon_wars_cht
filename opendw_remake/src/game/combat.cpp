@@ -116,13 +116,20 @@ Combatant Combatant::from_monster(const MonsterRecord& m) {
 AttackResult resolve_attack(Combatant& attacker, Combatant& target,
                             CombatRng& rng) {
   AttackResult r;
-  // 命中:2dN 小骰(暫定;待 DOS 校準,見 combat.hpp ToHit 參數)。
-  // hit ⇔ roll + attacker.av >= kToHitBase + target.dv。
-  // RNG 副作用順序固定:先擲命中,命中才擲傷害 → 可重現。
-  r.to_hit_roll = rng.roll(kToHitDiceCount, kToHitDie);
-  // AC 在命中側(DOS §9:AC 壓命中、不減傷)。DV(閃避)+ AC(護甲)同抬高門檻。
-  r.to_hit_need = kToHitBase + target.dv + target.ac;
-  r.hit = (r.to_hit_roll + attacker.av) >= r.to_hit_need;
+  // 命中【bytecode 反推 + 端到端驗證:res3 0x0F73】:**roll-under** 系統。
+  //   roll = 1d16+3 ∈ [3,18];HIT ⟺ roll ≤ 門檻,門檻 = kToHitBase + AV − (DV+AC)。
+  //   特例:roll==3 恆 HIT(0x0F7A)、roll==18 恆 MISS(0x0F7F)。AC 在命中側(DOS §9)。
+  //   端到端跑 res3 驗證:門檻 = 13 + AV − def(def=DV+AC;armor char_data[0x59] 不影響)。
+  //   RNG 副作用順序固定:先擲命中,命中才擲傷害 → 可重現。
+  r.to_hit_roll = static_cast<int>(rng.below(kToHitDie)) + kToHitAdd;   // 1d16+3
+  r.to_hit_need = kToHitBase + attacker.av - (target.dv + target.ac);   // 命中門檻
+  if (r.to_hit_roll == kToHitRollMin) {
+    r.hit = true;             // roll==3 恆命中
+  } else if (r.to_hit_roll == kToHitRollMax) {
+    r.hit = false;            // roll==18 恆失手
+  } else {
+    r.hit = (r.to_hit_roll <= r.to_hit_need);  // roll ≤ 門檻 → 命中
+  }
   if (r.hit) {
     // 傷害【bytecode 反推 + DOS 對拍,徒手證據確鑿】:
     //   res3 0x06EC 骰子子程式擲「傷害骰」(徒手 = descriptor[min(Fist,7)],未技能 = 1d4),
