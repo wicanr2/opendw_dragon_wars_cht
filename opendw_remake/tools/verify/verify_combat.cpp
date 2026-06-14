@@ -248,18 +248,19 @@ int main(int argc, char** argv) {
     check(saw3 && saw4 && saw5 && saw6, "徒手 Str10 = {3,4,5,6}(含 5;bytecode 證偽 DOS『無 5』)");
     check(all_in_set, "徒手 Str10 全在 {3,4,5,6}");
   }
-  std::printf("== E. AC on hit-side, not damage (DOS §9) ==\n");
+  std::printf("== E. AC 在命中側、不參與傷害(bytecode roll-under)==\n");
   {
-    // AC 只抬高 to_hit_need、不參與傷害:同 rng 狀態、同攻擊者,ac=0 vs ac=50 命中時傷害相同;
-    // 高 ac 目標 need = 11 + dv + ac。
+    // 【更新】bytecode 反推為 roll-under:門檻 = 13 + AV − (DV+AC)。
+    //   AC↑ → **門檻↓**(更難命中),但傷害與 AC 無關。
+    //   atk.av=100 → 門檻夠高,兩者皆命中;驗傷害相同 + 門檻隨 AC 降。
     Combatant atk{}; atk.av = 100; atk.dmg_dice = 1; atk.dmg_sides = 4; atk.dmg_bonus = 0;
     CombatRng ra(0x55, 0), rb(0x55, 0);
     Combatant t0{}; t0.dv = 3; t0.ac = 0;  t0.hp = 100000; t0.max_hp = 100000;
     Combatant t1{}; t1.dv = 3; t1.ac = 50; t1.hp = 100000; t1.max_hp = 100000;
     AttackResult r0 = resolve_attack(atk, t0, ra);
     AttackResult r1 = resolve_attack(atk, t1, rb);
-    check(r1.to_hit_need == r0.to_hit_need + 50, "high AC raises to_hit_need by AC");
-    check(r0.hit && r1.hit && r0.damage == r1.damage, "damage independent of target AC");
+    check(r1.to_hit_need == r0.to_hit_need - 50, "高 AC 降低命中門檻 AC 點(roll-under)");
+    check(r0.hit && r1.hit && r0.damage == r1.damage, "傷害與目標 AC 無關");
   }
 
   std::printf("\n%s\n", g_fail == 0 ? "verify_combat: ALL PASS" : "verify_combat: FAIL");

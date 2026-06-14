@@ -220,3 +220,63 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
 ### 對拍交付
 - `verify_combat_script` 新增**徒手傷害對拍 res3 bytecode**:跑 res3 0x0D54 路徑取分布,驗 STR10→[3,6] 含 5、STR20→[5,8]、STR4→[1,4](無 floor3)。= combat.cpp 公式 ⇄ bytecode 雙向確認。
 - `verify_combat` D 案例更新:從 DOS best-fit {3,4,6} 改為 **bytecode 真值 {3,4,5,6}**(含 5)。
+
+---
+
+## 12. 更新(第六輪:完整反推 to-hit 門檻鏈 → 端到端跑 bytecode 驗證)
+
+### 達成:to-hit 命中判定 = 原版真值(bytecode 反推 + 端到端執行驗證)
+**`HIT ⟺ roll ≤ 13 + AV − (DV+AC)`,roll = 1d16+3 ∈ [3,18]。**`roll==3` 恆命中、`roll==18` 恆失手。**roll-under 系統**。
+
+### 完整判定式(res3 to-hit 子程式 @0x0F73,op 層級)
+```
+0x0F73  r2 = 0x10                          ; 16
+0x0F75  op_4D                              ; r2 = RNG[0,16)
+0x0F76  op_30 0x03                         ; r2 += 3  → roll ∈ [3,18]  (= 1d16+3)
+0x0F78  cmp r2, 0x03 ; jz 0x0FA8(clc=HIT)  ; roll==3 → 恆命中
+0x0F7D  cmp r2, 0x12 ; jc 0x0FAA(stc=MISS) ; roll==18(0x12)→ 恆失手
+0x0F82  gs[0x7b] = r2                       ; 存 roll
+0x0F84  r4 = gs[0x84] ; op_0D 0x0372 → gs[0x7a]   ; 目標 defense(= DV+AC)
+0x0F8B  r2 = char_data[0x59]                ; 攻擊者 armor(實測對門檻無影響)
+0x0F8D  op_30 0x80 ; op_2F gs[0x79]         ; + 0x80 + AV(gs[0x79])
+0x0F94  op_30 0x0d                          ; + 0x0d(=13)
+        (op_31 gs[0x7a]:− 目標 defense;op_32 0x80:− 0x80)
+0x0FA3  cmp r2, gs[0x7b] ; jnc 0x0FAA(MISS) ; 若(13+AV−def) >= roll → 命中側比較
+0x0FA8  clc=HIT  /  0x0FAA  stc=MISS
+```
+- 化簡(0x80 加後再減抵消):**門檻 = 13 + AV − def**;`roll ≤ 門檻 → HIT`。
+
+### 端到端跑出的驗證(掃 AV / def,跑 res3 bytecode)
+| AV | def | bytecode 門檻(最大命中 roll) | = 13 + AV − def(夾 [3,17]) |
+|---|---|---|---|
+| 0 | 0 | 13 | 13 |
+| 1 | 0 | 14 | 14 |
+| 3 | 0 | 16 | 16 |
+| 5 | 0 | 17(夾,18 恆失手) | 18→17 |
+| 5 | 5 | 13 | 13 |
+| 5 | 10 | 8 | 8 |
+| 5 | 15 | 3(夾,3 恆命中) | 3 |
+- **char_data[0x59](armor)對命中門檻無影響**(掃 0/5/10/50/100 門檻不變)。
+
+### 與 DOS / SDA 交叉檢查
+- 命中率 = (門檻 − 3 + 1)/16(roll∈[3,18] 共 16 值,roll≤門檻 命中)。
+- DOS §9:無甲近戰命中率 **73–80%**、AV **3–6**。代入:AV=5、def≈3–5 → 門檻 13–15 → 命中率 11–13/16 = **69–81%**,**與 DOS 完全相符**。
+- SDA「AV vs DV」結構吻合:門檻單調隨 AV↑ / def↓。
+
+### combat.cpp 標示升級 → 是
+- **to-hit 升級為「bytecode 反推 + 端到端驗證」**:`roll = 1d16+3`;`HIT ⟺ roll ≤ kToHitBase(13) + AV − (DV+AC)`;roll3 恆命中、roll18 恆失手。取代先前暫定 2d10 / roll-over。
+- AC 仍在命中側(DOS §9)、不減傷 —— bytecode 證實(armor 0x59 不影響門檻、def=DV+AC 壓低門檻)。
+- **武器傷害維持 best-fit**(op_68 原版未逆向);**徒手傷害已是 bytecode 真值**(§11)。
+
+### 對拍交付
+- `verify_combat_script` 新增 **to-hit 對拍 res3 bytecode**:跑 0x0F73 掃 AV/def,驗 bytecode 門檻 == `13+AV−def`(夾 [3,17]),5 case 全 PASS。
+- `verify_combat` E 案例更新:從 roll-over「AC 抬高 need」改為 **roll-under「AC 降低門檻」**(bytecode 真值)。
+
+### 至此戰鬥結算的 oracle 狀態
+| 項目 | 狀態 |
+|---|---|
+| RNG(op_4D) | bytecode 移植,對拍 oracle 演算法 |
+| to-hit(1d16+3,門檻 13+AV−def) | **bytecode 反推 + 端到端驗證** ✅ |
+| 徒手傷害(dice + STR/5) | **bytecode 反推 + 端到端驗證** ✅ |
+| 武器傷害 | best-fit(op_68 原版 NULL,無 oracle)⚠ |
+| 怪物 roster pipeline | 部分逆向,未端到端(§9)⚠ |

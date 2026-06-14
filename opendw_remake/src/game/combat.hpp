@@ -163,14 +163,19 @@ struct AttackResult {
 // RNG 副作用順序固定(先擲命中,命中才擲傷害),確保可重現。
 AttackResult resolve_attack(Combatant& attacker, Combatant& target, CombatRng& rng);
 
-// to-hit 參數。
-// 【bytecode 反推:res3 to-hit 子程式 @0x0F73 = 1d16+3】:r2=0x10;op_4D(→[0,16));
-//   op_30 0x03(+3)→ roll ∈ [3,18];roll==3 自動命中。**門檻側比較鏈(裝甲/AV/AC)
-//   尚未端到端驗證**,故 remake 命中骰式暫保留 2d10、門檻 base+dv+ac(待續逆向後對齊)。
-//   骰式真值已記 docs/42 §11;此處先不動門檻邏輯以免破壞未驗證行為。
-inline constexpr int kToHitDie = 10;   // 暫定 2d10(bytecode 真值為 1d16+3,門檻鏈待驗)
-inline constexpr int kToHitDiceCount = 2;
-inline constexpr int kToHitBase = 11;  // 命中門檻基數(roll+av >= base+dv+ac)
+// to-hit 參數【bytecode 反推 + 端到端驗證:res3 to-hit 子程式 @0x0F73】。
+//   roll = 1d16+3 ∈ [3,18](0x0F73 r2=0x10;op_4D→[0,16);op_30 0x03 → +3)。
+//   **roll-under 系統**:HIT ⟺ roll ≤ 門檻;門檻 = kToHitBase + AV − (DV+AC)。
+//   特例:roll==3 恆 HIT(0x0F7A jz);roll==18 恆 MISS(0x0F7F:cmp 0x12 jc)。
+//   端到端跑 res3 驗證(掃 AV/def):門檻 = 13 + AV − def(def = DV+AC,armor 0x59 不影響)。
+//   → kToHitBase = 13;kToHitDie = 16;kToHitAdd = 3。
+inline constexpr int kToHitDie = 16;       // op_4D r2=0x10 → roll 基底 [0,16)
+inline constexpr int kToHitAdd = 3;        // op_30 0x03 → +3,roll ∈ [3,18]
+inline constexpr int kToHitBase = 13;      // 門檻 = 13 + AV − (DV+AC)(bytecode 反推)
+inline constexpr int kToHitRollMin = 3;    // 恆命中骰值
+inline constexpr int kToHitRollMax = 18;   // 恆失手骰值
+// (保留供舊測試引用;新命中邏輯不用 dice-count)
+inline constexpr int kToHitDiceCount = 1;
 
 // 徒手傷害骰【bytecode 反推 + 端到端驗證】:descriptor table[min(Fist,7)] @res3 0x0EC2;
 //   未技能(Fist=0)= descriptor 0x00 → 1d4(跑 res3 骰子程式驗 [1,4])。
