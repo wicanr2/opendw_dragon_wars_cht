@@ -217,27 +217,36 @@ int main(int argc, char** argv) {
     }
   }
 
-  std::printf("== D. DOS-calibrated damage formula (docs/43 §9) ==\n");
+  std::printf("== D. 徒手傷害公式(bytecode 反推:dmg = 1d4 + floor(STR/5))==\n");
   {
-    // 徒手低 Str(Str10,bonus=10/16=0,raw=1d4)→ dmg=max(3,floor(1.5×raw)) ∈ {3,4,6};
-    // 實機 53 筆傷害值全集 {3,4,6,7,8} **無 5**。強制命中(合成高 av 攻擊者)取分布。
+    // 【更新】先前此案例斷言 DOS best-fit {3,4,6}「無 5」+ ×3/2 + floor3。
+    // 第四輪端到端跑 res3 bytecode(0x0D54 徒手傷害路徑)反推真值:
+    //   傷害 = 傷害骰(徒手 Fist=0 → 1d4)+ floor(STR/5),**無 ×3/2、無 floor(3)**。
+    //   STR10 → bonus=floor(10/5)=2 → dmg = 1d4+2 = {3,4,5,6}(**含 5**)。
+    //   故 DOS §9 的「無 5」被 bytecode 證偽 = 53 筆小樣本雜訊;此案例改對 bytecode 真值。
     CombatRng rng(0x1234, 0);
     Combatant atk{};
-    atk.av = 100;  // 保證命中(2d10+100 >> 門檻)
-    atk.dmg_dice = kUnarmedDice; atk.dmg_sides = kUnarmedSides;  // 1d4
-    atk.dmg_bonus = 0;           // Str10 → 10/16 = 0
-    bool five_seen = false, all_in_set = true, min_is_3 = true;
-    for (int i = 0; i < 500; ++i) {
+    atk.av = 100;  // 保證命中
+    atk.dmg_dice = kUnarmedDice; atk.dmg_sides = kUnarmedSides;  // 1d4(descriptor 0x00)
+    atk.dmg_bonus = str_damage_bonus(10);  // floor(10/5) = 2(bytecode 真值)
+    bool all_in_set = true; bool saw3 = false, saw4 = false, saw5 = false, saw6 = false;
+    int mn = 999, mx = -1;
+    for (int i = 0; i < 2000; ++i) {
       Combatant tgt{}; tgt.dv = 0; tgt.ac = 0; tgt.hp = 100000; tgt.max_hp = 100000;
       AttackResult r = resolve_attack(atk, tgt, rng);
       if (!r.hit) continue;
-      if (r.damage == 5) five_seen = true;
-      if (r.damage != 3 && r.damage != 4 && r.damage != 6) all_in_set = false;
-      if (r.damage < 3) min_is_3 = false;
+      if (r.damage < mn) mn = r.damage;
+      if (r.damage > mx) mx = r.damage;
+      if (r.damage == 3) saw3 = true;
+      if (r.damage == 4) saw4 = true;
+      if (r.damage == 5) saw5 = true;
+      if (r.damage == 6) saw6 = true;
+      if (r.damage < 3 || r.damage > 6) all_in_set = false;
     }
-    check(!five_seen, "unarmed Str10 damage never 5 (DOS signature)");
-    check(all_in_set, "unarmed Str10 damage in {3,4,6}");
-    check(min_is_3, "damage floor == 3");
+    check(str_damage_bonus(10) == 2, "STR10 傷害修正 = floor(10/5) = 2(bytecode)");
+    check(mn == 3 && mx == 6, "徒手 Str10 範圍 = [3,6](1d4+2,bytecode)");
+    check(saw3 && saw4 && saw5 && saw6, "徒手 Str10 = {3,4,5,6}(含 5;bytecode 證偽 DOS『無 5』)");
+    check(all_in_set, "徒手 Str10 全在 {3,4,5,6}");
   }
   std::printf("== E. AC on hit-side, not damage (DOS §9) ==\n");
   {

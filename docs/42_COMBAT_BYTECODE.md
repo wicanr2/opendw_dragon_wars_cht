@@ -172,3 +172,51 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
 1. **roster 完成**:對齊 announce 迴圈所需 gs 種子(gs[0x41] 群 index、gs[0x47/0x48] 等),讓怪物進 char_data 槽 + gs[0x1F] 增 → 到 actor 迴圈。
 2. **op_68 反推**:從原始 dragon.com 反組譯 0x450A(需新素材);或由 op_68 在 22 處的「operand → 取哪段位元」用法 + DOS 校準值**反推語意**(風險:非逐指令對齊,須標為「推斷」)。
 3. 端到端跑出徒手一回合傷害數字 → 對 DOS 校準 {3,4,6};一致才可考慮升級標示。
+
+---
+
+## 11. 更新(第五輪:完整反推徒手傷害公式 → 端到端跑數字 → 對拍 bytecode)
+
+### 達成:徒手傷害公式 = 原版真值(bytecode 反推 + 端到端執行驗證)
+**`徒手傷害 = 傷害骰(descriptor) + floor(STR/5)`,無 ×3/2、無 floor(3)。**
+
+### 關鍵前置修復:自我修改碼(self-modifying code)
+- res3 骰子子程式(0x06EC)用**自我修改碼**設骰面:`0x06F6 word_3ADF[0x0701]=r2`(骰面值)patch 掉 `0x0700 op_09` 的 immediate operand(offset 0x0701)。
+- **opendw**:`running_script->bytes` 與 `word_3ADF->bytes` 都來自 `resource_get_by_index`(engine.c:899),當 `word_3AE8==word_3AEA`(script_res==data_res)是**同一份 buffer** → 自改生效。
+- **remake bug**:script / data_bytes 為分離 vector,op_14/15/16/18/1C 寫 data_bytes 不影響 fetch 的 script → 自改失效(op_4D 拿到 placeholder 0x0f)。
+- **修復**:新增 `VmState::wdata(idx,v)` —— 寫 data_bytes,且 `script_res==data_res` 時同步寫 script。op_14/15/16/18/1C 全改走 wdata。回歸 17/17 不破。
+
+### 完整算術序列(res3,oracle 行號)
+1. **骰子 descriptor**(0x0D54-0x0D5E):`idx = min(char_data[0x27]=Fistfighting, 7)`;`descriptor = table_0EC2[idx]`(byte)。
+   - **descriptor 表 @0x0EC2** = `00 01 21 41 22 42 23 24 …`。解碼:`sides = table_0713[descriptor>>5]`、**dice = (descriptor & 0x1f) + 1**。
+   - **骰面表 @0x0713** = `04 06 08 0a 0c 14 1e 64`(d4/d6/d8/d10/d12/d20/d30/d100)。
+   - Fist=0 → descriptor `0x00` → **1d4**(端到端驗 [1,4])。Fist 1→2d4、2→2d6、3→2d8、4→3d6 …(min(Fist,7) 封頂)。
+2. **骰擲**(0x06EC,入參 r2=descriptor):`sides` 經自改 patch 進 0x0700;loop `(descriptor&0x1f)+1` 次:`r2=sides; op_4D(→[0,sides)); r2++(→[1,sides]); op_2F gs[0x5d](累加)`。
+3. **STR 修正**(0x0D63→0x0D7F→0x0D81):`r2 = char_data[0x0c]=STR; op_36 0x05(÷5); word_3ADF[0x0dae]=r2` —— 即把 **floor(STR/5)** patch 進 0x0DAD `op_30` 的 immediate。
+4. **合成**(0x0D9E-0x0DBF,每次命中):`r2 = 骰和(gs[0x5d]); op_30 patched(+floor(STR/5)); op_2F gs[0x61](跨命中累加)`;最終 `gs[0x5d] = gs[0x61]`(0x0DD2)。
+
+### 端到端跑出的數字(跑 res3 bytecode,非手算)
+| 輸入 | bytecode 輸出範圍 | = 1d4 + floor(STR/5) |
+|---|---|---|
+| STR 4, Fist 0 | [1,4] | 1d4 + 0 |
+| STR 5–9, Fist 0 | [2,5] | 1d4 + 1 |
+| STR 10–14, Fist 0 | **[3,6] = {3,4,5,6}** | 1d4 + 2 |
+| STR 20–24, Fist 0 | [5,8] | 1d4 + 4 |
+| STR 25, Fist 0 | [6,9] | 1d4 + 5 |
+
+### ÷5 vs ×3/2 矛盾的真相
+- **真相 = `+floor(STR/5)`(加法)**,**不是 ×3/2**。op_36 0x05 = STR÷5,結果**加進**傷害骰和(0x0DAD op_30),全程**無乘 3 除 2**。
+- DOS §9 推的 `×3/2 + floor(3) → {3,4,6} 無 5`,是 **53 筆小樣本的近似**:真值 1d4+2 = {3,4,5,6} **含 5**;bytecode **證偽了「無 5」**。`×3/2` 與 op_33~36 的關聯是巧合擬合,非真機制(op_33~36 用於別處如初始化乘累加,非徒手傷害)。
+
+### to-hit(bytecode 讀出,門檻鏈待續)
+- **命中骰 = 1d16+3**(0x0F73:`r2=0x10; op_4D(→[0,16)); op_30 0x03(+3)` → [3,18];roll==3 自動命中)。
+- 門檻側比較鏈(攻擊者 AV/裝甲 char_data[0x59] − 目標 AC table_0372[gs[0x84]])**尚未端到端驗證** → combat.cpp 命中骰式暫保留 2d10、門檻 base+dv+ac,不動未驗證行為。
+
+### combat.cpp 標示升級
+- **徒手傷害:升級為「bytecode 反推 + 端到端驗證」** —— `str_damage_bonus = STR/5`(取代 best-fit STR/16);傷害 = 骰 + floor(STR/5),移除 ×3/2 與 floor(3)。
+- **武器傷害:維持 best-fit**(op_68 原版未逆向,擋住武器骰欄位讀取)。
+- **to-hit:維持暫定**(骰式真值 1d16+3 已記,門檻鏈待驗)。
+
+### 對拍交付
+- `verify_combat_script` 新增**徒手傷害對拍 res3 bytecode**:跑 res3 0x0D54 路徑取分布,驗 STR10→[3,6] 含 5、STR20→[5,8]、STR4→[1,4](無 floor3)。= combat.cpp 公式 ⇄ bytecode 雙向確認。
+- `verify_combat` D 案例更新:從 DOS best-fit {3,4,6} 改為 **bytecode 真值 {3,4,5,6}**(含 5)。

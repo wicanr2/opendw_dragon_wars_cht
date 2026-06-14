@@ -153,29 +153,36 @@ struct AttackResult {
 };
 
 // 解算 attacker → target 的一次物理攻擊(會改 target.hp / status)。
-// grounded in docs/44(fraterrisus+SDA);to-hit 骰分布為暫定(見檔頭與 ToHitModel)。
-//   命中:roll = 2dN(N=kToHitDie,暫定);hit ⇔ roll + attacker.av >= kToHitBase + target.dv + target.ac。
-//         **AC 在命中側(DOS §9 實機判定:AC 壓命中、不減傷,解決 SDA 矛盾);to-hit 骰式仍暫定**。
-//   傷害:raw = roll(傷害骰) + STR 修正;dmg = max(kDmgFloor, floor(3/2 × raw))(DOS §9)。
+//   命中:roll = 2dN(N=kToHitDie,**暫定**;bytecode 真值 = 1d16+3,門檻鏈待續驗 docs/42 §11);
+//         hit ⇔ roll + attacker.av >= kToHitBase + target.dv + target.ac。AC 在命中側(不減傷)。
+//   傷害:**【bytecode 反推 + 端到端驗證,徒手證據確鑿】dmg = 傷害骰 + floor(STR/5)**。
+//         徒手傷害骰 = res3 0x0EC2 descriptor[min(Fist,7)](Fist=0 → 1d4);**無 ×3/2、無 floor(3)**。
+//         verify_combat_script 對拍 res3 bytecode(STR10→{3,4,5,6}、STR4→[1,4])。
 //         dmg 作用於 target.hp(=STUN);hp<=0 → status|=0x01(死亡)。**AC 不參與傷害**。
+//         **武器路徑因 op_68(原版未逆向)仍 best-fit**。
 // RNG 副作用順序固定(先擲命中,命中才擲傷害),確保可重現。
 AttackResult resolve_attack(Combatant& attacker, Combatant& target, CombatRng& rng);
 
-// to-hit 暫定參數(集中於此,便於 DOS 校準後一處調整)。
-// SDA 只記「AV vs DV、疑似小骰 D&D-like」,確切骰式未知 → 2dN 為 remake 暫定。
-inline constexpr int kToHitDie = 10;   // 每顆骰面數(2d10)
+// to-hit 參數。
+// 【bytecode 反推:res3 to-hit 子程式 @0x0F73 = 1d16+3】:r2=0x10;op_4D(→[0,16));
+//   op_30 0x03(+3)→ roll ∈ [3,18];roll==3 自動命中。**門檻側比較鏈(裝甲/AV/AC)
+//   尚未端到端驗證**,故 remake 命中骰式暫保留 2d10、門檻 base+dv+ac(待續逆向後對齊)。
+//   骰式真值已記 docs/42 §11;此處先不動門檻邏輯以免破壞未驗證行為。
+inline constexpr int kToHitDie = 10;   // 暫定 2d10(bytecode 真值為 1d16+3,門檻鏈待驗)
 inline constexpr int kToHitDiceCount = 2;
 inline constexpr int kToHitBase = 11;  // 命中門檻基數(roll+av >= base+dv+ac)
 
-// 徒手傷害骰:DOS 大樣本(docs/43 §9)低 Str raw=1d4(代入下方縮放 → {3,4,6} 與實測吻合)。
+// 徒手傷害骰【bytecode 反推 + 端到端驗證】:descriptor table[min(Fist,7)] @res3 0x0EC2;
+//   未技能(Fist=0)= descriptor 0x00 → 1d4(跑 res3 骰子程式驗 [1,4])。
 inline constexpr int kUnarmedDice = 1;
 inline constexpr int kUnarmedSides = 4;
 
-// 傷害縮放(DOS §9 強證據):dmg = max(kDmgFloor, floor(kDmgMulNum/kDmgMulDen × raw))。
-// 傷害值全集 {3,4,6,7,8}(53 筆 0 個 5)= ×3/2 縮放 + 下限 3 的結構指紋;
-// ×3/2 對應 docs/42 op_33~36 乘除子系統(雙向佐證)。**徒手已實機證實;武器套同式為推斷**。
-inline constexpr int kDmgFloor = 3;
-inline constexpr int kDmgMulNum = 3;
-inline constexpr int kDmgMulDen = 2;
+// 傷害【bytecode 反推:徒手無縮放】:dmg = 傷害骰 + floor(STR/5)。**無 ×3/2、無 floor(3)**。
+//   端到端跑 res3:STR10 徒手 → {3,4,5,6}(含 5)。DOS §9 的「×3/2+floor3→{3,4,6} 無 5」
+//   為 53 筆小樣本近似,bytecode 證偽其「無 5」。kDmg* 設為恆等(1/1、floor1)= 不縮放。
+//   (武器路徑因 op_68 原版未逆向,仍走 best-fit;但徒手已不經此縮放。)
+inline constexpr int kDmgFloor = 1;
+inline constexpr int kDmgMulNum = 1;
+inline constexpr int kDmgMulDen = 1;
 
 }  // namespace dw::game

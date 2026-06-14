@@ -259,6 +259,12 @@ timeout 90 docker run --rm -v /tmp/dwgame:/game dwdos bash /game/drive.sh
 
 ### 9.3 反推徒手傷害公式 — 【推斷,證據強(結構性指紋)】
 
+> **⚠ 已被 bytecode 反推修正(2026-06-14,見 docs/42 §11)**:本節 `damage = max(3, floor(1.5×1d4))`
+> → {3,4,6}「無 5」是 **53 筆小樣本近似**。端到端跑 res3 bytecode 的**真值**為
+> **`damage = 1d4 + floor(STR/5)`**(加法 STR/5,**無 ×3/2、無 floor3**)→ STR10 = {3,4,**5**,6}**含 5**。
+> 「缺 5」「×1.5」均被 bytecode 證偽(小樣本剛好沒採到 5)。以下原推斷保留作歷史紀錄;
+> 確切公式以 docs/42 §11(bytecode 反推 + verify_combat_script 對拍)為準。
+
 三個硬指紋:
 
 1. **下限恆為 3**:四名角色 min 皆 = 3,且 3 是多數人的眾數。→ 傷害有 `max(3, …)` 樓地板。
