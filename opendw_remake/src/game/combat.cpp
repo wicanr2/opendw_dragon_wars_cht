@@ -77,7 +77,13 @@ Combatant Combatant::from_player(const CharacterRecord& c) {
   u.av = c.effective_av();
   u.dv = c.effective_dv();
   u.ac = c.effective_ac();
-  // 傷害骰:解碼主武器主傷害骰(fraterrisus);無武器 → 徒手回退。
+  // 傷害骰:解碼主武器主傷害骰;無武器 → 徒手回退。
+  // 【bytecode 反推 + 端到端驗證,證據確鑿】res3 武器傷害路徑(0x0D68)以
+  //   op_68 0x08 讀「裝備記錄 byte[8]= 主傷害骰 descriptor」(op_68 已自原始 DRAGON.COM
+  //   反組譯 @0x450A,opendw targets[] 原標 NULL)。descriptor 解碼與徒手共用骰子子程式
+  //   (0x06EC):sides = {4,6,8,10,12,20,30,100}[d>>5]、count = (d & 0x1f)+1。
+  //   verify_combat_script 端到端驗:descriptor 0x00/0x21/0x05/0xA3 → 純骰 [1,4]/[2,12]/[6,24]/[4,80]。
+  //   (此處 primary_dmg 用 fraterrisus bit[64-71] 解,與 bytecode descriptor 同編碼,已對齊。)
   EquipItem w = c.main_weapon();
   if (w.present && w.primary_dmg.valid()) {
     u.dmg_dice = w.primary_dmg.count;
@@ -136,7 +142,18 @@ AttackResult resolve_attack(Combatant& attacker, Combatant& target,
     //   再 + floor(STR/5)(0x0DAD op_30 加 word_3ADF[0x0dae]=STR/5)。
     //   **無 ×3/2、無 floor(3)** —— 端到端跑 res3 bytecode 驗證:
     //   STR10 徒手 → {3,4,5,6}(含 5;DOS §9 的「無 5」是 53 筆小樣本雜訊)。
-    //   AC 不參與傷害(已在命中側)。**武器路徑因 op_68(原版未逆向)仍 best-fit**。
+    //   AC 不參與傷害(已在命中側)。
+    // 【武器傷害 STR bonus 的誠實界定(op_68 已反組譯後更新)】:
+    //   op_68(@0x450A)已反組譯 → 武器主傷害骰來源(byte[8])與骰式解碼已 bytecode 確認。
+    //   但「武器傷害是否 +floor(STR/5)」**bytecode 證據矛盾**:res3 武器路徑在
+    //   byte[2]&0x1f==0(常規武器)時,0x0D73 jz **跳過 op_36(÷STR)** → 隔離執行下武器路徑
+    //   **不加 STR bonus**(端到端驗:1d4 STR20 → [1,4] 純骰)。然 0x0DAD 加的是自我修改位址
+    //   0x0DAE 的值,完整一場戰鬥中該值可能由前序攻擊者的 op_36 殘留 → **隔離分析無法判定**
+    //   真機是否殘留 STR/5(self-modifying code 不確定性)。另:byte[2]&0x1f!=0 時傷害 =
+    //   定值(byte[2]&0x1f),覆寫骰擲(端到端驗,= 遠程/特殊武器定傷)。
+    //   【決策】DOS 實機(docs/43:Str14→3~4、Str21→6)+ SDA 均顯示武器傷害隨 STR 增,
+    //   故 **保留 +floor(STR/5) 為 best-fit**(與徒手同係數),不依隔離 bytecode 逕刪 STR bonus
+    //   (無完整戰鬥 oracle 可確認殘留與否,刪除恐 regress DOS 校準)。詳見 docs/42 §13。
     r.damage = rng.roll(attacker.dmg_dice, attacker.dmg_sides) + attacker.dmg_bonus;
     if (r.damage < 1) r.damage = 1;  // 骰至少 1(無人為下限 3)
     // 作用於 STUN(HP=Stun);STUN≤0 → 死亡。

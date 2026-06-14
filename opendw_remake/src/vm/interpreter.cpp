@@ -1437,6 +1437,34 @@ void Interpreter::op63_set_char_ext_word() {
   s_.cf = 0;
 }
 
+// op_68(@0x450A,原始 DRAGON.COM 反組譯反推 — opendw targets[] 標 NULL):
+//   op_69 的「讀」孿生。讀當前角色「裝備/物品記錄」的一個位元組/字 → word_3AE2。
+//   反組譯(file offset 0x440A,COM @CS:0x100):
+//     bl=[0x3867]; bx<<=1;              ; 物品槽 index(= gs[7]),*2 進字表
+//     al=[0x3866]; di=ax;               ; 角色 index(= gs[6])
+//     ax=0xCA4C; ah += [di+0x386a];     ; char_ext 基底 + 角色頁(selector<<8)
+//     ax += [bx+0x4456];                ; + 槽偏移(unknown_4456[slot] = slot*23,23B/item)
+//     di=ax; lodsb; di += ax;           ; + operand(物品記錄內欄位 byte offset)
+//     ax=[di]; [0x3ae2]=al;             ; r2 低位 = char_ext[di]
+//     if [0x3ae1]!=0: [0x3ae3]=ah       ; word 模式才取高位
+//   與 opendw op_69(engine.c:2846)同定址:selector=gs[gs[6]+0x0A]、slot=gs[7]、stride 23、
+//   區段 0xCA4C(=data_CA4C=char_ext)。武器傷害(res3 0x0D68)用此讀「主傷害骰 byte[8]」等欄位,
+//   餵共用骰子子程式(0x06EC)→ 武器傷害 = roll(武器主傷害骰) + floor(STR/5)(與徒手同式,只換骰源)。
+void Interpreter::op68_get_char_ext() {
+  std::uint16_t bx = s_.game_state[7];
+  std::uint8_t player_idx = s_.game_state[6];
+  std::uint8_t sel = s_.game_state[(player_idx + 0x0A) & 0xFF];
+  std::uint32_t di = ((std::uint32_t)sel << 8) + unknown_4456((std::uint8_t)bx);
+  std::uint8_t al = s_.fetch8();
+  di += al;
+  std::uint8_t lo = (di < s_.char_ext.size()) ? s_.char_ext[di] : 0;
+  std::uint8_t hi = (di + 1 < s_.char_ext.size()) ? s_.char_ext[di + 1] : 0;
+  s_.r2 = (std::uint16_t)(s_.r2 & 0xFF00) | lo;  // [0x3ae2] = al
+  if (s_.mode != 0) {                            // byte_3AE1 != 0 → word 模式
+    s_.r2 = (std::uint16_t)((hi << 8) | lo);     // [0x3ae3] = ah
+  }
+}
+
 // op_69(@0x453F):char_ext[(selector<<8) + unknown_4456[gs[7]] + operand] = r2(byte/word)。
 void Interpreter::op69_set_char_ext() {
   std::uint16_t bx = s_.game_state[7];
@@ -1759,6 +1787,7 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x60] = &Interpreter::op60_and_char_data;
   t[0x61] = &Interpreter::op61_test_char_prop;
   t[0x63] = &Interpreter::op63_set_char_ext_word;
+  t[0x68] = &Interpreter::op68_get_char_ext;
   t[0x69] = &Interpreter::op69_set_char_ext;
   return t;
 }();

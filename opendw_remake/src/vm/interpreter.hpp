@@ -204,6 +204,7 @@ private:
   void op61_test_char_prop();  // 0x61  test char_data[player*512 + bx] & bitmask → 設 sf/zf/cf
   void op63_set_char_ext_word();// 0x63 set_char_data_word:mode=ax高位;讀2B operand;
                                 //      檢查 char_ext[sel<<8 + u4456[0]];=0 → clc(本切片路徑)
+  void op68_get_char_ext();    // 0x68  r2 = char_ext[sel<<8 + u4456[gs[7]] + op](byte/word);讀裝備記錄欄位
   void op69_set_char_ext();    // 0x69  char_ext[sel<<8 + u4456[gs[7]] + op] = r2(byte/word)
   // 角色資料定址輔助:回傳「當前角色 record 的頁高位(selector=gs[idx+0x0A])」。
   std::uint16_t char_record_base();  // = selector << 8(char_data 內的 record 起點)

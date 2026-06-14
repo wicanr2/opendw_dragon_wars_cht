@@ -136,6 +136,85 @@ int main(int argc, char** argv) {
     check(mn == 1 && mx == 4, "bytecode STR4 徒手範圍 [1,4](無 floor(3))");
   }
 
+  // ── 武器傷害對拍 res3 bytecode(0x0D68 路徑,經 op_68 讀裝備記錄)──────────
+  //   op_68(原始 DRAGON.COM 反組譯反推,@0x450A — opendw targets[] 標 NULL):
+  //   讀「當前角色裝備記錄」一個欄位 → word_3AE2,定址 = sel<<8 + slot*23 + operand。
+  //   武器傷害主流程(res3 0x0D68,gs[0x66]>=0):
+  //     0x0D68: op_68 0x08 → gs[0x7c] = **主傷害骰 descriptor**(byte[8] of 23B 物品記錄)
+  //     0x0DA1: load_resource 0x03:0x06ec → 用 gs[0x7c] 擲骰(與徒手共用骰子子程式)
+  //   骰子解碼(同 0x06EC):sides = table_0713[desc>>5]、dice = (desc & 0x1f)+1,
+  //     骰面表 = {4,6,8,10,12,20,30,100}。
+  //   ★ 已反組譯確認:op_68 0x08 = 主傷害骰來源。下方用「純骰路徑」端到端驗證骰式解碼。
+  //   作法:char_ext[8]=descriptor、char_ext[2]=0(走純骰,見下註),設 gs 使 op_68 定址 = operand,
+  //   強制 1 次命中,跑 0x0D68,讀 gs[0x5d],掃多 seed 取分布,對拍 roll(descriptor)。
+  std::printf("== 武器傷害對拍 res3 bytecode(op_68 0x08 = 主傷害骰;純骰路徑)==\n");
+  {
+    res::BundleProvider prov(bundle);
+    auto sc = prov.load(3);
+    auto run_weapon = [&](int str, std::uint8_t descriptor, std::uint8_t b2,
+                          int& mn, int& mx) {
+      mn = 9999; mx = -1;
+      for (int s = 0; s < 6000; ++s) {
+        vm::VmState st;
+        st.script = *sc; st.data_bytes = *sc; st.script_res = 3; st.data_res = 3;
+        st.resource_provider = [prov](int t) mutable { return prov.load(t); };
+        st.random_seed = (std::uint16_t)(0x0001 + s * 2654435761u);
+        st.fake_ticks = (std::uint16_t)(s * 40503u);
+        st.game_state[6] = 0; st.game_state[0x0A] = 0;  // player_idx=0, selector=0
+        st.game_state[7] = 0;                            // 物品槽 0 → slot*23 = 0
+        st.char_data[0x0c] = (std::uint8_t)str;          // STR
+        st.game_state[0x66] = 0x00;                      // 武器(gs[0x66]>=0 → jns 0x0D68)
+        st.game_state[0x7e] = 1;                         // 命中 1 次
+        st.game_state[0x84] = 0;
+        st.char_ext[0x08] = descriptor;                  // byte[8] = 主傷害骰 descriptor
+        st.char_ext[0x02] = b2;                          // byte[2]:0=純骰;非 0=定值覆寫(見下)
+        st.char_ext[0x01] = 0;
+        st.pc = 0x0D68;
+        vm::Interpreter ip(st);
+        for (int step = 0; step < 400; ++step) {
+          if (st.halted) break;
+          std::size_t before = st.pc;
+          ip.run(1);
+          if (before == 0x0DD2) break;
+        }
+        int d = st.game_state[0x5d] | (st.game_state[0x5e] << 8);
+        if (d < mn) mn = d; if (d > mx) mx = d;
+      }
+    };
+    static const int kSides[8] = {4, 6, 8, 10, 12, 20, 30, 100};
+    auto dice_range = [&](std::uint8_t desc, int& lo, int& hi) {
+      int sides = kSides[(desc >> 5) & 7];
+      int count = (desc & 0x1f) + 1;
+      lo = count * 1; hi = count * sides;   // 純骰,無 STR bonus(見下方驗證)
+    };
+    // 純骰路徑(byte[2]&0x1f==0):op_68 0x08 讀 descriptor → 擲骰;此路徑 op_36(÷STR)被
+    //   0x0D73 jz 跳過 → **無 STR bonus**。端到端跑出的範圍 = 純骰 roll(descriptor)。
+    struct WCase { std::uint8_t desc; const char* label; } wcases[] = {
+      {0x00, "1d4"},   // 0b000_00_000
+      {0x21, "2d6"},   // 0b001_00_001(docs/44 §2 範例編碼)
+      {0x05, "6d4"},   // 0b000_00_101
+      {0xA3, "4d20"},  // 0b101_00_011
+    };
+    for (auto& wc : wcases) {
+      int mn, mx; run_weapon(20 /*STR 不影響純骰*/, wc.desc, 0, mn, mx);
+      int lo, hi; dice_range(wc.desc, lo, hi);
+      char buf[128];
+      std::snprintf(buf, sizeof buf,
+        "op_68 0x08=%s:bytecode 純骰 [%d,%d] == roll(%s) [%d,%d](descriptor 解碼正確)",
+        wc.label, mn, mx, wc.label, lo, hi);
+      check(mn == lo && mx == hi, buf);
+    }
+    // 反組譯反推的兩個 byte[2] 分支(端到端確認,記錄於 docs/42):
+    //   byte[2]&0x1f == 0:純骰(上方已驗),op_36(÷STR)被 0x0D73 jz 跳過 → 無 STR bonus。
+    //   byte[2]&0x1f != 0:傷害 = 定值 (byte[2]&0x1f),覆寫骰擲結果(STR/骰面皆不影響)。
+    { int mn, mx; run_weapon(20, 0x21 /*2d6*/, 5 /*byte2=5*/, mn, mx);
+      check(mn == 5 && mx == 5,
+            "op_68 0x02!=0:傷害 = 定值(byte[2]&0x1f=5),覆寫骰擲(端到端驗)"); }
+    { int mn, mx; run_weapon(10, 0x00 /*1d4*/, 2 /*byte2=2*/, mn, mx);
+      check(mn == 2 && mx == 2,
+            "op_68 0x02!=0:傷害 = 定值(byte[2]&0x1f=2),STR/骰面不影響(端到端驗)"); }
+  }
+
   // ── to-hit 對拍 res3 bytecode(0x0F73):roll-under,門檻 = 13 + AV − def ──
   //   直接跑 res3 to-hit 子程式,以受控 AV(gs[0x79])/ def(data[0x372])掃骰,
   //   找「最大會命中的 roll」(= 門檻),對拍 combat.cpp 的 kToHitBase + AV − def。
