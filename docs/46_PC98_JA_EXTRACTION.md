@@ -103,14 +103,65 @@ remake の `events.tsv` キー（= 英語原文、パーガトリー序盤イベ
 
 品質優先（寧缺勿濫）のため、確証のある対位のみ補完した。以下は保留:
 
-### combat.tsv モンスター名（21 件未補完）
-未補完キー: `Bandit, Big Dog, Born Loser, Cannibal, Drunk, Fanatic, Giant Spider, Innocent Man, Jail Keeper, King's Guard, Loon, Pikeman, Rock Spider, Soldier, Unjustly Accused, Wild hound, Yonderboy`（+ 戦闘動詞 `damage / hit / miss / slain`）。
+### combat.tsv モンスター名（**解決済み：23 件補完、2026-06-14**）
 
-理由:
-- DOS 版ではモンスター名は **resource 31** に格納（`docs/14_TRANSLATION_MONSTERS.md`）。X68000 では `MONS`(74KB) に相当するが、**`MONS` 内の名前は二進/符号化されており SJIS としてクリーンに抽出できない**（走査結果はパディング `裹` と化け文字のみ）。名前テーブルの所在/符号化が未解明。
-- 戦闘動詞（hit/miss/damage/slain）は英語版では原子語だが、X68000 版は文テンプレート（`%sを攻撃し…回命中して…の健康度…を奪った`）で、1:1 の単語対応が無い。憶測対訳は避けた。
+当初「`MONS` 内の名前は二進/符号化で SJIS 抽出不可」と保留していたが、符号化を解明し全 25 レコード（ユニーク 23 キー）を補完した。
 
-→ 次手: `DRAGON.X` の戦闘コードから `MONS` 名前テーブルへの参照（インデックス→オフセット）を逆解析するか、`MON.PIX`(810KB スプライト) の並び順とモンスター ID を突き合わせる。あるいは `.PKH` 圧縮形式（`PROG*.PKH` 等）を解凍して名前表を探す。
+#### 符号化の解明：ニブルスワップ SJIS
+
+`MONS`（および X68000 版データファイルの日本語テキスト全般）は **Shift-JIS だが、各バイトのニブル（上位 4bit と下位 4bit）が入れ替わっている**。先頭の SJIS スキャンが `裹` パディングと化け文字しか拾えなかったのはこのため。
+
+復号:
+```python
+def nibswap(b): return bytes(((x << 4) | (x >> 4)) & 0xFF for x in b)
+text = nibswap(raw_mons).decode("cp932")
+```
+発見の決め手: `MONS` 0x162 の生バイト `38 27 38 55 38 d6 …` をニブルスワップすると `83 72 83 55 83 6d …` = `ビザノープルの地下`（=遭遇地名、クリーンな SJIS）。
+
+> 注: 半角カタカナ（単一バイト 0xA1–0xDF）も使われる（例 index 17/21 = `ﾛｯｸ･ｽﾊﾟｲﾀﾞｰ`）。NFKC で全角化して TSV に格納。
+
+#### モンスター名テーブル
+
+`MONS` 内、オフセット **0x211F から 0x3C（60）バイト間隔**の固定長配列。**DOS res31 の並び順と完全に 1:1 一致**（英語キーとの対位はこの配列位置で確定）。全 25 レコード:
+
+| idx | offset | EN（DOS res31） | JA（X68000、全角化） | JA→EN 逆引き |
+|---|---|---|---|---|
+| 0 | 0x211F | Robber | 強盗 | robber ✓ |
+| 1 | 0x215B | King's Guard | 王の衛兵 | king's guard ✓ |
+| 2 | 0x2197 | Soldier | 兵士 | soldier ✓ |
+| 3 | 0x21D3 | Bandit | 追いはぎ | highwayman ✓ |
+| 4 | 0x220F | Pikeman | 槍兵 | pikeman ✓ |
+| 5 | 0x224B | Loon | 狂人 | madman ✓ |
+| 6 | 0x2287 | Fanatic | 狂信者 | fanatic ✓ |
+| 7 | 0x22C3 | Yonderboy | チンピラ | punk/hoodlum ✓ |
+| 8 | 0x22FF | Born Loser | 流浪者 | wanderer/drifter ~ |
+| 9 | 0x233B | Unjustly Accused | 不浄の霊魂 | unclean spirit ~（日本語は意訳） |
+| 10 | 0x2377 | Innocent Man | 殉教者 | martyr ~（日本語は意訳） |
+| 11 | 0x23B3 | Giant Spider | 大グモ | giant spider ✓ |
+| 12 | 0x23EF | Wild Dog | 野犬 | wild dog ✓ |
+| 13 | 0x242B | Spider | クモ | spider ✓ |
+| 14 | 0x2467 | Cannibal | 人食い | man-eater ✓ |
+| 15 | 0x24A3 | Big Dog | 大きな犬 | big dog ✓ |
+| 16 | 0x24DF | Wild hound | 狂った猟犬 | mad hound ✓ |
+| 17 | 0x251B | Rock Spider | ロック・スパイダー | rock spider ✓ |
+| 18 | 0x2557 | Spider | クモ | spider ✓ |
+| 19 | 0x2593 | Wolf | 狼 | wolf ✓ |
+| 20 | 0x25CF | Jail Keeper | 番人 | keeper/watchman ✓ |
+| 21 | 0x260B | Rock Spider | ロック・スパイダー | rock spider ✓ |
+| 22 | 0x2647 | Drunk | 飲んだくれ | drunkard ✓ |
+| 23 | 0x2683 | Humbaba | ハンババ | Humbaba ✓ |
+| 24 | 0x26BF | Gladiator | 剣闘士 | gladiator ✓ |
+
+ユニーク英語キー 23 件すべて補完。重複キー（Spider×2 → クモ、Rock Spider×2 → ロック・スパイダー）は値が一致し矛盾なし。**信頼度: 高**（実機日本語版から抽出 + 配列位置 1:1 + JA→EN 逆引き整合）。idx 8〜10 は日本語版の意訳（流浪者/不浄の霊魂/殉教者）だが、これも実機原文なので採用。
+
+#### 戦闘動詞（hit/miss/damage/slain）は引き続き保留
+
+英語版では原子語だが、X68000 版は文テンプレート（`…を攻撃し…回命中して…のダメージを与えた！…を倒した！`、`DRAGON.X` 0x38xxx 帯）で、1:1 の単語対応が無い。憶測対訳は避け、英語フォールバックのまま（`ja/combat.tsv` 48/52、残り 4 = これら動詞）。
+
+#### 補完先・ツール
+- `assets/i18n/ja/combat.tsv`: モンスター名 23 件追加（既存の暫定訳 盗賊→強盗 / オオカミ→狼 / フンババ→ハンババ も実機原文に修正）。
+- `assets/fonts/cjk24.atlas`: 新字形 13 個分を追加再生成（1790→1878 字形、旧字形全保持）。`tools_build/gen_cjk_atlas_from_i18n.sh`。
+- 抽出手順: `tools_build/fat12_extract.py` で `MONS` を取り出し → 上記 nibswap で復号 → 0x211F/0x3C 配列を読む。
 
 ### menu.tsv
 `ja/menu.tsv` は 13/14（既存。`"Map  -  Esc: bac"` 1 件のみ欠、本タスク範囲外）。
