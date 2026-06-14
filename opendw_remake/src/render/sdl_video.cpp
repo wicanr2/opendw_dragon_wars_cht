@@ -88,6 +88,16 @@ Input SdlVideo::poll() {
     if (e.type == SDL_QUIT) { in.quit = true; continue; }
     if (e.type != SDL_KEYDOWN) continue;
     SDL_Keycode k = e.key.keysym.sym;
+    const bool shift = (e.key.keysym.mod & KMOD_SHIFT) != 0;
+    // 文字輸入(建角命名):可列印字元(字母含大小寫 / 數字 / 空白)+ 退格。
+    //   一般狀態不讀 in.text_char/in.backspace,故不影響既有行為。
+    if (k >= SDLK_a && k <= SDLK_z)
+      in.text_char = (shift ? 'A' : 'a') + (k - SDLK_a);
+    else if (k >= SDLK_0 && k <= SDLK_9 && !shift)
+      in.text_char = '0' + (k - SDLK_0);
+    else if (k == SDLK_SPACE)
+      in.text_char = ' ';
+    if (k == SDLK_BACKSPACE) in.backspace = true;
     switch (k) {
       case SDLK_q:      in.quit = true; break;     // Q = 離開遊戲(手冊)
       case SDLK_ESCAPE: in.back = true; break;     // Esc = 離開子畫面 / 繼續訊息
@@ -105,6 +115,9 @@ Input SdlVideo::poll() {
             (k == SDLK_SLASH && (e.key.keysym.mod & KMOD_SHIFT))) in.key = '?';
         else if (k >= SDLK_a && k <= SDLK_z) in.key = 'A' + (k - SDLK_a);  // 字母→大寫快捷鍵
         else if (k >= SDLK_0 && k <= SDLK_9) in.key = '0' + (k - SDLK_0);
+        // 建角配點:+/= 增、-/_ 減(含數字鍵盤 KP_PLUS/KP_MINUS)。
+        else if (k == SDLK_EQUALS || k == SDLK_PLUS || k == SDLK_KP_PLUS) in.key = '=';
+        else if (k == SDLK_MINUS || k == SDLK_KP_MINUS) in.key = '-';
         break;
     }
   }

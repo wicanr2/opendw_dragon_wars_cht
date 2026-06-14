@@ -41,6 +41,7 @@
 #include "resource/paragraphs.hpp"
 #include "i18n/strings.hpp"
 #include "game/party.hpp"
+#include "game/chargen.hpp"
 #include "game/savegame.hpp"
 #include "game/combat.hpp"
 #include "game/combat_loop.hpp"
@@ -205,6 +206,48 @@ struct CharSheet {
   }
 };
 
+// CharGenUi — 新遊戲建角流程(手冊選單 B → 建立人物)子狀態(S_CREATE)。
+//
+// Deep module:對外只露 phase/draft/done_records + 操作介面(輸入名/配點/性別/
+//   完成本員/開始遊戲)。內部隱藏:兩段子流程(命名 → 配點)、已建角色累積、
+//   配點游標。建角規則 / 序列化全委派給 game::DraftCharacter(grounded,見 chargen.hpp)。
+//
+// 流程(對齊手冊 33 第 6/7 頁):
+//   PhName  輸入角色名(TTF 文字輸入;Enter 確認 → PhAttr;Esc 取消回選單)。
+//   PhAttr  配點畫面:↑↓ 選屬性、+/− 或 ←→ 調整、G 切性別、Enter 完成本員
+//           (寫進 done_records),最多 4 名;再按 B/Enter(無餘額或滿員)開始遊戲。
+//           Esc 回名字輸入。
+// 名字寫進 record [00-11] 高位元終止格式(由 DraftCharacter::serialize 處理)。
+struct CharGenUi {
+  enum Phase { PhName, PhAttr } phase = PhName;
+  bool active = false;
+  dw::game::DraftCharacter draft;                 // 當前正在建立的角色草稿
+  int cursor = 0;                                 // 配點游標(0..3 = STR/DEX/INT/SPI)
+  std::vector<std::array<std::uint8_t, 512>> done_records;  // 已完成的角色 records(組隊用)
+
+  static constexpr int kMaxParty = 4;
+
+  void start() {
+    active = true; phase = PhName; cursor = 0;
+    draft = dw::game::DraftCharacter{};
+    done_records.clear();
+  }
+  // 開始建立「下一名」角色(沿用已完成清單)。回傳是否還能再建(未滿員)。
+  bool begin_next() {
+    if ((int)done_records.size() >= kMaxParty) return false;
+    draft = dw::game::DraftCharacter{};
+    phase = PhName; cursor = 0;
+    return true;
+  }
+  // 完成本員:草稿合法(名字有效)→ 序列化推進清單。回傳是否成功。
+  bool commit_current() {
+    if (!draft.name_valid()) return false;
+    done_records.push_back(draft.serialize());
+    return true;
+  }
+  void close() { active = false; done_records.clear(); }
+};
+
 // tile 型(word_11C8)→ framebuffer 顏色:0=void/牆、1=地面、其他=特殊/事件格。
 static std::uint8_t tile_color(std::uint8_t t) {
   if (t == 0) return 8;            // 牆/void = 灰
@@ -245,6 +288,10 @@ int main(int argc, char** argv) {
   int combat_count = 6;         // --combat-count N:怪群數量(預設 6;沿用怪物表領頭怪)
   int cast_spell_id = -1;       // --cast <spellId>:headless 在遭遇中施放該法術一次(驗證)
   bool cast_force = false;      // --cast-force:即使該角色未習得也施放(僅供驗證效果套用)
+  // ── 建角流程(新遊戲 / 建立人物;手冊選單 B)──
+  bool newgame = false;         // --newgame:啟動直接進建角畫面(S_CREATE)
+  std::string newgame_demo;     // --newgame-demo SPEC:headless 腳本化建角 + 出圖/驗證(見下方解析)
+  std::string newgame_screen;   // --newgame-screen SPEC:停在配點畫面供截圖(同 SPEC 格式,只取第一員)
   for (int i = 1; i < argc; ++i) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
     if (eq("--bundle") && i + 1 < argc) bundle = argv[++i];
@@ -279,6 +326,9 @@ int main(int argc, char** argv) {
     else if (eq("--combat-count") && i + 1 < argc) combat_count = std::atoi(argv[++i]);    // 怪群數量
     else if (eq("--cast") && i + 1 < argc) cast_spell_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 施放法術
     else if (eq("--cast-force")) cast_force = true;     // 即使未習得也施放(驗證效果)
+    else if (eq("--newgame")) newgame = true;           // 啟動即進建角畫面
+    else if (eq("--newgame-demo") && i + 1 < argc) newgame_demo = argv[++i];  // 腳本化建角(headless)
+    else if (eq("--newgame-screen") && i + 1 < argc) newgame_screen = argv[++i];  // 停在配點畫面截圖
   }
   if (scale < 1) scale = 1;
 
@@ -343,7 +393,7 @@ int main(int argc, char** argv) {
   std::string header, header_en;   // header_en = 提示英文源(F4 重譯)
   std::vector<Opt> opts;
   int sel = 0;
-  enum { S_MENU, S_BRANCH, S_GAME, S_COMBAT, S_MAP } state = S_MENU;
+  enum { S_MENU, S_BRANCH, S_GAME, S_COMBAT, S_MAP, S_CREATE } state = S_MENU;
   std::string branch_label, branch_label_en;   // branch 英文源(F4 重譯)
 
   // F4 切語系後,用各 widget 暫存的英文源重新 tr() 在地化(選單/branch/事件)。
@@ -400,6 +450,7 @@ int main(int argc, char** argv) {
   MsgViewer msg;                  // 一般事件訊息檢視器(下半部分頁;active 時暫停移動)
   ParaViewer para;                // Read Paragraph 長段落捲動檢視器(全螢幕 overlay;active 時暫停移動)
   CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
+  CharGenUi cg;                   // 新遊戲建角流程(選單 B → S_CREATE;見 CharGenUi)
   // run_event 攔到「Read paragraph N」時,把 N 寫進此處(>=0 表示本次事件是段落觸發);
   // main 偵測後改開 ParaViewer(長段落捲動)而非一般訊息框。-1 = 非段落事件。
   int event_para_n = -1;
@@ -651,6 +702,31 @@ int main(int argc, char** argv) {
     return apply_state(s);
   };
 
+  // ── 建角流程(手冊選單 B → 建立人物)──
+  // 進建角畫面:開新一輪建角(清空已建清單,從第一名命名開始)。
+  auto start_chargen = [&]() {
+    cg.start();
+    state = S_CREATE;
+    std::fprintf(stderr, "chargen: enter S_CREATE (new game / create character)\n");
+  };
+  // 完成建角 → 把已建 records 組成 Party → 進遊戲(波卡城 area 1)。
+  // 至少 1 名才可開始;0 名則回退預設隊伍(避免空隊)。回傳是否成功進遊戲。
+  auto finish_chargen = [&]() -> bool {
+    if (cg.done_records.empty()) {
+      std::fprintf(stderr, "chargen: no characters created; keep default party\n");
+    } else {
+      party = game::Party::from_raw_records(cg.done_records);
+      std::fprintf(stderr, "chargen: party assembled (%zu members):", party.size());
+      for (std::size_t i = 0; i < party.size(); ++i)
+        std::fprintf(stderr, " %s", party.at(i).name.c_str());
+      std::fprintf(stderr, "\n");
+    }
+    cg.close();
+    if (!enter_map(1)) { std::fprintf(stderr, "chargen: enter_map(1) failed\n"); return false; }
+    state = S_GAME;
+    return true;
+  };
+
   if (map_area >= 0) {
     if (!enter_map(map_area)) return 1;
     state = S_GAME;
@@ -742,6 +818,82 @@ int main(int argc, char** argv) {
   if (!load_path.empty()) {
     if (do_load(load_path)) { /* state = S_GAME(已於 apply_state 設) */ }
     else std::fprintf(stderr, "load: falling back to menu\n");
+  }
+
+  // --newgame:啟動即進建角畫面(互動)。
+  if (newgame && menu_mode) start_chargen();
+
+  // --newgame-screen SPEC:停在配點畫面(PhAttr)供截圖。取 SPEC 第一員。
+  if (!newgame_screen.empty()) {
+    auto split = [](const std::string& s, char d) {
+      std::vector<std::string> out; std::string cur;
+      for (char c : s) { if (c == d) { out.push_back(cur); cur.clear(); } else cur.push_back(c); }
+      out.push_back(cur); return out;
+    };
+    cg.start();
+    std::string spec = split(newgame_screen, '/')[0];
+    auto f = split(spec, ':');
+    if (f.size() >= 1) cg.draft.name = f[0];
+    if (f.size() >= 2) cg.draft.gender = (std::uint8_t)(std::atoi(f[1].c_str()) & 1);
+    if (f.size() >= 3) {
+      auto nums = split(f[2], ',');
+      for (int a = 0; a < 4 && a < (int)nums.size(); ++a) {
+        int target = std::atoi(nums[a].c_str()), guard = 0;
+        while (cg.draft.attr[a] < target && cg.draft.inc(a) && guard++ < 100) {}
+        while (cg.draft.attr[a] > target && cg.draft.dec(a) && guard++ < 100) {}
+      }
+    }
+    cg.phase = CharGenUi::PhAttr;
+    state = S_CREATE;
+    std::fprintf(stderr, "newgame-screen: at PhAttr, name='%s' leftover=%d\n",
+                 cg.draft.name.c_str(), cg.draft.leftover());
+  }
+
+  // --newgame-demo SPEC:headless 腳本化建角 + 驗證(確定性,不需互動)。
+  //   SPEC 格式:角色以 '/' 分隔,每員 "name:gender:STR,DEX,INT,SPI"
+  //     gender 0=男 1=女;四數為「目標屬性絕對值」(以 inc/dec 逼近,合法範圍內夾制)。
+  //   範例:--newgame-demo "Aria:1:14,16,10,10/Borin:0:18,9,9,12"
+  //   建完組成 Party + 進遊戲(area 1)→ --dump 可出隊伍面板;summary 印到 stderr。
+  if (!newgame_demo.empty()) {
+    cg.start();
+    auto split = [](const std::string& s, char d) {
+      std::vector<std::string> out; std::string cur;
+      for (char c : s) { if (c == d) { out.push_back(cur); cur.clear(); } else cur.push_back(c); }
+      out.push_back(cur); return out;
+    };
+    for (const std::string& spec : split(newgame_demo, '/')) {
+      if (spec.empty()) continue;
+      if ((int)cg.done_records.size() >= CharGenUi::kMaxParty) break;
+      auto f = split(spec, ':');
+      cg.draft = game::DraftCharacter{};
+      if (f.size() >= 1) cg.draft.name = f[0];
+      if (f.size() >= 2) cg.draft.gender = (std::uint8_t)(std::atoi(f[1].c_str()) & 1);
+      if (f.size() >= 3) {
+        auto nums = split(f[2], ',');
+        for (int a = 0; a < 4 && a < (int)nums.size(); ++a) {
+          int target = std::atoi(nums[a].c_str());
+          // 以 inc/dec 逼近目標(守恆 + 範圍由 DraftCharacter 保證)。
+          int guard = 0;
+          while (cg.draft.attr[a] < target && cg.draft.inc(a) && guard++ < 100) {}
+          while (cg.draft.attr[a] > target && cg.draft.dec(a) && guard++ < 100) {}
+        }
+      }
+      if (!cg.commit_current())
+        std::fprintf(stderr, "newgame-demo: invalid spec '%s' (skipped)\n", spec.c_str());
+    }
+    std::fprintf(stderr, "newgame-demo: created %zu character(s)\n", cg.done_records.size());
+    if (finish_chargen()) {
+      // 驗證 summary(stderr):逐員名/屬性/衍生/effective AV·DV(SDA = DEX/4)。
+      for (std::size_t i = 0; i < party.size(); ++i) {
+        const auto& c = party.at(i);
+        std::fprintf(stderr,
+                     "  [%zu] %-12s g=%u STR=%u DEX=%u INT=%u SPI=%u  HP=%u STUN=%u PWR=%u  "
+                     "eAV=%d eDV=%d (DEX/4=%d) lvl=%u\n",
+                     i, c.name.c_str(), c.gender, c.strength, c.dexterity, c.intel,
+                     c.spirit, c.health, c.stun, c.power, c.effective_av(),
+                     c.effective_dv(), c.dexterity / 4, c.level);
+      }
+    }
   }
 
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
@@ -858,7 +1010,7 @@ int main(int argc, char** argv) {
     if (press) for (std::size_t i = 0; i < opts.size(); ++i)
       if (opts[i].hot == press) {
         sel = (int)i;
-        if (opts[i].hot == 'B') { enter_map(1); state = S_GAME; }  // 開始新遊戲→波卡城
+        if (opts[i].hot == 'B') { start_chargen(); }  // 開始新遊戲 → 建角畫面(手冊 B)
         else { state = S_BRANCH; branch_label = opts[i].label; branch_label_en = opts[i].en; }
       }
   }
@@ -1114,6 +1266,81 @@ int main(int argc, char** argv) {
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
     tl.add(CS_VAL_X, iy, "1-4  E:Stats  Esc", 8, PX_UI);
+  };
+
+  // ── 建角畫面(S_CREATE):全螢幕,像素層底 + 文字層(TTF / i18n)。──
+  // PhName:名字輸入列(游標 _)。PhAttr:四屬性配點 + 衍生值 + 剩餘點數 + 性別 + 已建隊員。
+  auto draw_chargen = [&]() {
+    fb.clear(1);
+    add_title();
+    add_lang_badge();
+    int x = 16, y = 36;
+    // 標題:「建立人物  (已建 N/4)」。
+    char head[80];
+    std::snprintf(head, sizeof head, "%s  (%d/%d)", tr.tr("Create Character").c_str(),
+                  (int)cg.done_records.size(), CharGenUi::kMaxParty);
+    tl.add(x, y, head, 14, PX_BODY); y += 18;
+
+    if (cg.phase == CharGenUi::PhName) {
+      tl.add(x, y, tr.tr("Enter name:"), 7, PX_BODY); y += 16;
+      // 輸入中名字 + 閃爍游標(每幀都畫 _,簡單可見即可)。
+      std::string shown = cg.draft.name + "_";
+      tl.add(x + 8, y, shown, 15, PX_BODY); y += 22;
+      tl.add(x, y, tr.tr("Enter: confirm  Esc: cancel"), 8, PX_UI);
+    } else {  // PhAttr
+      // 角色名 + 性別。
+      char nm[80];
+      std::snprintf(nm, sizeof nm, "%s  [%s]", cg.draft.name.c_str(),
+                    tr.tr(cg.draft.gender ? "Female" : "Male").c_str());
+      tl.add(x, y, nm, 15, PX_BODY); y += 16;
+      // 剩餘點數。
+      char pl[64];
+      std::snprintf(pl, sizeof pl, "%s: %d", tr.tr("Points left").c_str(),
+                    cg.draft.leftover());
+      tl.add(x, y, pl, cg.draft.leftover() > 0 ? 14 : 11, PX_BODY); y += 18;
+      // 四屬性列(游標 > 高亮)。
+      const char* labels[4] = {"Strength", "Dexterity", "Intel", "Spirit"};
+      for (int i = 0; i < 4; ++i) {
+        bool cur = (i == cg.cursor);
+        char row[64];
+        std::snprintf(row, sizeof row, "%s%-10s %2d", cur ? "> " : "  ",
+                      tr.tr(labels[i]).c_str(), (int)cg.draft.attr[i]);
+        tl.add(x, y, row, cur ? 15 : 7, PX_BODY);
+        y += 14;
+      }
+      y += 4;
+      // 衍生值(HP/STUN/PWR/AV/DV)。
+      char dv[96];
+      std::snprintf(dv, sizeof dv, "%s %d   %s %d   %s %d",
+                    tr.tr("HP").c_str(), cg.draft.derived_hp(),
+                    tr.tr("Stun").c_str(), cg.draft.derived_stun(),
+                    tr.tr("PWR").c_str(), cg.draft.derived_power());
+      tl.add(x, y, dv, 11, PX_UI); y += 12;
+      char dv2[64];
+      std::snprintf(dv2, sizeof dv2, "%s %d   %s %d", tr.tr("AV").c_str(),
+                    cg.draft.base_av(), tr.tr("DV").c_str(), cg.draft.base_dv());
+      tl.add(x, y, dv2, 11, PX_UI); y += 18;
+      tl.add(x, y, tr.tr("Up/Down select  +/- adjust  G gender  Enter done"), 8, PX_UI);
+      y += 12;
+      tl.add(x, y, tr.tr("B: begin  N: add member  Esc: back"), 8, PX_UI);
+    }
+
+    // 右側:已建隊員清單(名 + STR/DEX/INT/SPI)。
+    int rx = render::kW - 130, ry = 36;
+    tl.add(rx, ry, tr.tr("Party"), 14, PX_UI); ry += 14;
+    for (std::size_t i = 0; i < cg.done_records.size(); ++i) {
+      // 直接解析名字(高位元終止)供顯示。
+      std::string nm;
+      const auto& rec = cg.done_records[i];
+      for (int k = 0; k < 12; ++k) {
+        char c = (char)(rec[k] & 0x7F);
+        if (c >= 0x20 && c < 0x7F) nm.push_back(c);
+        if ((rec[k] & 0x80) == 0) break;
+      }
+      char line[48];
+      std::snprintf(line, sizeof line, "%d. %s", (int)i + 1, nm.c_str());
+      tl.add(rx, ry, line, 15, PX_UI); ry += 12;
+    }
   };
 
   auto draw_menu = [&]() {
@@ -1565,6 +1792,7 @@ int main(int argc, char** argv) {
     tl.clear();                                      // 每幀重建文字層
     if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面
     if (state == S_MAP) { draw_automap(); return; }       // 俯視平面地圖(`?`)
+    if (state == S_CREATE) { draw_chargen(); return; }    // 建角畫面(新遊戲 / 建立人物)
     if (state == S_GAME) {
       if (fp_mode) draw_game_fp(); else draw_game();
       if (msg.active) draw_msg_overlay();            // 一般事件訊息框疊在地圖/viewport 上層
@@ -1666,6 +1894,12 @@ int main(int argc, char** argv) {
     render_now();
     vid.present(fb);
     render::Input in = vid.poll();
+    // 建角命名階段:'q' 是合法名字字元(如 "Quinn"),不應觸發離開。
+    //   poll 把 Q 同時設 quit 與 text_char='q'/'Q' → 命名時改當文字輸入,吃掉 quit。
+    if (in.quit && state == S_CREATE && cg.active && cg.phase == CharGenUi::PhName &&
+        in.text_char) {
+      in.quit = false;
+    }
     if (in.quit) break;
     // F4:即時循環切換語系 → 重載字串/段落書 → 重譯所有 widget。
     // 因每幀重繪(render_now),畫面立即變為新語言;事件文字重跑該關腳本重譯。
@@ -1682,6 +1916,48 @@ int main(int argc, char** argv) {
         if (msg.active) msg.reflow(tl.wrap(event_msg, MB_TEXT_W, PX_BODY));  // 當前頁就地重排
       }
       continue;                                          // 本幀不再處理其他輸入
+    }
+    // ── 建角畫面(S_CREATE):接管全部輸入。F4(語系)已於上方處理。──
+    //   PhName:文字輸入名字;Enter→PhAttr;Esc→取消回選單。
+    //   PhAttr:↑↓ 選屬性;+/− 或 ←→ 調整;G 切性別;Enter 完成本員;
+    //           N 新增下一名;B 開始遊戲(至少 1 名);Esc 回命名。
+    if (state == S_CREATE && cg.active) {
+      if (cg.phase == CharGenUi::PhName) {
+        if (in.back) {                                   // Esc:取消建角 → 回選單
+          cg.close();
+          if (menu_mode) state = S_MENU; else break;
+        } else if (in.backspace) {
+          if (!cg.draft.name.empty()) cg.draft.name.pop_back();
+        } else if (in.text_char && (int)cg.draft.name.size() < game::chargen::kNameMaxLen) {
+          cg.draft.name.push_back((char)in.text_char);
+        } else if (in.select) {                          // Enter:名字確認 → 配點
+          if (cg.draft.name_valid()) cg.phase = CharGenUi::PhAttr;
+        }
+      } else {  // PhAttr
+        if (in.back) { cg.phase = CharGenUi::PhName; }    // Esc:回命名
+        else if (in.up) cg.cursor = (cg.cursor + 3) % 4;
+        else if (in.down) cg.cursor = (cg.cursor + 1) % 4;
+        else if (in.right || in.key == '=')              // → 或 +/= 增點
+          cg.draft.inc(cg.cursor);
+        else if (in.left || in.key == '-')               // ← 或 -/_ 退點
+          cg.draft.dec(cg.cursor);
+        else if (in.key == 'G') cg.draft.gender ^= 1;    // 切性別(男/女)
+        else if (in.key == 'N' || in.select) {           // 完成本員 → 新增下一名(或滿員提示)
+          if (cg.commit_current()) {
+            std::fprintf(stderr, "chargen: committed '%s' (party now %zu)\n",
+                         cg.draft.name.c_str(), cg.done_records.size());
+            if (!cg.begin_next())                        // 滿 4 名 → 直接開始遊戲
+              finish_chargen();
+          }
+        } else if (in.key == 'B') {                      // B:用目前已建隊員開始遊戲
+          if (!cg.done_records.empty() || cg.draft.name_valid()) {
+            if (cg.draft.name_valid()) cg.commit_current();  // 把當前未提交的也納入
+            finish_chargen();
+          }
+        }
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;                                          // 建角期間不處理其他輸入
     }
     // 角色屬性表啟用時:接管輸入(切角色/關閉),暫停移動。
     //   ↑↓ 或數字 1-4 切角色;Esc 關閉。F4(語系)已於上方處理。
@@ -1823,7 +2099,7 @@ int main(int argc, char** argv) {
         if (trig >= 0) {
           sel = trig;
           std::fprintf(stderr, "selected [%c] %s\n", opts[trig].hot, opts[trig].label.c_str());
-          if (opts[trig].hot == 'B') { enter_map(1); state = S_GAME; }  // 開始新遊戲→波卡城(area 1)
+          if (opts[trig].hot == 'B') { start_chargen(); }  // 開始新遊戲 → 建角畫面(手冊 B)
           else if (opts[trig].hot == 'C') {           // 繼續舊遊戲(手冊 C):有存檔→讀檔進遊戲;無→提示
             if (do_load(save_path)) { /* state=S_GAME(apply_state 已設) */ }
             else {
