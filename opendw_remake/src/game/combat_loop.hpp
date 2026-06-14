@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "game/combat.hpp"
+#include "game/spells.hpp"  // CastResult / ControlKind(cast_control 整合控制法術)
 
 namespace dw::game {
 
@@ -41,6 +42,10 @@ struct CombatEvent {
   int damage = 0;
   bool stunned = false;   // 本次攻擊造成暈眩(大傷害;DOS「stunning him」)— 見 kStunThreshold
   bool target_died = false;  // 目標本次被擊倒(STUN≤0)
+  // ── 控制類事件(remake 設計)──────────────────────────────────────────
+  bool dazed_skip = false;   // attacker 因被眩目/迷失/困住而本回合跳過行動(target==attacker)
+  bool target_fled = false;  // 控制施法使 target 逃離戰鬥(cast_control,Cowardice/Scare)
+  bool dazed_applied = false;// 控制施法使 target 進入眩目(cast_control,Dazzle 等)
 };
 
 // 戰鬥結果。
@@ -68,20 +73,49 @@ class CombatLoop {
   // 標記逃跑離場(UI 層 R 鍵);outcome → Fled。不發 XP。
   void flee();
 
+  // 施放控制類法術(整合進迴圈):caster 對「對方陣營」target_index 結算控制效果。
+  //   • Daze(眩目/閃光/火燄柱/圍困/龍捲風/荊棘):目標 N 回合跳過行動(combat_loop 輪到時跳過)。
+  //   • Flee(膽怯/驚嚇):目標逃離戰鬥(in_combat=false),不再被瞄準、不計入存活方;可能立即定勝負。
+  //   • Disarm:目標傷害降為徒手骰。Dispel(幻影現形):無戰鬥數值意義(N/A)。
+  // 效果經 cast_spell 結算(grounded 手冊),並追加 CombatEvent 供 UI 戰報。
+  // 回傳 CastResult(power_spent / control / handled);呼叫端負責把 power -= power_spent。
+  // group/all 目標由呼叫端對每隻怪各呼叫一次。Power 消耗照舊(cast_spell)。
+  CastResult cast_control(std::uint8_t spell_id, int caster_power, int caster_str,
+                          bool caster_is_player, int target_index);
+
+  // 高階施法整合(UI 用):caster(預設隊伍第 0 名)施放任意法術,依法術的 SpellTarget
+  // 自動鋪到正確對象並全部結算:
+  //   • 傷害/控制 → 敵方(OneEnemy=首個參戰怪;Group/AllEnemy=所有參戰怪逐隻)。
+  //   • 治療/buff → 我方(OneAlly=施法者;AllAllies=全體參戰隊員)。
+  //   • 工具/召喚(handled=false)→ 只扣 Power(維持誠實 TODO)。
+  // 每個受影響對象套效果並追加 CombatEvent;最後 recompute_outcome(控制清場可提早結束)。
+  // 回傳「對主要對象」的 CastResult(power_spent 為單次施放消耗,呼叫端據此扣 Power)。
+  // 確定性:RNG 副作用順序 = 依對象 index 升序逐一 cast_spell。
+  CastResult cast(std::uint8_t spell_id, int caster_power, int caster_str,
+                  bool caster_is_player = true);
+
   CombatOutcome outcome() const { return outcome_; }
   bool over() const { return outcome_ != CombatOutcome::Ongoing; }
   int round_count() const { return round_; }
 
   // 勝利時每員應得 XP(=kXpPerVictory);非勝利回 0。
+  // XP 規則(grounded DOS docs/43:「Each member gets 80 experience points for combat.」):
+  //   清場(全怪死或逃)即 Victory → 固定每員 +80,**不按擊殺數計**。故「以膽怯/驚嚇把怪
+  //   逐出而清場」與「全部打死」一樣給 80(原版為扁平制,逃走怪不額外加也不扣)。**有據(扁平)**。
   int xp_award() const { return outcome_ == CombatOutcome::Victory ? kXpPerVictory : 0; }
 
   const std::vector<Combatant>& party() const { return party_; }
   const std::vector<Combatant>& monsters() const { return monsters_; }
   const std::vector<CombatEvent>& events() const { return events_; }
 
-  // 存活計數(UI / 群描述用)。
+  // 存活計數(UI / 群描述用)。alive 含「已逃離但未死」者(仍在 monsters_ 裡)。
   int monsters_alive() const;
   int party_alive() const;
+  // 仍參戰計數(存活且未逃離)。勝負判定用此(全怪死或逃 → 勝)。
+  int monsters_in_combat() const;
+  int party_in_combat() const;
+  // 已逃離的怪數(膽怯/驚嚇逐出);UI / XP 規則參考。
+  int monsters_fled() const;
 
  private:
   // 行動順序:全體單位的 (side, index) 對,依 DEX→AV→index 降序一次性排定。

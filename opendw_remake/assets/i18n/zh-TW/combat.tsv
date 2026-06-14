@@ -21,6 +21,13 @@ The party flees!	隊伍逃離了！
 , killing him	，將其擊倒
 # 怪群描述（%d 數量 / %s 怪名 / %d 存活）
 %d %s (%d left)	%d 隻 %s（存活 %d）
+# 控制類法術戰報（grounded 手冊 docs/33；持續/逃離為 remake 設計）
+Not enough power	法力不足
+%s is disoriented!	%s 迷失了方向！
+%s flees in terror!	%s 嚇得逃跑了！
+%s is disarmed!	%s 被解除了武裝！
+%s is too disoriented to act!	%s 太過迷失，無法行動！
+%s casts %s	%s 施放了 %s
 # 勝負結果
 Victory!	勝利！
 The party has fallen.	全隊昏倒。

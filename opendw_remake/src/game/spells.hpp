@@ -53,6 +53,17 @@ enum class SpellEffect : std::uint8_t {
   Utility,      // 工具類(光源/召喚/感測/補給…)— 戰鬥外或未結算,TODO
 };
 
+// 控制類效果的具體種類(decides combat_loop 如何套用)。
+// 全部 grounded 手冊 docs/33「效果 Effect」欄位描述;確切持續回合數手冊未給,
+// 用合理值並標「remake 設計」(見 spells.cpp kControlDazzleTurns)。
+enum class ControlKind : std::uint8_t {
+  None,      // 非控制類
+  Daze,      // 使目標數回合無法行動(眩目/閃光/火燄柱/圍困/龍捲風/荊棘:迷失/停止前進/推開/障礙)
+  Flee,      // 使目標逃離戰鬥(膽怯/驚嚇:使敵人逃跑)
+  Disarm,    // 解除目標武裝(傷害降為徒手骰;手冊「解除武裝」)
+  Dispel,    // 驅散幻影(幻影現形)— 無戰鬥數值意義 → combat_loop 視為 no-op(N/A)
+};
+
 // 目標範圍。
 enum class SpellTarget : std::uint8_t {
   OneEnemy,    // 一個敵人
@@ -76,6 +87,7 @@ struct SpellDef {
   int amount_min;            // 效果值下界(傷害/治療點數;buff 為固定加值放 amount_min)
   int amount_max;            // 效果值上界(buff 固定加值時 == amount_min)
   int power_mult;            // PowerScaled 倍率上界(火燄之光=6 → STR×rng[1..6]);其餘 0
+  ControlKind control;       // Control 效果的具體種類(非控制類為 ControlKind::None)
   const char* manual_note;   // 手冊頁/原文摘要(grounding 追溯)
 };
 
@@ -101,9 +113,17 @@ struct CastResult {
   int amount = 0;             // 傷害/治療點數(或 buff 加值);控制/工具類為 0
   int target_hp_after = 0;    // 傷害/治療後目標 STUN(單體)
   bool target_died = false;   // 傷害致死
-  bool handled = false;       // 效果是否已數值結算(false = 控制/工具類 TODO,只扣 Power)
+  bool handled = false;       // 效果是否已數值結算(false = 工具/召喚類仍 TODO,只扣 Power)
+  ControlKind control = ControlKind::None;  // 已套用的控制種類(Daze/Flee/Disarm/Dispel);非控制為 None
+  int dazzle_turns = 0;       // Daze:套用的跳過回合數(remake 設計值);其餘 0
+  bool target_fled = false;   // Flee:目標本次被逐出戰鬥
   std::string note;           // 簡短說明(英文鍵或 TODO 標記)
 };
+
+// 控制類:每次施放使目標暈眩(Daze)幾回合(remake 設計;手冊未給確切持續)。
+// 取 2:足以讓隊伍把握 1 個完整回合再攻擊(對齊手冊「最好能有人把握時機攻擊敵人」),
+// 又不致一發定生死。**非 oracle 真值**。
+inline constexpr int kControlDazzleTurns = 2;
 
 // 施法:caster 對 target 施放 spell_id。
 //   • caster_power:傳入施法者當前 Power(by-value 讀;扣除量回填 result.power_spent,
@@ -112,7 +132,9 @@ struct CastResult {
 //   • target:傷害/治療作用對象(單體);group/all 由呼叫端對多目標各呼叫一次。
 //   • rng:CombatRng(確定性,與物理攻擊共用同一序列)。
 // 傷害/治療作用於 target.hp(=STUN),與物理攻擊一致(SDA:HP=Stun)。
-// 控制/工具類目前只扣 Power 並標 handled=false(TODO),不改數值。
+// 控制類(Daze/Flee/Disarm)直接作用於 target 的控制狀態(dazzle_turns/fled/dmg_*),
+//   handled=true 並回填 result.control;Dispel(幻影現形)無戰鬥數值意義 → handled=true、
+//   control=Dispel、無副作用(N/A)。工具/召喚類仍 handled=false(只扣 Power,TODO)。
 CastResult cast_spell(std::uint8_t spell_id, int caster_power, int caster_str,
                       Combatant& target, CombatRng& rng);
 

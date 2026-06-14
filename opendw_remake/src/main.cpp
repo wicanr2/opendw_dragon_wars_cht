@@ -1222,6 +1222,23 @@ int main(int argc, char** argv) {
       std::string atk = tr.tr(e.attacker);
       std::string tgt = tr.tr(e.target);
       std::string line;
+      // 控制事件(被眩目跳過 / 控制施法套用)— i18n 專屬訊息。
+      if (e.dazed_skip) {
+        std::snprintf(buf, sizeof buf, tr.tr("%s is too disoriented to act!").c_str(),
+                      atk.c_str());
+        enc.log.emplace_back(buf);
+        continue;
+      }
+      if (e.target_fled) {
+        std::snprintf(buf, sizeof buf, tr.tr("%s flees in terror!").c_str(), tgt.c_str());
+        enc.log.emplace_back(buf);
+        continue;
+      }
+      if (e.dazed_applied) {
+        std::snprintf(buf, sizeof buf, tr.tr("%s is disoriented!").c_str(), tgt.c_str());
+        enc.log.emplace_back(buf);
+        continue;
+      }
       if (e.hit) {
         // 模板鍵「combat.hit.fmt」帶 3 槽:%1$=攻擊者 %2$=目標 %3$=傷害值。
         //   zh-TW:「%s 攻擊 %s,命中 %d 點傷害」;en passthrough:「%s attacks %s for %d damage」。
@@ -1255,6 +1272,62 @@ int main(int argc, char** argv) {
       enc.defeat = true; enc.over = true;
       enc.log.emplace_back(tr.tr("The party has fallen."));
     }
+    while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
+  };
+  // 群戰施法回合:隊伍第 0 名施放 spell_id(走 CombatLoop::cast,依 SpellTarget 自動鋪對象)。
+  //   傷害/治療/buff/控制全部結算(grounded 手冊;控制持續/逃離為 remake 設計)。
+  //   施法後若戰鬥未結束 → 推進一個怪群回合(怪反擊)。Power 照扣。
+  auto group_cast_round = [&](std::uint8_t spell_id) {
+    if (!enc.group_loop || enc.over) return;
+    const game::SpellDef* sp = game::find_spell(spell_id);
+    if (!sp) return;
+    game::CastResult cr = enc.group_loop->cast(spell_id, enc.hero_power, enc.hero_str,
+                                               /*caster_is_player=*/true);
+    if (!cr.ok) { enc.log.emplace_back(tr.tr("Not enough power")); return; }
+    enc.hero_power -= cr.power_spent;  // 扣法力(寫回 encounter 狀態)
+    // 施法戰報(英文鍵化;tr 在地化)。
+    char buf[192];
+    std::string caster = party.size() > 0 ? tr.tr(party.at(0).name) : tr.tr("Hero");
+    if (sp->effect == game::SpellEffect::Control) {
+      // 控制類 i18n:Daze→「{怪} 迷失了」;Flee→「{怪} 嚇得逃跑」;其餘(Disarm/Dispel)→泛用。
+      const char* key = "%s casts %s";  // 預設
+      if (cr.control == game::ControlKind::Daze) key = "%s is disoriented!";
+      else if (cr.control == game::ControlKind::Flee) key = "%s flees in terror!";
+      else if (cr.control == game::ControlKind::Disarm) key = "%s is disarmed!";
+      if (cr.control == game::ControlKind::Daze || cr.control == game::ControlKind::Flee ||
+          cr.control == game::ControlKind::Disarm) {
+        std::snprintf(buf, sizeof buf, tr.tr(key).c_str(), tr.tr(enc.mon_name_en).c_str());
+      } else {  // Dispel(幻影現形)等:泛用「{施法者} 施放 {法術}」。
+        std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(),
+                      caster.c_str(), tr.tr(sp->name_key).c_str());
+      }
+    } else if (sp->effect == game::SpellEffect::Heal) {
+      std::snprintf(buf, sizeof buf, "%s casts %s heals %d", caster.c_str(),
+                    sp->name_key, cr.amount);
+    } else if (cr.handled && cr.amount > 0) {  // 傷害類
+      std::snprintf(buf, sizeof buf, "%s casts %s on %s %d damage", caster.c_str(),
+                    sp->name_key, tr.tr(enc.mon_name_en).c_str(), cr.amount);
+    } else if (cr.handled) {  // buff/debuff
+      std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(), caster.c_str(),
+                    tr.tr(sp->name_key).c_str());
+    } else {  // 工具/召喚(仍 TODO)
+      std::snprintf(buf, sizeof buf, "%s casts %s TODO", caster.c_str(), sp->name_key);
+    }
+    enc.log.emplace_back(buf);
+    enc.shown_events = enc.group_loop->events().size();  // cast 已自行追加事件,跳過免重複翻譯
+    // 控制清場 / 致死可能提早結束。
+    using O = game::CombatOutcome;
+    O o = enc.group_loop->outcome();
+    if (o == O::Victory) {
+      enc.victory = true; enc.over = true;
+      enc.log.emplace_back(tr.tr("Each member gets 80 experience points for combat."));
+      if (!enc.xp_awarded) { party.award_xp(game::kXpPerVictory); enc.xp_awarded = true; }
+    } else {
+      group_round();  // 戰鬥續行 → 怪反擊一回合(append_group_events 接續)
+    }
+    // 施法後刷新可施法清單(Power 改變)。
+    if (party.size() > 0)
+      enc.spellbook = game::castable_spells(party.at(0), enc.hero_power);
     while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
   };
   // 一個攻擊回合(隊伍先攻 → 怪反擊);把訊息(英文鍵)推進 enc.log。
@@ -1545,11 +1618,14 @@ int main(int argc, char** argv) {
       }
       if (sp && (known || cast_force)) {
         int pw_before = enc.hero_power;
-        cast_round(sid);
+        if (enc.group) group_cast_round(sid); else cast_round(sid);
         std::fprintf(stderr,
-                     "cast: id=0x%02X '%s' pw %d->%d mon_hp=%d hero_hp=%d over=%d\n",
+                     "cast: id=0x%02X '%s' pw %d->%d mon_hp=%d hero_hp=%d over=%d "
+                     "malive=%d mfled=%d\n",
                      sid, sp->name_key, pw_before, enc.hero_power, enc.mon.hp,
-                     enc.hero.hp, enc.over);
+                     enc.hero.hp, enc.over,
+                     enc.group_loop ? enc.group_loop->monsters_in_combat() : -1,
+                     enc.group_loop ? enc.group_loop->monsters_fled() : -1);
       } else {
         std::fprintf(stderr, "cast: id=0x%02X not castable (known=%d sp=%p)\n",
                      sid, (int)known, (const void*)sp);
@@ -1656,15 +1732,17 @@ int main(int argc, char** argv) {
           int n = in.key - '1';
           if (n < (int)enc.spellbook.size()) {
             std::uint8_t sid = enc.spellbook[n];
-            enc.casting = false; cast_round(sid);
+            enc.casting = false;
+            if (enc.group) group_cast_round(sid); else cast_round(sid);
           }
         } else if (in.select) {                           // Enter:施放游標所選
           if (enc.cast_sel < (int)enc.spellbook.size()) {
             std::uint8_t sid = enc.spellbook[enc.cast_sel];
-            enc.casting = false; cast_round(sid);
+            enc.casting = false;
+            if (enc.group) group_cast_round(sid); else cast_round(sid);
           }
         }
-      } else if (in.key == 'C' && !enc.group) {            // C:開施法選單(單怪 demo;群戰暫不支援)
+      } else if (in.key == 'C') {                          // C:開施法選單(群戰 + 單怪 demo)
         if (party.size() > 0)
           enc.spellbook = game::castable_spells(party.at(0), enc.hero_power);
         enc.cast_sel = 0; enc.casting = true;

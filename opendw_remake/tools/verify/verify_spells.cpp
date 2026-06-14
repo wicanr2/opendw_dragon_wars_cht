@@ -219,12 +219,54 @@ int main(int argc, char** argv) {
     check(enemy.av == 3 && enemy.dv == 3, "Insect Plague -2 AV/DV applied");
   }
   {
-    // 控制/工具類:只扣 Power,handled=false(TODO 誠實標示)。
+    // 控制類(本次實作;grounded 手冊,非 oracle):效果作用於控制狀態,不改 STUN。
+    // 解除武裝 0x01:扣 Power 4、handled=true、control=Disarm、傷害降為徒手骰、HP 不變。
+    CombatRng rng(0x1234, 0);
+    Combatant t; t.hp = t.max_hp = 50; t.dmg_dice = 3; t.dmg_sides = 6; t.dmg_bonus = 5;
+    CastResult r = cast_spell(0x01, 10, 20, t, rng);  // 解除武裝(控制)
+    check(r.ok && r.power_spent == 4 && r.handled &&
+              r.control == ControlKind::Disarm && t.hp == 50 &&
+              t.dmg_dice == kUnarmedDice && t.dmg_sides == kUnarmedSides &&
+              t.dmg_bonus == 0,
+          "Disarm spends Power 4, handled, weapon→unarmed dice, no HP change");
+  }
+  {
+    // 工具/召喚類仍未結算:只扣 Power、handled=false(誠實標 TODO)。
     CombatRng rng(0x1234, 0);
     Combatant t; t.hp = t.max_hp = 50;
-    CastResult r = cast_spell(0x01, 10, 20, t, rng);  // 解除武裝(控制)
-    check(r.ok && r.power_spent == 4 && !r.handled && t.hp == 50,
-          "Disarm (control) spends Power, not resolved (TODO), no HP change");
+    CastResult r = cast_spell(0x05, 10, 20, t, rng);  // 法師魔光(工具)
+    check(r.ok && r.power_spent == 1 && !r.handled && t.hp == 50,
+          "Mage Light (utility) spends Power, not resolved (TODO), no HP change");
+  }
+  {
+    // 控制:眩目 Dazzle 0x0B → 目標 dazzle_turns += kControlDazzleTurns、control=Daze、HP 不變。
+    CombatRng rng(0x1234, 0);
+    Combatant t; t.hp = t.max_hp = 50;
+    CastResult r = cast_spell(0x0B, 10, 20, t, rng);
+    check(r.ok && r.power_spent == 3 && r.handled &&
+              r.control == ControlKind::Daze && r.dazzle_turns == kControlDazzleTurns &&
+              t.dazzle_turns == kControlDazzleTurns && t.dazzled() && t.hp == 50,
+          "Dazzle applies daze turns, control=Daze, no HP change");
+  }
+  {
+    // 控制:膽怯 Cowardice 0x10 → 目標 fled、control=Flee、不再參戰、HP 不變。
+    CombatRng rng(0x1234, 0);
+    Combatant t; t.is_player = false; t.hp = t.max_hp = 50;
+    CastResult r = cast_spell(0x10, 20, 20, t, rng);
+    check(r.ok && r.power_spent == 8 && r.handled &&
+              r.control == ControlKind::Flee && r.target_fled && t.fled &&
+              !t.in_combat() && t.alive() && t.hp == 50,
+          "Cowardice makes target flee (out of combat, still alive), no HP change");
+  }
+  {
+    // 控制:幻影現形 Reveal Glamour 0x0D → Dispel,無戰鬥數值意義(N/A),handled=true 無副作用。
+    CombatRng rng(0x1234, 0);
+    Combatant t; t.hp = t.max_hp = 50; t.av = 5;
+    CastResult r = cast_spell(0x0D, 10, 20, t, rng);
+    check(r.ok && r.power_spent == 2 && r.handled &&
+              r.control == ControlKind::Dispel && t.hp == 50 && t.av == 5 &&
+              !t.dazzled() && !t.fled,
+          "Reveal Glamour = Dispel (N/A in combat), handled no-op");
   }
 
   // ── E. 確定性 ─────────────────────────────────────────────────────────
