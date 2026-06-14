@@ -1158,6 +1158,7 @@ void Interpreter::op89_wait_event() {
 
   const auto& base = s_.script;          // running_script bytes(= cpu.base_pc)
   std::size_t di = s_.pc;                // 表起點(flags 之後)= word_2AA2
+  bool numeric_match = false;            // 命中的是「數字鍵(type 0x01)」筆
 
   // 掃表(對照 wait_for_event @0x29DD 迴圈)。
   while (di < base.size()) {
@@ -1169,7 +1170,12 @@ void Interpreter::op89_wait_event() {
       s_.halted = true;
       return;
     }
-    if (al == 0x01) {                    // 數字鍵(隊員選擇);本切片戰鬥選單未用 → 略過該筆
+    if (al == 0x01) {                    // 數字鍵(隊員/目標選擇,對照 wait_for_event 0x29EF)。
+      // 按鍵為「數字 | 0x80」(0xB1='1'…);index = key - 0xB1;< gs[0x1F](有效參戰者)→ 命中。
+      if (key >= 0xB1) {
+        std::uint8_t idx = (std::uint8_t)(key - 0xB1);
+        if (idx < s_.game_state[0x1F]) { numeric_match = true; break; }
+      }
       di += 3;
       continue;
     }
@@ -1196,6 +1202,10 @@ void Interpreter::op89_wait_event() {
   std::uint16_t bx = (a + 1 < base.size())
                          ? (std::uint16_t)(base[a] | (base[a + 1] << 8))
                          : 0;
+  // handle_key_event:若 entry 型別 al==1(數字鍵)→ 設 gs[6] = key − 0xB1(選定隊員/目標)。
+  if (numeric_match) {
+    s_.game_state[6] = (std::uint8_t)(key - 0xB1);
+  }
   // word_3AE2 = key(對照 wait_event 結尾 word_3AE2 = ax & 0xFF)。
   s_.r2 = (std::uint16_t)(key & 0xFF);
   s_.ax = (std::uint16_t)(key & 0xFF);

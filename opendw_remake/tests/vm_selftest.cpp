@@ -266,6 +266,25 @@ int main() {
           (s.r2 & 0xFF)==9 && (s.r4 & 0xFF)==1 && s.halted);
   }
 
+  // CC: op_89 數字鍵(type 0x01)目標/隊員選擇(對照 wait_for_event 0x29EF)。
+  //   headless_key='1'(0xB1)→ index 0 < gs[0x1F] → 命中該筆 → 跳 addr、設 gs[6]=0。
+  //   表:[0x01][lo][hi](type 0x01 數字筆)→ addr 0x0008(放 0x5A halt)。
+  {
+    VmState s; s.headless_key=0xB1; s.game_state[0x1F]=4; s.game_state[6]=9;
+    //  0:89 1:00 2:80(flags) 3:01 4:08 5:00(numeric entry) 6:FF 7:00 8:5A
+    s.script={0x89,0x00,0x80, 0x01,0x08,0x00, 0xFF,0x00, 0x5A};
+    Interpreter(s).run();
+    check("op89 數字鍵 '1' → 跳 0x08、gs[6]==0、halt",
+          s.game_state[6]==0 && s.halted);
+  }
+  // DD: op_89 數字鍵 '3'(0xB3)→ index 2 < 4 → gs[6]=2。
+  {
+    VmState s; s.headless_key=0xB3; s.game_state[0x1F]=4; s.game_state[6]=9;
+    s.script={0x89,0x00,0x80, 0x01,0x08,0x00, 0xFF,0x00, 0x5A};
+    Interpreter(s).run();
+    check("op89 數字鍵 '3' → gs[6]==2", s.game_state[6]==2 && s.halted);
+  }
+
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);
   return fails ? 1 : 0;
 }
