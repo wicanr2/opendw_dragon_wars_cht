@@ -167,6 +167,16 @@ CharacterRecord Party::parse_record(const std::uint8_t* p) {
   return r;
 }
 
+void Party::award_xp(int per_member) {
+  if (per_member <= 0) return;
+  for (auto& m : members_) {
+    int v = static_cast<int>(m.xp) + per_member;
+    if (v > 255) v = 255;  // [80] 為 1 byte;飽和夾頂(存檔 round-trip 一致)
+    m.xp = static_cast<std::uint8_t>(v);
+    m.raw[80] = m.xp;      // 同步原始 record(raw_records() 供存檔)
+  }
+}
+
 Party Party::from_records(const std::vector<std::uint8_t>& bytes) {
   Party party;
   std::size_t n = bytes.size() / 512;

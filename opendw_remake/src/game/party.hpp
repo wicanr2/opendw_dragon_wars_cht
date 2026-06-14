@@ -129,6 +129,10 @@ public:
   std::size_t size() const { return members_.size(); }
   const CharacterRecord& at(std::size_t i) const { return members_.at(i); }
 
+  // 戰鬥勝利後給每名隊員加 XP(DOS 實機:清怪每員 +80,見 combat_loop.hpp)。
+  // 同步更新 CharacterRecord.xp 與 raw[80](1 byte,飽和到 255 → 存檔 round-trip 一致)。
+  void award_xp(int per_member);
+
   // status bitfield → 英文狀態鍵(供 i18n tr() 在地化);正常回 "normal"。
   // 檢查順序與 opendw 一致(dead > stunned > poisoned > chained)。
   static const char* status_key(std::uint8_t status);

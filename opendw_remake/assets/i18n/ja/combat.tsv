@@ -9,6 +9,17 @@ Advance	前進
 Attack	攻撃
 F:Fight  R:Run	F:戦う  R:逃げる
 The party flees!	パーティは逃げ出した！
+# 戦闘ログのテンプレート（%s/%s/%d の順序固定：攻撃者/対象/ダメージ、入れ替え禁止）
+%s attacks %s for %d damage	%s は %s に %d ポイントのダメージを与えた
+%s attacks %s and misses	%s は %s への攻撃を外した
+, stunning him	、気絶させた
+, killing him	、倒した
+%d %s (%d left)	%d 体の %s（残り %d）
+Victory!	勝利！
+The party has fallen.	パーティは全滅した。
+Each member gets 80 experience points for combat.	各メンバーは戦闘経験値を80点獲得した。
+Each member +80 XP	各メンバー +80 XP
+[ continue ]	［続行］
 Robber	盗賊
 Wild Dog	野犬
 Spider	クモ

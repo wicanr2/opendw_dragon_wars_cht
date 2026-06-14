@@ -49,7 +49,7 @@ target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
 # --- game 模組(隊伍角色資料 + 右側狀態面板渲染 + 戰鬥結算)---
-add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/spells.cpp src/game/seen_map.cpp)
+add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/combat_loop.cpp src/game/spells.cpp src/game/seen_map.cpp)
 target_include_directories(dwr_game PUBLIC src)
 target_link_libraries(dwr_game PUBLIC dwr_render)
 
@@ -164,6 +164,14 @@ add_executable(verify_combat tools/verify/verify_combat.cpp)
 target_link_libraries(verify_combat PRIVATE dwr_game)
 add_test(NAME verify_combat
          COMMAND verify_combat ${CMAKE_SOURCE_DIR}/assets/bundle)
+
+# tools/verify:完整戰鬥迴圈(4 人 vs 怪群、多回合、勝負、XP)確定性 PASS/FAIL。
+#   驗:同 seed 兩次跑 → 事件流/HP/XP byte-identical;勝利每員 +80 XP;勝負判定;
+#   公式仍走 resolve_attack(原版真值,combat_loop 不重算)。
+add_executable(verify_combat_loop tools/verify/verify_combat_loop.cpp)
+target_link_libraries(verify_combat_loop PRIVATE dwr_game)
+add_test(NAME verify_combat_loop
+         COMMAND verify_combat_loop ${CMAKE_SOURCE_DIR}/assets/bundle)
 
 # tools/verify:法術系統確定性 PASS/FAIL(法術表筆數/效果值對拍手冊 + 施法扣 Power +
 #   傷害/治療在手冊範圍 + 確定性)。grounded in docs/33 手冊;非 oracle(見 spells.hpp 檔頭)。
