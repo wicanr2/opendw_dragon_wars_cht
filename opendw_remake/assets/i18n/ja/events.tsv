@@ -1,0 +1,17 @@
+# english	japanese — 事件格文字（イベントテキスト）日本語。
+# 出典: X68000 日本語版《ドラゴンウォーズ》(Starcraft/Hudson, 1990) の SPECIAL ファイルより抽出（Shift-JIS, 非圧縮）。
+# 対応方法: パーガトリー序盤イベント列の位置 + 意味で英語キーへ直接対位（信頼度: 高）。詳細は docs/46_PC98_JA_EXTRACTION.md。
+# 注意: 一部キーは末尾空白を含む（VM emit 整合のため）。手動 trim しないこと。
+Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.	地獄から来た怪物ナムターの命令により、君たちは財産も富も全てはぎ取られ、裸で無防備のままパーガトリーの貧民街に投げ込まれた。
+The stone walls of Purgatory stand as a monument to shattered lives and broken dreams.	パーガトリーの石壁が、損なわれた一生と破壊された夢の記念碑のように立ちはだかる。
+You smell the sea. This section of wall must border on the harbor.	海の臭いがする。この辺りの壁は港に隣接しているにちがいない。
+A breeze crawls in from the harbor, bearing a sickly stench.	港の方から、はき気を催すような匂いの風が吹いてくる。
+A great chorus of voices issues up from the west.	西から歓声がどっとわき上がった。
+You hear the lusty shouts of a large crowd coming from the east.	東から群衆の元気な叫び声が聞こえる。
+You hear the bloodthirsty howls of a great crowd from behind the wall to the north.	北側の壁の向こうから、群衆の血に飢えたわめき声が聞こえる。
+The sea is cold and rough. Only a good swimmer has a chance out here.	海は冷たく荒れている。泳ぎの達者な者だけがここから逃れるチャンスがある。
+There's a gap in the city wall. Far below, you see the water of the harbor through which you entered this dreaded isle. 	市の壁に割れ目がある。はるか下方に、君たちがこの恐ろしい島に入るとき通った港の水面が見える。
+Is freedom from Purgatory worth a long dive into what might be shallow water, then a desperate swim through the harbor?	パーガトリーからの脱出は、ひょっとしたら浅瀬かもしれない海に高い所から飛び込み、それから死にもの狂いで港を泳ぎ抜くだけの価値があることだろうか。
+Ahead lay odd waters.	前方に何か変わった水たまりがある。
+The crowd grows wild with the hope of more victims.	群衆はもっと犠牲者が見れると興奮している。
+You feel strangely energized!	この水たまりに入ると、不思議にも魔力がみなぎって来るのを感じた！
