@@ -1,0 +1,83 @@
+# 法術名 + 施法畫面訊息 — 譯名取自臺灣中文版手冊(docs/33 附錄二咒語說明)。
+# id 對齊 fraterrisus 法術索引(docs/44 §3);效果值見 src/game/spells.cpp(grounded 手冊)。
+# english	chinese
+# ── 施法 UI 訊息 ──
+Cast	施法
+C:Cast	C:施法
+Choose spell:	選擇法術：
+No spells	無可用法術
+Not enough power	法力不足
+casts	施放
+on	對
+heals	治療
+for	共
+points	點
+takes	受到
+damage	傷害
+TODO	待實作
+# ── A. 初級法術 Low Magic ──
+Mage Fire	魔火
+Disarm	解除武裝
+Charm	吸引力
+Luck	祈福術
+Lesser Heal	輕微醫療
+Mage Light	法師魔光
+# ── B. 高級法術 High Magic ──
+Fire Light	火燄之光
+Elvar's Fire	大火
+Poog's Vortex	烈燄旋渦
+Ice Chill	寒冰術
+Big Chill	大寒冰術
+Dazzle	眩目強光
+Mystic Might	神力
+Reveal Glamour	幻影現形
+Sala's Swift	迅捷術
+Vorn's Guard	保護罩
+Cowardice	膽怯術
+Healing	治療
+Group Heal	集體治療
+Cloak Arcane	隱身術
+Sense Traps	偵測陷阱
+Air Summon	召喚風元素
+Earth Summon	召喚地元素
+Water Summon	召喚水元素
+Fire Summon	召喚火元素
+# ── D. 德魯伊法術 Druid Magic ──
+Death Curse	死亡的詛咒
+Fire Blast	爆炸術
+Insect Plague	蟲害
+Whirl Wind	龍捲風
+Scare	懼怕
+Brambles	荊棘
+Creater Healing	造物者治療
+Cure All	治療全部
+Create Wall	建立石牆
+Soften Stone	軟化石頭
+Invoke Spirit	召喚精靈
+Beast Call	呼叫野獸
+Wood Spirit	樹木精靈
+# ── C. 太陽法術 Sun Magic ──
+Sun Stroke	日灼術
+Exorcism	驅鬼術
+Rage of Mithras	光神之怒
+Wrath of Mithras	光神之怒(群)
+Fire Storm	狂燄暴風
+Inferno	地獄之火
+Holy Aim	聖戰光輝
+Battle Power	戰鬥力
+Column of Fire	火燄柱
+Mithra's Bless	光神的祝福
+Light Flash	閃光術
+Armor of Light	光的武裝
+Sun Light	陽光醫療
+Heal	治療
+Major Heal	主要治療
+Charger	補給
+Disarm Trap	解除陷阱
+Guidance	導引術
+Radiance	輻射光輝
+Summon Salamander	召喚火蜥蜴
+# ── E. 其他法術 Miscellaneous Magic ──
+Zak's Speed	增加敏捷
+Kill Ray	死光
+Prison	圍困

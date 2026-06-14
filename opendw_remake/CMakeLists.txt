@@ -49,7 +49,7 @@ target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
 # --- game 模組(隊伍角色資料 + 右側狀態面板渲染 + 戰鬥結算)---
-add_library(dwr_game STATIC src/game/party.cpp src/game/combat.cpp src/game/seen_map.cpp)
+add_library(dwr_game STATIC src/game/party.cpp src/game/combat.cpp src/game/spells.cpp src/game/seen_map.cpp)
 target_include_directories(dwr_game PUBLIC src)
 target_link_libraries(dwr_game PUBLIC dwr_render)
 
@@ -153,6 +153,13 @@ add_executable(verify_combat tools/verify/verify_combat.cpp)
 target_link_libraries(verify_combat PRIVATE dwr_game)
 add_test(NAME verify_combat
          COMMAND verify_combat ${CMAKE_SOURCE_DIR}/assets/bundle)
+
+# tools/verify:法術系統確定性 PASS/FAIL(法術表筆數/效果值對拍手冊 + 施法扣 Power +
+#   傷害/治療在手冊範圍 + 確定性)。grounded in docs/33 手冊;非 oracle(見 spells.hpp 檔頭)。
+add_executable(verify_spells tools/verify/verify_spells.cpp)
+target_link_libraries(verify_spells PRIVATE dwr_game)
+add_test(NAME verify_spells
+         COMMAND verify_spells ${CMAKE_SOURCE_DIR}/assets/bundle)
 
 # tools/verify:把原版戰鬥腳本(res 3)餵進 remake VM 的調查工具(gap 分析,非 ctest)。
 #   印跑了幾步、停在哪個 opcode/pc。見 docs/42_COMBAT_BYTECODE.md。
