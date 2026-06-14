@@ -19,3 +19,18 @@ chained	拘束
 poisoned	毒
 stunned	気絶
 normal	正常
+# ── 建角流程(新遊戲 / 建立人物)──
+Create Character	キャラクター作成
+Enter name:	名前を入力:
+Points left	残りポイント
+Up/Down select  +/- adjust  G gender  Enter done	上下:選択  +/-:調整  G:性別  Enter:決定
+Enter: confirm  Esc: cancel	Enter:確認  Esc:キャンセル
+Party	パーティ
+Begin the game	ゲーム開始
+Add another (max 4)	仲間を追加(最大4人)
+B: begin  N: add member  Esc: back	B:開始  N:追加  Esc:戻る
+HP	生命
+PWR	魔力
+AV	攻撃
+DV	防御
+member(s)	人

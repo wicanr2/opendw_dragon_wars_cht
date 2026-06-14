@@ -19,3 +19,19 @@ chained	被縛
 poisoned	中毒
 stunned	暈眩
 normal	正常
+# ── 建角流程(新遊戲 / 建立人物;手冊第 6/7/11 頁)──
+Create Character	建立人物
+Enter name:	輸入名字:
+Points left	剩餘點數
+add  - subtract	加  - 減
+Up/Down select  +/- adjust  G gender  Enter done	上下:選擇  +/-:調整  G:性別  Enter:完成
+Enter: confirm  Esc: cancel	Enter:確認  Esc:取消
+Party	隊伍
+Begin the game	開始遊戲
+Add another (max 4)	新增隊員(最多 4 名)
+B: begin  N: add member  Esc: back	B:開始  N:新增隊員  Esc:返回
+HP	生命
+PWR	法力
+AV	攻擊值
+DV	防禦值
+member(s)	名隊員
