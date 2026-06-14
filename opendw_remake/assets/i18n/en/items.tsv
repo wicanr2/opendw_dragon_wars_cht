@@ -1,0 +1,27 @@
+# en — 物品類型名 passthrough。無條目 → tr() 回退英文鍵;此處給人讀英文名。
+# english	chinese
+item_general	General Item
+item_shield	Shield
+item_full_shield	Full Shield
+item_axe	Axe
+item_flail	Flail
+item_sword	Sword
+item_two_hander	Two-hander
+item_mace	Mace
+item_bow	Bow
+item_crossbow	Crossbow
+item_gun	Gun
+item_thrown	Thrown
+item_ammo	Ammunition
+item_gloves	Gloves
+item_mage_gloves	Mage Gloves
+item_ammo_clip	Ammo Clip
+item_cuir_bouilli	Cuir Bouilli
+item_brigandine	Brigandine
+item_scale	Scale Armor
+item_chain	Chain Armor
+item_plate_chain	Plate and Chain
+item_full_plate	Full Plate
+item_helmet	Helmet
+item_scroll	Scroll
+item_boots	Boots

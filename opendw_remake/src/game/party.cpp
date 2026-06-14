@@ -56,40 +56,42 @@ DamageDice decode_damage_dice(std::uint8_t encoded) {
 }
 
 namespace {
-// 從 record raw 取物品欄第 slot 格(每格 23B,首格 @ [236])的 EquipItem。
-// fraterrisus 11-byte bit-packed:bit offset 從該格起。LSB-first。
-EquipItem parse_equip(const std::uint8_t* rec, int slot) {
+// 把完整 23B 解析的 ItemInstance 投影成戰鬥精簡視圖 EquipItem(回歸相容)。
+EquipItem to_equip_item(const ItemInstance& it) {
   EquipItem e;
-  const int base = 236 + slot * 23;
-  if (base + 11 > 512) return e;
-  const std::uint8_t* q = rec + base;
-  // 全 0(無物品)→ present=false。
-  bool any = false;
-  for (int i = 0; i < 11; ++i) if (q[i]) { any = true; break; }
-  if (!any) return e;
-  e.present = true;
-  // bit helper:取 [lo,hi] inclusive bit 區段(LSB-first across bytes)。
-  auto bits = [&](int lo, int hi) -> std::uint32_t {
-    std::uint32_t v = 0;
-    for (int b = lo; b <= hi; ++b) {
-      int byte = b >> 3, bit = b & 7;
-      if (q[byte] & (1u << bit)) v |= (1u << (b - lo));
-    }
-    return v;
-  };
-  e.equipped = bits(0, 0) != 0;
-  bool av_neg = bits(8, 8) != 0;
-  int av = static_cast<int>(bits(24, 27));
-  e.av_mod = av_neg ? -av : av;
-  e.ac_mod = static_cast<int>(bits(28, 31));
-  e.item_type = static_cast<std::uint8_t>(bits(40, 44));  // 低 5 bit
-  e.primary_dmg = decode_damage_dice(static_cast<std::uint8_t>(bits(64, 71)));
+  e.present = it.present;
+  e.equipped = it.equipped;
+  e.av_mod = it.av_mod;
+  e.ac_mod = it.ac_mod;
+  e.item_type = static_cast<std::uint8_t>(it.type);
+  e.primary_dmg = it.primary_dmg;
   return e;
 }
 }  // namespace
 
+ItemInstance CharacterRecord::item_at(int slot) const {
+  if (slot < 0 || slot >= kInventorySlots) return ItemInstance{};
+  const int base = kInventoryBase + slot * kItemStride;
+  if (base + 11 > 512) return ItemInstance{};
+  return parse_item(raw.data() + base, 512 - static_cast<std::size_t>(base));
+}
+
+std::array<ItemInstance, CharacterRecord::kInventorySlots>
+CharacterRecord::inventory() const {
+  std::array<ItemInstance, kInventorySlots> out{};
+  for (int s = 0; s < kInventorySlots; ++s) out[s] = item_at(s);
+  return out;
+}
+
 EquipItem CharacterRecord::main_weapon() const {
-  return parse_equip(raw.data(), 0);
+  // 取第一件「已裝備且為武器」的物品;無則回退第 0 格(維持既有行為:起始
+  // 隊伍第 0 格空 → present=false → 戰鬥回退徒手)。
+  for (int s = 0; s < kInventorySlots; ++s) {
+    ItemInstance it = item_at(s);
+    if (it.present && it.equipped && is_weapon(it.type))
+      return to_equip_item(it);
+  }
+  return to_equip_item(item_at(0));
 }
 
 // 武器類型 → 對應武器技能 index;非武器(或一般)回 -1。
@@ -129,10 +131,15 @@ int CharacterRecord::effective_dv() const {
 }
 
 int CharacterRecord::effective_ac() const {
-  // stored ac>0 採用;否則由裝備 AC 修正累加(起始隊伍無裝備 → 0)。
+  // stored ac>0 採用(原版 runtime 計算);否則累加「所有已裝備物品」的 AC 修正
+  // (盾/全身盾/各甲/頭盔/有 AC 修正的物品皆計入)。起始隊伍無裝備 → 0。
   if (ac > 0) return static_cast<int>(ac);
-  EquipItem w = main_weapon();
-  return w.present ? w.ac_mod : 0;
+  int total = 0;
+  for (int s = 0; s < kInventorySlots; ++s) {
+    ItemInstance it = item_at(s);
+    if (it.present && it.equipped) total += it.ac_mod;
+  }
+  return total;
 }
 
 CharacterRecord Party::parse_record(const std::uint8_t* p) {

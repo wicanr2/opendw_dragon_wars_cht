@@ -1,0 +1,16 @@
+{
+  "format": "opendw-items/1",
+  "source": "DATA1 (DOS) curated item offsets, fraterrisus-verified",
+  "spec": "docs/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format)",
+  "slot_bytes": 23,
+  "count": 7,
+  "items": [
+    { "name": "Air Talons", "data1_off": "0x02C78", "expect": "type=two_hander(0x06), primary 1d12" },
+    { "name": "Air Armor", "data1_off": "0x02C8D", "expect": "type=cuir_bouilli(0x10), AVmod=-8" },
+    { "name": "Earth Shield", "data1_off": "0x02CC8", "expect": "type=shield(0x01), AVmod=-10" },
+    { "name": "Fire Shield", "data1_off": "0x02D40", "expect": "type=shield(0x01), AVmod=-15" },
+    { "name": "Aura Shield", "data1_off": "0x02DA5", "expect": "type=shield(0x01), AVmod=-12" },
+    { "name": "Water Wings", "data1_off": "0x02D04", "expect": "type=cuir_bouilli(0x10), AVmod=-11" },
+    { "name": "Dragon Stone", "data1_off": "0x05369", "expect": "type=general(0x00), price=250, magic=restore_power" }
+  ]
+}

@@ -32,6 +32,8 @@ run "FP 踩事件格"     --map 1 --fp --at 12 6
 run "段落檢視器"      --read-para 88
 run "段落捲動"        --read-para 88 --para-scroll 1
 run "角色表"          --char-sheet 0
+run "物品欄(空)"     --map 1 --char-sheet 1
+run "物品欄(樣本)"   --map 1 --char-sheet 1 --inventory
 run "遭遇畫面"        --encounter 12 --combat-seed 4660
 run "俯視地圖(fog)"  --map 1 --automap 1
 run "俯視地圖(探索)" --automap 1 --mm-seed 2

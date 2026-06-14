@@ -24,23 +24,14 @@
 
 #include "../render/framebuffer.hpp"
 #include "../render/text_layer.hpp"
+#include "game/damage_dice.hpp"
+#include "game/equipment.hpp"
 
 namespace dw::game {
 
-// 解碼後的武器傷害骰(fraterrisus 裝備格式,1 byte = 高 3bit 骰面 + 低 3bit 骰數-1)。
-//   高 3 bit = 骰面:000=d4 001=d6 010=d8 011=d10 100=d12 101=d20 110=d30 111=d100
-//   低 3 bit = 骰數 − 1(000=1 顆 … 111=8 顆)。中間 2 bit 恆 0。
-//   範例:0b101_00_001 = 2d20。
-// raw==0 視為「無傷害骰」(空欄/無武器)。
-struct DamageDice {
-  int count = 0;   // 骰數;0 = 無
-  int sides = 0;   // 骰面;0 = 無
-  bool valid() const { return count > 0 && sides > 0; }
-};
-DamageDice decode_damage_dice(std::uint8_t encoded);
-
-// 解析出的裝備(物品欄一格;fraterrisus 11-byte bit-packed 格式)。
-// 目前只解出戰鬥結算需要的欄位;其餘(需求/魔效/售價)暫不展開。
+// EquipItem — 物品欄一格的「戰鬥精簡視圖」(回歸相容保留)。
+// 完整 23B 解析改由 equipment.hpp 的 ItemInstance 負責;本結構僅保留戰鬥結算
+// 與既有呼叫端用到的欄位,由 ItemInstance 投影而來(見 party.cpp from_item)。
 struct EquipItem {
   bool present = false;       // 該欄是否有物品(非全 0)
   bool equipped = false;      // bit[00]
@@ -81,7 +72,17 @@ struct CharacterRecord {
 
   std::array<std::uint8_t, 512> raw{};  // 完整原始 record
 
-  // 主武器 = 物品欄第一格 [236-258](23B:11B bit-packed + 12B 名)。
+  // 物品欄 13 格 [236-511](每格 23B = 11B bit-packed + 12B 名)。
+  // 來源:docs/44 §2(fraterrisus inventory slot A..M)。回傳全 13 格的完整解析
+  // (空格 present=false)。供背包 UI / 裝備邏輯使用。
+  static constexpr int kInventorySlots = 13;
+  static constexpr int kInventoryBase = 236;
+  static constexpr int kItemStride = 23;
+  std::array<ItemInstance, kInventorySlots> inventory() const;
+  // 第 slot 格(0..12)的完整解析;越界回傳空 ItemInstance。
+  ItemInstance item_at(int slot) const;
+
+  // 主武器 = 第一件「已裝備且為武器」的物品;無則回退第 0 格的精簡視圖。
   // 起始隊伍無裝備(全 0)→ present=false → 結算回退徒手。
   EquipItem main_weapon() const;
 
@@ -91,7 +92,8 @@ struct CharacterRecord {
   // 來源:SDA(base AV/DV = DEX÷4;最終 AV 含武器技能 1:1)。
   int effective_av() const;
   int effective_dv() const;
-  int effective_ac() const;  // stored_ac>0 ? stored_ac : 武器/防具 AC 修正(起始 0)
+  // eff_ac:stored_ac>0 採用;否則累加「所有已裝備物品(盾/甲/盔)」的 AC 修正(起始 0)。
+  int effective_ac() const;
 };
 
 // 技能陣列索引(skills[0..26] 對應 selector 0x24..0x3E;index = selector − 0x24)。
