@@ -278,5 +278,82 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
 | RNG(op_4D) | bytecode 移植,對拍 oracle 演算法 |
 | to-hit(1d16+3,門檻 13+AV−def) | **bytecode 反推 + 端到端驗證** ✅ |
 | 徒手傷害(dice + STR/5) | **bytecode 反推 + 端到端驗證** ✅ |
-| 武器傷害 | best-fit(op_68 原版 NULL,無 oracle)⚠ |
+| 武器傷害 | best-fit(op_68 原版 NULL,無 oracle)⚠ → **§13:op_68 已反組譯,骰來源/解碼升級 bytecode 確認;STR bonus 仍 best-fit** |
 | 怪物 roster pipeline | 部分逆向,未端到端(§9)⚠ |
+
+---
+
+## 13. 更新(第七輪:反組譯原始 DRAGON.COM op_68 handler → 武器傷害真值缺口收斂)
+
+> 日期:2026-06-14
+> 方法:opendw `targets[]` 把 op_68 標 NULL(handler @0x450A,從未逆向)。直接從原始
+> 16-bit DRAGON.COM 反組譯(docker ndisasm,COM 載入 @CS:0x100,file offset = addr − 0x100)。
+> **DRAGON.COM 不入庫**;只入庫結論。
+
+### op_68 handler 定位(已確認)
+- VM dispatch loop @0x3ACF:`es lodsb; xor ah,ah; mov bx,ax; shl bx,1; jmp [bx+0x3960]`。
+  跳表 base = `0x3960`;op_68 → `[0x3960 + 0x68*2]` = `[0x3A30]` = **0x450A**(= opendw `targets[]` 標註值,完全吻合)。
+- handler 範圍 0x450A..0x453F(下一 op_69 起點)。
+
+### op_68 反組譯(file offset 0x440A)
+```
+0x450A  bl=[0x3867]; bh=0; bx<<=1        ; 物品槽 index(= gs[7])× 2(字表)
+0x4512  al=[0x3866]; di=ax               ; 角色 index(= gs[6])
+0x4519  ax=0xCA4C; ah += [di+0x386a]     ; char_ext 基底 + 角色頁(selector<<8)
+0x4520  ax += [bx+0x4456]                ; + unknown_4456[slot](= slot*23,23B/item)
+0x4524  di=ax; lodsb; di += ax           ; + operand(物品記錄內 byte offset)
+0x452C  ax=[di]; [0x3ae2]=al             ; word_3AE2 低位 = char_ext[di]
+0x4531  if [0x3ae1]!=0: [0x3ae3]=ah      ; word 模式才取高位
+```
+- **op_68 = op_69(@0x453F)的「讀」孿生**(op_69 同定址、`mov [di],al` 寫)。opendw 自身已逆出
+  op_69(engine.c:2846)→ 二者定址法相互佐證:`char_ext[(sel<<8) + unknown_4456[slot] + operand]`,
+  `sel = gs[gs[6]+0x0A]`、`slot = gs[7]`、stride 23、區段 = `data_CA4C`(opendw 拆成獨立 4096B 陣列;
+  原始 binary 中 0xCA4C = 0xC960 + 0xEC,在同一資料段內,即 char record 內偏移 +0xEC 的物品/裝備區)。
+- **unknown_4456 表**(@0x4456,binary 實讀)= `{0,23,46,69,92,115,138,161,184,207,230,253,...}` = **slot × 23**。
+  佐證 docs/44 §2「裝備 23B/件」+ op_64(@0x446F)裝備邏輯:掃 12 槽 × 23B、找 byte[+0xB]==0 空槽寫入。
+
+### 武器傷害邏輯(op 層級,res3 0x0D68,**op_68 反推後可完整讀懂**)
+```
+0x0D68  op_68 0x08 → gs[0x7c]            ; 主傷害骰 descriptor = 裝備記錄 byte[8]
+0x0D6C  op_68 0x02; &0x1f → gs[0x5d]     ; byte[2] 低 5 bit
+0x0D72  test; jz 0x0D81                  ; byte[2]&0x1f==0 → 跳過 op_36(÷STR)
+0x0D76  op_68 0x01; &0x3f; op_21; load STR(0x0c); op_31 gs[0x5d]   ; (byte[2]!=0 才走)
+0x0D7F  op_36 (÷ STR/5,patch 0x0DAE)     ; ← byte[2]==0 時被 0x0D73 jz 跳過
+0x0DA1  load_resource 0x03:0x06ec        ; 用 gs[0x7c]=descriptor 擲骰(與徒手共用)
+0x0DA5  r2 = gs[0x5d](骰和); 0x0DA7 op_30 0x00; 0x0DAD op_30 <0x0DAE 自改值>
+```
+- **descriptor 解碼**(同 0x06EC):sides = `{4,6,8,10,12,20,30,100}[d>>5]`、count = `(d & 0x1f)+1`。
+
+### 端到端驗證(跑 res3 bytecode,非手算;入 `verify_combat_script`)
+| op_68 0x08(byte[8]) | byte[2] | bytecode 輸出 | = roll(descriptor) |
+|---|---|---|---|
+| 0x00 | 0 | [1,4] | 1d4 |
+| 0x21 | 0 | [2,12] | 2d6 |
+| 0x05 | 0 | [6,24] | 6d4 |
+| 0xA3 | 0 | [4,80] | 4d20 |
+| 任意 | =5 | [5,5] | **定值 5(覆寫骰擲)** |
+| 任意 | =2 | [2,2] | **定值 2** |
+
+### 結論
+1. **op_68 0x08 = 主傷害骰來源(byte[8]),骰式解碼 = sides[d>>5]/(d&0x1f)+1** —— **bytecode 反推 + 端到端驗證,證據確鑿**。combat.cpp 武器骰(`primary_dmg`,fraterrisus bit[64-71]= byte[8])**結構正確,標示升級為 bytecode 確認**。
+2. **byte[2]&0x1f != 0 → 傷害 = 定值(byte[2]&0x1f),覆寫骰擲** —— 端到端確認(= 遠程/特殊定傷武器路徑;**修正** §10「byte[2]=骰數」的舊假說)。
+3. **武器傷害是否 +floor(STR/5):bytecode 證據矛盾,維持 best-fit(誠實鐵則)**:
+   - 隔離執行:byte[2]==0 時 0x0D73 jz **跳過 op_36** → 武器路徑**不加 STR bonus**(1d4 STR20 → [1,4])。
+   - 但 0x0DAD 加的是**自我修改位址 0x0DAE**的值;完整一場戰鬥中該值可能由前序攻擊者(徒手或 byte[2]!=0 武器)的 op_36 殘留 → **隔離分析無法判定真機殘留與否**(self-modifying-code 不確定性)。
+   - DOS 實機(§43:Str14→3~4、Str21→6)+ SDA 均示武器傷害隨 STR 增 → **保留 +floor(STR/5)**,不依隔離 bytecode 逕刪(無完整戰鬥 oracle 可確認;刪除恐 regress DOS 校準)。
+4. **remake 已實作 op_68**(`interpreter.cpp` op68_get_char_ext,op_69 讀孿生),戰鬥武器路徑不再撞未實作 opcode。
+
+### combat.cpp 標示升級
+- **武器主傷害骰來源 + 骰式解碼:best-fit → bytecode 反推 + 端到端驗證** ✅(op_68 0x08 = byte[8])。
+- **武器 STR bonus:維持 best-fit**(self-modifying-code 矛盾,無完整戰鬥 oracle)⚠ —— 誠實標示。
+
+### 至此戰鬥結算 oracle 狀態(更新)
+| 項目 | 狀態 |
+|---|---|
+| RNG(op_4D) | bytecode 移植,對拍 oracle 演算法 |
+| to-hit(1d16+3,門檻 13+AV−def) | bytecode 反推 + 端到端驗證 ✅ |
+| 徒手傷害(dice + STR/5) | bytecode 反推 + 端到端驗證 ✅ |
+| **武器主傷害骰來源/解碼(op_68 0x08=byte[8])** | **bytecode 反推 + 端到端驗證 ✅(本輪)** |
+| 武器 STR bonus(+STR/5?) | best-fit(self-modifying-code 矛盾,無完整戰鬥 oracle)⚠ |
+| 武器定傷(byte[2]!=0) | bytecode 反推 + 端到端驗證 ✅(本輪) |
+| 怪物 roster pipeline | 部分逆向,未端到端 ⚠ |
