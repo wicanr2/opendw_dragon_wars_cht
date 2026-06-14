@@ -1,0 +1,32 @@
+# ja — 物品類型名(日本語)。未填條目 → tr() 回退英文鍵。
+# english	chinese
+item_general	一般アイテム
+item_shield	盾
+item_full_shield	大盾
+item_axe	斧
+item_flail	フレイル
+item_sword	剣
+item_two_hander	両手武器
+item_mace	メイス
+item_bow	弓
+item_crossbow	クロスボウ
+item_gun	銃
+item_thrown	投擲武器
+item_ammo	弾薬
+item_gloves	手袋
+item_mage_gloves	魔法手袋
+item_ammo_clip	弾倉
+item_cuir_bouilli	硬革鎧
+item_brigandine	ブリガンダイン
+item_scale	スケイルメイル
+item_chain	チェインメイル
+item_plate_chain	プレートチェイン
+item_full_plate	フルプレート
+item_helmet	兜
+item_scroll	巻物
+item_boots	ブーツ
+Inventory	持ち物
+Equipped	装備中
+(empty)	(空)
+Items	アイテム
+no items	アイテムなし

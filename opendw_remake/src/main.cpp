@@ -184,14 +184,17 @@ struct CharSheet {
   bool active = false;
   int idx = 0;           // 當前檢視的角色(0-based)
   int count = 0;         // 隊伍人數(夾住 idx)
+  bool show_inventory = false;  // false=屬性表;true=物品欄(背包)。E 鍵切換。
 
   void open(int n, int start = 0) {
     count = n < 1 ? 0 : n;
     idx = start;
     if (count > 0) { if (idx < 0) idx = 0; if (idx >= count) idx = count - 1; }
     active = count > 0;
+    show_inventory = false;
   }
-  void close() { active = false; }
+  void toggle_view() { show_inventory = !show_inventory; }  // 屬性表 ⇄ 物品欄
+  void close() { active = false; show_inventory = false; }
   void prev() { if (count > 0) idx = (idx - 1 + count) % count; }
   void next() { if (count > 0) idx = (idx + 1) % count; }
   // 數字鍵 1-count 直選;越界忽略。回傳是否命中。
@@ -225,6 +228,7 @@ int main(int argc, char** argv) {
   int read_para = -1;             // --read-para N:直接開段落 N 進捲動 overlay(headless 驗證長段落)
   int para_scroll = 0;            // --para-scroll N:dump 前先「逐頁」下捲 N 次(headless 驗證跨頁無遺漏)
   int char_sheet = -1;            // --char-sheet N:直接開第 N 名(1-based)角色屬性表(headless 驗證)
+  bool show_inventory = false;    // --inventory:配合 --char-sheet 直接開物品欄(背包)子畫面
   int automap_area = -1;          // --automap N:headless 直接開第 N 區俯視平面地圖(`?` 鍵功能)
   int mm_seed = 0;                // --mm-seed:0=全圖探索 1=只玩家格 2=不 seed(測試/展示)
   bool mm_seed_set = false;       // 是否顯式給 --mm-seed;否則遊戲內用真實 fog of war
@@ -261,6 +265,7 @@ int main(int argc, char** argv) {
     else if (eq("--read-para") && i + 1 < argc) read_para = std::atoi(argv[++i]); // 直接開段落 N 進捲動 overlay
     else if (eq("--para-scroll") && i + 1 < argc) para_scroll = std::atoi(argv[++i]); // dump 前逐頁下捲 N 次
     else if (eq("--char-sheet") && i + 1 < argc) char_sheet = std::atoi(argv[++i]); // 直接開第 N 名角色屬性表
+    else if (eq("--inventory")) show_inventory = true;                               // 配合 --char-sheet 開物品欄
     else if (eq("--load") && i + 1 < argc) load_path = argv[++i];        // 啟動讀檔還原
     else if (eq("--save-path") && i + 1 < argc) save_path = argv[++i];   // 覆寫存/讀檔路徑
     else if (eq("--selftest-save")) selftest_save = true;               // round-trip 自測
@@ -316,6 +321,9 @@ int main(int argc, char** argv) {
     std::string sptsv = "assets/i18n/" + loc + "/spells.tsv";  // 法術名 + 施法訊息
     if (tr.merge(sptsv))
       std::fprintf(stderr, "i18n: merged %s (total %zu)\n", sptsv.c_str(), tr.size());
+    std::string ittsv = "assets/i18n/" + loc + "/items.tsv";  // 物品類型名 + 背包 UI
+    if (tr.merge(ittsv))
+      std::fprintf(stderr, "i18n: merged %s (total %zu)\n", ittsv.c_str(), tr.size());
     // Read paragraph 段落書(隨 locale);缺檔則回退「Read paragraph N」。
     book = res::ParagraphBook::load(bundle + "/paragraphs", loc);
     if (book) std::fprintf(stderr, "paragraphs: loaded %zu (locale=%s)\n", book->size(), loc.c_str());
@@ -348,6 +356,32 @@ int main(int argc, char** argv) {
   std::optional<res::Level> level;
   // 預設 4 人隊伍(Muskels/Theb/Elendil/Cheetah),自包含 bundle 資產;進遊戲即顯示在右側面板。
   game::Party party = game::Party::load_default(bundle);
+  // --demo-items:把 bundle/items/items.bin 的萃取物品注入角色 0 的物品欄(UI 展示用)。
+  //   起始隊伍物品欄全空 → 無此旗標時背包 UI 正確顯示「無物品」;此旗標僅供出圖驗證。
+  if (show_inventory && party.size() > 0) {
+    std::string ip = bundle + "/items/items.bin";
+    std::FILE* f = std::fopen(ip.c_str(), "rb");
+    if (f) {
+      std::fseek(f, 0, SEEK_END); long n = std::ftell(f); std::fseek(f, 0, SEEK_SET);
+      std::vector<std::uint8_t> blob(n > 0 ? (size_t)n : 0);
+      if (!blob.empty() && std::fread(blob.data(), 1, blob.size(), f) == blob.size() &&
+          blob.size() >= 10 && blob[0]=='D'&&blob[1]=='W'&&blob[2]=='I'&&blob[3]=='T'&&blob[4]=='M') {
+        std::uint16_t cnt = (std::uint16_t)(blob[8] | (blob[9] << 8));
+        auto recs = party.raw_records();
+        size_t off = 10;
+        for (std::uint16_t k = 0; k < cnt && k < 13 && off + 4 + 23 <= blob.size(); ++k) {
+          off += 4;  // skip data1_off
+          int slot_base = 236 + (int)k * 23;
+          for (int b = 0; b < 23; ++b) recs[0][slot_base + b] = blob[off + b];
+          recs[0][slot_base + 0] |= 0x01;  // 標為已裝備(UI 展示「已裝備」標記)
+          off += 23;
+        }
+        party = game::Party::from_raw_records(recs);
+        std::fprintf(stderr, "demo-items: injected %u items into character 0 inventory\n", cnt);
+      }
+      std::fclose(f);
+    }
+  }
   // 怪物表(res31 萃取,oracle 對拍 25 筆);遭遇畫面用。
   std::vector<game::MonsterRecord> monsters = game::MonsterTable::load(bundle);
   int level_res = -1;             // 當前關卡資源 index(= area + 0x46;= word_3AE8)
@@ -1021,7 +1055,53 @@ int main(int argc, char** argv) {
     // 底部操作提示。
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
-    tl.add(CS_VAL_X, iy, "1-4  Up/Down  Esc", 8, PX_UI);
+    tl.add(CS_VAL_X, iy, "1-4  E:Items  Esc", 8, PX_UI);
+  };
+
+  // 畫物品欄(背包):底框 + 標題 + 13 格物品列(名稱 + 類型 + AV/AC 修正 + 已裝備標記)。
+  // 對齊手冊「Item」操作(檢視為主);名稱走物品本身(英文),類型/標籤走 i18n tr()。
+  auto draw_inventory = [&]() {
+    if (!sheet.active || sheet.idx < 0 || sheet.idx >= (int)party.size()) return;
+    const auto& c = party.at((std::size_t)sheet.idx);
+    fill_char_sheet();
+    int tx = CS_X + CS_PAD;
+    int y = CS_Y + CS_PAD;
+    // 標題:「物品欄  角色名」。
+    char head[80];
+    std::snprintf(head, sizeof head, "%s  %s", tr.tr("Inventory").c_str(),
+                  c.name.empty() ? "?" : c.name.c_str());
+    tl.add(tx, y, head, 14, PX_BODY);
+    y += CS_LINE_H + 2;
+
+    auto inv = c.inventory();
+    int shown = 0;
+    for (int s = 0; s < (int)inv.size(); ++s) {
+      const auto& it = inv[s];
+      if (!it.present) continue;
+      ++shown;
+      // 名稱(白;已裝備亮綠)。
+      std::uint8_t ncol = it.equipped ? 10 : 15;
+      std::string nm = it.name.empty() ? tr.tr("(empty)") : it.name;
+      tl.add(tx, y, nm, ncol, PX_BODY);
+      // 類型(灰)+ AV/AC 修正 + 已裝備標記。
+      char meta[96];
+      char mods[48] = "";
+      int p = 0;
+      if (it.av_mod) p += std::snprintf(mods + p, sizeof(mods) - p, " AV%+d", it.av_mod);
+      if (it.ac_mod) p += std::snprintf(mods + p, sizeof(mods) - p, " AC%+d", it.ac_mod);
+      std::snprintf(meta, sizeof meta, "%s%s%s",
+                    tr.tr(game::item_type_key(it.type)).c_str(), mods,
+                    it.equipped ? (" [" + tr.tr("Equipped") + "]").c_str() : "");
+      // meta(類型/修正/已裝備)放右半欄;名稱占左半,避免重疊。
+      tl.add(CS_X + CS_W / 2 + 4, y, meta, 7, PX_UI);
+      y += CS_LINE_H;
+    }
+    if (shown == 0)
+      tl.add(tx, y, tr.tr("no items"), 8, PX_BODY);
+
+    int iy = CS_Y + CS_H - CS_LINE_H - 2;
+    tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
+    tl.add(CS_VAL_X, iy, "1-4  E:Stats  Esc", 8, PX_UI);
   };
 
   auto draw_menu = [&]() {
@@ -1321,7 +1401,10 @@ int main(int argc, char** argv) {
       if (fp_mode) draw_game_fp(); else draw_game();
       if (msg.active) draw_msg_overlay();            // 一般事件訊息框疊在地圖/viewport 上層
       if (para.active) draw_para_overlay();          // Read Paragraph 長段落捲動 overlay(近全螢幕)
-      if (sheet.active) draw_char_sheet();           // 角色屬性表疊在最上層
+      if (sheet.active) {                            // 角色屬性表 / 物品欄疊在最上層
+        if (sheet.show_inventory) draw_inventory();
+        else draw_char_sheet();
+      }
       return;
     }
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
@@ -1346,8 +1429,10 @@ int main(int argc, char** argv) {
   // --char-sheet N:headless 直接開第 N 名(1-based)角色屬性表(驗證屬性值 / 在地化 / 版面)。
   if (state == S_GAME && char_sheet >= 1 && party.size() > 0) {
     sheet.open((int)party.size(), char_sheet - 1);
-    std::fprintf(stderr, "char sheet: showing character %d/%zu (\"%s\")\n",
-                 sheet.idx + 1, party.size(), party.at((std::size_t)sheet.idx).name.c_str());
+    sheet.show_inventory = show_inventory;   // --inventory:直接開物品欄
+    std::fprintf(stderr, "char sheet: showing character %d/%zu (\"%s\")%s\n",
+                 sheet.idx + 1, party.size(), party.at((std::size_t)sheet.idx).name.c_str(),
+                 show_inventory ? " [inventory]" : "");
   }
   // --encounter N:進遭遇畫面(headless 可 --dump 驗證圖層;互動下 F 戰鬥 / R 逃跑)。
   if (encounter_mode) {
@@ -1418,6 +1503,7 @@ int main(int argc, char** argv) {
       else if (in.up) sheet.prev();
       else if (in.down) sheet.next();
       else if (in.key >= '1' && in.key <= '9') sheet.select(in.key - '0');
+      else if (in.key == 'E') sheet.toggle_view();       // E:屬性表 ⇄ 物品欄
       else if (in.key == 'V') sheet.close();             // V 再按一次 → 關閉
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;                                          // 屬性表期間不處理移動

@@ -49,7 +49,7 @@ target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
 # --- game 模組(隊伍角色資料 + 右側狀態面板渲染 + 戰鬥結算)---
-add_library(dwr_game STATIC src/game/party.cpp src/game/combat.cpp src/game/spells.cpp src/game/seen_map.cpp)
+add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/spells.cpp src/game/seen_map.cpp)
 target_include_directories(dwr_game PUBLIC src)
 target_link_libraries(dwr_game PUBLIC dwr_render)
 
@@ -147,6 +147,17 @@ target_link_libraries(extract_eventscripts PRIVATE dwr_vm)
 # tools/extract:怪物記錄(res31)→ bundle/monsters/monsters.bin(自包含)。
 add_executable(extract_monsters tools/extract/extract_monsters.cpp)
 target_link_libraries(extract_monsters PRIVATE dwr_resource)
+
+# tools/extract:從 DATA1 萃取 byte-grounded 物品樣本 → bundle/items/items.bin(自包含)。
+add_executable(extract_items tools/extract/extract_items.cpp)
+target_link_libraries(extract_items PRIVATE dwr_resource)
+
+# tools/verify:物品/裝備格式解碼 PASS/FAIL(類型/售價/真實 DATA1 物品對拍 + 13 格物品欄 + AC 聚合)。
+# grounded in docs/44 §2(fraterrisus Equipment Format)。
+add_executable(verify_equipment tools/verify/verify_equipment.cpp)
+target_link_libraries(verify_equipment PRIVATE dwr_game)
+add_test(NAME verify_equipment
+         COMMAND verify_equipment ${CMAKE_SOURCE_DIR}/assets/bundle)
 
 # tools/verify:戰鬥切片確定性 PASS/FAIL(怪物萃取 vs oracle 名單 + RNG + 結算可重現)。
 add_executable(verify_combat tools/verify/verify_combat.cpp)

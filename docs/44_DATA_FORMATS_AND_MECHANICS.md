@@ -138,3 +138,19 @@
      擲骰走 `CombatRng`(確定性)。**非 opendw byte-for-byte**(opendw C 未實作法術結算)→ 不宣稱 oracle。
    - i18n:`assets/i18n/{zh-TW,en,ja}/spells.tsv`(zh-TW 全填、en passthrough、ja 部分)。
    - 驗證:`verify_spells`(ctest)— 表筆數/效果值對拍手冊抽樣、扣 Power、傷害/治療範圍、bitfield、確定性,全 PASS。
+4. ✅ **道具/裝備系統**(`src/game/equipment.{hpp,cpp}` + `src/game/damage_dice.hpp`)依本節 §2 grounded。
+   - 完整解析一格 23B 物品欄:已裝備/充能/AV 修正(含 bit[08] 負號)/AC 修正/需求屬性+值/
+     售價(M×10^E,= 購買價 ÷ 2)/物品類型(低 5 bit)/魔法效果(2B)/主+次傷害骰/彈藥/射程/物品名。
+   - `CharacterRecord` 擴充:`inventory()` 解析全 13 格(slot A..M,[236-511]);`item_at(slot)`;
+     `main_weapon()` 改取「第一件已裝備武器」;`effective_ac()` 改累加「所有已裝備物品」AC 修正
+     → 戰鬥 `Combatant::from_player` 的護甲 AC 自動納入。
+   - **byte-grounded 萃取驗證**:`tools/extract/extract_items`(curated 偏移)從 DATA1 抽 7 件真實物品:
+     Air Talons(雙手/1d12)、Air Armor + Water Wings(硬皮甲)、Earth/Fire/Aura Shield(盾,AV −10/−15/−12)、
+     Dragon Stone(一般物品,售價 250→125,魔效=回復法力)。**對拍解碼 type/AV/名稱合理**。
+     發現:`default_party.bin` 物品欄全空(起始裝備為原版 runtime 給予),故樣本改取 DATA1 召喚物/任務物品偏移。
+     兩種佈局比對結論:**fraterrisus bit-packed(本節 §2)正確**,opendw player.c 的 byte-aligned `item_info`
+     對同一筆 Dragon Stone 解碼失敗(type=0x39 無效)→ 採用 §2。
+   - UI:CharSheet 新增物品欄子畫面(E 鍵切換屬性/物品;`--inventory` headless;`--demo-items` 注入樣本)。
+     顯示名稱(已裝備亮綠)+ 類型(i18n)+ AV/AC 修正 + [已裝備] 標記。
+   - i18n:`assets/i18n/{zh-TW,en,ja}/items.tsv`(物品類型名 + 背包 UI,zh-TW 全填)。
+   - 驗證:`verify_equipment`(ctest)— 類型/售價編碼、真實 DATA1 物品對拍、13 格物品欄、AC 聚合,全 PASS。

@@ -25,7 +25,7 @@ namespace fs = std::filesystem;
 
 namespace {
 
-const char* kFiles[] = {"menu.tsv", "events.tsv", "chars.tsv", "combat.tsv"};
+const char* kFiles[] = {"menu.tsv", "events.tsv", "chars.tsv", "combat.tsv", "items.tsv"};
 const char* kLocales[] = {"zh-TW", "en", "ja"};
 
 struct ParseResult {

@@ -1,0 +1,34 @@
+# 物品類型名 + 背包 UI 標籤(角色物品欄畫面)。
+# 譯名以 docs/44 §2 物品類型表 + CONTEXT.md「物品 / Items」為準。
+# english	chinese
+item_general	一般物品
+item_shield	盾
+item_full_shield	全身盾
+item_axe	斧
+item_flail	連枷
+item_sword	劍
+item_two_hander	雙手武器
+item_mace	錘
+item_bow	弓
+item_crossbow	弩
+item_gun	槍
+item_thrown	投擲武器
+item_ammo	彈藥
+item_gloves	手套
+item_mage_gloves	法師手套
+item_ammo_clip	彈夾
+item_cuir_bouilli	硬皮甲
+item_brigandine	綴甲
+item_scale	鱗甲
+item_chain	鎖鏈甲
+item_plate_chain	板鏈甲
+item_full_plate	全板甲
+item_helmet	頭盔
+item_scroll	卷軸
+item_boots	靴
+# 背包 UI
+Inventory	物品欄
+Equipped	已裝備
+(empty)	(空)
+Items	物品
+no items	無物品
