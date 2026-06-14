@@ -357,3 +357,51 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
 | 武器 STR bonus(+STR/5?) | best-fit(self-modifying-code 矛盾,無完整戰鬥 oracle)⚠ |
 | 武器定傷(byte[2]!=0) | bytecode 反推 + 端到端驗證 ✅(本輪) |
 | 怪物 roster pipeline | 部分逆向,未端到端 ⚠ |
+
+---
+
+## 13. 更新(第七輪:roster announce 迴圈精確診斷)
+
+### 結論:roster **已建立**(怪物在群緩衝區),卡點 = res18↔res4 選單互動迴圈(非 roster 缺失)
+
+本輪未改 remake source(僅 probe 調查),ctest 維持 17/17。把 announce/roster 卡點從「不明空轉」精確化到 **op 與 gs 層級**。
+
+### announce 迴圈結構(res3 0x0029-0x003F)實為「怪物登場訊息 + 戰鬥選單」
+- `0x0029 load_resource res:0x12(=res18)off:0x0000` → 解一隻怪名;`0x002D call 0x010e` 列出整群怪名;`0x0030 set_msg " appear."`;`0x0038 load res18 off:0x0097`(= **主戰鬥選單** "Will the party: Fight/Quickly fight/Run/Advance");`0x003C jc 0x0028`(分頁/重繪迴圈)。
+- **res18 不是單純文字**:含 3 個 op_89 鍵盤等待選單(實測):
+  - `@res18:0x00F8` 主選單:`F(0xC6)→0x0108`、`Q(0xD1)→0x0108`、`R(0xD2)→0x02CF`、`A(0xC1)→0x02EE`。
+  - `@res18:0x01EA` 角色動作選單:`A(0xC1)→0x03BC`、`D(0xC4)→0x02C5`、`C(0xC3)→0x0517`、`R(0xD2)→…`。
+  - `@res18:0x029B` 第三層選單。
+
+### roster 已正確建立(關鍵發現)
+- **怪物參戰資料寫進「群定義緩衝區」data[0x03D6],不是 char_data 角色槽**(slots 4-6 HP 恆 0、選擇子恆 0 是預期,非 bug)。
+- setup 鏈確認運作:`call 0x04F1`(遭遇 setup,經 op_0F 走訪 res31 + op_4D)→ 怪物群模板填 gs[0x28..0x36](`01 00 0c 00 43 a2 0c 28 c5 14 …`,gs[0x27]=群數 1);`0x053B-0x05A0` 迴圈用 op_16/op_18 把 res31 怪物記錄(0x21 bytes)寫進 data[0x03D6]。
+- **端到端驗證**:跑完整 announce + 餵 Fight/Attack 鍵後,data[0x03D6] = `2d 2d 12 42 40 0b 44 00 04 68 0a 12 …`(**真實怪物戰鬥屬性**,非全 0)。byte[0x0a] = 怪物 count(`op_10 0x41,0x0a` 讀、`op_18 0x41,0x0a` 寫,& 0x1f)。
+
+### 精確卡點:res18↔res4 選單互動迴圈空轉(headless)
+- 餵 `{Fight=0xC6, Attack=0xC1×N}` 後,流程**仍未抵達 actor 迴圈(res3 0x0075)**,而是在 **res18 @0x04B4** 空轉:該處 `op_58 → res4 off:0x0000`(動作輸入資源),形成 res18(選單)↔res4(輸入)互動迴圈。
+- 與 op_89 同類:這是**逐角色動作指派的 UI 互動迴圈**,headless 無法滿足其「全角色已選定動作」的推進條件(需要 res4 的逐角色輸入狀態 + 分頁推進,非單純鍵注入)。
+- op_89 在此流程執行 2 次(主選單 + 角色動作選單),但角色動作選單迴圈不收斂。
+
+### 還差什麼(比上輪更具體)
+1. **res4(動作輸入資源)的逐角色狀態機**:res18 主選單選 Fight 後,進入「為每個參戰角色指派動作(Attack/Defend/Cast)」的迴圈,經 op_58 反覆載入 res4。需逆向 res4 的逐角色推進條件(哪個 gs counter 標記「此角色已選」、何時全員完成 → 跳出進 res3 actor 迴圈 0x0075)。
+2. **headless 動作注入**:類似 op_89 headless_keys,但需對「角色動作選單」逐角色餵鍵 + 滿足完成條件。目前 headless_keys 序列會被選單迴圈無限消耗。
+3. 一旦進 actor 迴圈(0x0075):op_51 找行動者 → to-hit(0x0F73,已驗)→ 傷害(0x0D54,已驗)→ 對 data[0x03D6] 群緩衝區的怪物 HP 結算。**結算公式都已 bytecode 真值化,只差驅動到那一步**。
+
+### 武器 STR bonus 定論狀態
+- **未定論**:因完整戰鬥仍未跑到 actor 迴圈執行武器攻擊(0x0D68 op_68 路徑),武器 STR bonus 的自改碼殘留行為無法在完整戰鬥中觀察。**維持 best-fit 標示不變**(嚴守鐵則)。
+
+### 本輪交付
+- 精確診斷:roster 已建(群緩衝區 data[0x03D6]),卡點 = res18↔res4 逐角色動作選單迴圈(op 與 gs 層級定位)。
+- 未改 remake source;ctest 17/17 不破。下一步明確:逆向 res4 逐角色動作狀態機 + headless 動作注入。
+
+### res4 = 目標選擇(target selection),含第 3 個 op_89
+- res4(248B)是 **「Target...」目標選擇** 資源,流程:`gs[0x90]/gs[0x91]` = 目標槽;若 `gs[0x90]` 號誌位設(0xFF=自動/無需選)→ `0x0045 r2=gs[0x81]; clc; retf`(完成,回主流程);否則 `0x0055 draw "Target..."` + `0x007D wait_event`(**第 3 個 op_89**,目標鍵表)。
+- **headless 卡在此 op_89**:目標未選定 → "Target..." 提示無限等待。
+- 完整命中鏈所需 headless 互動:**主選單(Fight)→ 角色動作選單(Attack)→ res4 目標選單(選怪)**,3 層 op_89 + 各自的逐角色/逐目標推進狀態。
+
+### 下一步(最小解鎖路徑)
+1. headless 對 3 層 op_89 分別注入:Fight(0xC6)→ 每角色 Attack(0xC1)→ 每次 res4 目標(怪物 index 對應鍵)。
+2. 或設 gs[0x90]/gs[0x91] 自動目標(號誌位)讓 res4 跳過 "Target..." prompt → 直接 retf。
+3. 滿足角色動作選單的「全員已選」推進(res18↔res4 迴圈收斂)→ 進 res3 actor 迴圈 0x0075 → to-hit/傷害對 data[0x03D6] 怪物結算。
+- **結算公式(to-hit 1d16+3 門檻、徒手 dice+STR/5)均已 bytecode 真值化並對拍**;只差驅動 3 層 UI 互動到 actor 迴圈。
