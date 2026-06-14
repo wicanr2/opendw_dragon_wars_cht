@@ -58,11 +58,12 @@ std::vector<MonsterRecord> MonsterTable::load(
 }
 
 int str_damage_bonus(int strength) {
-  // DOS 大樣本(docs/43 §9):Str 對傷害斜率很小、低段近乎不動、Str21 才 +1
-  // (Str10/14→raw 上限對應 dmg 6;Str21→出現 7/8)。best-fit raw 修正 = Str/16
-  // (Str≤15→0、Str16-31→1…),低段平、高 Str 微升,與實測分布相符。
-  // **best-fit 待更大樣本/bytecode 鎖死確切函數**。
-  return strength / 16;
+  // 【bytecode 反推 + DOS 對拍,證據確鑿】res3 徒手傷害路徑(0x0D63→0x0D7F):
+  //   char_data[0x0c](STR)→ op_36 0x05(÷5)→ 加到傷害骰和(0x0DAD op_30)。
+  //   即 STR 修正 = floor(STR/5)(**加法**,非 ×3/2)。
+  //   端到端跑 res3 bytecode 驗證:STR=10→+2、STR=20→+4、STR=25→+5,與每點分布一致。
+  //   (取代先前 DOS best-fit 的 Str/16;那是 53 筆小樣本的近似。)
+  return strength / 5;
 }
 
 Combatant Combatant::from_player(const CharacterRecord& c) {
@@ -123,12 +124,14 @@ AttackResult resolve_attack(Combatant& attacker, Combatant& target,
   r.to_hit_need = kToHitBase + target.dv + target.ac;
   r.hit = (r.to_hit_roll + attacker.av) >= r.to_hit_need;
   if (r.hit) {
-    // 傷害(DOS §9):raw = 傷害骰 + STR 修正;dmg = max(下限3, floor(3/2 × raw))。
-    // **AC 不參與傷害**(已在命中側)。徒手實機證實;武器套同式為推斷。
-    int raw_dmg = rng.roll(attacker.dmg_dice, attacker.dmg_sides) +
-                  attacker.dmg_bonus;
-    r.damage = (kDmgMulNum * raw_dmg) / kDmgMulDen;  // floor(3/2 × raw)
-    if (r.damage < kDmgFloor) r.damage = kDmgFloor;
+    // 傷害【bytecode 反推 + DOS 對拍,徒手證據確鑿】:
+    //   res3 0x06EC 骰子子程式擲「傷害骰」(徒手 = descriptor[min(Fist,7)],未技能 = 1d4),
+    //   再 + floor(STR/5)(0x0DAD op_30 加 word_3ADF[0x0dae]=STR/5)。
+    //   **無 ×3/2、無 floor(3)** —— 端到端跑 res3 bytecode 驗證:
+    //   STR10 徒手 → {3,4,5,6}(含 5;DOS §9 的「無 5」是 53 筆小樣本雜訊)。
+    //   AC 不參與傷害(已在命中側)。**武器路徑因 op_68(原版未逆向)仍 best-fit**。
+    r.damage = rng.roll(attacker.dmg_dice, attacker.dmg_sides) + attacker.dmg_bonus;
+    if (r.damage < 1) r.damage = 1;  // 骰至少 1(無人為下限 3)
     // 作用於 STUN(HP=Stun);STUN≤0 → 死亡。
     target.hp -= r.damage;
     if (target.hp <= 0) {

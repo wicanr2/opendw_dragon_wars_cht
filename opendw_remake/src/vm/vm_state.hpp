@@ -140,6 +140,17 @@ struct VmState {
   std::vector<std::uint8_t> headless_keys;
   std::size_t headless_key_idx = 0;
 
+  // 寫入「資料資源」(word_3ADF->bytes)的一個 byte。
+  //   忠實對照 opendw:running_script 與 word_3ADF 都來自 resource_get_by_index,
+  //   當 word_3AE8 == word_3AEA(script_res == data_res)時是**同一份 bytes**,
+  //   故對 word_3ADF->bytes 的寫入(op_14/15/16/18/1C)會改到正在執行的 script
+  //   bytes —— 即**自我修改碼**(如 res3 0x06F6 patch 0x0701 的骰面 immediate)。
+  //   remake 的 script / data_bytes 為分離 vector;此 helper 在 aliased 時同步寫回 script。
+  void wdata(std::size_t idx, std::uint8_t v) {
+    if (idx < data_bytes.size()) data_bytes[idx] = v;
+    if (script_res == data_res && idx < script.size()) script[idx] = v;
+  }
+
   // 取下一個 byte / word(LE),前進 pc。
   std::uint8_t fetch8() { return pc < script.size() ? script[pc++] : 0; }
   std::uint16_t fetch16() {

@@ -679,12 +679,11 @@ void Interpreter::op1C_data_store() {
   s_.di = s_.ax;
   std::uint8_t al = s_.fetch8();
   s_.ax = (s_.ax & 0xFF00) | al;
-  auto& d = s_.data_bytes;
-  if (s_.di < d.size()) d[s_.di] = al;
+  s_.wdata(s_.di, al);
   if (s_.mode != save_ah) {  // byte_3AE1 != save_ah → word 模式
     al = s_.fetch8();
     s_.ax = (s_.ax & 0xFF00) | al;
-    if ((std::size_t)(s_.di + 1) < d.size()) d[s_.di + 1] = al;
+    s_.wdata((std::size_t)s_.di + 1, al);
   }
 }
 
@@ -1076,11 +1075,10 @@ void Interpreter::op14_data_from_r2() {
   ax += (std::uint16_t)(s_.fetch8() << 8);
   s_.ax = ax;
   s_.bx = s_.ax;
-  auto& d = s_.data_bytes;
   std::uint16_t dest_offset = s_.r2;
-  if (s_.bx < d.size()) d[s_.bx] = (std::uint8_t)(dest_offset & 0xFF);
+  s_.wdata(s_.bx, (std::uint8_t)(dest_offset & 0xFF));  // 走 wdata:支援自我修改碼(aliased 同步 script)
   if (s_.mode != save_ah) {  // byte_3AE1 != save_ah
-    if ((std::size_t)(s_.bx + 1) < d.size()) d[s_.bx + 1] = (dest_offset & 0xFF00) >> 8;
+    s_.wdata((std::size_t)s_.bx + 1, (dest_offset & 0xFF00) >> 8);
   }
 }
 
@@ -1090,13 +1088,12 @@ void Interpreter::op15_data_off_from_r2() {
   s_.ax = s_.fetch8();
   s_.ax += (std::uint16_t)(s_.fetch8() << 8);
   s_.bx = s_.ax;
-  auto& d = s_.data_bytes;
   s_.cx = s_.r2;
   s_.di = s_.r4;
   std::size_t idx = (std::size_t)s_.bx + s_.di;
-  if (idx < d.size()) d[idx] = s_.cx & 0xFF;
+  s_.wdata(idx, s_.cx & 0xFF);
   if (s_.mode != save_ah) {
-    if (idx + 1 < d.size()) d[idx + 1] = (s_.cx & 0xFF00) >> 8;
+    s_.wdata(idx + 1, (s_.cx & 0xFF00) >> 8);
   }
 }
 
@@ -1464,11 +1461,10 @@ void Interpreter::op16_data_gsoff_from_r2() {
   bx += (std::uint16_t)(s_.game_state[(index + 1) & 0xFF] << 8);
   bx += s_.r4;
   s_.bx = bx;
-  auto& d = s_.data_bytes;
   s_.cx = s_.r2;
-  if (bx < d.size()) d[bx] = s_.cx & 0xFF;
+  s_.wdata(bx, s_.cx & 0xFF);
   if (s_.mode != ((s_.ax & 0xFF00) >> 8)) {
-    if ((std::size_t)(bx + 1) < d.size()) d[bx + 1] = (s_.cx & 0xFF00) >> 8;
+    s_.wdata((std::size_t)bx + 1, (s_.cx & 0xFF00) >> 8);
   }
 }
 
@@ -1507,11 +1503,10 @@ void Interpreter::op18_data_gsidx_from_r2() {
   al = s_.fetch8();
   di += al;
   s_.di = di;
-  auto& d = s_.data_bytes;
   s_.cx = s_.r2;
-  if (di < d.size()) d[di] = s_.cx & 0xFF;
+  s_.wdata(di, s_.cx & 0xFF);
   if (s_.mode != ((s_.ax & 0xFF00) >> 8)) {
-    if ((std::size_t)(di + 1) < d.size()) d[di + 1] = (s_.cx & 0xFF00) >> 8;
+    s_.wdata((std::size_t)di + 1, (s_.cx & 0xFF00) >> 8);
   }
 }
 

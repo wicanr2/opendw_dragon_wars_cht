@@ -89,6 +89,53 @@ int main(int argc, char** argv) {
         ("兩次固定-seed 執行指令軌跡 byte-identical(" +
          std::to_string(a.trace.size()) + " 步)").c_str());
 
+  // ── 徒手傷害公式對拍 res3 bytecode(關鍵:證明 combat.cpp 徒手式 = 原版真值)──
+  //   直接跑 res3 0x0D54 徒手傷害路徑(STR/Fist 受控、強制 1 次命中),讀最終 gs[0x5d],
+  //   掃多 seed 取分布,對拍「1d4 + floor(STR/5)」的理論範圍(combat.cpp 公式)。
+  std::printf("== 徒手傷害對拍 res3 bytecode(dmg = 1d4 + floor(STR/5))==\n");
+  {
+    res::BundleProvider prov(bundle);
+    auto sc = prov.load(3);
+    auto run_fist = [&](int str, int fist, int& mn, int& mx, bool& saw5) {
+      mn = 9999; mx = -1; saw5 = false;
+      for (int s = 0; s < 6000; ++s) {
+        vm::VmState st;
+        st.script = *sc; st.data_bytes = *sc; st.script_res = 3; st.data_res = 3;
+        st.resource_provider = [prov](int t) mutable { return prov.load(t); };
+        st.random_seed = (std::uint16_t)(0x0001 + s * 2654435761u);
+        st.fake_ticks = (std::uint16_t)(s * 40503u);
+        st.game_state[6] = 0; st.game_state[0x0A] = 0;
+        st.char_data[0x0c] = (std::uint8_t)str;   // STR
+        st.char_data[0x27] = (std::uint8_t)fist;  // Fistfighting
+        st.game_state[0x66] = 0xFF;               // 徒手
+        st.game_state[0x7e] = 1;                  // 命中 1 次
+        st.game_state[0x84] = 0;
+        st.pc = 0x0D54;
+        vm::Interpreter ip(st);
+        for (int step = 0; step < 400; ++step) {
+          if (st.halted) break;
+          std::size_t before = st.pc;
+          ip.run(1);
+          if (before == 0x0DD2) break;
+        }
+        int d = st.game_state[0x5d] | (st.game_state[0x5e] << 8);
+        if (d < mn) mn = d; if (d > mx) mx = d; if (d == 5) saw5 = true;
+      }
+    };
+    int mn, mx; bool saw5;
+    // STR10 Fist0 → 1d4 + 2 = [3,6] 含 5
+    run_fist(10, 0, mn, mx, saw5);
+    check(mn == 3 && mx == 6, ("bytecode STR10 徒手範圍 [3,6](實得 [" +
+          std::to_string(mn) + "," + std::to_string(mx) + "])").c_str());
+    check(saw5, "bytecode STR10 徒手含傷害值 5(證偽 DOS『無 5』)");
+    // STR20 Fist0 → 1d4 + 4 = [5,8]
+    run_fist(20, 0, mn, mx, saw5);
+    check(mn == 5 && mx == 8, "bytecode STR20 徒手範圍 [5,8](= 1d4 + floor(20/5)=4)");
+    // STR4 Fist0 → 1d4 + 0 = [1,4](證偽 floor(3))
+    run_fist(4, 0, mn, mx, saw5);
+    check(mn == 1 && mx == 4, "bytecode STR4 徒手範圍 [1,4](無 floor(3))");
+  }
+
   std::printf("\n%s\n", g_fail == 0 ? "verify_combat_script: PASS"
                                     : "verify_combat_script: FAIL");
   return g_fail == 0 ? 0 : 1;
