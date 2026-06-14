@@ -130,6 +130,21 @@ struct Combatant {
   int dmg_bonus = 0;   // STR 傷害修正
   std::uint8_t status = 0;  // 對照 player_record 0x4C bitfield(bit0 dead)
 
+  // ── 控制狀態(remake 設計;非 opendw byte-for-byte)──────────────────────
+  // 控制類法術(眩目/膽怯/驚嚇…)效果在 opendw C 碼未實作(見 combat.hpp 檔頭),
+  // 數值結算為依手冊文字 grounded 的 remake 設計。
+  //   • fled:已逃離戰鬥(膽怯/驚嚇等)。視同「不再參戰」:不行動、不被選為目標、
+  //          不計入存活方判定。逃走怪不計入我方擊殺 XP(見 combat_loop 勝負/XP 規則)。
+  //   • dazzle_turns:剩餘「跳過行動」回合數(眩目/閃光/火燄柱/圍困/龍捲風/荊棘);
+  //          combat_loop 輪到它時若 >0 則本回合不攻擊並 −−。仍可被選為目標(只是不還手)。
+  bool fled = false;
+  int dazzle_turns = 0;
+
+  // 仍在場上(未死亡、未逃離)。逃離者視同離場 → 不參戰、不被瞄準、不計入存活。
+  bool in_combat() const { return alive() && !fled; }
+  // 本回合是否被控制(眩目)而無法行動。
+  bool dazzled() const { return dazzle_turns > 0; }
+
   bool alive() const { return hp > 0 && (status & 0x01) == 0; }
 
   // 由玩家角色投影(av/dv/ac/傷害骰 grounded in fraterrisus+SDA,見 party.hpp/.cpp)。

@@ -15,6 +15,13 @@ The party flees!	パーティは逃げ出した！
 , stunning him	、気絶させた
 , killing him	、倒した
 %d %s (%d left)	%d 体の %s（残り %d）
+# 制御系呪文のログ（手冊 docs/33 に基づく；持続/逃走は remake 設計）
+Not enough power	マナが足りない
+%s is disoriented!	%s は方向を見失った！
+%s flees in terror!	%s は恐怖で逃げ出した！
+%s is disarmed!	%s は武装を解除された！
+%s is too disoriented to act!	%s は混乱して行動できない！
+%s casts %s	%s は %s を唱えた
 Victory!	勝利！
 The party has fallen.	パーティは全滅した。
 Each member gets 80 experience points for combat.	各メンバーは戦闘経験値を80点獲得した。

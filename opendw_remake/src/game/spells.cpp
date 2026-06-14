@@ -19,153 +19,156 @@ namespace {
 using S = SpellSchool;
 using E = SpellEffect;
 using T = SpellTarget;
+using K = ControlKind;
 
 // 全域法術表。每條:{id, school, name_key, effect, target, power, variable_power,
-//                    amount_min, amount_max, power_mult, manual_note}。
+//                    amount_min, amount_max, power_mult, control, manual_note}。
 // 註:name_key 用英文法術名(與手冊括號內原文一致),對拍 assets/i18n/*/spells.tsv。
+//     control 欄:Control 效果的具體種類(Daze/Flee/Disarm/Dispel),grounded 手冊「效果」欄;
+//     非控制類為 K::None。
 const std::vector<SpellDef> kSpells = {
     // ── A. 初級法術 Low Magic(doc 44 index 0x00-0x05;手冊 p20-21)──
-    {0x00, S::Low, "Mage Fire", E::Damage, T::OneEnemy, 2, false, 1, 8, 0,
+    {0x00, S::Low, "Mage Fire", E::Damage, T::OneEnemy, 2, false, 1, 8, 0, K::None,
      "p20 魔火 1-8 點/30呎/一個敵人/Power 2"},
-    {0x01, S::Low, "Disarm", E::Control, T::OneEnemy, 4, false, 0, 0, 0,
-     "p20 解除武裝/30呎/一個敵人/Power 4 — 控制類,結算 TODO"},
-    {0x02, S::Low, "Charm", E::BuffAv, T::OneAlly, 2, false, 1, 1, 0,
+    {0x01, S::Low, "Disarm", E::Control, T::OneEnemy, 4, false, 0, 0, 0, K::Disarm,
+     "p20 解除武裝/一個敵人/Power 4 — 控制:傷害降為徒手骰(remake 設計;手冊未給數值)"},
+    {0x02, S::Low, "Charm", E::BuffAv, T::OneAlly, 2, false, 1, 1, 0, K::None,
      "p20 吸引力 +1 AV(並治療一些)/一個人物/Power 2;時機:戰鬥 — 治療量手冊未給,TODO"},
-    {0x03, S::Low, "Luck", E::BuffDv, T::OneAlly, 3, false, 2, 2, 0,
+    {0x03, S::Low, "Luck", E::BuffDv, T::OneAlly, 3, false, 2, 2, 0, K::None,
      "p21 祈福 +2 DV/一個人物/Power 3;時機:戰鬥"},
-    {0x04, S::Low, "Lesser Heal", E::Heal, T::OneAlly, 2, false, 1, 4, 0,
+    {0x04, S::Low, "Lesser Heal", E::Heal, T::OneAlly, 2, false, 1, 4, 0, K::None,
      "p20 輕微醫療 1-4 點/治療/一個人物/Power 2"},
-    {0x05, S::Low, "Mage Light", E::Utility, T::AllAllies, 1, false, 0, 0, 0,
+    {0x05, S::Low, "Mage Light", E::Utility, T::AllAllies, 1, false, 0, 0, 0, K::None,
      "p21 法師魔光/亮光/全個小組/1 點=3 小時 — 光源,戰鬥外,TODO"},
 
     // ── B. 高級法術 High Magic ──
     // (一)戰鬥咒語(doc 44 0x06-0x10;手冊 p21-24)
-    {0x06, S::High, "Fire Light", E::PowerScaled, T::OneEnemy, 1, true, 0, 0, 6,
+    {0x06, S::High, "Fire Light", E::PowerScaled, T::OneEnemy, 1, true, 0, 0, 6, K::None,
      "p21 火燄之光 使用力量的 1-6 倍/30呎/一個敵人/Power 可隨意改變"},
-    {0x07, S::High, "Elvar's Fire", E::Damage, T::GroupEnemy, 6, false, 2, 12, 0,
+    {0x07, S::High, "Elvar's Fire", E::Damage, T::GroupEnemy, 6, false, 2, 12, 0, K::None,
      "p21 大火 2-12 點/30呎/一群敵人/Power 6"},
-    {0x08, S::High, "Poog's Vortex", E::Damage, T::GroupEnemy, 11, false, 4, 24, 0,
+    {0x08, S::High, "Poog's Vortex", E::Damage, T::GroupEnemy, 11, false, 4, 24, 0, K::None,
      "p22 烈燄旋渦 4-24 點/20呎/一群敵人/Power 11"},
-    {0x09, S::High, "Ice Chill", E::PowerScaled, T::OneEnemy, 1, true, 0, 0, 4,
+    {0x09, S::High, "Ice Chill", E::PowerScaled, T::OneEnemy, 1, true, 0, 0, 4, K::None,
      "p22 寒冰術 使用力量的 1-4 倍/50呎/一個敵人/Power 可隨意改變"},
-    {0x0A, S::High, "Big Chill", E::Damage, T::AllEnemy, 15, false, 4, 24, 0,
+    {0x0A, S::High, "Big Chill", E::Damage, T::AllEnemy, 15, false, 4, 24, 0, K::None,
      "p22 大寒冰術 4-24 點/30呎/所有敵人/Power 15"},
-    {0x0B, S::High, "Dazzle", E::Control, T::OneEnemy, 3, false, 0, 0, 0,
-     "p22 眩目強光/使敵人迷失方向/30呎/一個敵人/Power 3 — 控制類,TODO"},
-    {0x0C, S::High, "Mystic Might", E::BuffStr, T::OneAlly, 4, false, 15, 15, 0,
+    {0x0B, S::High, "Dazzle", E::Control, T::OneEnemy, 3, false, 0, 0, 0, K::Daze,
+     "p22 眩目強光/使敵人迷失方向/暫時失去行動能力/30呎/一個敵人/Power 3 — 控制:Daze 數回合"},
+    {0x0C, S::High, "Mystic Might", E::BuffStr, T::OneAlly, 4, false, 15, 15, 0, K::None,
      "p23 神力 +15 STR/時機:戰鬥/Power 4(手冊目標欄誤植「一個敵人」,效果為增益→視為隊員)"},
-    {0x0D, S::High, "Reveal Glamour", E::Utility, T::GroupEnemy, 2, false, 0, 0, 0,
-     "p23 幻影現形/驅散幻影/40呎/一群敵人/Power 2 — 工具類,TODO"},
-    {0x0E, S::High, "Sala's Swift", E::BuffDex, T::OneAlly, 5, false, 8, 8, 0,
+    {0x0D, S::High, "Reveal Glamour", E::Control, T::GroupEnemy, 2, false, 0, 0, 0, K::Dispel,
+     "p23 幻影現形/驅散幻影/40呎/一群敵人/Power 2 — 控制:Dispel,無戰鬥數值意義(N/A)"},
+    {0x0E, S::High, "Sala's Swift", E::BuffDex, T::OneAlly, 5, false, 8, 8, 0, K::None,
      "p24 迅捷術 +8 DEX/一個隊員;時機:戰鬥/Power 5"},
-    {0x0F, S::High, "Vorn's Guard", E::BuffAc, T::AllAllies, 6, false, 2, 2, 0,
+    {0x0F, S::High, "Vorn's Guard", E::BuffAc, T::AllAllies, 6, false, 2, 2, 0, K::None,
      "p23 保護罩 +2 AC(不影響 DV)/整個小組/Power 6"},
-    {0x10, S::High, "Cowardice", E::Control, T::GroupEnemy, 8, false, 0, 0, 0,
-     "p23 膽怯術/使敵人逃跑/60呎/一群敵人/Power 8 — 控制類,TODO"},
+    {0x10, S::High, "Cowardice", E::Control, T::GroupEnemy, 8, false, 0, 0, 0, K::Flee,
+     "p23 膽怯術/使敵人逃跑/60呎/一群敵人/Power 8 — 控制:Flee 逐出戰鬥"},
     // (二)醫療咒語(doc 44 0x11-0x12;手冊 p24)
-    {0x11, S::High, "Healing", E::Heal, T::OneAlly, 3, false, 1, 6, 0,
+    {0x11, S::High, "Healing", E::Heal, T::OneAlly, 3, false, 1, 6, 0, K::None,
      "p24 治療 1-6 點/一個人物/Power 3"},
-    {0x12, S::High, "Group Heal", E::Heal, T::AllAllies, 6, false, 1, 6, 0,
+    {0x12, S::High, "Group Heal", E::Heal, T::AllAllies, 6, false, 1, 6, 0, K::None,
      "p24 集體治療 1-6 點/整個小組/Power 6"},
     // (三)其他咒語(doc 44 0x13 遮蔽奧術、0x14 感知陷阱、0x15-0x18 召喚;手冊 p24-25)
-    {0x13, S::High, "Cloak Arcane", E::BuffAc, T::AllAllies, 1, true, 2, 2, 0,
+    {0x13, S::High, "Cloak Arcane", E::BuffAc, T::AllAllies, 1, true, 2, 2, 0, K::None,
      "p25 隱身術 +2 AC/整個小組/可隨意改變;1 點=1 小時"},
-    {0x14, S::High, "Sense Traps", E::Utility, T::AllAllies, 2, false, 0, 0, 0,
+    {0x14, S::High, "Sense Traps", E::Utility, T::AllAllies, 2, false, 0, 0, 0, K::None,
      "p25 偵測陷阱/感測/整個小組/2 小時 — 工具類,TODO"},
-    {0x15, S::High, "Air Summon", E::Utility, T::Special, 1, true, 0, 0, 0,
+    {0x15, S::High, "Air Summon", E::Utility, T::Special, 1, true, 0, 0, 0, K::None,
      "p24 召喚風元素/召喚/1 點=4 小時 — 召喚類,TODO"},
-    {0x16, S::High, "Earth Summon", E::Utility, T::Special, 1, true, 0, 0, 0,
+    {0x16, S::High, "Earth Summon", E::Utility, T::Special, 1, true, 0, 0, 0, K::None,
      "p25 召喚地元素/召喚/1 點=4 小時 — 召喚類,TODO"},
-    {0x17, S::High, "Water Summon", E::Utility, T::Special, 1, true, 0, 0, 0,
+    {0x17, S::High, "Water Summon", E::Utility, T::Special, 1, true, 0, 0, 0, K::None,
      "p25 召喚水元素/召喚/1 點=4 小時 — 召喚類,TODO"},
-    {0x18, S::High, "Fire Summon", E::Utility, T::Special, 1, true, 0, 0, 0,
+    {0x18, S::High, "Fire Summon", E::Utility, T::Special, 1, true, 0, 0, 0, K::None,
      "p25 召喚火元素/召喚/1 點=4 小時 — 召喚類,TODO"},
 
     // ── D. 德魯伊法術 Druid Magic(doc 44 0x19-0x25;手冊 p30-33)──
     // (一)戰鬥咒語
-    {0x19, S::Druid, "Death Curse", E::Damage, T::OneEnemy, 6, false, 3, 18, 0,
+    {0x19, S::Druid, "Death Curse", E::Damage, T::OneEnemy, 6, false, 3, 18, 0, K::None,
      "p30 死亡的詛咒 3-18 點/40呎/一個敵人/Power 6"},
-    {0x1A, S::Druid, "Fire Blast", E::Damage, T::GroupEnemy, 12, false, 4, 24, 0,
+    {0x1A, S::Druid, "Fire Blast", E::Damage, T::GroupEnemy, 12, false, 4, 24, 0, K::None,
      "p31 爆炸術 4-24 點/30呎/一群敵人/Power 12"},
-    {0x1B, S::Druid, "Insect Plague", E::DebuffAvDv, T::GroupEnemy, 4, false, 2, 2, 0,
+    {0x1B, S::Druid, "Insect Plague", E::DebuffAvDv, T::GroupEnemy, 4, false, 2, 2, 0, K::None,
      "p31 蟲害 -2 AV/DV/60呎/一群敵人;時機:戰鬥/Power 4"},
-    {0x1C, S::Druid, "Whirl Wind", E::Control, T::GroupEnemy, 4, false, 0, 0, 0,
-     "p31 龍捲風/推開 30 呎/40呎/一群敵人/Power 4 — 控制類,TODO"},
-    {0x1D, S::Druid, "Scare", E::BuffAv, T::AllAllies, 4, false, 2, 2, 0,
-     "p31 懼怕 +2 AV/整個小組;時機:戰鬥/Power 4"},
-    {0x1E, S::Druid, "Brambles", E::Control, T::GroupEnemy, 5, false, 0, 0, 0,
-     "p31 荊棘/產生障礙(得到一回合)/60呎/一群敵人/Power 5 — 控制類,TODO"},
+    {0x1C, S::Druid, "Whirl Wind", E::Control, T::GroupEnemy, 4, false, 0, 0, 0, K::Daze,
+     "p31 龍捲風/將敵人吹散/推開 30 呎/40呎/一群敵人/Power 4 — 控制:Daze(推開=跳過行動)"},
+    {0x1D, S::Druid, "Scare", E::BuffAv, T::AllAllies, 4, false, 2, 2, 0, K::None,
+     "p31 懼怕 +2 AV/整個小組;時機:戰鬥/Power 4(手冊效果欄=+2 AV 增益,非逐出敵人)"},
+    {0x1E, S::Druid, "Brambles", E::Control, T::GroupEnemy, 5, false, 0, 0, 0, K::Daze,
+     "p31 荊棘/產生障礙(得到一回合)/60呎/一群敵人/Power 5 — 控制:Daze(障礙=敵人跳過)"},
     // (二)醫療咒語(手冊 p33)
-    {0x1F, S::Druid, "Creater Healing", E::Heal, T::OneAlly, 4, false, 1, 6, 0,
+    {0x1F, S::Druid, "Creater Healing", E::Heal, T::OneAlly, 4, false, 1, 6, 0, K::None,
      "p33 造物者治療 1-6 點/一個隊員/Power 4"},
-    {0x20, S::Druid, "Cure All", E::Heal, T::AllAllies, 6, false, 1, 8, 0,
+    {0x20, S::Druid, "Cure All", E::Heal, T::AllAllies, 6, false, 1, 8, 0, K::None,
      "p33 治療全部 1-8 點/整個小組/Power 6"},
     // (三)其他咒語(手冊 p32-33)
-    {0x21, S::Druid, "Create Wall", E::Utility, T::Special, 6, false, 0, 0, 0,
+    {0x21, S::Druid, "Create Wall", E::Utility, T::Special, 6, false, 0, 0, 0, K::None,
      "p32 建立石牆/Power 6 — 工具類,TODO"},
-    {0x22, S::Druid, "Soften Stone", E::Utility, T::Special, 6, false, 0, 0, 0,
+    {0x22, S::Druid, "Soften Stone", E::Utility, T::Special, 6, false, 0, 0, 0, K::None,
      "p32 軟化石頭/移開/Power 6 — 工具類,TODO"},
-    {0x23, S::Druid, "Invoke Spirit", E::Utility, T::Special, 1, true, 0, 0, 0,
+    {0x23, S::Druid, "Invoke Spirit", E::Utility, T::Special, 1, true, 0, 0, 0, K::None,
      "p33 召喚精靈/召喚/1 點=4 小時 — 召喚類,TODO"},
-    {0x24, S::Druid, "Beast Call", E::Utility, T::Special, 1, true, 0, 0, 0,
+    {0x24, S::Druid, "Beast Call", E::Utility, T::Special, 1, true, 0, 0, 0, K::None,
      "p32 呼叫野獸/召喚/1 點=4 小時 — 召喚類,TODO"},
-    {0x25, S::Druid, "Wood Spirit", E::Utility, T::Special, 1, true, 0, 0, 0,
+    {0x25, S::Druid, "Wood Spirit", E::Utility, T::Special, 1, true, 0, 0, 0, K::None,
      "p32 樹木精靈/召喚/1 點=4 小時 — 召喚類,TODO"},
 
     // ── C. 太陽法術 Sun Magic(doc 44 自 0x26 起;手冊 p26-30)──
     // 註:doc 44 僅明列 0x26 日炙、0x27 驅魔;以下 id 為 remake 依「S 段接 D 段、按手冊列序」
     //     延伸(見檔頭原則)。
     // (一)戰鬥咒語
-    {0x26, S::Sun, "Sun Stroke", E::PowerScaled, T::OneEnemy, 1, true, 0, 0, 8,
+    {0x26, S::Sun, "Sun Stroke", E::PowerScaled, T::OneEnemy, 1, true, 0, 0, 8, K::None,
      "p26 日灼術 使用力量的 1-8 倍/20呎/一個敵人/Power 可隨意改變"},
-    {0x27, S::Sun, "Exorcism", E::Damage, T::GroupEnemy, 5, false, 6, 36, 0,
+    {0x27, S::Sun, "Exorcism", E::Damage, T::GroupEnemy, 5, false, 6, 36, 0, K::None,
      "p26 驅鬼術 6-36 點/50呎/一群敵人/Power 5"},
-    {0x28, S::Sun, "Rage of Mithras", E::PowerScaled, T::OneEnemy, 1, true, 0, 0, 6,
+    {0x28, S::Sun, "Rage of Mithras", E::PowerScaled, T::OneEnemy, 1, true, 0, 0, 6, K::None,
      "p26 光神之怒 使用力量的 1-6 倍/70呎/一個敵人/Power 可隨意改變"},
-    {0x29, S::Sun, "Wrath of Mithras", E::PowerScaled, T::GroupEnemy, 1, true, 0, 0, 4,
+    {0x29, S::Sun, "Wrath of Mithras", E::PowerScaled, T::GroupEnemy, 1, true, 0, 0, 4, K::None,
      "p26 光神之怒(群) 使用力量的 1-4 倍/90呎/一群敵人/Power 可隨意改變"},
-    {0x2A, S::Sun, "Fire Storm", E::Damage, T::AllEnemy, 20, false, 6, 36, 0,
+    {0x2A, S::Sun, "Fire Storm", E::Damage, T::AllEnemy, 20, false, 6, 36, 0, K::None,
      "p27 狂燄暴風 6-36 點/60呎/所有敵人/Power 20"},
-    {0x2B, S::Sun, "Inferno", E::PowerScaled, T::AllEnemy, 1, true, 0, 0, 4,
+    {0x2B, S::Sun, "Inferno", E::PowerScaled, T::AllEnemy, 1, true, 0, 0, 4, K::None,
      "p27 地獄之火 使用力量的 1-4 倍/40呎/所有敵人/Power 可隨意改變"},
-    {0x2C, S::Sun, "Holy Aim", E::BuffAv, T::AllAllies, 5, false, 2, 2, 0,
+    {0x2C, S::Sun, "Holy Aim", E::BuffAv, T::AllAllies, 5, false, 2, 2, 0, K::None,
      "p27 聖戰光輝 +2 AV/整個小組;時機:戰鬥/Power 5"},
-    {0x2D, S::Sun, "Battle Power", E::BuffStr, T::AllAllies, 8, false, 10, 10, 0,
+    {0x2D, S::Sun, "Battle Power", E::BuffStr, T::AllAllies, 8, false, 10, 10, 0, K::None,
      "p27 戰鬥力 +10 STR/整個小組;時機:戰鬥/Power 8"},
-    {0x2E, S::Sun, "Column of Fire", E::Control, T::GroupEnemy, 5, false, 0, 0, 0,
-     "p28 火燄柱/停止前進/40呎/一群敵人/Power 5 — 控制類,TODO"},
-    {0x2F, S::Sun, "Mithra's Bless", E::BuffDv, T::AllAllies, 5, false, 3, 3, 0,
+    {0x2E, S::Sun, "Column of Fire", E::Control, T::GroupEnemy, 5, false, 0, 0, 0, K::Daze,
+     "p28 火燄柱/停止前進/40呎/一群敵人/Power 5 — 控制:Daze(停止前進=跳過行動)"},
+    {0x2F, S::Sun, "Mithra's Bless", E::BuffDv, T::AllAllies, 5, false, 3, 3, 0, K::None,
      "p28 光神的祝福 +3 DV/整個小組;時機:戰鬥/Power 5"},
-    {0x30, S::Sun, "Light Flash", E::Control, T::GroupEnemy, 6, false, 0, 0, 0,
-     "p28 閃光術/迷失方向/50呎/一群敵人/Power 6 — 控制類,TODO"},
-    {0x31, S::Sun, "Armor of Light", E::BuffAc, T::OneAlly, 6, false, 2, 2, 0,
+    {0x30, S::Sun, "Light Flash", E::Control, T::GroupEnemy, 6, false, 0, 0, 0, K::Daze,
+     "p28 閃光術/迷失方向/50呎/一群敵人/Power 6 — 控制:Daze 數回合"},
+    {0x31, S::Sun, "Armor of Light", E::BuffAc, T::OneAlly, 6, false, 2, 2, 0, K::None,
      "p28 光的武裝 +2 AC/一個隊員;時機:戰鬥/Power 6"},
     // (二)醫療咒語(手冊 p29)
-    {0x32, S::Sun, "Sun Light", E::Heal, T::OneAlly, 3, false, 1, 6, 0,
+    {0x32, S::Sun, "Sun Light", E::Heal, T::OneAlly, 3, false, 1, 6, 0, K::None,
      "p29 陽光醫療 1-6 點/一個隊員/Power 3"},
-    {0x33, S::Sun, "Heal", E::Heal, T::OneAlly, 4, false, 2, 8, 0,
+    {0x33, S::Sun, "Heal", E::Heal, T::OneAlly, 4, false, 2, 8, 0, K::None,
      "p29 治療 2-8 點/一個隊員/Power 4"},
-    {0x34, S::Sun, "Major Heal", E::Heal, T::AllAllies, 6, false, 1, 6, 0,
+    {0x34, S::Sun, "Major Heal", E::Heal, T::AllAllies, 6, false, 1, 6, 0, K::None,
      "p29 主要治療 1-6 點/整個小組/Power 6"},
     // (三)其他咒語(手冊 p29-30)
-    {0x35, S::Sun, "Charger", E::Utility, T::Item, 8, false, 0, 0, 0,
+    {0x35, S::Sun, "Charger", E::Utility, T::Item, 8, false, 0, 0, 0, K::None,
      "p29 補給/對耗盡的法術物品補充/一個物品/Power 8 — 工具類,TODO"},
-    {0x36, S::Sun, "Disarm Trap", E::Utility, T::Special, 1, true, 0, 0, 0,
+    {0x36, S::Sun, "Disarm Trap", E::Utility, T::Special, 1, true, 0, 0, 0, K::None,
      "p29 解除陷阱/1 點=2 小時 — 工具類,TODO"},
-    {0x37, S::Sun, "Guidance", E::Utility, T::AllAllies, 1, true, 0, 0, 0,
+    {0x37, S::Sun, "Guidance", E::Utility, T::AllAllies, 1, true, 0, 0, 0, K::None,
      "p30 導引術/指引/1 點=3 小時 — 工具類,TODO"},
-    {0x38, S::Sun, "Radiance", E::Utility, T::AllAllies, 1, true, 0, 0, 0,
+    {0x38, S::Sun, "Radiance", E::Utility, T::AllAllies, 1, true, 0, 0, 0, K::None,
      "p30 輻射光輝/光線/40呎/整個小組/1 點=2 小時 — 工具類,TODO"},
-    {0x39, S::Sun, "Summon Salamander", E::Utility, T::Special, 1, true, 0, 0, 0,
+    {0x39, S::Sun, "Summon Salamander", E::Utility, T::Special, 1, true, 0, 0, 0, K::None,
      "p30 召喚火蜥蜴/召喚/1 點=4 小時 — 召喚類,TODO"},
 
     // ── E. 其他法術 Miscellaneous Magic(手冊 p33-34;id 接 S 段續延伸)──
-    {0x3A, S::Misc, "Zak's Speed", E::BuffDex, T::AllAllies, 10, false, 15, 15, 0,
+    {0x3A, S::Misc, "Zak's Speed", E::BuffDex, T::AllAllies, 10, false, 15, 15, 0, K::None,
      "p33 增加敏捷 +15 DEX/整個小組;時機:戰鬥/Power 10"},
-    {0x3B, S::Misc, "Kill Ray", E::Damage, T::OneEnemy, 15, false, 10, 80, 0,
+    {0x3B, S::Misc, "Kill Ray", E::Damage, T::OneEnemy, 15, false, 10, 80, 0, K::None,
      "p33 死光 10-80 點/50呎/一個敵人/Power 15"},
-    {0x3C, S::Misc, "Prison", E::Control, T::GroupEnemy, 8, false, 0, 0, 0,
-     "p34 圍困/停止前進/60呎/一群敵人/Power 8;時機:戰鬥 — 控制類,TODO"},
+    {0x3C, S::Misc, "Prison", E::Control, T::GroupEnemy, 8, false, 0, 0, 0, K::Daze,
+     "p34 圍困/停止前進/60呎/一群敵人/Power 8;時機:戰鬥 — 控制:Daze(困住=跳過行動)"},
 };
 
 }  // namespace
@@ -294,11 +297,46 @@ CastResult cast_spell(std::uint8_t spell_id, int caster_power, int caster_str,
       target.dv -= sp->amount_min;
       r.handled = true;
       break;
-    case E::Control:
-      // 控制類(逃跑/迷失/停止前進…):手冊未給數值結算 → 只扣 Power,標 TODO。
-      r.note = "control: TODO (flee/disorient/halt)";
-      r.handled = false;
+    case E::Control: {
+      // 控制類(grounded 手冊「效果」欄;持續回合為 remake 設計,見 kControlDazzleTurns)。
+      //   作用於 target 的控制狀態(dazzle_turns/fled/dmg_*),不改 STUN。
+      //   group/all 目標由呼叫端對每隻怪各呼叫一次(同傷害類慣例)。
+      r.control = sp->control;
+      switch (sp->control) {
+        case ControlKind::Daze:
+          // 眩目/閃光/火燄柱/圍困/龍捲風/荊棘:目標 N 回合無法行動(迷失/停止前進/推開/障礙)。
+          target.dazzle_turns += kControlDazzleTurns;
+          r.dazzle_turns = kControlDazzleTurns;
+          r.note = "control: daze";
+          r.handled = true;
+          break;
+        case ControlKind::Flee:
+          // 膽怯術:使敵人逃跑 → 逐出戰鬥(不再參戰)。逃走怪不計入我方擊殺 XP(見 combat_loop)。
+          target.fled = true;
+          r.target_fled = true;
+          r.note = "control: flee";
+          r.handled = true;
+          break;
+        case ControlKind::Disarm:
+          // 解除武裝:手冊未給數值 → remake 設計:目標傷害降為徒手骰(kUnarmed*),修正歸零。
+          target.dmg_dice = kUnarmedDice;
+          target.dmg_sides = kUnarmedSides;
+          target.dmg_bonus = 0;
+          r.note = "control: disarm";
+          r.handled = true;
+          break;
+        case ControlKind::Dispel:
+          // 幻影現形:驅散幻影,無戰鬥數值意義(N/A)。視為已結算的 no-op。
+          r.note = "control: dispel (N/A in combat)";
+          r.handled = true;
+          break;
+        case ControlKind::None:
+          r.note = "control: unspecified (TODO)";
+          r.handled = false;
+          break;
+      }
       break;
+    }
     case E::Utility:
       // 工具類(光源/召喚/感測/補給…):戰鬥外或未結算 → 只扣 Power,標 TODO。
       r.note = "utility: TODO (light/summon/sense/charge)";
