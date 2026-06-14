@@ -27,9 +27,30 @@ The party has fallen.	パーティは全滅した。
 Each member gets 80 experience points for combat.	各メンバーは戦闘経験値を80点獲得した。
 Each member +80 XP	各メンバー +80 XP
 [ continue ]	［続行］
-Robber	盗賊
+# モンスター名（X68000 日本語版 MONS ファイルより抽出。出典 docs/46。
+#   符号化: Shift-JIS、各バイトのニブルを入れ替えた「ニブルスワップ SJIS」。
+#   MONS 0x211F から 0x3C バイト間隔の固定長配列。DOS res31 の並び順と 1:1 一致。
+#   信頼度: 高（実機日本語版から抽出、英語キーと配列位置で対位）。）
+Robber	強盗
+King's Guard	王の衛兵
+Soldier	兵士
+Bandit	追いはぎ
+Pikeman	槍兵
+Loon	狂人
+Fanatic	狂信者
+Yonderboy	チンピラ
+Born Loser	流浪者
+Unjustly Accused	不浄の霊魂
+Innocent Man	殉教者
+Giant Spider	大グモ
 Wild Dog	野犬
 Spider	クモ
-Wolf	オオカミ
-Humbaba	フンババ
+Cannibal	人食い
+Big Dog	大きな犬
+Wild hound	狂った猟犬
+Rock Spider	ロック・スパイダー
+Wolf	狼
+Jail Keeper	番人
+Drunk	飲んだくれ
+Humbaba	ハンババ
 Gladiator	剣闘士
