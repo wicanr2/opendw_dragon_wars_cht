@@ -96,6 +96,7 @@ private:
   void op4E_set_gs_bit();      // 0x4E
   void op4F_clr_gs_bit();      // 0x4F
   void op50_test_gs_bit();     // 0x50
+  void op51_argmax_data();     // 0x51  掃 data[di+bl](bl=r4..0)取最大值→r2,index→r4 低位
 
   // --- batch 3:rcr+加減 / loop / set-msb / test-gs / bit ---
   void op2F_rcr_add_gs();      // 0x2F

@@ -399,6 +399,28 @@ void Interpreter::op50_test_gs_bit() {
   s_.flags |= flags;
 }
 
+// op_51(@0x418B):讀 2-byte operand(di = data 內偏移);掃 es[di + bl](bl 自 r4 低位
+//   遞減至 0,迴圈條件 --bl != 0xFF),取最大 byte 值 → r2,該 index → r4 低位。
+//   es = word_3ADF->bytes(= data_bytes)。用於戰鬥找「行動值最高的下一個 actor」。
+void Interpreter::op51_argmax_data() {
+  std::uint16_t di = s_.fetch8();
+  di += (std::uint16_t)(s_.fetch8() << 8);
+  std::uint8_t bl = (std::uint8_t)(s_.r4 & 0xFF);
+  const auto& es = s_.data_bytes;
+  // word_3AE2 = 0;word_3AE4 低位 = bl(對照 419E)
+  s_.r2 = 0;
+  s_.r4 = (s_.r4 & 0xFF00) | bl;
+  // while (--bl != 0xFF):bl 先遞減,等於 0xFF(自 0 借位)時停。
+  while ((std::uint8_t)(--bl) != 0xFF) {
+    std::size_t idx = (std::size_t)di + bl;
+    std::uint8_t al = (idx < es.size()) ? es[idx] : 0;
+    if (al >= (std::uint8_t)(s_.r2 & 0xFF)) {
+      s_.r2 = al;
+      s_.r4 = (s_.r4 & 0xFF00) | bl;
+    }
+  }
+}
+
 // --- batch 3 ---
 void Interpreter::set_flags() {  // 對照 opendw set_flags(讀持久 cf/zf/sf)
   s_.ax = (s_.sf << 7) | (s_.zf << 6) | kReserved | (s_.cf << 0);
@@ -1661,6 +1683,7 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x4E] = &Interpreter::op4E_set_gs_bit;
   t[0x4F] = &Interpreter::op4F_clr_gs_bit;
   t[0x50] = &Interpreter::op50_test_gs_bit;
+  t[0x51] = &Interpreter::op51_argmax_data;
   // batch 3
   t[0x2F] = &Interpreter::op2F_rcr_add_gs;
   t[0x30] = &Interpreter::op30_rcr_add_imm;
