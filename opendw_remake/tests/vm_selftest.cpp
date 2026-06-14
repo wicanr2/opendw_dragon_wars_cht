@@ -251,6 +251,21 @@ int main() {
           (s.flags & kCarry)==0 && s.halted);
   }
 
+  // BB: op_51(argmax over data):掃 data[di+bl](bl=r4..0)取最大值→r2,index→r4 低位。
+  //   data[0x10..0x14] = {3, 9, 2, 7, 5};r4=5(掃 bl=4..0)→ 最大=9 @index1。
+  //   (對照 op_51 @0x418B:while(--bl != 0xFF){ al=es[di+bl]; if(al>=r2){r2=al;r4lo=bl} })
+  {
+    VmState s;
+    s.data_bytes.assign(0x20, 0);
+    s.data_bytes[0x10]=3; s.data_bytes[0x11]=9; s.data_bytes[0x12]=2;
+    s.data_bytes[0x13]=7; s.data_bytes[0x14]=5;
+    // op_06 r4=5; op_51 operand=0x10(2B LE); op_5A
+    s.script={0x06,0x05, 0x51,0x10,0x00, 0x5A};
+    Interpreter(s).run();
+    check("op51 argmax:max(3,9,2,7,5)=9 → r2==9、r4低位==1",
+          (s.r2 & 0xFF)==9 && (s.r4 & 0xFF)==1 && s.halted);
+  }
+
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);
   return fails ? 1 : 0;
 }

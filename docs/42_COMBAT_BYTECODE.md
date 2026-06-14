@@ -131,3 +131,44 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
 
 ### combat.cpp placeholder 狀態
 - **仍維持乾淨室標示,不可移除**。一場戰鬥仍未跑出怪物 HP 變化(roster 空 → 空轉),戰鬥數值未經原版 bytecode 驗證為 oracle 真值。嚴守鐵則:未跑通+對拍前不謊稱 oracle。
+
+---
+
+## 10. 更新(第四輪:roster 推進 + 從 bytecode 反推 to-hit/傷害公式)
+
+### roster setup 機制(逐項對 res3 bytecode / engine.c)
+- **遭遇資料資源** = `gs[0x5A]`(= 關卡資源 `(gs[4]+0x1E)` 的 index,engine.c:5452 `load_level_resources`);實測等同 res31。**walker 入口**:`gs[0x58/0x59]` = `res31->bytes[2..3]`(initial_offset;對照 monster_info.cpp 0x4F6)。
+- **怪物群模板載入**:res3 sub `0x04F1`(經 `op_0F` 從 `resource_idx(gs[0x5A])->bytes` + `gs[0x58]` offset + `op_4D` RNG 走訪)把怪物群寫進 `gs[0x28..0x36]`(13 byte 模板)、`gs[0x27]` = 群數。**已驗證**:給對 context 後 `gs[0x28..0x36]` 確實填入真資料(例 `01 00 0c 00 43 a2 0c 28 c5 14 …`),非全 0。
+- **怪物群定義表** @res3 `0x04C6` = `{0x03D6, 0x0412, 0x044E, 0x048A, 0…}`(每項 = res3 內怪物群定義 offset;對照 monster_info.cpp `script_data[]`)。`sub 0x06B5`(`op_0D 0x04C6` 查表)取群定義。
+- **仍卡點**:怪物未進 char_data 槽 + `gs[0x1F]`(參戰數)未增 → 戰鬥流程在「怪物登場 announce 迴圈」(res3 0x0029/0x010e,`call 0x06B5`)空轉,**未到 actor 迴圈(0x0075)**。announce 迴圈不終止的精確 gs 種子尚未完全對齊(需更多 gs[0x41]/群 index 簿記)。本輪未讓一回合真扣 HP。
+
+### 本輪實作:op_51(roster 路徑必需)
+- **op_51**(argmax over data,engine.c:2277 @0x418B):讀 2-byte operand(data 偏移),掃 `data[di+bl]`(bl 自 r4 遞減至 0),取**最大 byte**→r2、其 index→r4 低位。actor 迴圈 `sub 0x071b`(`op_51 0x04ea`)用它找「行動值最高的下一個 actor」。逐指令對齊,入 vm_selftest(PASS)。
+
+### 從 bytecode 反推的 to-hit / 傷害公式(op 層級,oracle res3 行號)
+> 這是「實機讀不到、bytecode 才看得到」的部分。**weapon 路徑被 op_68 擋住**(見下);**fistfighting 路徑大致可讀**。
+
+**傷害主流程** `0x0D4F test gs[0x66]; jns 0x0D68`(`gs[0x66]` = 武器/徒手旗標):
+- **武器路徑(0x0D68,gs[0x66]≥0)**:`op_68 0x08`→`gs[0x7c]`;`op_68 0x02 & 0x1f`→`gs[0x5d]`(骰數);若非零 `op_68 0x01 & 0x3f`→r4,`char_data[0x0c]`(STR),`op_31 gs[0x5d]`(STR rcr-減);最後 **`op_36 0x05`(÷5)**。→ **公式 = f(武器骰 op_68 欄位, STR) ÷ 5**。
+- **徒手路徑(0x0D54,gs[0x66]<0=0xFF)**:`char_data[0x27]`(**Fistfighting 技能**,player.c 0x27)`min(.,8)` → `op_0D 0x0EC2` 查表(骰描述)→ `char_data[0x0c]`(STR)→ `op_36 0x05`(÷5)。
+  - **徒手骰表 @res3 0x0EC2** = `00 01 21 41 22 42 23 24 33 34 36 37`(高 nibble=骰數、低 nibble=骰面的遊戲骰式編碼)。
+- **骰擲子程式(`load_resource res:0x03 off:0x06EC`)**:`r2>>5` 取骰式 index → `op_0D 0x0713` 查骰值表;`r2 & 0x1f`→r4(骰數);迴圈 r4 次:`r2=0x0f`(or 表值)`op_4D`(RNG)`+1` `op_2F gs[0x5d]`(rcr-加)累加。
+  - **骰值表 @res3 0x0713** = `04 06 08 0a 0c 14 1e 64 …`(= d4/d6/d8/d10/d12/d20/d30/d100)。
+
+### op_68 是 oracle 不可解的硬阻(weapon 傷害)
+- **op_68 在 opendw `targets[]` 為 NULL**(engine.c:583 區,handler @0x450A,**未逆向**);disasm.cpp 僅標 `1 arg`;`dos/dragon.asm` 不及該位址;`doc/script.md` 無。res3 用 op_68 **22 次**(命中/傷害/AI 路徑),武器傷害核心(0x0D68 的 `op_68 0x08/0x02/0x01`)即靠它讀「武器記錄的位元欄位」。**無任何可逐指令對齊的 oracle** → 須從原始 COM 反組譯 op-dispatch 表(現無素材)。
+
+### 與 DOS 校準 / combat.cpp 是否一致
+- 校準錨點(docs/43 §9):徒手 Str10 → {3,4,6}、傷害 `max(3, floor(1.5×raw))`、`×3/2`、AV=DV=Dex/4、AC 壓命中不減傷。
+- bytecode 顯示的徒手路徑用 **Fistfighting 技能 + STR + 骰表 + `op_36 0x05`(÷5)**,與校準的 `×3/2`/`max(3)` **結構不同**(bytecode 是「骰 ÷5」而非「×1.5 取下限 3」)。**尚不能判定等價**:因徒手路徑的最終命中/傷害仍經 op_68(0x0E83 等)與 roster 數值,未端到端跑出數字驗證。
+- **結論:不可升級標示**。weapon 傷害被 op_68 擋住、徒手傷害未端到端跑出數字對校準,故 combat.cpp **維持「手冊/實機校準」標示不變**(嚴守鐵則:未經 bytecode 跑通+對拍不謊稱 oracle)。
+
+### 本輪交付
+- 實作 op_51(roster argmax)+ vm_selftest(PASS);ctest 維持全綠(17 項)。
+- 反推並記錄 to-hit/傷害公式結構(op 層級 + res3 骰表/骰值表 byte 值)。
+- 精確標定硬阻 op_68(weapon 傷害,oracle 不可解)與 roster announce 迴圈卡點。
+
+### 下一步
+1. **roster 完成**:對齊 announce 迴圈所需 gs 種子(gs[0x41] 群 index、gs[0x47/0x48] 等),讓怪物進 char_data 槽 + gs[0x1F] 增 → 到 actor 迴圈。
+2. **op_68 反推**:從原始 dragon.com 反組譯 0x450A(需新素材);或由 op_68 在 22 處的「operand → 取哪段位元」用法 + DOS 校準值**反推語意**(風險:非逐指令對齊,須標為「推斷」)。
+3. 端到端跑出徒手一回合傷害數字 → 對 DOS 校準 {3,4,6};一致才可考慮升級標示。
