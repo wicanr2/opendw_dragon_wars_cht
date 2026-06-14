@@ -405,3 +405,34 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
 2. 或設 gs[0x90]/gs[0x91] 自動目標(號誌位)讓 res4 跳過 "Target..." prompt → 直接 retf。
 3. 滿足角色動作選單的「全員已選」推進(res18↔res4 迴圈收斂)→ 進 res3 actor 迴圈 0x0075 → to-hit/傷害對 data[0x03D6] 怪物結算。
 - **結算公式(to-hit 1d16+3 門檻、徒手 dice+STR/5)均已 bytecode 真值化並對拍**;只差驅動 3 層 UI 互動到 actor 迴圈。
+
+---
+
+## 14. 更新(第八輪:headless 驅動 3 層選單 — 確認非 opcode 缺失,卡在動作指派狀態機)
+
+### 怎麼驅動 3 層選單
+- op_89 headless_keys 序列 + **新增數字鍵(type 0x01)處理**:對照 wait_for_event 0x29EF,按鍵 '1'..'7'(0xB1..0xB7)→ index = key−0xB1;< gs[0x1F] → 命中該數字筆、設 gs[6]=index(選定隊員/目標)。入 vm_selftest(CC/DD,PASS)。
+- 3 層 op_89 已定位(實機鍵表):
+  - **主選單 @res18:0x00F8**:Fight `F`(0xC6)→0x0108、Run `R`(0xD2)、Advance `A`(0xC1)。
+  - **角色動作選單 @res18:0x01EA**:Attack `A`(0xC1)→0x03BC、Defend `D`(0xC4)、Cast `C`(0xC3)。
+  - **目標選擇 @res18:0x0491 + res4:0x007D**:Attack `A`(0xC1)→0x04AB;res4「Target...」數字鍵選怪。
+
+### 抵達 actor 迴圈了嗎 → 否,但精確定位卡點(非 opcode 缺失)
+- 餵 Fight → Attack×N:**處理完全部 4 名角色**(gs[6] 0→1→2→3),但 gs[6]=3 後**動作指派迴圈不終止、無限重提示**,未抵達 res3 actor 迴圈 0x0075。
+- **關鍵:last_unimpl=0x00 全程無未實作 opcode** —— 卡點不是 opcode 缺失,而是 **per-character 動作指派狀態機不收斂**。
+- 迴圈內容(已 trace 完整 cycle,皆已實作 op):action 選單(op_89)→ op_63(寫角色 char_ext 動作)→ op_58 進 res4 目標選擇 → res4 用 0x06b1/0x06b5 掃怪物群找目標 → 回 action 選單。怪物群緩衝 data[0x03D6] byte0a(count)=0x0a(怪確實在)。
+
+### 卡點精確化(比上輪更深)
+- 動作指派迴圈處理完 4 員後,「全員已指派 → 退出進 actor 迴圈」的終止條件未滿足:gs[6] 卡在 3、重複 action 選單。
+- 推測根因:per-character 動作確認/推進依賴更廣的遊戲狀態(gs[0x35] 事件旗標、char_ext/gs 的逐角色「已選動作」標記、res3@0x08b6 的動作輸入 driver 計數器),這些由完整地圖層戰鬥進入流程建立,**headless 直跑 res3 offset 0 + 合成 context 無法完整重現**。
+- **非單一 opcode 或鍵序列可解**:是跨 res3/res18/res4 的互動式動作指派狀態機,需逐欄逆向「每角色動作如何標記完成 + 全員完成偵測」。
+
+### roster + 結算現況(再次確認)
+- roster **已建立**(怪物在群緩衝 data[0x03D6],非 char_data 槽,為原版設計)。
+- to-hit(1d16+3 門檻 13+AV−def)、徒手傷害(dice+STR/5)**均已 bytecode 真值化 + 端到端對拍**。
+- **武器 STR bonus 仍未定論**:需 actor 迴圈實際執行武器攻擊(0x0D68)才能觀察自改碼殘留,目前未到 → **維持 best-fit 標示不變**(嚴守鐵則)。
+
+### 本輪交付
+- op_89 數字鍵(type 0x01)目標/隊員選擇 headless 處理(逐指令對照 wait_for_event 0x29EF;入 vm_selftest CC/DD)。
+- 精確診斷:卡點 = per-character 動作指派狀態機不收斂(**非 opcode 缺失**,last_unimpl=0);怪物 roster 已建、結算公式已驗。
+- ctest 17/17 不破。下一步:逆向 res3@0x08b6 動作輸入 driver 的「逐角色動作完成標記 + 全員完成偵測」。
