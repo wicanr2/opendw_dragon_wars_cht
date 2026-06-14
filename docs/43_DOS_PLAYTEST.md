@@ -229,3 +229,120 @@ timeout 90 docker run --rm -v /tmp/dwgame:/game dwdos bash /game/drive.sh
 ### 截圖清單(`docs/dos_playtest/`)
 
 01 設定選單・02 VGA 標題・03 預設隊伍・04 開場(Purgatory)・05 世界地圖 UI・06~09 四角屬性・10 Muskels 技能・11 King's Guards 遭遇・12 角色動作選單・13 攻擊 style・14 目標選單・15 超距・16 守衛打 Elendil 7 點致暈・17 守衛打 Muskels 4 點・18~19 Theb 命中守衛 4/3・20 Pikeman 遭遇・21~23 隊員擊殺 Robber(4/6/3)・24 勝利 +80XP。
+25 Muskels 對無甲 Wild Dog 造成 8 傷・26 Muskels 對有甲 King's Guard 造成 7 傷(AC 不減傷對照)。
+
+---
+
+## 9. 大樣本傷害研究(2026-06-14 第二輪)
+
+> 目的:把第 5 節「傷害模型」從 7 筆樣本(證據中等)推進到統計可辨。方法:`dwdos` 容器 + tesseract OCR **全自動**採樣,同隊伍對多場弱怪(無甲)與 King's Guard(有甲)連打,逐幀 OCR 戰鬥訊息列、解析「攻擊者 → 目標 → 傷害」。
+
+### 9.1 自動化升級(本輪新增)
+
+- **OCR 管線**:`dwdos` image 加裝 `tesseract-ocr`。截圖訊息列裁切 `crop 630x130+5+290 → resize 200% → grayscale → tesseract --psm 6`,可穩定讀出「`<Attacker> attacks a <Target> and hits 1 time for N points of damage`」中的 N。
+- **採樣 harness**:`run_fight.sh <tag> <rounds>` 跑一場戰鬥、每回合截 12~14 幀;`aggregate.py`(host 端 Python)正規化 OCR 雜訊(`Hild→Wild`、`Fime→time`、角色名修正)、用 regex 抽 HIT/MISS、**去連續重複**(同訊息跨多幀)。`stats.py` / `stats_ac.py` 出分布。
+- **取樣規模**:無甲 11 場有效(遇怪隨機:Wild Dog / Spider / Robber / Wolf / Cannibal / Innocent Man / Unjustly Accused 等,皆無甲)、有甲 3 場(King's Guards path 甲)。**合計 53 筆命中**(無甲 34、有甲 19)。
+- **harness 不穩定**:dosbox 視窗偵測在連續批次下偶發 race(`NO WINDOW`,本輪 12 場丟 2 場 = f06/f08);`drive3.sh` 加「視窗抓不到 → 重啟 dosbox 一次 + 拉長 settle」緩解。OCR 偶把怪名讀錯(如 `Rock Syider`=Rock Spider)不影響傷害數字。
+
+### 9.2 傷害分布(pooled,有甲+無甲)— 【觀察】
+
+因 §9.4 證明 AC 不減傷,可把同角色的有甲/無甲傷害合併:
+
+| 攻擊者 | Str | N | min | max | mean | 傷害值次數分布 |
+|---|---|---|---|---|---|---|
+| Muskels | 21 | 13 | 3 | **8** | 5.23 | {3:5, 6:4, 7:3, 8:1} |
+| Theb | 14 | 10 | 3 | 6 | 3.70 | {3:7, 4:1, 6:2} |
+| Cheetah | 11 | 16 | 3 | 6 | 4.25 | {3:6, 4:5, 6:5} |
+| Elendil | 10 | 14 | 3 | 6 | 3.71 | {3:10, 4:1, 6:3} |
+
+**觀察到的傷害值全集(53 筆)= {3, 4, 6, 7, 8}**。**`5` 完全沒出現過**(53 筆 0 次)。
+
+### 9.3 反推徒手傷害公式 — 【推斷,證據強(結構性指紋)】
+
+三個硬指紋:
+
+1. **下限恆為 3**:四名角色 min 皆 = 3,且 3 是多數人的眾數。→ 傷害有 `max(3, …)` 樓地板。
+2. **缺 5、且 3→6 有斷層**:Muskels 值集 {3,6,7,8} 完全跳過 4、5;低 Str 值集 {3,4,6} 跳過 5。「缺 5」在乘以 1.5 的縮放下自然出現。
+3. **上限隨 Str 抬升**:Str 10/11/14 → max 6;Str 21 → max 8。
+
+**最佳擬合模型**:**`damage = max(3, floor(1.5 × raw))`**,其中 `raw` = 小骰 + Str 相關修正。
+
+驗證(把小骰代入):
+
+- **低 Str(Str 10–14):`raw = 1d4`**
+
+  | d4 | 1.5×d4 | floor | max(3,·) |
+  |---|---|---|---|
+  | 1 | 1.5 | 1 | **3** |
+  | 2 | 3.0 | 3 | **3** |
+  | 3 | 4.5 | 4 | **4** |
+  | 4 | 6.0 | 6 | **6** |
+
+  → 輸出集 **{3,4,6}**,**與 Theb/Cheetah/Elendil 實測值集完全吻合**(max 6、缺 5)。
+
+- **高 Str(Muskels Str 21):`raw` 整體上移**(較大骰或加 Str 修正)→ 中段被推高:輸出 {3,6,7,8}。
+  - `round(1.5×5)=8`、`floor(1.5×4)=6`、`floor(1.5×5)=7`;Muskels **缺 4** 而低 Str **有 4** → 不是同骰放大,而是**整條分布上移**(Str bonus 把 raw 的低值墊高,4 被推到 6+)。
+
+**Str → 傷害斜率(粗略線性,N=53)**:約 **+0.12 傷害 / 點 Str**(即 +10 Str ≈ +1.2 平均傷害)。注意 Str 10→14 區間平均幾乎不動(3.71→3.70),Str 21 才明顯跳到 5.23 → **Str 修正在低段很小、非線性,只在高 Str 才把上限/中段抬起**。
+
+> **誠實邊界**:
+> - `×1.5 縮放 + floor 3` 是**結構性結論(證據強)**:由「缺 5」「3↔6 斷層」「{3,4,6} 完全命中 1d4×1.5」三點交叉支持。
+> - **小骰面數(1d4 vs 1d6)、Str 修正的確切函數(查表?Str/K?)仍是推斷**:Muskels 高段樣本(7、8 各僅 3/1 筆)不足以唯一定出骰面與修正係數。要鎖死,需 §9.6。
+> - 與 `42_COMBAT_BYTECODE` 對齊:該檔指出傷害走 `op_33~36`(乘/除法子系統)。**`×1.5` 正是「乘 3 除 2」**,與 bytecode 有乘除 primitive 完全自洽 —— 這是雙向佐證(實機分布 ⇄ bytecode 乘除),非巧合。
+
+### 9.4 AC 是否減傷?→ **不減傷,只壓命中** — 【觀察→判定,證據強】
+
+同角色對 **有甲 King's Guard** vs **無甲雜怪** 的命中傷害分布:
+
+| 攻擊者 | Str | 有甲 mean (N) | 無甲 mean (N) | 有甲值集 | 無甲值集 |
+|---|---|---|---|---|---|
+| Muskels | 21 | 5.00 (5) | 5.38 (8) | {3,6,7} | {3,6,7,8} |
+| Theb | 14 | 4.00 (4) | 3.50 (6) | {3,4,6} | {3,6} |
+| Cheetah | 11 | 4.40 (5) | 4.18 (11) | {3,4,6} | {3,4,6} |
+| Elendil | 10 | 3.60 (5) | 3.78 (9) | {3,6} | {3,4,6} |
+
+**判定**:有甲與無甲的傷害分布**統計上無法區分** —— 同 min(3)、同 max(隨 Str)、同值集、mean 差在抽樣雜訊內(各方向都有,非系統性偏低)。**直接反例**:Muskels 對有甲 King's Guard 打出 **7**(截圖 26),與對無甲怪同量級;Theb 對有甲打 4、6,也不低於無甲。
+
+→ **AC 不進入傷害計算;AC/DV 只影響命中(hit/miss)**。這**解決了與 SDA 的矛盾**:之前看到「打守衛總是 miss、傷害卻和無甲一樣」並非 AC 減傷,而是 **AC 抬高 miss 率、一旦命中傷害不打折**。與手冊「AC 愈高防禦力愈好、AV vs DV 決定命中」一致 —— AC 是**命中側**參數。
+
+### 9.5 命中率觀察 — 【觀察,弱證據(有 confound)】
+
+| 攻擊者 | AV | 無甲 命中/失手(率) | 有甲(在近戰且揮擊後) |
+|---|---|---|---|
+| Theb | 6 | 6/2 (75%) | 4/0 |
+| Muskels | 5 | 8/2 (80%) | 5/0 |
+| Elendil | 4 | 9/0 (100%) | 5/0 |
+| Cheetah | 3 | 11/4 (73%) | 5/0 |
+
+> **重要 confound,勿過度解讀**:
+> - 採樣器只記「明確 misses」與「hits」,**未計入大量 "out of range" 早回合**(怪在 30'/50',前 2~3 回合徒手打不到)。故「有甲 100% 命中」是**假象**:它只反映「已進近戰且該次揮中」的條件機率,排除了守衛在遠處時的大量無效回合。
+> - 無甲命中率(73~80%)較具代表性(雜怪較快進近戰),但 N 小、AV 跨度小(3~6),**看不出 AV 與命中率的乾淨單調關係**。
+> - 結論:**命中率須讀 bytecode 的擲骰原始值才能定**(實機訊息列不顯示 d20/門檻);本輪僅能定性確認「有甲明顯較難命中(早回合一直 out-of-range/miss)、命中後傷害不變」。
+
+### 9.6 仍未鎖死 + 下一步
+
+1. **骰面與 Str 修正係數**:Muskels(Str21)高段樣本太少(7×3、8×1)。需**對單一無甲固定靶連打 ≥40 次**(Cheetah Str11 已 16 筆最穩,可先把它打到 40 筆定出低 Str 骰式;再對 Muskels 同樣加採)。
+2. **中間 Str**:現有 Str = {10,11,14,21},10–14 太密、14–21 太疏。**建角補 Str 17/18 左右**一名,填滿曲線中段,才能分辨「Str 修正是連續函數還是查表階梯」。
+3. **持武器**:本輪全徒手。裝武器後 `raw` 應換成「武器骰 + Str 修正」,可分離武器骰貢獻;`×1.5 floor3` 樓地板是否仍在(還是武器有自己的下限)待測。
+4. **bytecode 對拍**:把 `×1.5 = ×3÷2` 假設拿去比對 res3 的 `op_33~36` 實際運算元(乘 3、除 2?),即可從 byte 層**證實**縮放係數,把 §9.3 的「推斷」升級為「觀察+bytecode 雙證」。
+
+### 9.7 重現(大樣本)
+
+```bash
+# image 加 OCR
+docker build -t dwdos /tmp/dwdos          # Dockerfile +tesseract-ocr
+
+# 跑一場無甲採樣(隨機遇怪)
+docker run --rm -v /tmp/dwgame:/game dwdos bash /game/run_fight.sh f01 7
+# 跑一場 King's Guard(有甲)採樣
+docker run --rm -v /tmp/dwgame:/game dwdos bash /game/run_guard3.sh g01 9
+
+# OCR + 解析一場 → 結構化 HIT/MISS
+docker run --rm -v /tmp/dwgame:/game dwdos bash /game/parse_ocr.sh 'f01_' | python3 aggregate.py
+
+# 統計
+cat hits_*.txt | python3 stats.py        # 分布
+cat hits_*.txt | python3 stats_ac.py     # 有甲 vs 無甲
+```
+
+工具(`drive3.sh`/`run_fight.sh`/`run_guard3.sh`/`parse_ocr.sh`/`aggregate.py`/`stats*.py`)在 `/tmp/dwgame`(暫存,未入庫;原始遊戲檔不入庫)。
