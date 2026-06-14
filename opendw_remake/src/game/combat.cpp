@@ -58,8 +58,11 @@ std::vector<MonsterRecord> MonsterTable::load(
 }
 
 int str_damage_bonus(int strength) {
-  // SDA:「STR 愈大傷害愈大」,確切曲線未記。暫用每 4 點 STR +1(類 D&D)。待 DOS 校準。
-  return strength / 4;
+  // DOS 大樣本(docs/43 §9):Str 對傷害斜率很小、低段近乎不動、Str21 才 +1
+  // (Str10/14→raw 上限對應 dmg 6;Str21→出現 7/8)。best-fit raw 修正 = Str/16
+  // (Str≤15→0、Str16-31→1…),低段平、高 Str 微升,與實測分布相符。
+  // **best-fit 待更大樣本/bytecode 鎖死確切函數**。
+  return strength / 16;
 }
 
 Combatant Combatant::from_player(const CharacterRecord& c) {
@@ -116,14 +119,16 @@ AttackResult resolve_attack(Combatant& attacker, Combatant& target,
   // hit ⇔ roll + attacker.av >= kToHitBase + target.dv。
   // RNG 副作用順序固定:先擲命中,命中才擲傷害 → 可重現。
   r.to_hit_roll = rng.roll(kToHitDiceCount, kToHitDie);
-  r.to_hit_need = kToHitBase + target.dv;
+  // AC 在命中側(DOS §9:AC 壓命中、不減傷)。DV(閃避)+ AC(護甲)同抬高門檻。
+  r.to_hit_need = kToHitBase + target.dv + target.ac;
   r.hit = (r.to_hit_roll + attacker.av) >= r.to_hit_need;
   if (r.hit) {
-    // 傷害:武器主傷害骰 + STR 修正 − 目標 AC(AC 先扣;SDA)。
+    // 傷害(DOS §9):raw = 傷害骰 + STR 修正;dmg = max(下限3, floor(3/2 × raw))。
+    // **AC 不參與傷害**(已在命中側)。徒手實機證實;武器套同式為推斷。
     int raw_dmg = rng.roll(attacker.dmg_dice, attacker.dmg_sides) +
                   attacker.dmg_bonus;
-    r.damage = raw_dmg - target.ac;  // AC 先從物理傷害扣除
-    if (r.damage < 0) r.damage = 0;
+    r.damage = (kDmgMulNum * raw_dmg) / kDmgMulDen;  // floor(3/2 × raw)
+    if (r.damage < kDmgFloor) r.damage = kDmgFloor;
     // 作用於 STUN(HP=Stun);STUN≤0 → 死亡。
     target.hp -= r.damage;
     if (target.hp <= 0) {
