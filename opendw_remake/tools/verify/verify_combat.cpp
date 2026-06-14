@@ -217,6 +217,42 @@ int main(int argc, char** argv) {
     }
   }
 
+  std::printf("== D. DOS-calibrated damage formula (docs/43 §9) ==\n");
+  {
+    // 徒手低 Str(Str10,bonus=10/16=0,raw=1d4)→ dmg=max(3,floor(1.5×raw)) ∈ {3,4,6};
+    // 實機 53 筆傷害值全集 {3,4,6,7,8} **無 5**。強制命中(合成高 av 攻擊者)取分布。
+    CombatRng rng(0x1234, 0);
+    Combatant atk{};
+    atk.av = 100;  // 保證命中(2d10+100 >> 門檻)
+    atk.dmg_dice = kUnarmedDice; atk.dmg_sides = kUnarmedSides;  // 1d4
+    atk.dmg_bonus = 0;           // Str10 → 10/16 = 0
+    bool five_seen = false, all_in_set = true, min_is_3 = true;
+    for (int i = 0; i < 500; ++i) {
+      Combatant tgt{}; tgt.dv = 0; tgt.ac = 0; tgt.hp = 100000; tgt.max_hp = 100000;
+      AttackResult r = resolve_attack(atk, tgt, rng);
+      if (!r.hit) continue;
+      if (r.damage == 5) five_seen = true;
+      if (r.damage != 3 && r.damage != 4 && r.damage != 6) all_in_set = false;
+      if (r.damage < 3) min_is_3 = false;
+    }
+    check(!five_seen, "unarmed Str10 damage never 5 (DOS signature)");
+    check(all_in_set, "unarmed Str10 damage in {3,4,6}");
+    check(min_is_3, "damage floor == 3");
+  }
+  std::printf("== E. AC on hit-side, not damage (DOS §9) ==\n");
+  {
+    // AC 只抬高 to_hit_need、不參與傷害:同 rng 狀態、同攻擊者,ac=0 vs ac=50 命中時傷害相同;
+    // 高 ac 目標 need = 11 + dv + ac。
+    Combatant atk{}; atk.av = 100; atk.dmg_dice = 1; atk.dmg_sides = 4; atk.dmg_bonus = 0;
+    CombatRng ra(0x55, 0), rb(0x55, 0);
+    Combatant t0{}; t0.dv = 3; t0.ac = 0;  t0.hp = 100000; t0.max_hp = 100000;
+    Combatant t1{}; t1.dv = 3; t1.ac = 50; t1.hp = 100000; t1.max_hp = 100000;
+    AttackResult r0 = resolve_attack(atk, t0, ra);
+    AttackResult r1 = resolve_attack(atk, t1, rb);
+    check(r1.to_hit_need == r0.to_hit_need + 50, "high AC raises to_hit_need by AC");
+    check(r0.hit && r1.hit && r0.damage == r1.damage, "damage independent of target AC");
+  }
+
   std::printf("\n%s\n", g_fail == 0 ? "verify_combat: ALL PASS" : "verify_combat: FAIL");
   return g_fail == 0 ? 0 : 1;
 }

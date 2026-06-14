@@ -154,20 +154,28 @@ struct AttackResult {
 
 // 解算 attacker → target 的一次物理攻擊(會改 target.hp / status)。
 // grounded in docs/44(fraterrisus+SDA);to-hit 骰分布為暫定(見檔頭與 ToHitModel)。
-//   命中:roll = 2dN(N=kToHitDie,暫定);hit ⇔ roll + attacker.av >= kToHitBase + target.dv。
-//         **此骰式為暫定,待 docs/43_DOS_PLAYTEST.md 的 DOS 實機校準**。
-//   傷害:dmg = roll(主武器傷害骰) + STR 修正 − target.ac(AC 先扣);min 0。
-//         dmg 作用於 target.hp(=STUN);hp<=0 → status|=0x01(死亡)。
+//   命中:roll = 2dN(N=kToHitDie,暫定);hit ⇔ roll + attacker.av >= kToHitBase + target.dv + target.ac。
+//         **AC 在命中側(DOS §9 實機判定:AC 壓命中、不減傷,解決 SDA 矛盾);to-hit 骰式仍暫定**。
+//   傷害:raw = roll(傷害骰) + STR 修正;dmg = max(kDmgFloor, floor(3/2 × raw))(DOS §9)。
+//         dmg 作用於 target.hp(=STUN);hp<=0 → status|=0x01(死亡)。**AC 不參與傷害**。
 // RNG 副作用順序固定(先擲命中,命中才擲傷害),確保可重現。
 AttackResult resolve_attack(Combatant& attacker, Combatant& target, CombatRng& rng);
 
 // to-hit 暫定參數(集中於此,便於 DOS 校準後一處調整)。
-// SDA 只記「AV vs DV、疑似小骰 D&D-like」,確切骰式未知 → 以下為 remake 暫定。
+// SDA 只記「AV vs DV、疑似小骰 D&D-like」,確切骰式未知 → 2dN 為 remake 暫定。
 inline constexpr int kToHitDie = 10;   // 每顆骰面數(2d10)
 inline constexpr int kToHitDiceCount = 2;
-inline constexpr int kToHitBase = 11;  // 命中門檻基數(roll+av >= base+dv)
-// 徒手(無武器)傷害骰:暫定 1d2(SDA/手冊未明列徒手骰)。
+inline constexpr int kToHitBase = 11;  // 命中門檻基數(roll+av >= base+dv+ac)
+
+// 徒手傷害骰:DOS 大樣本(docs/43 §9)低 Str raw=1d4(代入下方縮放 → {3,4,6} 與實測吻合)。
 inline constexpr int kUnarmedDice = 1;
-inline constexpr int kUnarmedSides = 2;
+inline constexpr int kUnarmedSides = 4;
+
+// 傷害縮放(DOS §9 強證據):dmg = max(kDmgFloor, floor(kDmgMulNum/kDmgMulDen × raw))。
+// 傷害值全集 {3,4,6,7,8}(53 筆 0 個 5)= ×3/2 縮放 + 下限 3 的結構指紋;
+// ×3/2 對應 docs/42 op_33~36 乘除子系統(雙向佐證)。**徒手已實機證實;武器套同式為推斷**。
+inline constexpr int kDmgFloor = 3;
+inline constexpr int kDmgMulNum = 3;
+inline constexpr int kDmgMulDen = 2;
 
 }  // namespace dw::game
