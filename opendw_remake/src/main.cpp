@@ -43,6 +43,7 @@
 #include "game/party.hpp"
 #include "game/savegame.hpp"
 #include "game/combat.hpp"
+#include "game/combat_loop.hpp"
 #include "game/spells.hpp"
 #include "game/seen_map.hpp"
 using namespace dw;
@@ -241,6 +242,7 @@ int main(int argc, char** argv) {
   int encounter_id = -1;        // --encounter N:直接進遭遇畫面(怪物表 index N)
   unsigned combat_seed = 0x1234;// --combat-seed N:結算 RNG 種子(確定性)
   int combat_rounds = 0;        // --combat-rounds N:dump 前自動打 N 回合(headless 驗證戰報)
+  int combat_count = 6;         // --combat-count N:怪群數量(預設 6;沿用怪物表領頭怪)
   int cast_spell_id = -1;       // --cast <spellId>:headless 在遭遇中施放該法術一次(驗證)
   bool cast_force = false;      // --cast-force:即使該角色未習得也施放(僅供驗證效果套用)
   for (int i = 1; i < argc; ++i) {
@@ -274,6 +276,7 @@ int main(int argc, char** argv) {
     else if (eq("--encounter") && i + 1 < argc) encounter_id = std::atoi(argv[++i]);  // 進遭遇畫面(怪物 index)
     else if (eq("--combat-seed") && i + 1 < argc) combat_seed = (unsigned)std::strtoul(argv[++i], nullptr, 0);
     else if (eq("--combat-rounds") && i + 1 < argc) combat_rounds = std::atoi(argv[++i]);  // dump 前自動打 N 回合
+    else if (eq("--combat-count") && i + 1 < argc) combat_count = std::atoi(argv[++i]);    // 怪群數量
     else if (eq("--cast") && i + 1 < argc) cast_spell_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 施放法術
     else if (eq("--cast-force")) cast_force = true;     // 即使未習得也施放(驗證效果)
   }
@@ -411,11 +414,20 @@ int main(int argc, char** argv) {
     int monster_idx = -1;                 // monsters[] index
     std::optional<render::Sprite> sprite;  // 怪物圖(bundle .spr;無則畫空框)
     std::string mon_name_en;               // 怪物名英文原文(i18n 鍵)
-    game::Combatant hero, mon;             // 結算單位(hero=隊伍第 0 名)
+    game::Combatant hero, mon;             // 結算單位(hero=隊伍第 0 名)— 施法(C)路徑沿用
     game::CombatRng rng{0x1234};
     std::vector<std::string> log;          // 逐回合戰鬥訊息(英文鍵化;tr 在地化)
     bool fled = false;                     // 已逃跑
     bool over = false;                     // 戰鬥結束(怪死 / 英雄死 / 逃跑)
+    // ── 完整戰鬥迴圈(4 人 vs 怪群、多回合、勝負、XP)──
+    //   group=true 時走 CombatLoop(group_loop);false(施法 demo 等)走舊單怪 hero/mon。
+    bool group = false;                    // 是否為怪群戰鬥(--encounter 預設 true)
+    int mon_count = 1;                     // 怪群數量
+    std::optional<game::CombatLoop> group_loop;  // 群戰結算迴圈
+    std::size_t shown_events = 0;          // 已轉成戰報文字的事件數(逐回合追加)
+    bool xp_awarded = false;               // 勝利 XP 是否已寫回(避免重複加)
+    bool victory = false;                  // 勝利(怪群全滅)
+    bool defeat = false;                   // 敗北(全隊昏倒)
     // ── 施法(C 鍵)──
     // hero 對應隊伍第 0 名;施法需 Power/STR/已習得法術 → 由該角色 record 帶入。
     int hero_power = 0;                    // 施法者當前法力(扣 Power 後寫回此處)
@@ -1174,9 +1186,76 @@ int main(int argc, char** argv) {
            enc.hero.av = 5; enc.hero.dv = 5; enc.hero.ac = 0; enc.hero.dmg_dice = 1; enc.hero.dmg_sides = 6;
            enc.hero_power = 0; enc.hero_str = 12; enc.spellbook.clear(); }
     enc.mon = game::Combatant::from_monster(monsters[idx]);
+    // ── 完整戰鬥迴圈:整隊(存活成員)vs 怪群 ──
+    //   怪群數量 = combat_count(預設 6;沿用怪物表領頭怪 monsters[idx])。
+    //   行動順序 / 目標選擇見 combat_loop.hpp(remake 設計,SDA 定性;非原版真值)。
+    enc.group = true;
+    enc.mon_count = combat_count > 0 ? combat_count : 1;
+    std::vector<game::Combatant> party_units;
+    if (party.size() > 0) {
+      for (std::size_t i = 0; i < party.size(); ++i)
+        party_units.push_back(game::Combatant::from_player(party.at(i)));
+    } else {
+      party_units.push_back(enc.hero);  // 無隊伍 → 用 fallback hero
+    }
+    auto grp = game::make_monster_group(monsters[idx], enc.mon_count);
+    enc.group_loop.emplace(std::move(party_units), std::move(grp),
+                           game::CombatRng((std::uint16_t)combat_seed));
+    enc.shown_events = 0;
     state = S_COMBAT;
-    std::fprintf(stderr, "begin_encounter: '%s' hero_hp=%d mon_hp=%d\n",
-                 enc.mon_name_en.c_str(), enc.hero.hp, enc.mon.hp);
+    std::fprintf(stderr,
+                 "begin_encounter: %d x '%s' party=%zu hero_hp=%d mon_hp=%d\n",
+                 enc.mon_count, enc.mon_name_en.c_str(), party.size(), enc.hero.hp,
+                 enc.mon.hp);
+  };
+  // 把 CombatLoop 累積的新事件轉成在地化戰報行,追加進 enc.log。
+  //   DOS 格式(docs/43 §11):
+  //     命中:「{攻擊者} 攻擊 {目標},命中 N 點傷害[,使其暈眩][,將其擊倒]。」
+  //     落空:「{攻擊者} 攻擊 {目標},落空。」
+  //   以 tr() 翻可翻片段(攻擊/命中/點傷害/落空/使其暈眩/將其擊倒/怪名),組成整行。
+  auto append_group_events = [&]() {
+    if (!enc.group_loop) return;
+    const auto& evs = enc.group_loop->events();
+    char buf[256];
+    for (; enc.shown_events < evs.size(); ++enc.shown_events) {
+      const auto& e = evs[enc.shown_events];
+      std::string atk = tr.tr(e.attacker);
+      std::string tgt = tr.tr(e.target);
+      std::string line;
+      if (e.hit) {
+        // 模板鍵「combat.hit.fmt」帶 3 槽:%1$=攻擊者 %2$=目標 %3$=傷害值。
+        //   zh-TW:「%s 攻擊 %s,命中 %d 點傷害」;en passthrough:「%s attacks %s for %d damage」。
+        std::snprintf(buf, sizeof buf, tr.tr("%s attacks %s for %d damage").c_str(),
+                      atk.c_str(), tgt.c_str(), e.damage);
+        line = buf;
+        if (e.stunned) line += tr.tr(", stunning him");
+        if (e.target_died) line += tr.tr(", killing him");
+      } else {
+        std::snprintf(buf, sizeof buf, tr.tr("%s attacks %s and misses").c_str(),
+                      atk.c_str(), tgt.c_str());
+        line = buf;
+      }
+      enc.log.emplace_back(line);
+    }
+    // 畫面只放最後 4 行(對齊版面;結束時讓勝負/XP 末行可見,不被擠出 200px 視窗)。
+    while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
+  };
+  // 推進一個完整群戰回合 + 轉戰報 + 結算勝負/XP。
+  auto group_round = [&]() {
+    if (!enc.group_loop || enc.over) return;
+    enc.group_loop->advance_round();
+    append_group_events();
+    using O = game::CombatOutcome;
+    O o = enc.group_loop->outcome();
+    if (o == O::Victory) {
+      enc.victory = true; enc.over = true;
+      enc.log.emplace_back(tr.tr("Each member gets 80 experience points for combat."));
+      if (!enc.xp_awarded) { party.award_xp(game::kXpPerVictory); enc.xp_awarded = true; }
+    } else if (o == O::Defeat) {
+      enc.defeat = true; enc.over = true;
+      enc.log.emplace_back(tr.tr("The party has fallen."));
+    }
+    while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
   };
   // 一個攻擊回合(隊伍先攻 → 怪反擊);把訊息(英文鍵)推進 enc.log。
   auto combat_round = [&]() {
@@ -1267,8 +1346,17 @@ int main(int argc, char** argv) {
       for (int x = 16; x < 16 + 160; ++x) { fb.put(x, 8, 8); fb.put(x, 8 + 135, 8); }
       for (int y = 8; y < 8 + 136; ++y) { fb.put(16, y, 8); fb.put(16 + 159, y, 8); }
     }
-    // 怪物名(i18n;viewport 上方)。
-    tl.add(16, 2, tr.tr(enc.mon_name_en), 14, PX_UI);
+    // 怪群描述(i18n;viewport 上方):「N 隻 {怪名}」(存活/總數)。單怪時只顯示怪名。
+    if (enc.group && enc.group_loop && enc.mon_count > 1) {
+      char gbuf[128];
+      // zh-TW:「6 隻 禁衛軍(存活 4)」;en passthrough:「6 King's Guard (4 left)」。
+      std::snprintf(gbuf, sizeof gbuf, tr.tr("%d %s (%d left)").c_str(),
+                    enc.mon_count, tr.tr(enc.mon_name_en).c_str(),
+                    enc.group_loop->monsters_alive());
+      tl.add(16, 2, gbuf, 14, PX_UI);
+    } else {
+      tl.add(16, 2, tr.tr(enc.mon_name_en), 14, PX_UI);
+    }
     // 右側隊伍狀態面板(沿用 party_panel)。
     party.draw_status_panel(fb, tl, PX_UI);
     add_lang_badge();
@@ -1307,14 +1395,21 @@ int main(int argc, char** argv) {
       tl.add(16, ly, line, 7, PX_UI); ly += 12;
     }
     if (enc.over) {
-      const char* res = enc.fled ? "The party flees!"
-                       : (!enc.mon.alive() ? "Fight" : "Fight");  // 勝/敗皆回提示
-      (void)res;
-      std::string tail = enc.fled ? tr.tr("The party flees!")
-                       : (!enc.mon.alive() ? (tr.tr(enc.mon_name_en) + " " + tr.tr("slain"))
-                                           : (enc.hero.name + " down"));
-      tl.add(16, ly, tail, 12, PX_UI);
-      tl.add(16, ly + 14, tr.tr("[ continue ]"), 8, PX_UI);
+      std::string tail;
+      int tail_col = 12;
+      if (enc.fled) tail = tr.tr("The party flees!");
+      else if (enc.victory) { tail = tr.tr("Victory!"); tail_col = 10; }   // 亮綠
+      else if (enc.defeat) { tail = tr.tr("The party has fallen."); tail_col = 4; }  // 暗紅
+      else tail = enc.group ? tr.tr("Victory!")
+                            : (!enc.mon.alive() ? (tr.tr(enc.mon_name_en) + " " + tr.tr("slain"))
+                                                : (enc.hero.name + " down"));
+      // 結果橫幅放右側面板下方空白區(y≈110;不與下方戰報 log 爭垂直空間)。
+      int rx = 16 + 160 + 8;     // 右側欄起點(對齊隊伍面板 x)
+      int ry = 110;
+      tl.add(rx, ry, tail, tail_col, PX_UI);
+      if (enc.victory)           // 勝利:右欄顯示簡短 XP 橫幅(全文在下方戰報 log)
+        tl.add(rx, ry + 14, tr.tr("Each member +80 XP"), 14, PX_UI);
+      tl.add(rx, ry + 28, tr.tr("[ continue ]"), 8, PX_UI);
     }
   };
   auto draw_game = [&]() {
@@ -1460,10 +1555,26 @@ int main(int argc, char** argv) {
                      sid, (int)known, (const void*)sp);
       }
     }
-    for (int r = 0; r < combat_rounds && !enc.over; ++r) combat_round();  // 自動打 N 回合(驗證戰報)
-    if (combat_rounds > 0)
-      std::fprintf(stderr, "combat: %d rounds, hero_hp=%d mon_hp=%d over=%d\n",
-                   combat_rounds, enc.hero.hp, enc.mon.hp, enc.over);
+    // --combat-rounds N:自動打 N 回合(headless 驗證戰報 / 確定性)。群戰走 group_round。
+    for (int r = 0; r < combat_rounds && !enc.over; ++r) {
+      if (enc.group && cast_spell_id < 0) group_round(); else combat_round();
+    }
+    if (combat_rounds > 0) {
+      if (enc.group && enc.group_loop) {
+        std::fprintf(stderr,
+                     "combat(group): %d rounds, party_alive=%d mon_alive=%d "
+                     "outcome=%d xp=%d over=%d\n",
+                     combat_rounds, enc.group_loop->party_alive(),
+                     enc.group_loop->monsters_alive(),
+                     (int)enc.group_loop->outcome(), enc.group_loop->xp_award(),
+                     enc.over);
+        // 逐事件戰報印到 stderr(確定性驗證 / 截圖佐證)。
+        for (const auto& line : enc.log) std::fprintf(stderr, "  %s\n", line.c_str());
+      } else {
+        std::fprintf(stderr, "combat: %d rounds, hero_hp=%d mon_hp=%d over=%d\n",
+                     combat_rounds, enc.hero.hp, enc.mon.hp, enc.over);
+      }
+    }
   }
   render_now();
 
@@ -1553,15 +1664,16 @@ int main(int argc, char** argv) {
             enc.casting = false; cast_round(sid);
           }
         }
-      } else if (in.key == 'C') {                          // C:開施法選單(對齊手冊 Cast a spell)
+      } else if (in.key == 'C' && !enc.group) {            // C:開施法選單(單怪 demo;群戰暫不支援)
         if (party.size() > 0)
           enc.spellbook = game::castable_spells(party.at(0), enc.hero_power);
         enc.cast_sel = 0; enc.casting = true;
       } else if (in.key == 'R' || in.back) {              // R/Esc:逃跑
         enc.fled = true; enc.over = true;
-        enc.log.emplace_back("The party flees!");
-      } else if (in.key == 'F' || in.select) {            // F/Enter:打一回合
-        combat_round();
+        if (enc.group && enc.group_loop) enc.group_loop->flee();
+        enc.log.emplace_back(tr.tr("The party flees!"));
+      } else if (in.key == 'F' || in.select) {            // F/Enter:打一回合(全體自動攻擊)
+        if (enc.group) group_round(); else combat_round();
       }
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;                                          // 戰鬥期間不處理移動

@@ -14,6 +14,19 @@ miss	落空
 damage	傷害
 slain	擊殺
 The party flees!	隊伍逃離了！
+# 戰報訊息模板（對齊 DOS docs/43 §11；%s/%s/%d 順序固定：攻擊者/目標/傷害值，勿調換）
+%s attacks %s for %d damage	%s 攻擊 %s，命中 %d 點傷害
+%s attacks %s and misses	%s 攻擊 %s，落空
+, stunning him	，使其暈眩
+, killing him	，將其擊倒
+# 怪群描述（%d 數量 / %s 怪名 / %d 存活）
+%d %s (%d left)	%d 隻 %s（存活 %d）
+# 勝負結果
+Victory!	勝利！
+The party has fallen.	全隊昏倒。
+Each member gets 80 experience points for combat.	每名隊員獲得 80 點戰鬥經驗值。
+Each member +80 XP	每名隊員 +80 XP
+[ continue ]	［繼續］
 # 怪物名（res31，oracle 對拍）
 Robber	強盜
 King's Guard	禁衛軍
