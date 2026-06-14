@@ -1,0 +1,2 @@
+# en — passthrough。tr() 查無對應即回退英文原文(法術名/施法訊息直接用英文鍵)。
+# 此檔僅放註解;法術名英文鍵見 src/game/spells.cpp 的 name_key。

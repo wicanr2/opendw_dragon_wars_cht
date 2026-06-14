@@ -127,4 +127,14 @@
    - **to-hit 骰分布為暫定**(2d10 + 門檻,參數化於 `combat.hpp`),**待 `43_DOS_PLAYTEST.md` 的 DOS 實機校準**。
    - 起始隊伍無武器 → 徒手傷害骰回退(暫定 1d2,手冊未明列)。
    - 標示已從「乾淨室 placeholder」改為「依 fraterrisus/SDA/手冊規格;非 opendw byte-for-byte(opendw C 未實作結算);不宣稱 oracle 真值」。
-3. ⬜ 法術系統依手冊 + 法術索引建立(未做)。
+3. ✅ 法術系統依手冊 + 法術索引建立(`src/game/spells.{hpp,cpp}`)。
+   - 法術表 61 條(id 0x00–0x3C,對齊 fraterrisus 索引;L/H/D/S/M 五大 school)。
+     效果值(傷害/治療範圍、目標、Power 消耗)**全部取自手冊**(`33` 第 20–34 頁)。
+     L/H 段 id 對 doc 44 既有索引(0x00–0x18);D 段 0x19–0x25;S 段自 0x26 起、M 段續延伸
+     為 **remake 依 doc 44 規律(L→H→D→S→M、各 school 按手冊列序)推得**,
+     若 fraterrisus 完整 S/M 索引釋出有出入,只需改表的 id 欄。
+   - 施法結算整合進 combat(C 鍵):傷害/治療擲手冊範圍 → 作用 STUN;PowerScaled = STR×rng[1..N];
+     buff(+AV/+DV/+AC/+STR/+DEX)、debuff(-AV/-DV)數值化;控制/工具/召喚類只扣 Power、標 `handled=false`(TODO)。
+     擲骰走 `CombatRng`(確定性)。**非 opendw byte-for-byte**(opendw C 未實作法術結算)→ 不宣稱 oracle。
+   - i18n:`assets/i18n/{zh-TW,en,ja}/spells.tsv`(zh-TW 全填、en passthrough、ja 部分)。
+   - 驗證:`verify_spells`(ctest)— 表筆數/效果值對拍手冊抽樣、扣 Power、傷害/治療範圍、bitfield、確定性,全 PASS。

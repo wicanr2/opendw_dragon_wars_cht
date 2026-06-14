@@ -1,0 +1,18 @@
+# 呪文名 + 詠唱メッセージ(把握のある語のみ;無対応は英語へフォールバック)。
+# english	japanese
+Cast	呪文
+C:Cast	C:呪文
+Choose spell:	呪文を選択：
+No spells	使える呪文なし
+Not enough power	パワー不足
+casts	詠唱
+heals	回復
+damage	ダメージ
+# ── 攻撃/回復系(把握あり)──
+Mage Fire	メイジファイア
+Lesser Heal	軽傷回復
+Healing	回復
+Ice Chill	アイスチル
+Fire Storm	ファイアストーム
+Kill Ray	キルレイ
+Death Curse	死の呪い

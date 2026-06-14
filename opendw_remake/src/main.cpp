@@ -43,6 +43,7 @@
 #include "game/party.hpp"
 #include "game/savegame.hpp"
 #include "game/combat.hpp"
+#include "game/spells.hpp"
 #include "game/seen_map.hpp"
 using namespace dw;
 
@@ -236,6 +237,8 @@ int main(int argc, char** argv) {
   int encounter_id = -1;        // --encounter N:直接進遭遇畫面(怪物表 index N)
   unsigned combat_seed = 0x1234;// --combat-seed N:結算 RNG 種子(確定性)
   int combat_rounds = 0;        // --combat-rounds N:dump 前自動打 N 回合(headless 驗證戰報)
+  int cast_spell_id = -1;       // --cast <spellId>:headless 在遭遇中施放該法術一次(驗證)
+  bool cast_force = false;      // --cast-force:即使該角色未習得也施放(僅供驗證效果套用)
   for (int i = 1; i < argc; ++i) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
     if (eq("--bundle") && i + 1 < argc) bundle = argv[++i];
@@ -266,6 +269,8 @@ int main(int argc, char** argv) {
     else if (eq("--encounter") && i + 1 < argc) encounter_id = std::atoi(argv[++i]);  // 進遭遇畫面(怪物 index)
     else if (eq("--combat-seed") && i + 1 < argc) combat_seed = (unsigned)std::strtoul(argv[++i], nullptr, 0);
     else if (eq("--combat-rounds") && i + 1 < argc) combat_rounds = std::atoi(argv[++i]);  // dump 前自動打 N 回合
+    else if (eq("--cast") && i + 1 < argc) cast_spell_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 施放法術
+    else if (eq("--cast-force")) cast_force = true;     // 即使未習得也施放(驗證效果)
   }
   if (scale < 1) scale = 1;
 
@@ -308,6 +313,9 @@ int main(int argc, char** argv) {
     std::string fbtsv = "assets/i18n/" + loc + "/combat.tsv";  // 戰鬥畫面 UI + 怪物名
     if (tr.merge(fbtsv))
       std::fprintf(stderr, "i18n: merged %s (total %zu)\n", fbtsv.c_str(), tr.size());
+    std::string sptsv = "assets/i18n/" + loc + "/spells.tsv";  // 法術名 + 施法訊息
+    if (tr.merge(sptsv))
+      std::fprintf(stderr, "i18n: merged %s (total %zu)\n", sptsv.c_str(), tr.size());
     // Read paragraph 段落書(隨 locale);缺檔則回退「Read paragraph N」。
     book = res::ParagraphBook::load(bundle + "/paragraphs", loc);
     if (book) std::fprintf(stderr, "paragraphs: loaded %zu (locale=%s)\n", book->size(), loc.c_str());
@@ -374,6 +382,13 @@ int main(int argc, char** argv) {
     std::vector<std::string> log;          // 逐回合戰鬥訊息(英文鍵化;tr 在地化)
     bool fled = false;                     // 已逃跑
     bool over = false;                     // 戰鬥結束(怪死 / 英雄死 / 逃跑)
+    // ── 施法(C 鍵)──
+    // hero 對應隊伍第 0 名;施法需 Power/STR/已習得法術 → 由該角色 record 帶入。
+    int hero_power = 0;                    // 施法者當前法力(扣 Power 後寫回此處)
+    int hero_str = 0;                      // 施法者 STR(PowerScaled/buff 結算)
+    std::vector<std::uint8_t> spellbook;   // 已習得且當前可施法的法術 id(castable_spells)
+    bool casting = false;                  // 施法選單開啟中(C 進;上下選;Enter 施放;Esc 取消)
+    int cast_sel = 0;                      // 施法選單游標
   } enc;
 
   // 事件腳本跨資源 call(op_58)的資源提供者:從 bundle 載(自包含,不需 DATA1)。
@@ -1069,9 +1084,15 @@ int main(int argc, char** argv) {
     enc.mon_name_en = monsters[idx].name;
     enc.sprite = sprite_for_monster(monsters[idx].name);
     enc.rng = game::CombatRng((std::uint16_t)combat_seed);
-    if (party.size() > 0) enc.hero = game::Combatant::from_player(party.at(0));
-    else { enc.hero.name = "Hero"; enc.hero.is_player = true; enc.hero.hp = enc.hero.max_hp = 20;
-           enc.hero.av = 5; enc.hero.dv = 5; enc.hero.ac = 0; enc.hero.dmg_dice = 1; enc.hero.dmg_sides = 6; }
+    if (party.size() > 0) {
+      const auto& c0 = party.at(0);
+      enc.hero = game::Combatant::from_player(c0);
+      enc.hero_power = (int)c0.power;        // 施法者法力池(record Power[28-31])
+      enc.hero_str = (int)c0.strength;       // PowerScaled / +STR 結算用
+      enc.spellbook = game::castable_spells(c0, enc.hero_power);  // 已習得且可施法
+    } else { enc.hero.name = "Hero"; enc.hero.is_player = true; enc.hero.hp = enc.hero.max_hp = 20;
+           enc.hero.av = 5; enc.hero.dv = 5; enc.hero.ac = 0; enc.hero.dmg_dice = 1; enc.hero.dmg_sides = 6;
+           enc.hero_power = 0; enc.hero_str = 12; enc.spellbook.clear(); }
     enc.mon = game::Combatant::from_monster(monsters[idx]);
     state = S_COMBAT;
     std::fprintf(stderr, "begin_encounter: '%s' hero_hp=%d mon_hp=%d\n",
@@ -1099,6 +1120,64 @@ int main(int argc, char** argv) {
     // log 只保留最後 4 行(畫面空間)。
     while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
   };
+  // 施法回合:hero 施放 spell_id(對 mon)→ 扣 Power → 怪反擊(同 combat_round 後半)。
+  // 傷害/治療作用於 STUN;buff 作用於 hero(單體目標 = hero 自己,group 簡化為 hero);
+  // 控制/工具類只扣 Power(handled=false,誠實標 TODO)。grounded in 手冊(spells.hpp)。
+  auto cast_round = [&](std::uint8_t spell_id) {
+    if (enc.over) return;
+    const game::SpellDef* sp = game::find_spell(spell_id);
+    if (!sp) return;
+    char buf[160];
+    // 治療/buff 類目標為我方(hero);其餘(傷害/控制)目標為怪物。
+    bool ally_target = (sp->effect == game::SpellEffect::Heal ||
+                        sp->effect == game::SpellEffect::BuffAv ||
+                        sp->effect == game::SpellEffect::BuffDv ||
+                        sp->effect == game::SpellEffect::BuffAc ||
+                        sp->effect == game::SpellEffect::BuffStr ||
+                        sp->effect == game::SpellEffect::BuffDex);
+    game::Combatant& tgt = ally_target ? enc.hero : enc.mon;
+    game::CastResult cr =
+        game::cast_spell(spell_id, enc.hero_power, enc.hero_str, tgt, enc.rng);
+    if (!cr.ok) {  // Power 不足(理論上選單已過濾)→ 提示,不消回合
+      enc.log.emplace_back("Not enough power");
+      return;
+    }
+    enc.hero_power -= cr.power_spent;  // 扣法力(寫回 encounter 狀態)
+    // 戰報(英文鍵化;tr 在地化)。
+    if (sp->effect == game::SpellEffect::Heal) {
+      std::snprintf(buf, sizeof buf, "%s casts %s heals %d", enc.hero.name.c_str(),
+                    sp->name_key, cr.amount);
+    } else if (cr.handled && cr.amount > 0) {  // 傷害類
+      std::snprintf(buf, sizeof buf, "%s casts %s on %s %d damage",
+                    enc.hero.name.c_str(), sp->name_key, enc.mon_name_en.c_str(),
+                    cr.amount);
+    } else if (cr.handled) {  // buff/debuff(amount 為加值)
+      std::snprintf(buf, sizeof buf, "%s casts %s", enc.hero.name.c_str(),
+                    sp->name_key);
+    } else {  // 控制/工具(TODO)
+      std::snprintf(buf, sizeof buf, "%s casts %s TODO", enc.hero.name.c_str(),
+                    sp->name_key);
+    }
+    enc.log.emplace_back(buf);
+    if (!enc.mon.alive()) {
+      std::snprintf(buf, sizeof buf, "%s slain", enc.mon_name_en.c_str());
+      enc.log.emplace_back(buf);
+      enc.over = true;
+      while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
+      return;
+    }
+    // 怪反擊(同 combat_round 後半:怪物對 hero 一次物理攻擊)。
+    auto pm = game::resolve_attack(enc.mon, enc.hero, enc.rng);
+    std::snprintf(buf, sizeof buf, "%s -> %s : %s%s", enc.mon_name_en.c_str(),
+                  enc.hero.name.c_str(), pm.hit ? "hit" : "miss",
+                  pm.hit ? (std::string(" ") + std::to_string(pm.damage)).c_str() : "");
+    enc.log.emplace_back(buf);
+    if (!enc.hero.alive()) enc.over = true;
+    // 施法後刷新可施法清單(Power 改變 → 某些法術可能不再可施)。
+    if (party.size() > 0)
+      enc.spellbook = game::castable_spells(party.at(0), enc.hero_power);
+    while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
+  };
   // 畫遭遇畫面:怪物 sprite(viewport 區 @16,8)+ 怪名 + 隊伍面板 + 戰/逃選單 + log。
   auto draw_encounter = [&]() {
     fb.clear(0);
@@ -1113,9 +1192,33 @@ int main(int argc, char** argv) {
     // 右側隊伍狀態面板(沿用 party_panel)。
     party.draw_status_panel(fb, tl, PX_UI);
     add_lang_badge();
-    // 選單列(熱鍵對齊原版戰鬥選單資源 Section 0x12:Fight / Run):F=戰鬥 R=逃跑。
+    // 選單列(熱鍵對齊原版戰鬥選單資源 Section 0x12:Fight / Run + 施咒 C)。
     int menu_y = 8 + 136 + 4;
     tl.add(16, menu_y, tr.tr("F:Fight  R:Run"), 11, PX_UI);
+    tl.add(16 + 110, menu_y, tr.tr("C:Cast"), 11, PX_UI);
+    // 施法選單(C 開啟):列出可施法術(已習得 + Power 足夠),熱鍵 1-9 + 上下游標。
+    if (enc.casting) {
+      int cy = menu_y + 14;
+      char hbuf[160];
+      std::snprintf(hbuf, sizeof hbuf, "%s (PW %d)", tr.tr("Choose spell:").c_str(),
+                    enc.hero_power);
+      tl.add(16, cy, hbuf, 14, PX_UI); cy += 12;
+      if (enc.spellbook.empty()) {
+        tl.add(24, cy, tr.tr("No spells"), 7, PX_UI);
+      } else {
+        for (int i = 0; i < (int)enc.spellbook.size() && i < 9; ++i) {
+          const game::SpellDef* s = game::find_spell(enc.spellbook[i]);
+          if (!s) continue;
+          std::snprintf(hbuf, sizeof hbuf, "%c%d %s (%d)",
+                        i == enc.cast_sel ? '>' : ' ', i + 1,
+                        tr.tr(s->name_key).c_str(), s->power_cost);
+          tl.add(24, cy, hbuf, i == enc.cast_sel ? 15 : 7, PX_UI);
+          cy += 12;
+        }
+      }
+      add_lang_badge();
+      return;  // 施法選單期間不疊戰報(避免版面擁擠)
+    }
     // 戰鬥 log(在地化:hit/miss/slain 走 tr;含數字部分原樣)。
     int ly = menu_y + 14;
     for (const auto& line : enc.log) {
@@ -1249,6 +1352,29 @@ int main(int argc, char** argv) {
   // --encounter N:進遭遇畫面(headless 可 --dump 驗證圖層;互動下 F 戰鬥 / R 逃跑)。
   if (encounter_mode) {
     begin_encounter(encounter_id);
+    // --cast <id>:headless 在遭遇中施放一次該法術(驗證效果 + 扣 Power + 戰報)。
+    //   未習得時:--cast-force 可強制(供驗證效果套用);否則僅在 spellbook 內可施。
+    if (cast_spell_id >= 0) {
+      std::uint8_t sid = (std::uint8_t)cast_spell_id;
+      const game::SpellDef* sp = game::find_spell(sid);
+      bool known = !enc.spellbook.empty() &&
+                   std::find(enc.spellbook.begin(), enc.spellbook.end(), sid) !=
+                       enc.spellbook.end();
+      if (sp && enc.hero_power < sp->power_cost) {   // 確保 Power 足夠(驗證用,給滿)
+        enc.hero_power = sp->power_cost > 0 ? sp->power_cost + 10 : 20;
+      }
+      if (sp && (known || cast_force)) {
+        int pw_before = enc.hero_power;
+        cast_round(sid);
+        std::fprintf(stderr,
+                     "cast: id=0x%02X '%s' pw %d->%d mon_hp=%d hero_hp=%d over=%d\n",
+                     sid, sp->name_key, pw_before, enc.hero_power, enc.mon.hp,
+                     enc.hero.hp, enc.over);
+      } else {
+        std::fprintf(stderr, "cast: id=0x%02X not castable (known=%d sp=%p)\n",
+                     sid, (int)known, (const void*)sp);
+      }
+    }
     for (int r = 0; r < combat_rounds && !enc.over; ++r) combat_round();  // 自動打 N 回合(驗證戰報)
     if (combat_rounds > 0)
       std::fprintf(stderr, "combat: %d rounds, hero_hp=%d mon_hp=%d over=%d\n",
@@ -1324,6 +1450,27 @@ int main(int argc, char** argv) {
           enc.active = false;
           if (level) state = S_GAME; else break;          // 有地圖回遊戲,否則(--encounter)離開
         }
+      } else if (enc.casting) {                           // 施法選單開啟:接管輸入
+        if (in.back) { enc.casting = false; }             // Esc:取消施法
+        else if (in.up) { if (enc.cast_sel > 0) enc.cast_sel--; }
+        else if (in.down) {
+          if (enc.cast_sel + 1 < (int)enc.spellbook.size()) enc.cast_sel++;
+        } else if (in.key >= '1' && in.key <= '9') {      // 數字熱鍵直接選並施放
+          int n = in.key - '1';
+          if (n < (int)enc.spellbook.size()) {
+            std::uint8_t sid = enc.spellbook[n];
+            enc.casting = false; cast_round(sid);
+          }
+        } else if (in.select) {                           // Enter:施放游標所選
+          if (enc.cast_sel < (int)enc.spellbook.size()) {
+            std::uint8_t sid = enc.spellbook[enc.cast_sel];
+            enc.casting = false; cast_round(sid);
+          }
+        }
+      } else if (in.key == 'C') {                          // C:開施法選單(對齊手冊 Cast a spell)
+        if (party.size() > 0)
+          enc.spellbook = game::castable_spells(party.at(0), enc.hero_power);
+        enc.cast_sel = 0; enc.casting = true;
       } else if (in.key == 'R' || in.back) {              // R/Esc:逃跑
         enc.fled = true; enc.over = true;
         enc.log.emplace_back("The party flees!");
