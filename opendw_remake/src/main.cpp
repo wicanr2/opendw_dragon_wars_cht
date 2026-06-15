@@ -289,6 +289,10 @@ int main(int argc, char** argv) {
   int combat_count = 6;         // --combat-count N:怪群數量(預設 6;沿用怪物表領頭怪)
   int cast_spell_id = -1;       // --cast <spellId>:headless 在遭遇中施放該法術一次(驗證)
   bool cast_force = false;      // --cast-force:即使該角色未習得也施放(僅供驗證效果套用)
+  // ── 終戰 Namtar + 結局序列(可通關收官)──
+  bool fight_namtar = false;    // --fight-namtar:用(預設/讀檔)隊伍 vs Namtar Boss 戰鬥(combat_loop)
+  bool show_ending = false;     // --ending:headless 直接進結局序列(demo / 截圖,不打 Namtar)
+  bool namtar_blessed = true;   // --no-bless:關閉「自由之劍受祝福」加成(預設套用,讓可勝)
   // ── 建角流程(新遊戲 / 建立人物;手冊選單 B)──
   bool newgame = false;         // --newgame:啟動直接進建角畫面(S_CREATE)
   std::string newgame_demo;     // --newgame-demo SPEC:headless 腳本化建角 + 出圖/驗證(見下方解析)
@@ -336,6 +340,9 @@ int main(int argc, char** argv) {
     else if (eq("--newgame")) newgame = true;           // 啟動即進建角畫面
     else if (eq("--newgame-demo") && i + 1 < argc) newgame_demo = argv[++i];  // 腳本化建角(headless)
     else if (eq("--newgame-screen") && i + 1 < argc) newgame_screen = argv[++i];  // 停在配點畫面截圖
+    else if (eq("--fight-namtar")) fight_namtar = true;   // 終戰 Namtar(隊伍 vs Boss)
+    else if (eq("--ending")) show_ending = true;          // 直接進結局序列(demo)
+    else if (eq("--no-bless")) namtar_blessed = false;    // 關閉自由之劍祝福加成
   }
   if (scale < 1) scale = 1;
 
@@ -343,10 +350,12 @@ int main(int argc, char** argv) {
   if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }
   const bool scene_mode = !scene_name.empty();
   const bool sprite_mode = !sprite_name.empty();
-  const bool encounter_mode = encounter_id >= 0;
+  const bool encounter_mode = encounter_id >= 0 || fight_namtar;
   const bool automap_mode = automap_area >= 0;
+  const bool ending_mode = show_ending;   // --ending:直接進結局序列(不打 Namtar)
   const bool menu_mode = !scene_mode && !sprite_mode && !viewport_mode &&
-                         !encounter_mode && map_area < 0 && !automap_mode;
+                         !encounter_mode && map_area < 0 && !automap_mode &&
+                         !ending_mode;
   render::Framebuffer fb;
 
   // 多國語系:i18n 字串表由 locale 推導,F4 可即時重載切換。
@@ -400,7 +409,7 @@ int main(int argc, char** argv) {
   std::string header, header_en;   // header_en = 提示英文源(F4 重譯)
   std::vector<Opt> opts;
   int sel = 0;
-  enum { S_MENU, S_BRANCH, S_GAME, S_COMBAT, S_MAP, S_CREATE } state = S_MENU;
+  enum { S_MENU, S_BRANCH, S_GAME, S_COMBAT, S_MAP, S_CREATE, S_ENDING } state = S_MENU;
   std::string branch_label, branch_label_en;   // branch 英文源(F4 重譯)
 
   // F4 切語系後,用各 widget 暫存的英文源重新 tr() 在地化(選單/branch/事件)。
@@ -493,6 +502,7 @@ int main(int argc, char** argv) {
     std::vector<std::uint8_t> spellbook;   // 已習得且當前可施法的法術 id(castable_spells)
     bool casting = false;                  // 施法選單開啟中(C 進;上下選;Enter 施放;Esc 取消)
     int cast_sel = 0;                      // 施法選單游標
+    bool is_namtar = false;                // 終戰 Namtar:勝利時進結局序列(非一般遭遇)
   } enc;
 
   // 事件腳本跨資源 call(op_58)的資源提供者:從 bundle 載(自包含,不需 DATA1)。
@@ -774,7 +784,13 @@ int main(int argc, char** argv) {
     else if (at_x >= 0 && at_y >= 0 && level && level->in_bounds(at_x, at_y)) {
       px = at_x; py = at_y;
       int tv = level->tile(px, py);
-      if (tv > 1) {
+      // 終戰 Namtar:area27 op_8A combat encounter 格(tile 0x18/0x19)→ 由互動移動迴圈
+      //   接 combat_loop(begin_namtar);此早期 --at setup 只記座標/事件,不於此觸發戰鬥
+      //   (begin_namtar lambda 在後方定義)。headless 端到端走 --fight-namtar。
+      if (current_area == 27 && (tv == 0x18 || tv == 0x19)) {
+        last_event_tile = -1;   // 不於此跑 run_event(避免 op_8A halt 噪音);留給移動迴圈觸發
+        std::fprintf(stderr, "at (%d,%d) tile=0x%02X = area27 終戰格(移動觸發 Namtar)\n", px, py, tv);
+      } else if (tv > 1) {
         event_msg = run_event((std::uint8_t)tv); last_event_tile = tv;
         std::fprintf(stderr, "at (%d,%d) tile=0x%02X event=\"%s\"\n", px, py, tv, event_msg.c_str());
         sync_relocation();   // 事件可能換 area / 傳送(headless 也套用,供 --map+--at 驗證)
@@ -1005,13 +1021,13 @@ int main(int argc, char** argv) {
     // sprite 名稱標籤改走文字層(每幀 render_now → draw_static_text)。
     std::fprintf(stderr, "sprite %s %dx%d (bundle, no DATA1)\n", sprite_name.c_str(), sp->w, sp->h);
   } else if (encounter_mode) {
-    // ── A':遭遇畫面 ──(像素層由 begin_encounter/draw_encounter 於下方 render 迴圈處理)
+    // ── A':遭遇畫面 ──(像素層由 begin_encounter/begin_namtar/draw_encounter 於下方 render 迴圈處理)
     if (monsters.empty()) { std::fprintf(stderr, "monsters.bin missing\n"); return 1; }
-    if (encounter_id >= (int)monsters.size()) {
+    if (!fight_namtar && encounter_id >= (int)monsters.size()) {  // --fight-namtar 不用 monsters[] 索引
       std::fprintf(stderr, "encounter id %d >= %zu monsters\n", encounter_id, monsters.size());
       return 1;
     }
-    // 實際進場由下方 begin_encounter(encounter_id) 完成(lambda 需先定義)。
+    // 實際進場由下方 begin_encounter/begin_namtar 完成(lambda 需先定義)。
   } else if (menu_mode) {
     // ── B:VM 在地化選單 → D:快捷字母選項 ──(tr 已於頂層依 locale 載入)
     res::BundleProvider bun(bundle);
@@ -1149,6 +1165,69 @@ int main(int argc, char** argv) {
     para.open(n, tl.wrap(full, PB_TEXT_W, PX_BODY), PB_LINES);
   };
 
+  // ── 結局序列(S_ENDING)──────────────────────────────────────────────────
+  // 誠實標示:**remake 組合結局,非原版單一 script**。原版「勝利後結局畫面」由戰鬥
+  //   流程/DRAGON.COM 主控觸發,不在任何 level event script 中(掃全 40 關證實,docs/55
+  //   §3.3),逆不出獨立結局 script。本序列以「已 bundle 的真實素材」組合:
+  //     ① area27 結局敘事(events.tsv 的真實 emit 鍵:納達現身/鐵頭巴克/決戰平原)
+  //     ② 結局段落(手冊段落 131/132/135/137/138,攻略 §5.20 註明的決戰/結局段落;
+  //        已 bundle 於 paragraphs/zh-TW)③ remake 勝利訊息 + 全劇終。
+  //   敘事鍵與段落 = 真實素材;「組合與串接」= remake 設計(誠實標示)。
+  //
+  // 把結局組成單一可捲動文件(ParaViewer,para_n = -1 表示結局)。各段以空行分隔。
+  auto build_ending_doc = [&]() -> std::string {
+    auto L = [&](const char* en) { return tr.tr(en); };  // i18n(查無回退英文)
+    std::string d;
+    auto add = [&](const std::string& s) {
+      if (s.empty()) return;
+      if (!d.empty()) d += "\n\n";
+      d += s;
+    };
+    // ── ① 終戰敘事(area27 真實 emit 鍵)──
+    add(L("A voice rings from the shadows, \"So you are finally here... I must admit "
+          "I underestimated you.\""));
+    add(L("Buck Ironhead, Namtar's top general, regards you from across the room. "
+          "\"You've hacked past my best men -- I'm not sure what I can do against "
+          "you,\" he says \"But I'm not going down without a fight...\""));
+    add(L("To the south lay the forces of Namtar!"));
+    add(L("It's you against an entire army! "));
+    // ── ② remake 勝利結算(自由之劍劈死 Namtar)──
+    add(L("You raise the blessed Sword of Freedom and strike with all your strength!"));
+    add(L("With a final, terrible cry, Namtar -- the Beast From The Pit -- crumbles "
+          "before you."));
+    // ── ③ 結局段落(手冊段落,已 bundle 真實素材)── 攻略 §5.20:131/132/135(納達現身)、
+    //     137/138(Irkalla 與自由之劍重生 / 結局)。逐段附段落號標頭。
+    auto add_para = [&](int n) {
+      if (!book) return;
+      if (auto t = book->text(n)) {
+        char hdr[48];
+        std::snprintf(hdr, sizeof hdr, "%s %d", L("Paragraph").c_str(), n);
+        add(std::string(hdr) + "\n" + *t);
+      }
+    };
+    for (int n : {131, 132, 135, 137, 138}) add_para(n);
+    // ── 收尾:屍身送靈魂之泉 → 納達之坑 → 歐西納自由 → 全劇終 ──
+    add(L("You bear his body to the Well of Souls, then walk slowly toward the pit "
+          "that spawned him."));
+    add(L("Oceana is free at last. Enjoy the sweet taste of your final victory!"));
+    add(L("THE END"));
+    return d;
+  };
+  // 結局序列「組合說明」標頭(誠實標示,放文件最前一段)。
+  auto ending_disclaimer = [&]() -> std::string {
+    // 中性說明:此結局為 remake 以 bundled 段落 + area27 敘事組合,非原版單一 script。
+    return tr.tr("(remake-composed ending: bundled paragraphs + area27 narrative; "
+                 "not a single original script)");
+  };
+  // 進入結局序列:組合結局文件 → 開 ParaViewer(para_n=-1)→ state=S_ENDING。
+  auto enter_ending = [&]() {
+    std::string doc = ending_disclaimer() + "\n\n" + build_ending_doc();
+    para.open(-1, tl.wrap(doc, PB_TEXT_W, PX_BODY), PB_LINES);
+    state = S_ENDING;
+    std::fprintf(stderr, "ENTER ENDING (lines=%d, page_count=%d)\n",
+                 para.total_lines(), para.page_count());
+  };
+
   // 段落 overlay 底框 + 邊框(像素層;深藍底 + 亮框,對齊既有 UI 風格)。
   auto fill_para_box = [&]() {
     for (int y = PB_Y; y < PB_Y + PB_H && y < render::kH; ++y)
@@ -1168,9 +1247,13 @@ int main(int argc, char** argv) {
   // 畫段落捲動 overlay:底框 + 標題「段落 N」+ 可見行切片 + 捲動位置提示(▲/▼/頁碼)。
   auto draw_para_overlay = [&]() {
     fill_para_box();
-    // 標題列:「段落 N」(i18n「段落」+ 數字)。
-    char title[48];
-    std::snprintf(title, sizeof title, "%s %d", tr.tr("Paragraph").c_str(), para.para_n);
+    // 標題列:結局序列(para_n<0)顯示結局標題;否則「段落 N」(i18n「段落」+ 數字)。
+    char title[64];
+    if (para.para_n < 0) {
+      std::snprintf(title, sizeof title, "%s", tr.tr("The Ending of Dragon Wars").c_str());
+    } else {
+      std::snprintf(title, sizeof title, "%s %d", tr.tr("Paragraph").c_str(), para.para_n);
+    }
     tl.add(PB_TEXT_X, PB_TITLE_TOP, title, 14, PX_BODY);
     // 內文可見行(自動換行後切片,top..top+visible)。
     int y = PB_TEXT_TOP;
@@ -1475,6 +1558,51 @@ int main(int argc, char** argv) {
                  "begin_encounter: %d x '%s' party=%zu hero_hp=%d mon_hp=%d\n",
                  enc.mon_count, enc.mon_name_en.c_str(), party.size(), enc.hero.hp,
                  enc.mon.hp);
+  };
+  // ── 終戰 Namtar:隊伍(自由之劍持有者受祝福)vs Namtar Boss(combat_loop)──
+  //   接 area27 tile 0x18/0x19 op_8A combat encounter(怪物 id 來源見 combat.hpp 檔頭:
+  //   res3 設定流程產物 0x03,非乾淨 res31 索引 → Boss 屬性為 remake 設計,誠實標示)。
+  //   隊伍第 0 名套「自由之劍受祝福」加成(namtar_blessed),其餘成員照常 from_player。
+  auto begin_namtar = [&]() {
+    enc = EncounterState{};
+    enc.active = true;
+    enc.is_namtar = true;
+    enc.mon_name_en = "Namtar";
+    enc.sprite = sprite_for_monster("Humbaba");  // 占位立繪(無 Namtar 專屬 sprite;誠實:借胡姆巴巴像)
+    std::vector<game::Combatant> party_units;
+    if (party.size() > 0) {
+      for (std::size_t i = 0; i < party.size(); ++i) {
+        // 隊伍第 0 名持自由之劍(受祝福);namtar_blessed=false 時全員照常(--no-bless)。
+        if (i == 0 && namtar_blessed)
+          party_units.push_back(game::make_blessed_hero(party.at(0)));
+        else
+          party_units.push_back(game::Combatant::from_player(party.at(i)));
+      }
+    } else {
+      // 無隊伍 fallback(理論上有預設隊伍):一名受祝福勇者。
+      game::Combatant h; h.name = "Hero"; h.is_player = true;
+      h.hp = h.max_hp = 60; h.av = 12; h.dv = 10; h.ac = 0;
+      h.dmg_dice = 4; h.dmg_sides = 12; h.dmg_bonus = 20;
+      party_units.push_back(h);
+    }
+    std::vector<game::Combatant> grp;
+    grp.push_back(game::make_namtar());  // 單一終戰 Boss
+    enc.group = true;
+    enc.mon_count = 1;
+    enc.group_loop.emplace(std::move(party_units), std::move(grp),
+                           game::CombatRng((std::uint16_t)combat_seed));
+    if (party.size() > 0) {
+      enc.hero = enc.group_loop->party().at(0);
+      const auto& c0 = party.at(0);
+      enc.hero_power = (int)c0.power; enc.hero_str = (int)c0.strength;
+      enc.spellbook = game::castable_spells(c0, enc.hero_power);
+    }
+    enc.shown_events = 0;
+    state = S_COMBAT;
+    std::fprintf(stderr,
+                 "begin_namtar: party=%zu blessed=%d namtar_hp=%d seed=0x%X\n",
+                 party.size(), (int)namtar_blessed,
+                 enc.group_loop->monsters().at(0).hp, combat_seed);
   };
   // 把 CombatLoop 累積的新事件轉成在地化戰報行,追加進 enc.log。
   //   DOS 格式(docs/43 §11):
@@ -1832,6 +1960,12 @@ int main(int argc, char** argv) {
   auto render_now = [&]() {
     tl.clear();                                      // 每幀重建文字層
     if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面
+    if (state == S_ENDING) {                              // 結局序列:黑底 + 結局捲動 overlay
+      for (int y = 0; y < render::kH; ++y)
+        for (int x = 0; x < render::kW; ++x) fb.put(x, y, 0);  // 全黑底
+      if (para.active) draw_para_overlay();
+      return;
+    }
     if (state == S_MAP) { draw_automap(); return; }       // 俯視平面地圖(`?`)
     if (state == S_CREATE) { draw_chargen(); return; }    // 建角畫面(新遊戲 / 建立人物)
     if (state == S_GAME) {
@@ -1873,7 +2007,7 @@ int main(int argc, char** argv) {
   }
   // --encounter N:進遭遇畫面(headless 可 --dump 驗證圖層;互動下 F 戰鬥 / R 逃跑)。
   if (encounter_mode) {
-    begin_encounter(encounter_id);
+    if (fight_namtar) begin_namtar(); else begin_encounter(encounter_id);
     // --cast <id>:headless 在遭遇中施放一次該法術(驗證效果 + 扣 Power + 戰報)。
     //   未習得時:--cast-force 可強制(供驗證效果套用);否則僅在 spellbook 內可施。
     if (cast_spell_id >= 0) {
@@ -1920,7 +2054,17 @@ int main(int argc, char** argv) {
                      combat_rounds, enc.hero.hp, enc.mon.hp, enc.over);
       }
     }
+    // 終戰 Namtar 打贏(headless,--combat-rounds 跑出 Victory)→ 進結局序列。
+    if (enc.is_namtar && enc.victory) {
+      enc.active = false;
+      enter_ending();
+    }
   }
+  // --ending:不打 Namtar,直接進結局序列(demo / 截圖)。
+  if (ending_mode) enter_ending();
+  // 結局序列 headless:--para-scroll N 先下捲 N 頁(截圖後段內容用)。
+  if (state == S_ENDING && para.active)
+    for (int p = 0; p < para_scroll && !para.at_bottom(); ++p) para.scroll_page(1);
   render_now();
 
   if (!dump.empty()) {
@@ -2016,6 +2160,25 @@ int main(int argc, char** argv) {
     //   ↑↓:逐行捲動;PgUp/PgDn / Space / Enter / I / K:逐頁;Esc:關閉回遊戲。
     //   (放在 msg 之前;兩者互斥,paragraph 觸發時 msg 不會 active。)
     if (para.active) {
+      // 結局序列(S_ENDING):捲到底再按 Esc/Enter → 結束(回標題選單或離開);
+      //   非到底時 Enter 仍逐頁下捲,Esc 提前結束。
+      if (state == S_ENDING) {
+        bool finish = in.back ||
+                      ((in.select || in.pgdown || in.key == 'I' || in.key == 'K') &&
+                       para.at_bottom());
+        if (finish) {
+          para.close();
+          std::fprintf(stderr, "ENDING done\n");
+          if (menu_mode) { state = S_MENU; }   // 互動:回標題選單(可再開新局)
+          else break;                          // headless --ending / --fight-namtar:結束
+        } else if (in.up) para.scroll_line(-1);
+        else if (in.down) para.scroll_line(1);
+        else if (in.pgup) para.scroll_page(-1);
+        else if (in.select || in.pgdown || in.key == 'I' || in.key == 'K')
+          para.scroll_page(1);                 // 逐頁下捲(未到底)
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
       if (in.back) { para.close(); }                     // Esc:關閉回遊戲
       else if (in.up) para.scroll_line(-1);              // ↑:上捲一行
       else if (in.down) para.scroll_line(1);             // ↓:下捲一行
@@ -2038,7 +2201,10 @@ int main(int argc, char** argv) {
       if (enc.over) {
         if (in.back || in.select) {                      // 戰鬥已結束 → 離開遭遇
           enc.active = false;
-          if (level) state = S_GAME; else break;          // 有地圖回遊戲,否則(--encounter)離開
+          // 終戰 Namtar 勝利 → 進結局序列(收官);否則回地圖 / 離開。
+          if (enc.is_namtar && enc.victory) { enter_ending(); }
+          else if (level) state = S_GAME;
+          else break;          // 有地圖回遊戲,否則(--encounter)離開
         }
       } else if (enc.casting) {                           // 施法選單開啟:接管輸入
         if (in.back) { enc.casting = false; }             // Esc:取消施法
@@ -2113,6 +2279,15 @@ int main(int argc, char** argv) {
         // 事件格(對拍 op_71:tile 值變了才觸發);事件文字 → 開訊息檢視器(分頁捲動)
         if (level) {
           int tv = level->tile(px, py);
+          // ── 終戰 Namtar:area27(尼塞山腹)的 op_8A combat encounter 格(tile 0x18/0x19)──
+          //   原版這兩格是 op_8A 遭遇(probe_encounter_id 實測;docs/55 §3.2)。res3 全戰鬥閉環
+          //   卡遊戲層 context(docs/42),故 remake 改接自有的 combat_loop:踩格 → begin_namtar
+          //   (隊伍 vs Namtar Boss)。誠實標示:Boss 屬性/祝福 = remake 設計(combat.hpp)。
+          if (current_area == 27 && (tv == 0x18 || tv == 0x19) && tv != last_event_tile) {
+            last_event_tile = tv;
+            std::fprintf(stderr, "area27 tile 0x%02X → 終戰 Namtar(combat_loop)\n", tv);
+            begin_namtar();
+          } else
           if (tv > 1 && tv != last_event_tile) {
             event_msg = run_event((std::uint8_t)tv); last_event_tile = tv;
             // 對拍 load_level_resources:事件可能寫 gs[2]/gs[0..1]/gs[3] → 換 area 或傳送。

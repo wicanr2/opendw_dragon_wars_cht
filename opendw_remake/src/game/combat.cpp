@@ -119,6 +119,44 @@ Combatant Combatant::from_monster(const MonsterRecord& m) {
   return u;
 }
 
+Combatant make_namtar() {
+  // 終戰 Boss(remake 設計;屬性暫定,誠實標示見 combat.hpp 檔頭)。
+  // 設計目標:強到「需祝福過的隊伍/劍」才能在合理回合內勝,但確定性 seed 下可勝。
+  //  • HP(STUN):攻略以「自由之劍一擊削 100 HP」描述其耐打 → 設 150(數回合祝福攻擊可解決)。
+  //  • AV/DV:高(精銳 Boss),但低於「祝福過的劍 + 全屬性 +3」隊伍的可命中範圍。
+  //  • AC:0(命中側已含 DV;不另減傷,對齊 bytecode「AC 在命中側不減傷」)。
+  //  • 傷害:中高(會傷人但不秒殺滿血隊員)。
+  Combatant u;
+  u.name = "Namtar";            // i18n 鍵(combat.tsv:納達)
+  u.is_player = false;
+  // 平衡(remake 設計):起始隊伍 STUN 極低(12–16),受祝福勇者(4d12+24)約 3–4 擊可破。
+  //   故 Namtar HP 設 120(可在合理回合內被祝福劍解決),傷害壓到 1d6+1(2–7,不秒殺滿血
+  //   隊員、讓祝福勇者撐得到打完),av 5(命中但非必中)。確定性 seed 下「受祝福隊伍」可勝。
+  u.hp = u.max_hp = 120;        // remake 設計(攻略定性「極耐打」;平衡至可勝)
+  u.av = 5;                     // 命中(roll-under:門檻 = 13+AV−def)
+  u.dv = 6;                     // 高閃避
+  u.ac = 0;                     // 不減傷(AC 在命中側,bytecode 真值)
+  u.dmg_dice = 1;               // 1d6+1:會傷人但不秒殺滿血隊員
+  u.dmg_sides = 6;
+  u.dmg_bonus = 1;
+  u.status = 0;
+  return u;
+}
+
+Combatant make_blessed_hero(const CharacterRecord& c) {
+  // 「受祝福的自由之劍持有者」(remake 設計;攻略:Irkalla 0x80 + 永恆之神 0x10 祝福 →
+  //  自由之劍一擊削 100 HP;永恆之神另 +3 全屬性)。為讓「打贏 Namtar」可達成,對該角色
+  //  套用攻略定性的祝福:命中/傷害提升 + STR/DEX +3(反映在 av/dv/傷害骰)。
+  //  **非原版逐欄真值;祝福旗標 flags[85]=char_data 0x55 的 op_5F/op_61 已實作,但「祝福
+  //   → 具體戰鬥加成數值」原版未逆出 → 此處為 remake 平衡設計,誠實標示。**
+  Combatant u = Combatant::from_player(c);
+  u.av += 3;                    // 永恆之神 +3(對齊攻略「全屬性 +3」→ AV 連帶提升)
+  u.dv += 3;
+  // 自由之劍(受祝福):一擊削 100 HP(攻略)→ 以強力傷害骰反映(remake 設計)。
+  u.dmg_dice = 4; u.dmg_sides = 12; u.dmg_bonus += 20;  // ~24..68/擊(數擊可破 Namtar 150 HP)
+  return u;
+}
+
 AttackResult resolve_attack(Combatant& attacker, Combatant& target,
                             CombatRng& rng) {
   AttackResult r;

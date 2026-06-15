@@ -178,6 +178,23 @@ target_link_libraries(verify_combat_loop PRIVATE dwr_game)
 add_test(NAME verify_combat_loop
          COMMAND verify_combat_loop ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# tools/verify:可通關收官 —— 終戰 Namtar 可勝 + 確定性(combat_loop)。
+#   驗:預設隊伍(第 0 名持受祝福自由之劍)vs Namtar Boss,多 seed 皆 Victory + 隊伍存活;
+#   同 seed 兩次執行一致(確定性)。Boss 屬性/祝福加成 = remake 平衡設計(誠實標示,
+#   見 combat.hpp);單次攻擊公式 = bytecode 真值;結局序列為 remake 組合(見 main enter_ending)。
+add_executable(verify_ending tools/verify/verify_ending.cpp)
+target_link_libraries(verify_ending PRIVATE dwr_game)
+add_test(NAME verify_ending
+         COMMAND verify_ending ${CMAKE_SOURCE_DIR}/assets/bundle)
+
+# tools/verify:grounding 觀測工具(非 ctest)——
+#   probe_encounter_id:跑 area 事件格 + headless_encounter,印 op_8A 怪物 id(終戰怪物 id 來源)。
+#   probe_namtar_balance:載入隊伍 + Namtar Boss 跑確定性戰鬥,印初值/結果(供調平衡)。
+add_executable(probe_encounter_id tools/verify/probe_encounter_id.cpp)
+target_link_libraries(probe_encounter_id PRIVATE dwr_vm dwr_resource)
+add_executable(probe_namtar_balance tools/verify/probe_namtar_balance.cpp)
+target_link_libraries(probe_namtar_balance PRIVATE dwr_game)
+
 # tools/verify:建角流程確定性 PASS/FAIL(新遊戲 / 建立人物)。
 #   驗:建出的 record 解析回 CharacterRecord round-trip(名/屬性/性別/HP/STUN/PWR);
 #   屬性在合法範圍;effective_av/dv == DEX/4(SDA);點數守恆(配點前後總點數一致);
