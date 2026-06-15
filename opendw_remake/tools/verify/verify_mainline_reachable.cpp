@@ -144,5 +144,68 @@ int main(int argc, char** argv) {
     std::printf("  [%s] area %2d %s\n", ok ? "OK " : "MISS", a, area_name(a));
   }
   std::printf("  主線地表可達:%d / %d\n", hit, tot);
+
+  // ── 子區入口診斷(Phoebus 6 / Byzanople 9 等非世界圖區)─────────────────
+  // 這些區不在 area 0 世界圖直連表(已交叉驗證:area 0 的 26 個城鎮格 IDX 不含
+  // 6 或 9)。它們是「由母區踩格進入」的子區(攻略:Phoebus 由 Mud Toad 8 進、
+  // Byzanople 由 Siege Camp 29 進)。母區的進入格事件走
+  //   `1A 41 .. 1A 43 .. 1A 45 ..`(設 var 0x41/0x43/0x45)+ `op_58 資源 5`(relocate
+  //   handler 候選),或在中途 emit 文字。但 relocate 鏈最終命中 **未實作 opcode**
+  //   (op_79 set_msg / op_68 / op_6B / op_70),VM halt → gs[2] 從未被寫 → 無法
+  //   靜態/動態逆出目的地。opendw oracle 對這些 opcode 亦標 NULL(無 C 參考)。
+  // 本段把「每個非世界圖 mainline 子區 + 其母區進入格的 halt opcode」列出,供
+  //   docs/54 追蹤;**不臆造邊**(逆不出就不補)。
+  struct SubArea { int child; int parent; const char* note; };
+  SubArea subs[] = {
+      {6, 8,  "Phoebus 菲巴斯 ← Mud Toad 黃泥蟾蜍(攻略 38 §5.4-5.5)"},
+      {9, 29, "Byzanople 拜占儂 ← Siege Camp 軍營(攻略 38 §5.14)"},
+  };
+  std::printf("\n-- 非世界圖子區入口診斷(逆不出 → 不補邊,記錄 halt opcode)--\n");
+  for (auto& s : subs) {
+    bool child_reached = from_world.count(s.child) > 0;
+    auto plvl = res::Level::load_file(bundle + "/maps/" + std::to_string(s.parent) + ".lvl");
+    // 掃母區特殊格,找走 op_58 資源 5(relocate)的格,回報其 halt opcode。
+    std::set<int> halt_ops;
+    bool has_res5_path = false;
+    if (plvl) {
+      int plvl_res = s.parent + 0x46;
+      std::set<int> vals;
+      for (int y = 0; y < plvl->h; ++y) for (int x = 0; x < plvl->w; ++x) {
+        int t = plvl->tile(x, y); if (t > 1) vals.insert(t);
+      }
+      for (int v : vals) {
+        std::uint16_t pc = plvl->script_pc((std::uint8_t)v);
+        if (pc == 0 || pc >= plvl->data().size()) continue;
+        vm::VmState st;
+        st.script = plvl->data(); st.data_bytes = plvl->data();
+        st.script_res = plvl_res; st.data_res = plvl_res; st.pc = pc;
+        st.game_state[2] = (std::uint8_t)s.parent;
+        st.game_state[0x57] = (std::uint8_t)s.parent;
+        bool called5 = false;
+        st.resource_provider = [&](int tag) -> std::optional<std::vector<std::uint8_t>> {
+          if (tag == 5) called5 = true;
+          if (tag == plvl_res) return plvl->data();
+          if (auto b = prov.load(tag)) return b;
+          return std::nullopt;
+        };
+        vm::Interpreter ip(st);
+        ip.set_message_sink([](std::size_t, const std::string&) {});
+        ip.run(20000);
+        if (st.game_state[2] != (std::uint8_t)s.parent) {
+          // 若真有 gs[2] 變更(理論上不該發生),補邊。
+          add_edge(s.parent, st.game_state[2]);
+        }
+        if (called5) has_res5_path = true;
+        if (ip.last_unimpl() != 0) halt_ops.insert(ip.last_unimpl());
+      }
+    }
+    std::printf("  area %2d %-22s reached=%s  母區 %d res5-relocate格=%s  halt opcodes:",
+                s.child, area_name(s.child), child_reached ? "YES" : "NO",
+                s.parent, has_res5_path ? "有" : "無");
+    if (halt_ops.empty()) std::printf(" (無)");
+    for (int o : halt_ops) std::printf(" 0x%02X", o);
+    std::printf("\n    %s\n", s.note);
+  }
+
   return 0;
 }

@@ -232,6 +232,16 @@ add_test(NAME verify_areaswitch
 add_executable(verify_mainline_reachable tools/verify/verify_mainline_reachable.cpp)
 target_link_libraries(verify_mainline_reachable PRIVATE dwr_vm)
 
+# tools/verify:世界圖逐格盤點(area 0 每個特殊格 → script bytes → 解碼 IDX)。
+# grounding 用(docs/54 盤點表來源),非 ctest gate。
+add_executable(dump_worldmap_tiles tools/verify/dump_worldmap_tiles.cpp)
+target_link_libraries(dump_worldmap_tiles PRIVATE dwr_resource)
+
+# tools/verify:非世界圖子區入口探測(跑母區事件 script,觀測 gs 寫入 / op58 tag /
+# halt opcode)。用於判定 Phoebus(6)/Byzanople(9) 等子區是否卡在未實作 opcode。
+add_executable(probe_subarea_entry tools/verify/probe_subarea_entry.cpp)
+target_link_libraries(probe_subarea_entry PRIVATE dwr_vm)
+
 # tools/verify:wrap 邊界關卡(flag&2)載入 + 環繞 flood-fill 連通 + 不污染非 wrap 路徑。
 # wrap 在 oracle opendw 為 exit(1) 未實作 → 本驗證為自洽 + 不變式守護,非 byte-for-byte 對拍。
 add_executable(verify_wrap tools/verify/verify_wrap.cpp)
