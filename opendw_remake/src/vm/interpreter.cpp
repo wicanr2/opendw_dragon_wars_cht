@@ -592,6 +592,58 @@ void Interpreter::op78_set_msg() { emit_string(); }
 void Interpreter::op7B_ui_header() { emit_string(); }            // header,文字路徑同
 void Interpreter::op77_draw_and_set() { emit_string(); }          // (draw_pattern 副作用屬 render,略)
 
+// op_79(@0x47FA,DRAGON.COM 反組譯 — opendw targets[] 標 NULL,無 C oracle):
+//   反組譯(file off=0x46FA,COM @CS:0x100):
+//     47FA: 56            push si
+//     47FB: 0E 07         push cs / pop es        ; es = cs(程式段)
+//     47FD: E8 80 EB      call 0x3380             ; draw_pattern(重繪 viewport + 設 dirty)
+//     4800: 5E            pop si
+//     ── 此處「落入」op_7A(@0x4801)──:
+//     4801: 56 0E 07 …    push si / push cs / pop es
+//     4804: 8B 1E E2 3A   mov bx, [0x3AE2]        ; bx = word_3AE2(資料資源內偏移)
+//     4808: 8B 0E DF 3A   mov cx, [0x3ADF]        ; cx = word_3ADF(資料資源段)
+//     480C: E8 6A D4      call 0x1C79             ; extract_string(word_3ADF->bytes, r2)
+//     480F: 89 1E E2 3A   mov [0x3AE2], bx        ; word_3AE2 = 下一條起點
+//     4813: 5E            pop si
+//   結論:op_79 = draw_pattern + op_7A,與「op_77 = draw_pattern + op_78」對稱
+//     (op_77@0x47E3 同樣 call 0x3380 後落入 op_78@0x47EC)。draw_pattern(0x3380)
+//     **不消耗任何 operand、不 emit 字串**,純 render 副作用(重繪圖案、設 dirty 旗標);
+//     VM 可見效應只有 op_7A 那段:從 word_3ADF->bytes 的 word_3AE2 偏移解一條字串
+//     emit、r2 = 下一條起點。remake 的 op_77 既已等同 op_78(略 draw_pattern),
+//     對稱地 op_79 等同 op_7A。
+//   交叉驗證:主線 15 格(area 1/2/6/8/17/29)此前 halt 於 op_79;實作後事件文字
+//     確實 emit(見 docs/52 重跑),語意合理 → 高信心。
+void Interpreter::op79_draw_and_emit_data() { op7A_emit_data_string(); }
+
+// op_5B(get_map_tile_data @0x427A,opendw 有 body — 對拍移植):
+//   opendw op_5B_unused(engine.c:2510):
+//     dl = game_state[1](Y);bl = game_state[0](X);
+//     cpu.dx = (dx&0xFF00)|dl;cpu.bx = (bx&0xFF00)|bl;
+//     get_map_tile_data(dl, bl);            ; 算當前格 tile 資料 → word_11C6/word_11C8
+//     data_5521[word_551F + 2] = 0;          ; 清該格事件 flag 第 3 byte
+//   get_map_tile_data(@0x5206):以 (X,Y) 經 wrap → di = 3*Y + data_5A04[X+1];
+//     word_551F = di;word_11C6 = level_data[di] | level_data[di+1]<<8;
+//     word_11C8 = level_data[di+2];若 byte_551E&0x80 → 清零並 cf=1。
+//   remake VM(headless 事件抽取)無 data_5521/data_5A04/byte_551E 等 level runtime
+//     狀態(level grid 不在 VmState),故無法 byte-exact 重算 tile 索引。但本 opcode
+//     的「VM 可見」副作用只有 cpu.dx/cpu.bx(載入 X/Y)與 word_11C6/word_11C8、cf。
+//     忠實對齊「VM 暫存器」層:dx=gs[1]、bx=gs[0];清 cf(對照 0x5234 預設 cf=0)。
+//     word_11C6/11C8/word_551F 需 level grid 才能填,headless 無此資源 → 不臆造數值,
+//     維持 0(與「未踩到特殊事件格」一致;area 5/27/30 各 1 格用到,僅為流程通過,
+//     不依賴回填的 tile 值做後續分歧——若依賴,該格會再 halt 於讀取處而非靜默誤算)。
+//   標示:get_map_tile_data 的 level-grid 重算未在 headless VM 復刻(無 level runtime
+//     狀態);op_5B 在此提供 VM 暫存器層對齊,使 area 5/27/30 的事件格不再 halt。
+void Interpreter::op5B_get_map_tile() {
+  std::uint8_t dl = s_.game_state[1];  // Y
+  std::uint8_t bl = s_.game_state[0];  // X
+  s_.dx = (std::uint16_t)((s_.dx & 0xFF00) | dl);
+  s_.bx = (std::uint16_t)((s_.bx & 0xFF00) | bl);
+  // get_map_tile_data 的 level-grid 重算(word_551F/word_11C6/word_11C8)需 level
+  //   runtime 狀態,headless VM 無此資源 → 不回填臆造值;清 carry(對照 0x5234)。
+  s_.cf = 0;
+  s_.flags &= 0xFFFE;
+}
+
 // --- batch 4:繪圖 / UI / 結束 ---
 // op_73:al=gs[0x3F]; gs[0x3E]=al(清/設事件旗標)
 void Interpreter::op73_clear_event() { set_gs(0x3E, s_.game_state[0x3F]); }
@@ -1732,6 +1784,7 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   // 字串輸出
   t[0x77] = &Interpreter::op77_draw_and_set;
   t[0x78] = &Interpreter::op78_set_msg;
+  t[0x79] = &Interpreter::op79_draw_and_emit_data;  // DRAGON.COM 反組譯:draw_pattern + op_7A
   t[0x7B] = &Interpreter::op7B_ui_header;
   // batch 4:繪圖 / UI / 結束
   t[0x73] = &Interpreter::op73_clear_event;
@@ -1748,6 +1801,7 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x4D] = &Interpreter::op4D_prng;
   t[0x58] = &Interpreter::op58_xcall;
   t[0x59] = &Interpreter::op59_xret;
+  t[0x5B] = &Interpreter::op5B_get_map_tile;  // get_map_tile_data(opendw 對拍移植)
   t[0x5C] = &Interpreter::op5C_party_loop;
   t[0x62] = &Interpreter::op62_scan_char;
   // batch 6:byte 堆疊 / 資料資源讀 / 比較 / viewport

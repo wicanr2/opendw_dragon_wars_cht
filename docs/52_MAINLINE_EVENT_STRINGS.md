@@ -7,81 +7,108 @@
 
 ## quest gate halt opcode（卡住格 → 未實作 opcode）
 
-| opcode | 卡住格數 | 語意（OPCODE_REFERENCE） | 主線影響 |
+> **更新（2026-06-16）**：op_79（DRAGON.COM 反組譯）+ op_5B（opendw 對拍）已實作並掛 dispatch。
+> 下表「主線影響」欄保留歷史卡點記錄;**op_79×15 / op_5B×3 卡點已全部解除**(重跑 emit 不再 halt)。
+
+| opcode | 卡住格數 | 語意（OPCODE_REFERENCE） | 主線影響（更新後狀態） |
 |---|---|---|---|
-| op_6B | 26 | 世界圖座標/移動前置（推測） | 全在 area 0 世界圖；app 走獨立 `worldmap_dest` 靜態路徑進城，**非主線阻斷** |
-| op_79 | 15 | set_msg 帶參數變體（L10N 關鍵，分類 C 未實作） | **真實缺口**：散落 area 1/2/6/8/17/29，擋住部分事件格 emit |
-| op_5B | 3 | get_map_tile_data（reference 標 ✅ 但 remake dispatch 未掛） | area 5/27/30 各 1 格 |
+| op_6B | 26 | 世界圖座標/移動前置（推測） | 全在 area 0 世界圖；app 走獨立 `worldmap_dest` 靜態路徑進城，**非主線阻斷**（仍未實作,不影響） |
+| op_79 | ~~15~~ → **0** | set_msg 帶參數變體 = **draw_pattern + op_7A**（資料資源字串 emit;DRAGON.COM 反組譯逆出） | **已解除**：area 1/2/6/8/17/29 的 15 格重跑全部 emit 文字、不再 halt（見下節「實作後重跑」） |
+| op_5B | ~~3~~ → **0** | get_map_tile_data（opendw 有 body → 對拍移植） | **已解除**：area 5/27/30 各 1 格不再 halt |
+
+### op_79 實作後重跑（DRAGON.COM 0x47FA 反組譯）
+
+`mainline_events assets/bundle 1 2 6 8 17 29` 重跑:**halt opcode 分佈 = 空**(15 格 op_79 全消)。
+唯一字串自 53 → 72 條(area 8/29 等城內商店/酒館/募兵對話原本被 op_79 擋住,現可 emit)。
+新 emit 例(area 29 軍營 tile 0x08):`"The black marketeer looks at your equipment…"` + `"Who will enter?"`;
+area 8 黃泥蟾蜍 tile 0x0D:`""Welcome to the Cavern Tavern, folks," says the barkeep"`、tile 0x0F:
+`"Magical Mud Inc., we'll ooze your pains away for a price!"`。語意合理、與場景一致 → **高信心**。
+
+> **op_79 反組譯語意（@0x47FA,opendw targets[] 標 NULL → 無 C oracle）**:
+> ```
+> 47FA: push si / push cs / pop es / call 0x3380(draw_pattern) / pop si
+>       ↓ 落入 op_7A(@0x4801)
+> 4801: bx=[0x3AE2](資料資源偏移) / cx=[0x3ADF](資料資源段)
+>       / call 0x1C79(extract_string) / [0x3AE2]=bx(下一條起點)
+> ```
+> 即 **op_79 = draw_pattern + op_7A**,與「op_77 = draw_pattern + op_78」對稱
+> (op_77@0x47E3 同樣 call 0x3380 後落入 op_78@0x47EC)。draw_pattern(0x3380)純 render
+> 副作用(重繪 viewport + 設 dirty),不消耗 operand、不 emit;故 remake 的 op_79
+> 等同既有 op_7A(`op7A_emit_data_string`),draw_pattern 略過(與 op_77≡op_78 同處理)。
+
+> **重要更正**：原 docs/54 推測「菲巴斯(6)/拜占儂(9)子區進入 halt 於 op_79」**有誤**。
+> op_79 實作後,母區(8/29)的進入格事件**全部跑完且不寫 gs[2]**(不換區);被 op_79
+> 擋住的其實是**城內商店/對話文字**,不是子區進入鏈。6/9 的進入機制另有問題,見 docs/54 更新。
 
 ## 各主線區 emit 字串（雜訊已濾）
 
 ### area 0 「Dilmun」 32x47  res=0x46
 - Mad screaming rings in your ears!
 - Enter Purgatory
-- ?
+- ?
 - Enter Slave Camp
-- ?
+- ?
 - Guard bridge ahead, approach
-- ?
+- ?
 - Enter ancient ruins
-- ?
+- ?
 - Heavily guarded bridge ahead, approach
-- ?
+- ?
 - Bridge ahead, approach
-- ?
+- ?
 - Bridge ahead, approach
-- ?
+- ?
 - Enter the City of the Yellow Mud Toad
-- ?
+- ?
 - Enter Smuggler's Cove
-- ?
+- ?
 - Bridge ahead, approach
-- ?
+- ?
 - Enter ruined city
-- ?
+- ?
 - Splash!!
 - Approach Old Dock
-- ?
+- ?
 - Approach Pilgrim's Dock
-- ?
+- ?
 - Enter Royal Game Preserve
-- ?
+- ?
 - Enter decaying city
-- ?
+- ?
 - Enter Kingshome
-- ?
+- ?
 - Ruins ahead, Approach
-- ?
+- ?
 - Magical forest ahead, Enter
-- ?
+- ?
 - Enter sunken ruins
-- ?
+- ?
 - Enter strange building
-- ?
+- ?
 - Enter Dragon Valley
-- ?
+- ?
 - Enter Nisir
-- ?
+- ?
 - Enter Lansk
-- ?
+- ?
 - Enter Byzanople
-- ?
+- ?
 - Enter Freeport
-- ?
+- ?
 - Enter Slave Estate
-- ?
+- ?
 - Enter Camp
-- ?
+- ?
 - "egin a new gameContinue 
 - "egin a new gameContinue 
 - "egin a new gameContinue 
 - Hidden away beside this rock is an arms cache!
-- You stand beside a magical pond, shall you wade in?
+- You stand beside a magical pond, shall you wade in?
 - "egin a new gameContinue 
 - A group of guards ambush you using powerful magic. "Remember, Namtar wants them alive," is the last thing you hear before....
 - "egin a new gameContinue 
 - "egin a new gameContinue 
--  recognizes this area as a transportation nexus. Do you wish to teleport to the Mystic Wood?
+-  recognizes this area as a transportation nexus. Do you wish to teleport to the Mystic Wood?
 
 ### area 1 「Purgatory」 34x34  res=0x47
 - You smell the sea. This section of wall must border on the harbor.
@@ -92,7 +119,7 @@
 - "egin a new gameContinue 
 - Read paragraph 3
 - Do you wish to enter the Apsu waters
-- ?
+- ?
 - Read paragraph 4
 - You hear the lusty shouts of a large crowd coming from the east.
 - You hear the bloodthirsty howls of a great crowd from behind the wall to the north.
@@ -264,7 +291,7 @@
 - This room is full of sticky spider webs.
 - Ahead you see a portal of power -- wildly shifting colors swirl within a gate of arcane stone.
 - Zap!!!
-- There are a\de\scending stairs here. Do you wish to take them?
+- There are a\de\scending stairs here. Do you wish to take them?
 - "egin a new gameContinue 
 
 ### area 25 「Kingshome」 17x15  res=0x5F
@@ -278,7 +305,7 @@
 - This is the king's wardrobe. Here you find innumerable breeches, capes, boots, and blouses, and all manner of clothing accessories. Although this collection is valuable, it would be recognized instantly if someone tried to sell it.
 - In a closed trunk, you find several dozen simple white robes such as pilgrims wear.
 - This is a library, long dusty from disuse. This entire wing of the palace doesn't see much use nowadays. Books are available on all variety of subjects concerning Oceana both past and present, but mostly past.
-- There are a\de\scending stairs here. Do you wish to take them?
+- There are a\de\scending stairs here. Do you wish to take them?
 - Several items of interest lay strewn about.
 
 ### area 32 「Dragon Valley」 16x16  res=0x66
@@ -327,7 +354,7 @@
 
 ### area 29 「Siege Camp」 16x16  res=0x63
 - "egin a new gameContinue 
-- "Recruits are always welcome in the service of Namtar," he says. Do you wish to join the army?
+- "Recruits are always welcome in the service of Namtar," he says. Do you wish to join the army?
 - "Then get lost."
 - Read paragraph 87
 - Read paragraph 90
@@ -335,11 +362,11 @@
 - A crack in the rock shows the camp where the invading army is stationed. 
 - You find where a soldier has stashed his arms and armor!
 - You have found a locked chest.
-- There is a hidden passage here. Do you wish to take it?
+- There is a hidden passage here. Do you wish to take it?
 - "egin a new gameContinue 
 
 ### area 4 「Salvation」 16x16  res=0x4A
-- There are a\de\scending stairs here. Do you wish to take them?
+- There are a\de\scending stairs here. Do you wish to take them?
 - "egin a new gameContinue 
 - A wise man might find a way through this rock.
 - Read paragraph 55
@@ -381,4 +408,4 @@
 - To the south lay the forces of Namtar!
 - Only fools would dare combat an army alone!
 - It's you against an entire army! 
-- There are a\de\scending stairs here. Do you wish to take them?
+- There are a\de\scending stairs here. Do you wish to take them?

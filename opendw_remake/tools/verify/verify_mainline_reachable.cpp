@@ -101,6 +101,19 @@ int main(int argc, char** argv) {
     }
   }
 
+  // (3) **子區 relocate 邊**(resource 5 反組譯逆出:1A 41/43/45 + 58 05 → Yes 分支
+  //     寫 gs[2]=gs[0x45])。靜態讀 1A 45 <AREA> 即得目的地(headless 無鍵盤取不到
+  //     Yes 分支,故動態跑不出此邊;此處用靜態解碼補上)。詳見 Level::subarea_relocs。
+  int subarea_edges = 0;
+  for (int area = 0; area <= 39; ++area) {
+    auto lvl = res::Level::load_file(bundle + "/maps/" + std::to_string(area) + ".lvl");
+    if (!lvl) continue;
+    for (auto& r : lvl->subarea_relocs()) {
+      add_edge(area, r.area);
+      ++subarea_edges;
+    }
+  }
+
   // BFS 從 area 1(波卡城起點)。
   std::set<int> reachable;
   std::queue<int> q;
@@ -118,8 +131,9 @@ int main(int argc, char** argv) {
     for (int b : edges[a]) if (!from_world.count(b)) { from_world.insert(b); q.push(b); }
   }
 
-  std::printf("== 跨區連通 flood-fill(DRAGON.COM 反組譯反推世界圖樞紐 + tile 事件)==\n");
-  std::printf("邊統計:世界圖樞紐邊 %d(雙向)  tile 事件邊 %d\n", worldmap_edges, tile_edges);
+  std::printf("== 跨區連通 flood-fill(DRAGON.COM 反組譯反推世界圖樞紐 + tile 事件 + 子區 relocate)==\n");
+  std::printf("邊統計:世界圖樞紐邊 %d(雙向)  tile 事件邊 %d  子區 relocate 邊 %d\n",
+              worldmap_edges, tile_edges, subarea_edges);
   std::printf("\n-- 換區邊(來源 -> 目的)--\n");
   for (auto& [a, dsts] : edges) {
     std::printf("  area %2d %-22s ->", a, area_name(a));
