@@ -63,7 +63,15 @@ struct Sampler {
   void check_map_boundary_x() {
     std::uint8_t bl = bx & 0xFF;
     if (bl < bound_w) return;
-    // (flags&2) 分支在 opendw 為 unimplemented;此關 (Purgatory) 不走到。
+    // (flags&2) wrap 分支:opendw 此處為 `exit(1)`(未實作)。前後文(非 wrap
+    // 分支把 x>=W 夾到 W-1、x<0(bl>=0x80)夾到 0 並設 blocked)透露 wrap 本意
+    // 為 modular 環繞 —— 此處以「走出東緣→西緣」環繞慣例補上,不設 blocked
+    // (不夾、不擋,讓 FOV 跨邊緣連續取樣)。誠實標示:opendw oracle 未實作。
+    if (bound_f & 0x2) {
+      bl = static_cast<std::uint8_t>(((int)(std::int8_t)bl % bound_w + bound_w) % bound_w);
+      bx = (bx & 0xFF00) | bl;
+      return;
+    }
     byte_551E = 0x80;
     if (bl < 0x80) {
       bl = bound_w;
@@ -78,6 +86,12 @@ struct Sampler {
   void check_map_boundary_y() {
     std::uint8_t dl = dx & 0xFF;
     if (dl < bound_h) return;
+    // (flags&2) wrap 分支:同 check_map_boundary_x,走出南緣→北緣 modular 環繞。
+    if (bound_f & 0x2) {
+      dl = static_cast<std::uint8_t>(((int)(std::int8_t)dl % bound_h + bound_h) % bound_h);
+      dx = (dx & 0xFF00) | dl;
+      return;
+    }
     byte_551E = 0x80;
     if (dl > 0x80) {
       dx = 0xFF00;
