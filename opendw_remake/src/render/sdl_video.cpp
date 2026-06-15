@@ -18,8 +18,8 @@ std::vector<std::uint8_t> SdlVideo::to_rgb(const Framebuffer& fb) {
 
 SdlVideo::~SdlVideo() { close(); }
 
-bool SdlVideo::open(int scale, const char* title, const std::string& ttf_path, bool headless) {
-  scale_ = scale;
+bool SdlVideo::init_common(int win_w, int win_h, const char* title,
+                           const std::string& ttf_path, bool headless) {
   headless_ = headless;
   if (headless) {
     // headless 合成:dummy video driver(不開實體視窗),供 --dump 讀回高解析畫面。
@@ -29,7 +29,7 @@ bool SdlVideo::open(int scale, const char* title, const std::string& ttf_path, b
   if (SDL_Init(SDL_INIT_VIDEO) != 0) return false;
   Uint32 wflags = headless ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN;
   win_ = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                          kW * scale, kH * scale, wflags);
+                          win_w, win_h, wflags);
   if (!win_) return false;
   // software renderer:headless dummy driver 下 render-to-texture + ReadPixels 穩定。
   ren_ = SDL_CreateRenderer(win_, -1, SDL_RENDERER_SOFTWARE);
@@ -47,12 +47,37 @@ bool SdlVideo::open(int scale, const char* title, const std::string& ttf_path, b
   return true;
 }
 
+bool SdlVideo::open(int scale, const char* title, const std::string& ttf_path, bool headless) {
+  scale_ = scale;
+  mode640_ = false;
+  return init_common(kW * scale, kH * scale, title, ttf_path, headless);
+}
+
+bool SdlVideo::open_640x480(const char* title, const std::string& ttf_path, bool headless) {
+  // 640×480 模式:像素層整數 ×2(= 640×400),垂直置中於 640×480(letterbox)。
+  scale_ = kMode640Scale;   // 像素層 / 文字層座標換算固定 ×2
+  mode640_ = true;
+  if (!init_common(kWin640W, kWin640H, title, ttf_path, headless)) return false;
+  // 文字層:座標 ×2 + letterbox y 偏移(文字疊在已置中的遊戲內容上 → 同步偏移)。
+  //   字級不再與 scale 等比,由呼叫端 add(...) 傳固定 px(CJK 24 / UI 16 / 標題 48)。
+  text_.set_scale(kMode640Scale);
+  text_.set_y_offset(kMode640LetterY);
+  return true;
+}
+
 void SdlVideo::compose(const Framebuffer& fb) {
-  // 1) 像素層:framebuffer → 320×200 texture → nearest 整數放大至全視窗。
+  // 1) 像素層:framebuffer → 320×200 texture → nearest 整數放大。
+  //    一般模式:放大填滿全視窗(320*scale × 200*scale)。
+  //    640 模式:×2 = 640×400,垂直置中於 640×480(上下各 40px 黑邊;絕不拉伸)。
   auto rgb = to_rgb(fb);
   SDL_UpdateTexture(tex_, nullptr, rgb.data(), kW * 3);
-  SDL_RenderClear(ren_);
-  SDL_RenderCopy(ren_, tex_, nullptr, nullptr);   // 放大到 kW*scale × kH*scale
+  SDL_RenderClear(ren_);   // 預設黑底 → letterbox 黑邊
+  if (mode640_) {
+    SDL_Rect dst{0, kMode640LetterY, kW * kMode640Scale, kH * kMode640Scale};
+    SDL_RenderCopy(ren_, tex_, nullptr, &dst);   // 整數 ×2 置中(像素完美)
+  } else {
+    SDL_RenderCopy(ren_, tex_, nullptr, nullptr);   // 放大到 kW*scale × kH*scale
+  }
   // 2) 文字層:TextLayer 在視窗高解析原生繪製,疊在像素層之上(永不縮放)。
   text_.flush();
 }
@@ -65,7 +90,7 @@ void SdlVideo::present(const Framebuffer& fb) {
 
 bool SdlVideo::dump_ppm(const Framebuffer& fb, const std::string& path) {
   if (!ren_ || !tex_) return false;
-  int w = kW * scale_, h = kH * scale_;
+  int w = out_w(), h = out_h();   // 640 模式 = 640×480(含 letterbox);一般 = kW*scale × kH*scale
   // 合成到 default render target,再 ReadPixels 取回高解析 RGB。
   compose(fb);
   std::vector<std::uint8_t> px(static_cast<std::size_t>(w) * h * 3);

@@ -266,6 +266,7 @@ int main(int argc, char** argv) {
   // 文字層 host TTF(雙層渲染);可 --font-ttf 覆寫(為日後日文/Noto 留路)。
   std::string font_ttf = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc";
   int scale = 3;                  // --scale N:視窗 = 320*N × 200*N(預設 3 → 960×600,CJK≈36px 原生)
+  bool win640 = false;            // --win640 / --mode 640x480:640×480 letterbox 模式(像素層 320×200 ×2 置中,字級固定 CJK24/UI16/標題48)
   int start_pc = 20, max_frames = -1, press = 0, map_area = -1;
   int at_x = -1, at_y = -1;       // --at x y:把玩家放到指定格(headless 驗證事件文字)
   int msg_page = 0;               // --msg-page N:訊息檢視器先翻到第 N 頁再 dump(headless 驗證分頁)
@@ -298,6 +299,12 @@ int main(int argc, char** argv) {
     else if (eq("--font") && i + 1 < argc) font_raw = argv[++i];
     else if (eq("--font-ttf") && i + 1 < argc) font_ttf = argv[++i];   // 文字層 host TTF
     else if (eq("--scale") && i + 1 < argc) scale = std::atoi(argv[++i]);  // 視窗整數倍率
+    else if (eq("--win640")) win640 = true;                                // 640×480 letterbox 模式
+    else if (eq("--mode") && i + 1 < argc) {                               // --mode 640x480
+      std::string m = argv[++i];
+      if (m == "640x480" || m == "640") win640 = true;
+      else std::fprintf(stderr, "unknown --mode %s (use 640x480)\n", m.c_str());
+    }
     else if (eq("--menu") && i + 1 < argc) menu_tsv = argv[++i];
     else if (eq("--locale") && i + 1 < argc) locale = argv[++i];   // 切語系(zh-TW / ja / …)
     else if (eq("--pc") && i + 1 < argc) start_pc = std::atoi(argv[++i]);
@@ -1019,14 +1026,20 @@ int main(int argc, char** argv) {
   //    headless 條件:有 --dump 且未設 DISPLAY → 用 dummy driver 合成高解析畫面。──
   const bool headless = !dump.empty() && std::getenv("DISPLAY") == nullptr;
   render::SdlVideo vid;
-  if (!vid.open(scale, "OpenDW Remake — 火龍之戰", font_ttf, headless)) {
+  bool opened = win640
+      ? vid.open_640x480("OpenDW Remake — 火龍之戰", font_ttf, headless)
+      : vid.open(scale, "OpenDW Remake — 火龍之戰", font_ttf, headless);
+  if (!opened) {
     std::fprintf(stderr, "SDL open failed\n"); return 1;
   }
   render::TextLayer& tl = vid.text();
-  // 原生字級(視窗 px)隨 scale 等比(基準為 scale=3):標題大字、CJK 內文、ASCII 提示。
-  const int PX_TITLE = 48 * scale / 3;   // 標題「火龍之戰」
-  const int PX_BODY  = 24 * scale / 3;   // CJK 內文(選單/事件/段落)
-  const int PX_UI    = 16 * scale / 3;   // ASCII UI(關卡名/控制提示)
+  // 640×480 模式:像素層固定 ×2(scale=2),故 scale 概念對文字層 = 2;字級「解綁」
+  //   為固定原生 px(CJK 24 / UI 16 / 標題 48),不隨 scale 縮放(這正是 docs/47 方案 3 要點)。
+  // 一般 scale 模式:原生字級隨 scale 等比(基準 scale=3)。
+  const int eff_scale = win640 ? 2 : scale;   // 文字/版面虛擬座標換算用的有效倍率
+  const int PX_TITLE = win640 ? 48 : 48 * scale / 3;   // 標題「火龍之戰」
+  const int PX_BODY  = win640 ? 24 : 24 * scale / 3;   // CJK 內文(選單/事件/段落)
+  const int PX_UI    = win640 ? 16 : 16 * scale / 3;   // ASCII UI(關卡名/控制提示)
 
   // 文字層:大標題走 tr("Dragon Wars")(zh→火龍之戰、en→Dragon Wars、ja→ドラゴンウォーズ)。
   auto add_title = [&]() { tl.add(8, 6, tr.tr("Dragon Wars"), 14, PX_TITLE); };
@@ -1041,7 +1054,7 @@ int main(int argc, char** argv) {
   const int MB_X = 6, MB_W = render::kW - 12;        // 框左 + 寬(左右各留 6)
   const int MB_Y = 96, MB_H = render::kH - MB_Y - 4; // 框上緣 + 高(落在下半,底留 4)
   const int MB_PAD = 5;                              // 框內邊距
-  const int MB_LINE_H = PX_BODY / scale + 3;         // 行距(虛擬座標;CJK 字高/scale + 間距)
+  const int MB_LINE_H = PX_BODY / eff_scale + 3;         // 行距(虛擬座標;CJK 字高/scale + 間距)
   const int MB_TEXT_X = MB_X + MB_PAD;
   const int MB_TEXT_W = MB_W - 2 * MB_PAD;
   const int MB_TEXT_TOP = MB_Y + MB_PAD;
@@ -1093,7 +1106,7 @@ int main(int argc, char** argv) {
   const int PB_X = 4, PB_W = render::kW - 8;          // 框左 + 寬(左右各留 4)
   const int PB_Y = 4, PB_H = render::kH - 8;          // 框上 + 高(上下各留 4,幾乎全螢幕)
   const int PB_PAD = 5;
-  const int PB_LINE_H = PX_BODY / scale + 3;          // 內文行距(虛擬座標)
+  const int PB_LINE_H = PX_BODY / eff_scale + 3;          // 內文行距(虛擬座標)
   const int PB_TEXT_X = PB_X + PB_PAD;
   const int PB_TEXT_W = PB_W - 2 * PB_PAD;
   const int PB_TITLE_TOP = PB_Y + PB_PAD;             // 標題列 y
@@ -1155,7 +1168,7 @@ int main(int argc, char** argv) {
   // 落在畫面中央偏左(避開右側隊伍面板區),框較高以容納所有屬性列。
   const int CS_X = 8, CS_Y = 20, CS_W = 200, CS_H = render::kH - CS_Y - 8;
   const int CS_PAD = 6;
-  const int CS_LINE_H = PX_BODY / scale + 3;   // 屬性列行距(虛擬座標)
+  const int CS_LINE_H = PX_BODY / eff_scale + 3;   // 屬性列行距(虛擬座標)
   const int CS_VAL_X = CS_X + CS_PAD + 70;     // 數值欄起點(標籤右側)
 
   // 畫角色屬性表底框(像素層)。

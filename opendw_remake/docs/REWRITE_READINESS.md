@@ -11,7 +11,7 @@
 重寫一個遊戲引擎最大的風險是「**改完不知道對不對**」。這個風險今天已經解除:
 
 1. **R0 資產層 — byte-for-byte 對拍 opendw**:`archive + text_codec + decompress`(含 DATA2 修正)解出的資源,與 opendw `resextract` 的輸出**逐位元組相同**(res31 怪物字串、res168 sprite 驗證通過)。
-2. **R1 VM 核心 — 逐指令對拍 opendw**:差異測試 harness 已成立 —— 同一段 bytecode 丟進 opendw(oracle)與 remake VM,`(pc,op,r2,r4,flags,mode)` 逐指令比對**完全一致**。一鍵 `bash tools_build/diff_trace.sh` 從零重建兩邊並 diff。
+2. **R1 VM 核心 — 逐指令對拍 opendw**:差異測試 harness 已成立 —— 同一段 bytecode 丟進 opendw(oracle)與 remake VM,`(pc,op,r2,r4,flags,mode)` 逐指令比對**完全一致**。trace 執行檔為 `trace_remake`(`make trace_remake`),輸出與 opendw oracle trace 比對。
 
 → 意義:之後**每加一個 opcode、每寫一個模組,都能自動證明「行為等同原版」**。這把「重寫」從「賭一把」變成「可驗證的工程」。
 
@@ -22,8 +22,8 @@
 | 層 | 狀態 |
 |----|------|
 | 資產層(archive/text_codec/decompress) | ✅ R0,byte-for-byte == opendw |
-| VM 核心(VmState/dispatch/trace) | ✅ R1,15/256 opcode |
-| 差異測試基礎設施 | ✅ 一鍵 diff_trace,逐指令對拍 |
+| VM 核心(VmState/dispatch/trace) | ✅ R1,~117/256 opcode(現況;含字串輸出/音效/旗標/跳轉/算術) |
+| 差異測試基礎設施 | ✅ `trace_remake` 逐指令對拍 opendw oracle |
 | 可重現 docker 工具鏈 | ✅ build_opendw_tools / build_trace_oracle |
 | 資產來源(scripts/sprites/maps/text/段落/翻譯) | ✅ 已萃取於上層 repo |
 

@@ -83,7 +83,8 @@ void TextLayer::flush() {
     CachedTex* ct = get_texture(cmd.utf8, cmd.color, cmd.px);
     if (!ct || !ct->tex) continue;
     // 虛擬座標 ×scale → 視窗定位;texture 已是原生字級(視窗 px),1:1 blit(不縮放)。
-    SDL_Rect dst{cmd.vx * scale_, cmd.vy * scale_, ct->w, ct->h};
+    //   640×480 模式:y 額外 + letterbox 偏移(文字隨置中後的遊戲內容一起下移)。
+    SDL_Rect dst{cmd.vx * scale_, cmd.vy * scale_ + y_offset_, ct->w, ct->h};
     SDL_RenderCopy(ren_, ct->tex, nullptr, &dst);
   }
 }
