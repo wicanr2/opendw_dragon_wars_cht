@@ -785,6 +785,9 @@ void Interpreter::op58_xcall() {
   s_.ax += (std::uint16_t)(s_.fetch8() << 8);
   std::uint16_t src_offset = s_.ax;
 
+  // 診斷 hook(不改行為):回報目標資源 + offset + 返回 pc。
+  if (xcall_obs_) xcall_obs_(tag_item, src_offset, (std::uint16_t)s_.pc);
+
   // 載入目標資源 bytes。tag_item = 資源 tag/section。
   std::vector<std::uint8_t> bytes;
   if (!load_resource(tag_item, bytes)) {
@@ -1307,7 +1310,15 @@ void Interpreter::op80_advance_cursor() {
 //   headless 無鍵盤 → 取「無輸入」key=0(< 0xD9)的確定性分支:zf=0、cf=1、sf=0,
 //   即 word_3AE6 = 0x03(reserved|carry)。對拍時 oracle 喂同一 key=0 取得同一結果。
 void Interpreter::op8C_prompt_no_yes() {
-  std::uint16_t key = 0;  // headless:無鍵盤輸入
+  // headless:預設無鍵盤輸入(key=0,取 No 分支,既有測試/遊戲流程依賴)。
+  //   若注入了 headless_keys/headless_key(逆向 city-entry「Do you wish to enter?」
+  //   的 Yes 分支用),則消耗一個鍵當作玩家輸入。鍵為「大寫字母|0x80」(對照
+  //   get_key_from_buffer):'Y'|0x80=0xD9。不注入時行為與舊版完全相同。
+  std::uint16_t key = 0;
+  if (s_.headless_key_idx < s_.headless_keys.size())
+    key = s_.headless_keys[s_.headless_key_idx++];
+  else if (s_.headless_key != 0)
+    key = s_.headless_key;
   if (key == 0xD9) {      // 'Y'
     s_.cf = 1;
     s_.zf = 1;
