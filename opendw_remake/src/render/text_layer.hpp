@@ -45,6 +45,12 @@ public:
 
   void set_scale(int scale) { scale_ = scale; }
 
+  // letterbox y 偏移(640×480 模式):文字疊在「垂直置中後的遊戲內容」上,
+  //   flush 時所有指令的目標 y 額外加上此偏移(虛擬座標 ×scale 後再 + y_offset_)。
+  //   一般模式為 0(無 letterbox)。
+  void set_y_offset(int dy) { y_offset_ = dy; }
+  int y_offset() const { return y_offset_; }
+
   // 累積一條繪製指令(虛擬座標 + 原生字級 px;px<=0 用 default_px_)。
   void add(int vx, int vy, const std::string& utf8, std::uint8_t color, int px = 0);
 
@@ -70,6 +76,7 @@ private:
 
   SDL_Renderer* ren_ = nullptr;
   int scale_ = 3;
+  int y_offset_ = 0;              // letterbox 垂直偏移(640×480 模式 = 40;一般 = 0)
   int default_px_ = 24;           // 預設原生字級(CJK≈24px 視窗像素)
   std::string ttf_path_;
 

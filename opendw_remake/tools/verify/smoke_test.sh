@@ -59,6 +59,21 @@ det "標題場景圖"  --scene 29
 det "段落 88"     --read-para 88
 det "遭遇畫面"    --encounter 12 --combat-seed 4660
 
+echo "== 640×480 視窗模式(letterbox;docs/47 方案 3)=="
+# 視窗確為 640×480、像素層 320×200 ×2 垂直置中(上下各 40px 黑邊 letterbox)。
+# 640 模式像素層固定 ×2,不吃 --scale;仍可 --frames 1 限制幀數。
+"$BIN" --win640 --frames 1 --scene 29 --dump "$TMP/w640.ppm" >/dev/null 2>&1
+if head -c 32 "$TMP/w640.ppm" 2>/dev/null | grep -q "^P6"; then
+  dims="$(head -c 32 "$TMP/w640.ppm" | tr '\n' ' ' | awk '{print $2"x"$3}')"
+  if [ "$dims" = "640x480" ]; then
+    echo "  ✅ [640×480] 視窗尺寸 = $dims"
+  else
+    echo "  ❌ [640×480] 視窗尺寸 = $dims(預期 640x480)"; fail=1
+  fi
+else
+  echo "  ❌ [640×480] 無 dump 輸出"; fail=1
+fi
+
 echo
 if [ $fail -eq 0 ]; then echo "PASS: app 整合 smoke 全綠"; exit 0
 else echo "FAIL: 見上"; exit 1; fi

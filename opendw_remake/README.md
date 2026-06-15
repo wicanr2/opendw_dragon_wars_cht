@@ -31,11 +31,11 @@
 
 **R0(資產層)完成**:archive + text_codec + decompress 全數對拍 opendw 一致。
 
-| `vm/`(script 虛擬 CPU) | 🚧 R1:56/256 opcode(模式/算術/旗標/邏輯/比較/跳轉/loop/game_state/bit) |
-| **差異測試 harness** | ✅ remake VM trace == opendw oracle(逐指令一致)。`bash tools_build/diff_trace.sh` |
+| `vm/`(script 虛擬 CPU) | 🚧 R1:~117/256 opcode(模式/算術/旗標/邏輯/比較/跳轉/loop/game_state/bit/字串輸出/音效) |
+| **差異測試 harness** | ✅ remake VM trace == opendw oracle(逐指令一致)。trace 執行檔 `trace_remake`(`make trace_remake`),與 opendw oracle trace 比對 |
 | `render/`(framebuffer + 全螢幕圖 + 8×8 字) | ✅ R2 batch 1:framebuffer + title_adjust(title golden 通過,`render_golden.sh`)。✅ R2 batch 2:遊戲原生 8×8 字(chr_table)。✅ R2 batch 3:24×24 中文點陣(atlas)+ 8×8/24×24 混排 → Showcase |
 
-**R1 進行中**:VM 核心 + 差異測試 harness 已立(`diff_trace.sh` 證明 remake 對拍 opendw 逐指令一致)。
+**R1 進行中**:VM 核心 + 差異測試 harness 已立(`trace_remake` 證明 remake 對拍 opendw 逐指令一致)。
 逐 batch 補齊 256 opcode,每批用差異測試驗。
 **Asset bundle(ADR 0001)**:ResourceProvider 抽象(Data1Provider oracle / BundleProvider 執行期);script bytecode + sprite + 字串皆可走 bundle,BundleProvider 載入 == DATA1 byte-for-byte。sprite 走 bundle `.spr`+PNG+manifest,從 bundle 渲染與 DATA1 解碼**像素一致**且執行期不依賴 DATA1 —— 換檔即換 sprite(未來 X68000/PC-9801 美術)。
 
