@@ -507,6 +507,24 @@ int main(int argc, char** argv) {
   auto run_event = [&](std::uint8_t tv) -> std::string {
     event_para_n = -1;            // 預設:本次非段落事件(命中 op_81 數字 sink 才設)
     if (!level) return "";
+    // ── 世界圖 / 樞紐「踩格進區」(DRAGON.COM 反組譯反推,opendw 未實作)──────
+    //   area 0 Dilmun 世界圖的城鎮/地點格事件腳本固定走 op_58→資源8→op_6x<IDX>,
+    //   其中 IDX = 目的地 area。resource 8 的 VM 子常式 remake 尚無法忠實執行
+    //   (op_68/op_70 在 opendw 為 NULL,resource 8 控制流未完整逆出),故此處
+    //   以靜態反推的 IDX 直接設 gs[2]=目的地 area,交給 sync_relocation 換場。
+    //   入口座標未能靜態逆出 → 落點由 enter_map 取目標關卡第一可走格(連通正確)。
+    //   只在世界圖類樞紐(wrap 關卡)套用,避免誤判一般關卡的事件格。
+    if (level->wraps()) {
+      int dest = level->worldmap_dest(tv);
+      if (dest >= 0 && dest != current_area) {
+        std::fprintf(stderr,
+            "worldmap enter: area %d tile 0x%02X -> area %d "
+            "(DRAGON.COM RE; opendw unimpl)\n", current_area, tv, dest);
+        game_state[2] = (std::uint8_t)dest;   // sync_relocation 會載入並落到第一可走格
+        game_state[0] = game_state[1] = 0;    // 入口座標未逆出 → 交 enter_map 取首格
+        return "";
+      }
+    }
     std::uint16_t pc = level->script_pc(tv);
     if (pc == 0 || pc >= level->data().size()) return "";
     vm::VmState st;
@@ -652,11 +670,16 @@ int main(int argc, char** argv) {
       return -1;
     }
     // 套用事件指定的入口座標/朝向(enter_map 預設落在第一可走格,這裡覆寫成腳本值)。
-    px = gx; py = gy; dir = gf;
+    // 例外:世界圖樞紐換場入口座標未能靜態逆出(gs[0]=gs[1]=0 哨兵)→ 保留
+    //   enter_map 取的第一可走格(連通正確,非 byte-exact 入口)。
+    bool entry_unknown = (gx == 0 && gy == 0 && !(level && level->walkable(0, 0)));
+    if (!entry_unknown) { px = gx; py = gy; }
+    dir = gf;
     game_state[0] = (std::uint8_t)px; game_state[1] = (std::uint8_t)py; game_state[3] = (std::uint8_t)dir;
     last_event_tile = -1; event_msg.clear();         // 新區不立即重觸發進入格事件
-    std::fprintf(stderr, "AREA SWITCH %d->%d entry=(%d,%d) dir=%d%s\n",
+    std::fprintf(stderr, "AREA SWITCH %d->%d entry=(%d,%d) dir=%d%s%s\n",
                  old_area, new_area, px, py, dir,
+                 entry_unknown ? "  [entry coords un-RE'd → first walkable]" : "",
                  (level && !level->in_bounds(px, py)) ? "  [WARN entry out of bounds]" : "");
     return 2;
   };
