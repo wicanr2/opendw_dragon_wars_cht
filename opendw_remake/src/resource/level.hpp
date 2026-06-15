@@ -27,6 +27,22 @@ public:
   bool in_bounds(int x, int y) const { return x >= 0 && y >= 0 && x < w && y < h; }
   bool walkable(int x, int y) const { return in_bounds(x, y) && tile(x, y) != 0; }
 
+  // ── wrap 邊界(.lvl flags bit1 = 0x2)────────────────────────────────────
+  // opendw `check_map_boundary_x/y`(engine.c:5147/5176)在「座標越界 && flag&2」
+  // 時走 `exit(1)`(未實作)。前後文(非 wrap 分支對 x>=W 夾到 W-1、x<0 夾到 0,
+  // 並設 blocked 旗標)透露 wrap 分支本應做「modular 環繞」:走出東緣→西緣、
+  // 走出南緣→北緣。此處以該環繞慣例補上(誠實標示:opendw oracle 未實作)。
+  bool wraps() const { return (flags & 0x2) != 0; }
+  // 把座標折回有效範圍(僅 wrap 關卡;非 wrap 關卡原樣回傳,由呼叫端 in_bounds 判定)。
+  int wrap_x(int x) const { return (w > 0) ? ((x % w) + w) % w : x; }
+  int wrap_y(int y) const { return (h > 0) ? ((y % h) + h) % h : y; }
+  // wrap 關卡:座標先 modular 環繞再查 tile(永遠在界內,故可走 = tile!=0)。
+  // 非 wrap 關卡:退回一般 walkable(越界即不可走)。
+  bool walkable_wrap(int x, int y) const {
+    if (!wraps()) return walkable(x, y);
+    return tile(wrap_x(x), wrap_y(y)) != 0;
+  }
+
   // 關卡 bytecode(level 資源本身也是 script);供 VM 執行事件腳本。
   const std::vector<std::uint8_t>& data() const { return b_; }
   // tile 格起點 offset(= read_level_metadata 解析完 header 後的 di;= data_5A04 基準)。

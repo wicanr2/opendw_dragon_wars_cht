@@ -639,10 +639,12 @@ int main(int argc, char** argv) {
       return -1;
     }
     if (dst->flags & 0x2) {                          // gs[0x23] bit1 = wrap(opendw exit(1))
-      std::fprintf(stderr, "area switch %d->%d SKIPPED: target uses wrap boundary (flag&2), "
-                   "opendw leaves this unimplemented\n", current_area, new_area);
-      game_state[2] = (std::uint8_t)current_area;
-      return -1;
+      // 過去:opendw 對 wrap 邊界 exit(1) 未實作 → 明確跳過。現在 remake 以
+      // 標準 modular 環繞慣例支援 wrap 關卡載入/渲染/走動(誠實標示:非 oracle 真值)。
+      // 仍重載目標 .lvl;wrap 環繞行為在移動(walkable_wrap)與 FOV(check_map_boundary)生效。
+      std::fprintf(stderr, "area switch %d->%d: target is wrap boundary (flag&2); "
+                   "loading with modular-wrap convention (opendw exit(1) unimplemented)\n",
+                   current_area, new_area);
     }
     // 乾淨重載(等價 load_level_resources 的 resource_load(area+0x46) + read_level_metadata)。
     if (!enter_map(new_area)) {
@@ -773,7 +775,10 @@ int main(int argc, char** argv) {
     for (int s = 0; s < 5; ++s) {
       dir = (dir + 1) % 4;
       int nx = px + dx4[dir], ny = py + dy4[dir];
-      if (level && level->walkable(nx, ny)) { px = nx; py = ny; }
+      if (level && level->walkable_wrap(nx, ny)) {
+        if (level->wraps()) { nx = level->wrap_x(nx); ny = level->wrap_y(ny); }
+        px = nx; py = ny;
+      }
     }
     // 改點 game_state(確定性樣式)。
     for (int i = 0; i < 256; ++i) game_state[i] = (std::uint8_t)((i * 7 + 3) & 0xFF);
@@ -2073,7 +2078,10 @@ int main(int argc, char** argv) {
         if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // 右轉
         if (in.up    || in.key == 'I') {                      // 前進
           int nx = px + dx4[dir], ny = py + dy4[dir];
-          if (level && level->walkable(nx, ny)) {
+          // wrap 關卡(flag&2):走出邊緣 → modular 環繞到對邊(opendw exit(1) 未實作,
+          // 以標準環繞慣例補上)。非 wrap 關卡 walkable_wrap 退回一般 walkable。
+          if (level && level->walkable_wrap(nx, ny)) {
+            if (level->wraps()) { nx = level->wrap_x(nx); ny = level->wrap_y(ny); }
             px = nx; py = ny;
             mark_seen_here();   // 對齊 refresh_viewport:踏上新格即標記 seen
           }

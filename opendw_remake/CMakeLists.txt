@@ -222,6 +222,13 @@ target_link_libraries(verify_areaswitch PRIVATE dwr_vm)
 add_test(NAME verify_areaswitch
          COMMAND verify_areaswitch ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# tools/verify:wrap 邊界關卡(flag&2)載入 + 環繞 flood-fill 連通 + 不污染非 wrap 路徑。
+# wrap 在 oracle opendw 為 exit(1) 未實作 → 本驗證為自洽 + 不變式守護,非 byte-for-byte 對拍。
+add_executable(verify_wrap tools/verify/verify_wrap.cpp)
+target_link_libraries(verify_wrap PRIVATE dwr_resource)
+add_test(NAME verify_wrap
+         COMMAND verify_wrap ${CMAKE_SOURCE_DIR}/assets/bundle)
+
 # tools/verify:op_58 跨資源 halt 統計(補齊前/後)+ 確定性 PASS/FAIL(ctest)。
 add_executable(verify_op58 tools/verify/verify_op58.cpp)
 target_link_libraries(verify_op58 PRIVATE dwr_vm)
