@@ -114,6 +114,19 @@ int main(int argc, char** argv) {
     }
   }
 
+  // (4) **直接 gs[2] 城/區進入邊**(動態 trace 逆出第三種機制:1A 00/01/02 三行,
+  //     多數 op_8C Y/N 門控)。靜態讀 1A 02 <AREA> 即得目的地。逆出 Byzanople 9
+  //     進城(area 29 → 9)等。詳見 Level::area_entry_relocs。
+  int areaentry_edges = 0;
+  for (int area = 0; area <= 39; ++area) {
+    auto lvl = res::Level::load_file(bundle + "/maps/" + std::to_string(area) + ".lvl");
+    if (!lvl) continue;
+    for (auto& r : lvl->area_entry_relocs()) {
+      add_edge(area, r.area);
+      ++areaentry_edges;
+    }
+  }
+
   // BFS 從 area 1(波卡城起點)。
   std::set<int> reachable;
   std::queue<int> q;
@@ -132,8 +145,8 @@ int main(int argc, char** argv) {
   }
 
   std::printf("== 跨區連通 flood-fill(DRAGON.COM 反組譯反推世界圖樞紐 + tile 事件 + 子區 relocate)==\n");
-  std::printf("邊統計:世界圖樞紐邊 %d(雙向)  tile 事件邊 %d  子區 relocate 邊 %d\n",
-              worldmap_edges, tile_edges, subarea_edges);
+  std::printf("邊統計:世界圖樞紐邊 %d(雙向)  tile 事件邊 %d  子區 relocate 邊 %d  直接gs[2]進入邊 %d\n",
+              worldmap_edges, tile_edges, subarea_edges, areaentry_edges);
   std::printf("\n-- 換區邊(來源 -> 目的)--\n");
   for (auto& [a, dsts] : edges) {
     std::printf("  area %2d %-22s ->", a, area_name(a));

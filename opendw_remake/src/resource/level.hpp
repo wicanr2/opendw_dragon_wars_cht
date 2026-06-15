@@ -89,8 +89,15 @@ public:
     // 其後第 4 byte 起為 <NN> 30 <MM> <op> <IDX>:op 必為 0x60/0x68/0x70。
     std::uint8_t op = b_[pc + 7];
     if (op != 0x60 && op != 0x68 && op != 0x70) return -1;
-    int idx = b_[pc + 8];
-    if (idx < 0 || idx > 39) return -1;   // 超範圍(如 0x89)= 非換區格
+    // <IDX> 的 **bit7 是「需確認(op_8C Y/N)」旗標**,目的地 area = IDX & 0x7F。
+    //   證據(動態 trace + DRAGON.COM 反組譯):resource 8 @off=6 的目的地解碼段
+    //   @0x01ad 為 `38 7F`(op_38 AND 0x7F)→ `12 02`(op_12 gs[2]=r2)。即 VM
+    //   實際把 IDX 低 7 bit 寫進 gs[2]。area 0 唯一 bit7-set 格是 tile 0x1C
+    //   IDX=0x89 → 0x89 & 0x7F = **9 = Byzanople 拜占儂**(舊版誤判 0x89>39 為
+    //   「非換區格」而漏掉此邊;實機按 Y 即進拜占儂)。其餘 27 格 bit7=0,遮罩後值不變。
+    //   交叉驗證:trace_subarea_dyn area 0 --yes 對 tile 0x1C 跑出 gs2:0->9。
+    int idx = b_[pc + 8] & 0x7F;
+    if (idx < 0 || idx > 39) return -1;
     return idx;
   }
 
@@ -127,6 +134,44 @@ public:
           b_[i + 9] == 0x58 && b_[i + 10] == 0x05) {
         int x = b_[i + 2], y = b_[i + 5], area = b_[i + 8];
         if (area >= 0 && area <= 39) out.push_back({area, x, y, i});
+      }
+    }
+    return out;
+  }
+
+  // ── 直接寫 gs[2] 的「城/區進入」relocate(動態 trace 逆出的第三種機制)──────
+  //
+  // 來源:母區進入格 / 城門格的事件腳本固定樣式(對照 area 29 Siege Camp tile 0x0D)
+  //   1A 00 <X>     op_1A:gs[0]  = X(入口 X 座標)
+  //   1A 01 <Y>     op_1A:gs[1]  = Y(入口 Y 座標)
+  //   1A 02 <AREA>  op_1A:gs[2]  = 目的地 area  ← **直接換區**(gs[2]=current area var)
+  // 即與 subarea_relocs 同形,但 **目的地寫進 gs[0/1/2]**(立即生效的 area 變數),
+  // 不經 resource 5 的 gs[0x41/43/45]→gs[0/1/2] 中轉。多數此類格前面有 op_8C
+  //   (「Do you wish to enter <城>?」Y/N 提示),玩家答 Y 才落到這三行 → headless
+  //   無鍵盤預設取 No,故動態跑不到,但注入 'Y'(trace_subarea_dyn --yes)即跑出
+  //   gs2:src->AREA。本解碼器靜態讀 1A 02 <AREA> 即得目的地、1A 00/01 即得入口座標。
+  //
+  // **關鍵發現(逆出 Byzanople 拜占儂 9 進城)**:area 29 @0x04FA 為 `1A 00 07 /
+  //   1A 01 09 / 1A 02 09`(op_8C-gated),即 Siege Camp 軍營踩該格答 Y → 進拜占儂
+  //   (gs[2]=9,入口 (7,9))。**舊版兩套機制(worldmap_dest off=6、subarea_relocs
+  //   1A 45)都掃不到此邊**(無 1A 45 09),這就是 docs/54 §2.3 所述「第三種未識別
+  //   機制」。動態 trace(trace_subarea_dyn 29 --yes)實證 gs2:29->9。
+  //
+  // 誠實標示:目的地 + 入口座標 byte-exact(直接讀 1A 02/1A 00/1A 01 的 immediate);
+  //   「是否 Y/N 門控」由 8c_gated 標記(掃描前置 op_8C),不影響連通(答 Y 必經此格)。
+  struct AreaEntry { int area, x, y; std::size_t at; bool gated; };
+  std::vector<AreaEntry> area_entry_relocs() const {
+    std::vector<AreaEntry> out;
+    for (std::size_t i = 0; i + 9 < b_.size(); ++i) {
+      if (b_[i] == 0x1A && b_[i + 1] == 0x00 && b_[i + 3] == 0x1A &&
+          b_[i + 4] == 0x01 && b_[i + 6] == 0x1A && b_[i + 7] == 0x02) {
+        int x = b_[i + 2], y = b_[i + 5], area = b_[i + 8];
+        if (area < 0 || area > 39) continue;
+        // 是否被 op_8C(prompt_no_yes)門控:回看前 12 byte 是否出現 0x8C。
+        bool gated = false;
+        for (std::size_t j = (i >= 12 ? i - 12 : 0); j < i; ++j)
+          if (b_[j] == 0x8C) { gated = true; break; }
+        out.push_back({area, x, y, i, gated});
       }
     }
     return out;

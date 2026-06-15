@@ -30,6 +30,15 @@ public:
     s_.resource_provider = std::move(p);
   }
 
+  // 觀測 hook(純診斷,不改 VM 行為):op_58 跨資源 call 解出 tag+offset 後、
+  // 切換資源前回呼 (tag, src_offset, return_pc)。供 trace_subarea_dyn 逆出
+  // 母區事件格實際 call 的目標資源 + offset(probe/Trace 看不到 offset)。
+  // 預設 nullptr → 不影響任何現有路徑。
+  using XcallObserver = std::function<void(int tag, std::uint16_t off, std::uint16_t ret_pc)>;
+  void set_xcall_observer(XcallObserver o) { xcall_obs_ = std::move(o); }
+  // 目前執行所在的程式資源 index(= word_3AE8 / script_res),供 trace 標註。
+  int current_script_res() const { return s_.script_res; }
+
   // 執行直到 halt(op_5A)或 pc 越界。回傳執行的指令數。
   // max_steps>0 時加上指令數上限(達上限即停,halted 不設);供事件掃描/重放避免
   // 跨資源迴圈/壞跳轉造成的無限執行。<=0(預設)為無上限,行為與舊版相同。
@@ -222,6 +231,7 @@ private:
   void set_flags();
 
   MessageSink msg_sink_;
+  XcallObserver xcall_obs_;
 };
 
 }  // namespace dw::vm

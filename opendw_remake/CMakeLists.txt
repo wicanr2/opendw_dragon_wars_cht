@@ -242,6 +242,14 @@ target_link_libraries(dump_worldmap_tiles PRIVATE dwr_resource)
 add_executable(probe_subarea_entry tools/verify/probe_subarea_entry.cpp)
 target_link_libraries(probe_subarea_entry PRIVATE dwr_vm)
 
+add_executable(trace_subarea_dyn tools/verify/trace_subarea_dyn.cpp)
+target_link_libraries(trace_subarea_dyn PRIVATE dwr_vm)
+
+add_executable(verify_city_entry tools/verify/verify_city_entry.cpp)
+target_link_libraries(verify_city_entry PRIVATE dwr_vm)
+add_test(NAME verify_city_entry
+         COMMAND verify_city_entry ${CMAKE_SOURCE_DIR}/assets/bundle)
+
 # tools/verify:wrap 邊界關卡(flag&2)載入 + 環繞 flood-fill 連通 + 不污染非 wrap 路徑。
 # wrap 在 oracle opendw 為 exit(1) 未實作 → 本驗證為自洽 + 不變式守護,非 byte-for-byte 對拍。
 add_executable(verify_wrap tools/verify/verify_wrap.cpp)

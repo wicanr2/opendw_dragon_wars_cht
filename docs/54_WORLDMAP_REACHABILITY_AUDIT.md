@@ -1,5 +1,33 @@
 # 54 — 世界圖逐地點可達性盤點(權威 Dilmun 圖 × remake)
 
+> **更新 2(2026-06-16,動態 trace 逆出進城第三機制後 — 33/40 → 38/40)**:
+> 改用**動態逆向**(remake VM 實機執行 + 注入鍵盤 'Y' 通過 op_8C/op_89,逐指令 trace
+> 跨資源 call)攻克 Byzanople(9)/Phoebus(6) 缺口。工具:`tools/verify/trace_subarea_dyn.cpp`
+> (新增 op_58 XCALL observer hook + headless 鍵注入)。
+>
+> - **Byzanople 拜占儂(9)逆出成功 — 共兩條正向入口,皆為先前未識別的「第三種機制」**:
+>   1. **世界圖直連(area 0 tile 0x1C @(27,7))**:此格 IDX byte = **0x89**,**bit7 是
+>      「需 Y/N 確認」旗標**,目的地 = `0x89 & 0x7F = 9`。resource 8 @off=6 的目的地解碼段
+>      @0x01ad **`38 7F`(AND 0x7F)→ `12 02`(gs[2]=r2)**實證(動態 trace `area 0 --yes`
+>      跑出 `gs2:0->9`)。舊版 `worldmap_dest()` 誤判 `0x89 > 39` 為「非換區格」而漏掉 →
+>      **已修(加 `& 0x7F` 遮罩)**;原 26 條邊不受影響(bit7=0)。
+>   2. **母區直接進入(area 29 Siege Camp tile 0x0D)**:`1A 00 07 / 1A 01 09 / 1A 02 09`
+>      (op_8C 門控),即答 Y → **直接寫 gs[2]=9**(入口 (7,9))。**這就是 §2.3 所述「無
+>      `1A 45 09`」的真相** —— 它走 **`1A 02 09`(直接寫 area 變數 gs[2])**,不經 resource 5
+>      的 `1A 45`→gs[0x45] 中轉。動態 trace `area 29 --yes` 跑出 `gs2:29->9`。
+> - **同一第三機制(`1A 00/01/02` 直接寫 gs[2],多數 op_8C 門控)還連通了一批舊缺區**:
+>   1→19(礦場)、21→22(沉沒水)、4→18/27、26→4、9→35/36/29 等。**連通 33→38/40**;
+>   新通 **9、19、22、27、35**。
+> - **Phoebus 菲巴斯(6):動態也確認逆不出 → 不補邊(誠實鐵則)**。全 40 關用三套機制
+>   (worldmap_dest off=6 遮罩後、subarea_relocs `1A 45`、area_entry `1A 02`)窮舉,
+>   **無任何正向邊指向 6**;唯一含 6 的邊是 **area 33(Phoeban Dungeon)→ 6 的 `1A 45 06`**
+>   (反向/內部)。{6,33} 是與其餘圖**完全隔離**的分量(6→29、6→33、33→6,無外部入邊)。
+>   攻略「Mud Toad → Phoebus」是**敘事順序非地圖鄰接**:Mud Toad(8)的 level script 對
+>   Phoebus(6) 零引用(無 `1A 02 06`/`1A 45 06`/computed-6)。詳見 §2.4。
+> - 仍缺 **2 區:6(Phoebus)、33(Phoeban Dungeon)**,均屬隔離的 {6,33} 分量。
+> - 改動 + 驗證見章末「附錄:動態 RE 改動(更新 2)」(ctest 21/21、diff_trace 逐指令一致、
+>   新增 `verify_city_entry` 回歸守門)。
+
 > **更新(2026-06-16,op_79/op_5B/子區 relocate 逆出後)**:
 > - op_79(= draw_pattern + op_7A,DRAGON.COM @0x47FA 反組譯)、op_5B(opendw 對拍)已實作。
 > - **子區 relocate 機制已完整逆出**:子區進入格 `1A 41 X / 1A 43 Y / 1A 45 AREA / 58 05`
@@ -195,6 +223,35 @@ area 14→18(奈羅波裡→瑪根)、area 25→36(京雄→京雄地牢)、area
 - op_68(0x450A)/op_70(0x4632)/op_6B(0x45A1)在 opendw `targets[]` 仍標 NULL,無 C oracle;
   本輪未硬補(屬另案)。
 
+> **§2.3 更正(更新 2,動態 trace)**:上述「area 19/22/27 入口鏈未逆出」與「9 無正向入口」
+>   **已被動態 trace 推翻/補上**。改用 remake VM 實機執行 + 注入鍵盤 'Y'(通過 op_8C/op_89),
+>   發現第三種機制 = **`1A 00 X / 1A 01 Y / 1A 02 <AREA>`(op_1A 直接寫 area 變數 gs[2],
+>   多數 op_8C「Do you wish to enter…?」門控)**。這條與已知兩套(worldmap off=6、subarea
+>   `1A 45`)正交,故先前靜態掃 `1A 45 09` 掃不到。實證:1→19、21→22、9→35/29/36、27→18 等
+>   皆此形;Byzanople 9 由 **area 29 @0x04FA `1A 02 09`** + **世界圖 tile 0x1C(IDX 0x89&0x7F)**
+>   兩路進入。詳見 §2.4 與「附錄:動態 RE 改動」。
+
+### 2.4 Phoebus 菲巴斯(6):動態窮舉後仍逆不出 → 不補邊(誠實鐵則)
+
+動態 + 靜態三套機制窮舉全 40 關,**無任何正向邊指向 area 6**:
+
+| 機制 | 掃描內容 | 指向 6 ? |
+|---|---|---|
+| worldmap_dest(off=6) | area 0 全部實際出現的世界圖格(IDX & 0x7F) | **無**(28 格 dest = {1,2,3,4,5,7,8,9,10,11,12,13,14,15,17,20,21,23,24,25,26,28,29,30,31,32,37};無 6) |
+| subarea_relocs(`1A 45 <AREA>`) | 全 40 關 | 僅 **area 33 → 6**(`1A 45 06` @0x0389,= Phoeban Dungeon 回 Phoebus,反向/內部) |
+| area_entry(`1A 02 <AREA>`) | 全 40 關 | **無 `1A 02 06`** |
+| 計算式 op_11/op_12 gs[2]=r2 | 母區 8/29 driven with --yes/--key | r2 從未算出 6 |
+
+- **{6, 33} 是與其餘圖完全隔離的分量**:6→29(`1A 02 1D`)、6→33(`1A 02 21`)、33→6
+  (`1A 45 06`);無任何外部 area 能進 6 或 33。
+- **攻略「Mud Toad(8) → Phoebus(6)」是敘事順序,非地圖鄰接**:Mud Toad 的 level script
+  對 Phoebus 零引用(無 `1A 02 06`/`1A 45 06`/computed-6;area 8 連 `area_entry_relocs`
+  都空)。動態 driven 全 area 8 tile(注入 'Y' 及多種 op_89 鍵)均不換到 6。
+- **誠實標示**:Phoebus 入城的真實觸發(可能由劇情旗標 / 道具 / 尚未進入該分量的前置
+  條件控制,甚至原版設計即「需先到 33 再到 6」)在可解碼的 level/shared-resource bytecode
+  中**找不到正向入邊**;opendw 對相關 op_68/70/6B 亦標 NULL。**逆不出 → 不臆造 8→6 邊**。
+  `verify_city_entry` 測試把「無任何正向邊指向 6」鎖成回歸守門。
+
 ---
 
 ## 3. flood-fill 連通(子區 relocate 補邊後重驗)
@@ -260,3 +317,52 @@ area 14→18(奈羅波裡→瑪根)、area 25→36(京雄→京雄地牢)、area
   (line 5206)。
 - 攻略交叉:`docs/38_SOFTWORLD_WALKTHROUGH.md`(§5.4-5.5 菲巴斯、§5.14 拜占儂)。
 - 機制反組譯來源:`docs/51_WORLDMAP_AREA_SWITCH_RE.md`。
+
+---
+
+## 附錄:動態 RE 改動(更新 2 — 進城第三機制)
+
+### A. 方法(動態為主)
+
+- **工具**:新增 `opendw_remake/tools/verify/trace_subarea_dyn.cpp`。在 remake VM 載入母區
+  (8/29 等),程式化踩遍每個事件格(`op_71`→script),**逐指令 trace 跨資源 call**
+  (新增 op_58 XCALL observer hook,印目標資源 + offset)、印 gs 寫入(尤其 gs[2]=area)。
+  以 `--yes` / `--key 0xNN` 注入鍵盤(通過 op_8C「Do you wish to enter…?」與 op_89 選單),
+  跑出 headless 預設取 No 時跑不到的「玩家確認進城」分支。
+- **關鍵觀測**:`trace_subarea_dyn assets/bundle 29 --yes` 對 tile 0x0D 跑出 `gs2:29->9`;
+  其 script = `73 / 74 / 78 / 8C / 45 <No> / 1A 00 07 / 1A 01 09 / 1A 02 09 / 11 / 75 / 5A`。
+  `trace_subarea_dyn assets/bundle 0 --tile 0x1C --yes` 跑出 `gs2:0->9`,resource 8 @off=6
+  解碼段 @0x01ad `38 7F`→`12 02` 把 `IDX(0x89) & 0x7F = 9` 寫進 gs[2]。
+
+### B. 逆出結論(grounded:VM 實機跑出 gs[2])
+
+- **Byzanople 9 = 兩條正向入口**:世界圖 tile 0x1C(IDX 0x89,bit7=確認旗標 → 9)、
+  Siege Camp 29 tile 0x0D(`1A 02 09`,op_8C 門控,入口 (7,9))。
+- **第三機制泛化**:`1A 00/01/02` 直接寫 gs[0/1/2],逆出 16 條此類邊;新通 9/19/22/27/35。
+- **Phoebus 6**:三套機制窮舉皆無正向入邊({6,33} 隔離分量)→ **不補邊**(§2.4)。
+
+### C. 改動檔案
+
+- `opendw_remake/src/vm/interpreter.{hpp,cpp}`:
+  - 新增 **XcallObserver** 診斷 hook(op_58 解出 tag+offset 後回呼,**不改 VM 行為**)。
+  - **op_8C** 改為消耗 `headless_keys`/`headless_key`(若有注入)→ 可動態驅動 Y/N 進城分支;
+    **無注入時行為與舊版完全相同**(diff_trace 逐指令一致、既有測試不變)。
+- `opendw_remake/src/resource/level.hpp`:
+  - **`worldmap_dest()` 加 `IDX & 0x7F` 遮罩**(bit7=確認旗標)→ tile 0x1C → area 9
+    (修舊版誤判 0x89>39 漏邊);原 26 條 bit7=0 不受影響。
+  - 新增 **`area_entry_relocs()`**:解 `1A 00 X / 1A 01 Y / 1A 02 <AREA>`(直接 gs[2] 進入,
+    回 dest/entry(X,Y)/op_8C 門控旗標)。
+- `opendw_remake/tools/verify/verify_mainline_reachable.cpp`:加「直接 gs[2] 進入邊」
+  (`area_entry_relocs`);診斷段 Byzanople 9 reached=YES。
+- `opendw_remake/tools/verify/{trace_subarea_dyn,verify_city_entry}.cpp`(新增)+ CMake 註冊。
+  `verify_city_entry` 為 ctest:鎖定「0x1C→9」「29→9」「無任何正向邊指向 6、唯 33→6」。
+
+### D. 驗證(更新 2)
+
+- `ctest`:**21/21 PASS**(原 20 + 新 `verify_city_entry`);`render_sweep` 154-case 不變。無回歸。
+- `diff_trace.sh`:**remake VM == opendw oracle 逐指令一致**(op_8C 預設路徑未動)。
+- `verify_mainline_reachable`:`邊統計:世界圖樞紐邊 27 … 直接gs[2]進入邊 16`;
+  **從 area 1 / area 0 BFS 可達 38/40**(原 33/40);主線地表 15/16(唯缺 6)。
+- 仍缺 **6 / 33**(隔離 {6,33} 分量,無外部入邊;逆不出,誠實記錄,不臆造)。
+- docker `dwsdl`(remake build/ctest)、`dwtools`(diff_trace oracle);先 `rm -rf build build_*`。
+- **未改 opendw;DRAGON.COM / 權威圖檔 未入庫。**
