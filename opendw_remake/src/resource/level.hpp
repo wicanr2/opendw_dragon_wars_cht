@@ -59,6 +59,39 @@ public:
     return (e + 1 < b_.size()) ? (std::uint16_t)(b_[e] | (b_[e + 1] << 8)) : 0;
   }
 
+  // ── 世界圖 / 樞紐「踩格進區」轉移目標(DRAGON.COM 反組譯反推)─────────────
+  //
+  // 來源:Dilmun 世界圖(area 0)上的城鎮/地點格,事件腳本固定為
+  //   58 08 06 00 | <NN> 30 <MM> | <op∈{60,68,70}> <IDX> | <座標 tail...>
+  // 即 op_58 呼叫共享資源 8 @off=6(世界圖地點處理常式),其後第 1 個 byte
+  // <IDX> = 目的地 area id(0..39)。28 格中 27 格 IDX 落在合法 area 範圍,
+  // 且與攻略(38/39)世界圖地點 1:1(波卡城=1、奴隸營=2、塔斯=5、菲巴斯=6、
+  // 黃泥蟾蜍=8、自由港=17、京雄城=25、龍谷=32…);唯 tile 0x1D 的 IDX=0x89
+  // 超出範圍(特殊/非換區格,排除)。
+  //
+  // 重要誠實標示:**opendw 對此路徑無實作**(resource 8 的 op_58 子常式 +
+  //   op_68/op_70 在 opendw targets[] 標 NULL → exit/未逆出)。本對映是
+  //   **直接從 DRAGON.COM 16-bit 反組譯 + 0.lvl bytecode 靜態反推**,經攻略
+  //   地點交叉驗證(7/7 已知 area 名吻合);入口座標/朝向因受 resource 8
+  //   runtime 控制流阻而**未能靜態逆出**,故進區後落點採目標關卡第一可走格
+  //   (連通正確,非 byte-exact 入口)。詳見 docs/49。
+  //
+  // 回傳:目的地 area id(0..39),或 -1(非世界圖換區格)。
+  int worldmap_dest(std::uint8_t tile_value) const {
+    std::uint16_t pc = script_pc(tile_value);
+    if (pc == 0 || (std::size_t)pc + 9 > b_.size()) return -1;
+    // 樣式頭:58 08 06 00(op_58 tag=0x08 off=0x0006)
+    if (!(b_[pc] == 0x58 && b_[pc + 1] == 0x08 &&
+          b_[pc + 2] == 0x06 && b_[pc + 3] == 0x00))
+      return -1;
+    // 其後第 4 byte 起為 <NN> 30 <MM> <op> <IDX>:op 必為 0x60/0x68/0x70。
+    std::uint8_t op = b_[pc + 7];
+    if (op != 0x60 && op != 0x68 && op != 0x70) return -1;
+    int idx = b_[pc + 8];
+    if (idx < 0 || idx > 39) return -1;   // 超範圍(如 0x89)= 非換區格
+    return idx;
+  }
+
 private:
   std::vector<std::uint8_t> b_;
   std::size_t grid_ = 0;

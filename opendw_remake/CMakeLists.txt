@@ -222,6 +222,11 @@ target_link_libraries(verify_areaswitch PRIVATE dwr_vm)
 add_test(NAME verify_areaswitch
          COMMAND verify_areaswitch ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# tools/verify:主線跨區連通 flood-fill(P0-3)。世界圖樞紐換區由 DRAGON.COM 反組譯
+# 反推(opendw 未實作);本工具為觀測/追蹤用,非 byte-for-byte 對拍 gate。
+add_executable(verify_mainline_reachable tools/verify/verify_mainline_reachable.cpp)
+target_link_libraries(verify_mainline_reachable PRIVATE dwr_vm)
+
 # tools/verify:wrap 邊界關卡(flag&2)載入 + 環繞 flood-fill 連通 + 不污染非 wrap 路徑。
 # wrap 在 oracle opendw 為 exit(1) 未實作 → 本驗證為自洽 + 不變式守護,非 byte-for-byte 對拍。
 add_executable(verify_wrap tools/verify/verify_wrap.cpp)
