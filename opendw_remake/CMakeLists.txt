@@ -140,6 +140,11 @@ target_link_libraries(extract_level PRIVATE dwr_resource)
 add_executable(level_events tools/extract/level_events.cpp)
 target_link_libraries(level_events PRIVATE dwr_vm)
 
+# tools/extract:跑主線 area 事件腳本(BundleProvider 供 op_58),抽 emit 英文鍵
+# + 回報 quest gate halt opcode(雙用:字串萃取 + gate 驗證)。
+add_executable(mainline_events tools/extract/mainline_events.cpp)
+target_link_libraries(mainline_events PRIVATE dwr_vm)
+
 # tools/extract:全 40 關事件腳本 op_58 跨資源 tag 聯集 → bundle/scripts/<tag>.bin。
 add_executable(extract_eventscripts tools/extract/extract_eventscripts.cpp)
 target_link_libraries(extract_eventscripts PRIVATE dwr_vm)

@@ -35,8 +35,20 @@ bool Strings::merge(const std::filesystem::path& tsv) {
 }
 
 std::string Strings::tr(const std::string& english) const {
-  auto it = map_.find(english);
-  return it != map_.end() ? it->second : english;  // 回退英文
+  // VM emit 的事件字串常帶內嵌 '\r'(換行/段落分隔),但 TSV 載入時(load())
+  // 已把每行的 '\r' 全濾掉,故鍵不含 '\r'。查詢前同樣濾掉 '\r' 使兩側一致,
+  // 否則帶前導/內嵌 '\r' 的 emit(如 "\rA breeze crawls...")永遠查不到鍵 →
+  // 靜默回退英文(舊 bug:部分 events.tsv 鍵在實機顯英文)。
+  if (english.find('\r') == std::string::npos) {
+    auto it = map_.find(english);
+    return it != map_.end() ? it->second : english;
+  }
+  std::string norm;
+  norm.reserve(english.size());
+  for (char c : english)
+    if (c != '\r') norm.push_back(c);
+  auto it = map_.find(norm);
+  return it != map_.end() ? it->second : english;  // 回退原文(保留原 \r)
 }
 
 }  // namespace dw::i18n
