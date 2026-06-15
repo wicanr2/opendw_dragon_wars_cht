@@ -153,6 +153,24 @@ struct Combatant {
   static Combatant from_monster(const MonsterRecord& m);
 };
 
+// ── 終戰 Boss:Namtar(深淵之獸)─────────────────────────────────────────
+// 誠實界定(務必保留標示):
+//  • 原版終戰 Namtar 是 area27 tile 0x18/0x19 的 op_8A combat encounter。其怪物 id
+//    由戰鬥設定腳本(res3,經 op_58 載入)在 word_3AE2 設出 = 0x03,**為戰鬥設定
+//    流程的產物,非乾淨的 res31 record 索引**(probe_encounter_id 實測:area27 tile
+//    0x18/0x19、龍谷 tile 0x0A/0x0B/0x10/0x12 全部 = 0x03;對照 area18 tile 0x19 的
+//    直接 operand 0x2F)。故 **Namtar 沒有可逐欄對齊的 res31 21B 屬性記錄**。
+//  • 因此本 Boss 的數值是 **remake 設計(攻略定性 + 平衡讓玩家可勝)**,非原版真值:
+//    攻略 §5.20 + 段落 131/132/135 把 Namtar 描述為極強的最終 Boss(自由之劍受
+//    Irkalla+永恆之神祝福後一擊可削 100 HP);本實作給高 HP/AV、中等傷害,使
+//    「祝福過的隊伍」在確定性 seed 下可勝,但非無傷。**21B 欄位語意暫定,誠實標示。**
+//  • 單次攻擊仍走 resolve_attack(命中/傷害公式 = bytecode 真值,§11/§12);本 Boss
+//    只提供「一個強力 Combatant」,不重算公式。
+//  • blessed=true:套用「自由之劍受祝福」效果(攻略:一擊削 100 HP)→ 傷害骰升級,
+//    讓玩家在合理回合內可勝(對齊攻略「祝福過的劍才能傷得了 Namtar」設定)。
+Combatant make_namtar();          // 終戰 Boss(remake 設計,屬性暫定)
+Combatant make_blessed_hero(const CharacterRecord& c);  // 受祝福的自由之劍持有者
+
 // STR → 傷害修正(SDA:「STR 愈大傷害愈大」,但未給確切曲線)。
 // 暫用簡單線性:每 4 點 STR +1 傷害(類 D&D)。**待 DOS 校準**。
 int str_damage_bonus(int strength);
