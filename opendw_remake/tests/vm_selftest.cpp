@@ -285,6 +285,49 @@ int main() {
     check("op89 數字鍵 '3' → gs[6]==2", s.game_state[6]==2 && s.halted);
   }
 
+  // --- batch 15:op_79(DRAGON.COM 反組譯:draw_pattern + op_7A)/ op_5B(get_map_tile,opendw 對拍)---
+
+  // EE: op_79 = op_7A 的同義(draw_pattern 為 render 副作用,無 VM 效應):從
+  //   word_3ADF->bytes 的 word_3AE2 偏移解一條字串 emit,r2 = 下一條起點。
+  //   構造:data_bytes 同 script;在 offset 5 放一條 5-bit 編碼字串(用 op_78 路徑
+  //   驗證 codec 行為一致)。這裡只驗 op_79 與 op_7A「行為相同」+ r2 推進。
+  {
+    // 兩段 script:先用 op_7A 從 data[r2] emit、記 r2';再 reset r2、用 op_79 emit、比 r2。
+    // data 內容用同一份;字串 codec 由 text::decode 解。放一個簡單字串字節序列。
+    VmState s7a, s79;
+    // 構造一份含可解字串的 data(從 offset 4 起);字串 codec 細節由 text_codec 決定,
+    //   此處只要兩 opcode 走同一條 decode → r2 推進一致即可。
+    std::vector<std::uint8_t> data = {0x00,0x00,0x00,0x00, 0x10,0x20,0x30,0x00, 0x00};
+    s7a.script = {0x09,0x04, 0x7A, 0x5A};  // r2=4; op_7A; halt
+    s7a.data_bytes = data; s7a.script_res = 7; s7a.data_res = 7;
+    std::uint16_t r2_7a = 0; bool emit_7a = false;
+    { Interpreter ip(s7a);
+      ip.set_message_sink([&](std::size_t, const std::string&){ emit_7a = true; });
+      ip.run(); r2_7a = s7a.r2; }
+    s79.script = {0x09,0x04, 0x79, 0x5A};  // r2=4; op_79; halt
+    s79.data_bytes = data; s79.script_res = 7; s79.data_res = 7;
+    std::uint16_t r2_79 = 0; bool emit_79 = false;
+    { Interpreter ip(s79);
+      ip.set_message_sink([&](std::size_t, const std::string&){ emit_79 = true; });
+      ip.run(); r2_79 = s79.r2; }
+    check("op79 == op7A(emit 資料資源字串、r2 推進相同)",
+          r2_79 == r2_7a && emit_79 == emit_7a && s79.halted);
+  }
+
+  // FF: op_5B(get_map_tile_data):op_5B 執行後 dx 低位 = gs[1]、bx 低位 = gs[0];並清 carry。
+  //   注意:dx/bx 是 scratch,下一個 opcode 的 dispatch(run 迴圈每步 `cpu.ax=op;cpu.bx=op`)
+  //   會覆寫 bx;故讓 op_5B 為最後一條(pc 到底自然結束,無後續 fetch 覆寫),
+  //   保留 op_5B 當下的 dx/bx 觀測。level-grid 重算(word_551F/11C6/11C8)在 headless VM
+  //   不復刻;只驗暫存器/旗標契約(對照 opendw op_5B_unused 的 VM 可見效應)。
+  {
+    VmState s; s.game_state[0]=0x07; s.game_state[1]=0x03; s.flags |= kCarry;
+    s.script = {0x01, 0x5B};   // byte mode; op_5B(最後一條,pc 到底結束)
+    Interpreter(s).run();
+    check("op5B:dx低=gs[1]=3、bx低=gs[0]=7、清 carry",
+          (s.dx & 0xFF)==0x03 && (s.bx & 0xFF)==0x07 &&
+          (s.flags & kCarry)==0);
+  }
+
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);
   return fails ? 1 : 0;
 }

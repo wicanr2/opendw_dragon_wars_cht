@@ -94,6 +94,44 @@ public:
     return idx;
   }
 
+  // ── 子區(dungeon/地下/水下)relocate 目標(DRAGON.COM + resource 5 反組譯逆出)──
+  //
+  // 來源:子區進入格的事件腳本固定樣式
+  //   1A 41 <X> | 1A 43 <Y> | 1A 45 <AREA> | 58 05 <off16>
+  // 即 op_1A 把 var 0x41/0x43/0x45 設成常數,再 op_58 呼叫共享資源 5(relocate
+  // 確認 handler)。resource 5 任一入口(off=0/3/6/9)都匯流到同一段 Y/N 提示
+  // (op_8C「Do you wish to enter …?」)+ 「Yes」分支(@0x005F):
+  //   19 41 00  → gs[0]   = gs[0x41]   (入口 X)
+  //   19 43 01  → gs[1]   = gs[0x43]   (入口 Y)
+  //   19 45 02  → gs[2]   = gs[0x45]   (目的地 area)
+  // (op_19 = gs[dst]=gs[src],bytes `19 <src> <dst>`)。即 var 0x41/0x43/0x45 =
+  // (X, Y, area)。「No」分支(op_45 JNZ → 0x006D)直接 op_59 返回不換區。
+  //
+  // 與 worldmap_dest 不同處:此鏈是「玩家確認後」才換區(op_8C 提示),且**入口
+  //   座標 byte-exact 逆出**(= gs[0x41]/gs[0x43]),非哨兵。relocate 真正寫 gs[2]
+  //   的時點是 resource 5 的 Yes 分支(headless 無鍵盤 → 取 No,故動態跑不到;
+  //   本解碼器**靜態**讀 1A 45 <AREA> 即得目的地)。
+  //
+  // 誠實標示:resource 5 的 relocate 段以 DRAGON.COM dispatch + 動態 trace 反組譯
+  //   逆出(opendw targets[] 對 op_58 子常式路徑無 C oracle);三常數 → (X,Y,area)
+  //   的對映由「res5 Yes 分支 19 41 00 / 19 43 01 / 19 45 02」直接證實,信心高。
+  //
+  // 掃描:在整個 level bytecode 找 `1A 41 .. 1A 43 .. 1A 45 .. 58 05` 連續樣式;
+  //   回傳所有 (dest_area, X, Y)。dest_area 須落在 0..39。
+  struct SubareaReloc { int area, x, y; std::size_t at; };
+  std::vector<SubareaReloc> subarea_relocs() const {
+    std::vector<SubareaReloc> out;
+    for (std::size_t i = 0; i + 12 < b_.size(); ++i) {
+      if (b_[i] == 0x1A && b_[i + 1] == 0x41 && b_[i + 3] == 0x1A &&
+          b_[i + 4] == 0x43 && b_[i + 6] == 0x1A && b_[i + 7] == 0x45 &&
+          b_[i + 9] == 0x58 && b_[i + 10] == 0x05) {
+        int x = b_[i + 2], y = b_[i + 5], area = b_[i + 8];
+        if (area >= 0 && area <= 39) out.push_back({area, x, y, i});
+      }
+    }
+    return out;
+  }
+
 private:
   std::vector<std::uint8_t> b_;
   std::size_t grid_ = 0;

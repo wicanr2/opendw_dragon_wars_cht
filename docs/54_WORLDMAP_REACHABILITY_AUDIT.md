@@ -1,5 +1,17 @@
 # 54 — 世界圖逐地點可達性盤點(權威 Dilmun 圖 × remake)
 
+> **更新(2026-06-16,op_79/op_5B/子區 relocate 逆出後)**:
+> - op_79(= draw_pattern + op_7A,DRAGON.COM @0x47FA 反組譯)、op_5B(opendw 對拍)已實作。
+> - **子區 relocate 機制已完整逆出**:子區進入格 `1A 41 X / 1A 43 Y / 1A 45 AREA / 58 05`
+>   → resource 5 的 Y/N 提示「Yes」分支(@0x005F)`19 41 00 / 19 43 01 / 19 45 02`
+>   把 (X,Y,area) 寫進 gs[0]/gs[1]/gs[2]。即 **var 0x45 = 目的地 area(byte-exact 入口座標
+>   = var 0x41/0x43)**。詳見 §2 更新。
+> - flood-fill 連通 **27/40 → 33/40**(新增 24 條子區 relocate 邊;新通 area 16/18/34/36/38/39)。
+>   主線地表仍 15/16(唯缺 area 6 菲巴斯)。
+> - **更正**:原推測「菲巴斯 6 / 拜占儂 9 卡 op_79」**有誤**。實測:母區(8/29)進入格 op_79
+>   實作後全部跑完不換區;op_79 擋的是城內商店對話文字。6/9 的真正缺口見 §2 更新。
+> - 改動 + 驗證見章末(ctest 20/20、vm_selftest 新增 op_79/op_5B 2 項)。
+
 > 日期:2026-06-16
 > 對象:`opendw_remake/`(C++20/SDL2 重製《火龍之戰》)
 > 接續:docs/51(世界圖 tile→area 轉移機制反組譯)、docs/48 roadmap P0(主線連通)
@@ -21,12 +33,16 @@
 |---|---|
 | 全部 area | 40(0..39,**全部可正常載入**) |
 | area 0 世界圖直接可達(直連 tile→area) | **26** |
-| 從 area 1(波卡城)/ area 0(世界圖)flood-fill 連通分量 | **27 / 40**(area 0 自身 + 26 目的地) |
+| 從 area 1(波卡城)/ area 0(世界圖)flood-fill 連通分量 | ~~27~~ → **33 / 40**(+24 條子區 relocate 邊) |
 | 主線**地表**必經地區(docs/48 §1.2,16 區)可達 | **15 / 16**(唯缺 area 6 菲巴斯) |
-| 仍未連通 | 13 area:**6(菲巴斯)、9(拜占儂)** + 11 個 dungeon/地下/水下/地底子區 |
+| 仍未連通 | 7 area:**6(菲巴斯)、9(拜占儂)、19(礦場)、22(沉沒水)、27(尼塞山腹)、33(菲巴斯地牢)、35(拜占儂地下)** |
 
-**Byzanople(拜占儂)/ Phoebus(菲巴斯)結論**:**不是漏掃的世界圖 tile**。已逐格反推 area 0
-全部 27 個 `58 08 06 00` 樣式格,IDX 集合 = `{1,2,3,5,7,8,10,11,12,13,14,15,17,20,21,23,
+> **連通躍升**:子區 relocate 機制逆出後,新通 area **16(矮人城堡)、18(瑪根)、34(拉娜實驗室)、
+>   36(京雄地牢)、38(蘭斯克地下)、39(塔斯地下)**。仍缺的 7 區中,33/35 只有「子→母」反向邊
+>   (33→6、35→9),母區(6/9)本身無入口故連帶不達;19/22/27 為深層 wrap 區,入口鏈待逆出。
+
+**Byzanople(拜占儂)/ Phoebus(菲巴斯)結論(已更正)**:**不是漏掃的世界圖 tile**。已逐格反推
+area 0 全部 27 個 `58 08 06 00` 樣式格,IDX 集合 = `{1,2,3,5,7,8,10,11,12,13,14,15,17,20,21,23,
 24,25,26,28,29,30,31,32,37}`(26 個)+ 1 個特殊格(tile 0x1C,IDX=0x89 超範圍),
 **完全不含 6 或 9**。與權威 Dilmun 圖一致:
 
@@ -35,9 +51,18 @@
 - **Byzanople 拜占儂**:圖上位於 **Kings Isle**,**Siege Camp 軍營(area 29)** 緊鄰其旁;
   攻略 38 §5.14 確認「要進拜占儂市須先穿越軍營」→ 由 area 29 進入。
 
-兩者母區(8、29)皆世界圖可達,但進入子區的踩格事件 script 在 remake VM **halt 於
-op_79**(未實作的 set_msg 變體),且 relocate 目的地語意需執行 resource 5/8 的未逆出子常式
-→ **目的地逆不出,本輪不補邊**(符合鐵則;opendw oracle 對 op_79/68/6B/70 亦標 NULL,無 C 參考)。
+**更正(原推測 op_79 為卡點 → 已否證)**:op_79 實作後重跑母區(8/29)全部特殊格事件,
+**沒有任何格 halt、也沒有任何格寫 gs[2]**(`gs2:8->8`、`gs2:29->29`)。被 op_79 擋住的其實是
+**城內商店/酒館/募兵對話文字**(如「Cavern Tavern」「Magical Mud Inc.」「black marketeer」),
+不是子區進入鏈。更關鍵的證據:
+- **掃全 40 關 level bytecode,沒有任何 `1A 45 06` 或 `1A 45 09`**(= 目的地 area=6/9 的
+  relocate),除了 **area 33(菲巴斯地牢)→ 6** 與 **area 35(拜占儂地下)→ 9** 這兩條
+  「子→母」**反向**邊。母區(8/29)的 level script **完全沒有指向 6/9 的換區**(area 8 唯一
+  `58 05` relocate 指向 area 34 拉娜實驗室;area 29 無任何 `58 05`)。
+→ **菲巴斯(6)/ 拜占儂(9)的「地表正向進入」不在任何可解碼的 level script 中**。攻略所述
+  「由黃泥蟾蜍/軍營進入」的觸發機制與 remake 已逆出的兩套換區路徑(世界圖樞紐、子區 relocate)
+  皆不符,屬**尚未識別的第三種機制**(可能由 resource 8/9 的 runtime 控制流或道具/旗標門控)。
+  **逆不出 → 不臆造邊,精確記錄**(符合鐵則)。
 
 ---
 
@@ -90,21 +115,23 @@ op∈{0x60,0x68,0x70} + 取 `<IDX>`(目的地 area)。座標為該 tile 在 area
 權威圖上是地點但不在 26 格直連表者,皆為「母區子區」(dungeon / 地下 / 水下 / 地底)。
 以下標 **可達性**(從 area 1 flood-fill)與 **進入機制**:
 
+> **更新後可達性**(子區 relocate 補邊後;`1A 45 <AREA>` 靜態逆出)。
+
 | area | 地點 | 權威圖區 | 母區(進入來源) | remake 可達? | 進入鏈狀態 |
 |:---:|---|---|---|:---:|---|
-| **6** | **Phoebus 菲巴斯** | Isle of the Sun | **Mud Toad 8** | **否** | 母區進入格 halt 於 **op_79**(目的地逆不出) |
-| **9** | **Byzanople 拜占儂** | Kings Isle | **Siege Camp 29** | **否** | 母區進入格 halt 於 **op_79**(目的地逆不出) |
-| 16 | Dwarf Clan Hall 矮人城堡 | Kings Isle | Dwarf Ruins 15 | 否 | 子區 relocate 鏈(同上,未逆出) |
-| 18 | Magan 瑪根地底 | (地底) | Necropolis 14 等 | 否 | wrap 區;隧道口走 `1A 41/43/45 + 58 05` relocate,res5 語意未逆出(docs/51 §2.3) |
-| 19 | Mines 礦場 | (地底) | Slave Camp 2 / Slave Estate 37 | 否 | wrap 區;relocate 鏈未逆出 |
+| **6** | **Phoebus 菲巴斯** | Isle of the Sun | **Mud Toad 8** | **否** | 無正向入口邊(母區 8 無指向 6 的換區);僅 33→6 反向。§2.3 |
+| **9** | **Byzanople 拜占儂** | Kings Isle | **Siege Camp 29** | **否** | 無正向入口邊(母區 29 無 `58 05`);僅 35→9 反向。§2.3 |
+| 16 | Dwarf Clan Hall 矮人城堡 | Kings Isle | Dwarf Ruins 15 | **是** | 子區 relocate(`1A 45` → 16)逆出,15→16 連通 |
+| 18 | Magan 瑪根地底 | (地底) | Necropolis 14 等 | **是** | 子區 relocate(14→18 等)逆出 |
+| 19 | Mines 礦場 | (地底) | Slave Camp 2 / Slave Estate 37 | 否 | 深層 wrap 區;入口鏈未逆出 |
 | 22 | Sunken 沉沒(水) | Eastern Isles | Sunken Ruins 21 | 否 | wrap 區(水下);未逆出 |
 | 27 | Depths of Nisir 尼塞山腹 | (地底) | Pilgrim Dock 26 / Magan 18 | 否 | wrap 區(終局);未逆出 |
-| 33 | Phoeban Dungeon 菲巴斯地牢 | Isle of the Sun | Phoebus 6 | 否 | 母區 6 本身未達 |
-| 34 | Lanac'toor Lab 拉娜實驗室 | (地底) | — | 否 | 深層子區;未逆出 |
-| 35 | Byzan Dungeon 拜占儂地下 | Kings Isle | Byzanople 9 | 否 | 母區 9 本身未達 |
-| 36 | Kingshome Dungeon 京雄地牢 | Kings Isle | Kingshome 25 | 否 | 子區 relocate 鏈;未逆出 |
-| 38 | Lansk Undercity 蘭斯克地下 | Isle of the Sun | Lansk 20 | 否 | 子區 relocate 鏈;未逆出 |
-| 39 | Tars Under 塔斯地下 | Forlorn | Tars Ruins 5 | 否 | wrap 區(地下);未逆出 |
+| 33 | Phoeban Dungeon 菲巴斯地牢 | Isle of the Sun | Phoebus 6 | 否 | 母區 6 本身未達(33→6 反向邊已逆出) |
+| 34 | Lanac'toor Lab 拉娜實驗室 | (地底) | Mud Toad 8 | **是** | 子區 relocate(8→34)逆出 |
+| 35 | Byzan Dungeon 拜占儂地下 | Kings Isle | Byzanople 9 | 否 | 母區 9 本身未達(35→9 反向邊已逆出) |
+| 36 | Kingshome Dungeon 京雄地牢 | Kings Isle | Kingshome 25 | **是** | 子區 relocate(25→36)逆出 |
+| 38 | Lansk Undercity 蘭斯克地下 | Isle of the Sun | Lansk 20 | **是** | 子區 relocate(20→38)逆出 |
+| 39 | Tars Under 塔斯地下 | Forlorn | Tars Ruins 5 | **是** | 子區 relocate(5→39)逆出 |
 
 > **權威圖小點歸類**:Bridge A/B/C、Energy Pool、Hidden Cache 等在權威圖上是 **Quag/Forlorn
 >   區內的地形註記或 area 0 上的格**,非獨立 area。Bridge 類已對映到 area 0 的橋格
@@ -122,85 +149,114 @@ op∈{0x60,0x68,0x70} + 取 `<IDX>`(目的地 area)。座標為該 tile 在 area
 唯一超範圍格 tile 0x1C(IDX=0x89)位置 (27,7),與 Phoebus(圖上 Isle of the Sun 西側)、
 Byzanople(Kings Isle 西北)的圖上位置都不符。**→ 排除漏掃假設,信心高。**
 
-### 2.2 確認「由母區進入的子區」
+### 2.2 子區 relocate 機制(本輪完整逆出)
 
-`probe_subarea_entry assets/bundle 6 9 8 29` 跑母區 Mud Toad(8)/ Siege Camp(29)的
-每個特殊格事件 script(BundleProvider 供 op_58 跨資源),觀測:
+子區進入格(及子→母回程格)固定樣式,掃全 40 關 bytecode 共 30 處:
 
-- **無任何格寫 gs[2]**(area 變數)→ 子區進入**不是**世界圖那套「直接寫 area」機制。
-- 進入相關格普遍走 `op_58 資源 8 @off=0x18`(訊息/處理常式)後 **halt 於 op_79**
-  (area 8 tile 0x0D / 0x0F、area 29 tile 0x05 / 0x08 等)。
-- 子區(6、9、18)內另有 `1A 41 NN 1A 43 NN 1A 45 NN + 58 05 00 00` 樣式(設 var
-  0x41/0x43/0x45 後 call 資源 5)——此為 **relocate handler 候選**,但:
-  - 直接跑 resource 5 @off=0(`trace`)10 步乾淨返回,**未寫 gs[2]**;其 0x0023 入口為
-    op_9A + 5-bit 文字,**靜態線性反組譯不可靠**,語意需執行子常式才能切運算元。
-  - 母區(8、29)的**進入格本身**並無 res5-relocate 樣式,而是先 halt 於 op_79。
+```
+1A 41 <X>      op_1A:gs[0x41] = X(入口 X 座標)
+1A 43 <Y>      op_1A:gs[0x43] = Y(入口 Y 座標)
+1A 45 <AREA>   op_1A:gs[0x45] = 目的地 area
+58 05 <off16>  op_58:CALL 資源 5(relocate 確認 handler);off ∈ {0,3,6,9}
+```
 
-**→ Byzanople/Phoebus 是子區,進入鏈卡在未實作 opcode;目的地語意逆不出。**
+**resource 5 動態 trace**(`58 05` 任一 off 都匯流到同一段):
+```
+… op_78(emit「Do you wish to enter <子區>?」)→ op_8C(prompt_no_yes)→ op_4B(STC)
+  → op_45 JNZ 0x006D ── No 分支 → op_75 / op_59(返回,不換區)
+  Yes 分支(落到 @0x005F):
+    19 41 00   gs[0] = gs[0x41]   (= 入口 X)
+    19 43 01   gs[1] = gs[0x43]   (= 入口 Y)
+    19 45 02   gs[2] = gs[0x45]   (= 目的地 area)   ← relocate!
+    11 3D / 11 3E / 4C(CLC)/ 75 / 59(返回)
+```
 
-### 2.3 不補的理由(鐵則)
+(op_19 bytes = `19 <src> <dst>`,即 `gs[dst]=gs[src]`。)
 
-- op_79(0x47FA)、op_68(0x450A)、op_70(0x4632)、op_6B(0x45A1)在 **opendw `targets[]`
-  標 NULL**(`OPCODE_REFERENCE.md`),完全無 C oracle。
-- relocate 目的地 area 編碼在 resource 5/8 的未逆出子常式 + var 0x41/0x43/0x45 的語意中;
-  靜態反推(`1A 41 0C / 04 / 05 / 08 / 07 / 0F` 等值)**無法乾淨對映到 area 0..39**
-  (看似局部座標/索引而非 area id),動態跑又 halt 於 op_79。
-- 按鐵則「**逆得出才補,逆不出精確記錄**」→ **不補 6/9 邊**,本檔精確記錄卡點;
-  op_79/68/6B/70 的實作為**另案**(本任務不硬補)。
+**→ 結論(byte-exact,信心高)**:`1A 41/43/45` 三常數 = **(入口 X, 入口 Y, 目的地 area)**。
+relocate 在玩家對「Do you wish to enter…?」答 **Yes** 時生效(headless 無鍵盤 → op_8C 取
+No,故動態跑不到;但靜態讀 `1A 45 <AREA>` 即得目的地、`1A 41/1A 43` 即得入口座標)。
+逆出對映抽樣:area 9→35(拜占儂→拜占儂地下)、area 35→9(回拜占儂)、area 5→39(塔斯→塔斯地下)、
+area 14→18(奈羅波裡→瑪根)、area 25→36(京雄→京雄地牢)、area 8→34(黃泥蟾蜍→拉娜實驗室)。
+
+> **誠實標示**:resource 5 的 relocate 段以 DRAGON.COM dispatch + 動態 trace 反組譯逆出
+>   (opendw `targets[]` 對 op_58 子常式路徑無 C oracle)。三常數 → (X,Y,area) 由
+>   「res5 Yes 分支 19 41 00 / 19 43 01 / 19 45 02」直接證實。**入口座標 byte-exact**
+>   (不同於世界圖那套採「第一可走格」哨兵)。
+
+### 2.3 仍逆不出的部分(鐵則:精確記錄)
+
+- **菲巴斯 6 / 拜占儂 9 的地表正向入口**:掃全 40 關**無任何 `1A 45 06` / `1A 45 09`**
+  指向 6/9(除 area 33→6、35→9 的子→母反向邊)。母區(8/29)level script 完全無指向
+  6/9 的換區。攻略所述「由黃泥蟾蜍/軍營進入」與已逆出的兩套路徑(世界圖樞紐、子區 relocate)
+  皆不符 → 屬**第三種未識別機制**(疑 resource 8/9 runtime 控制流 / 道具旗標門控)。
+  **逆不出 → 不補 6/9 邊**(33/35 因此連帶不達)。
+- **area 19/22/27 深層 wrap 子區**:入口鏈(疑經 op_6B/op_70 或多層 relocate)未逆出。
+- op_68(0x450A)/op_70(0x4632)/op_6B(0x45A1)在 opendw `targets[]` 仍標 NULL,無 C oracle;
+  本輪未硬補(屬另案)。
 
 ---
 
-## 3. flood-fill 連通(補缺口後重驗)
+## 3. flood-fill 連通(子區 relocate 補邊後重驗)
 
-本輪**未新增任何換區邊**(Byzanople/Phoebus 逆不出),連通數與 docs/51 一致、無退步:
+`verify_mainline_reachable assets/bundle`(新增「子區 relocate 邊」= `Level::subarea_relocs()`
+靜態解 `1A 45 <AREA>`):
 
 ```
-邊統計:世界圖樞紐邊 26(雙向)  tile 事件邊 1(area 28→26)
-從 area 1(波卡城)BFS 可達:27 / 40
-從 area 0(世界圖)BFS 可達:27 / 40
+邊統計:世界圖樞紐邊 26(雙向)  tile 事件邊 1(area 28→26)  子區 relocate 邊 24
+從 area 1(波卡城)BFS 可達:33 / 40
+從 area 0(世界圖)BFS 可達:33 / 40
 主線地表可達:15 / 16(唯缺 area 6 菲巴斯)
 ```
 
-`verify_mainline_reachable` 新增「非世界圖子區入口診斷」段,可重現本檔結論:
+→ **連通 27/40 → 33/40**(新增 24 條子區 relocate 邊;新通 area 16/18/34/36/38/39)。無退步。
 
+`verify_mainline_reachable` 的「非世界圖子區入口診斷」段(更新後,op_79 已實作 → halt 消失):
 ```
 -- 非世界圖子區入口診斷(逆不出 → 不補邊,記錄 halt opcode)--
-  area  6 Phoebus菲巴斯   reached=NO  母區 8 res5-relocate格=無  halt opcodes: 0x79
-  area  9 Byzanople拜占儂 reached=NO  母區 29 res5-relocate格=無  halt opcodes: 0x79
+  area  6 Phoebus菲巴斯   reached=NO  母區 8 res5-relocate格=無  halt opcodes: (無)
+  area  9 Byzanople拜占儂 reached=NO  母區 29 res5-relocate格=無  halt opcodes: (無)
 ```
+(halt opcode 由原 0x79 → 無,證實 op_79 不再是卡點;6/9 缺口為「無正向入口邊」,見 §2.3。)
 
-**主線「全可達」的下一步(明確記錄,非本任務範圍)**:實作 **op_79**(set_msg 變體,中文化
-關鍵 opcode,見 docs OPCODE_REFERENCE §0x79)後,母區進入格才不會中途 halt;再逆出
-resource 5/8 的 relocate 子常式(讀 var 0x41/0x43/0x45 → 寫 gs[2])即可補上 8→6、29→9
-兩條邊,主線地表將達 16/16。此屬 op_79 / resource-5 逆向另案。
+**主線「全可達」的下一步(明確記錄,非本任務範圍)**:逆出菲巴斯(6)/拜占儂(9)的第三種
+正向入口機制(resource 8/9 runtime 控制流);補上 8→6、29→9 後,主線地表將達 16/16,
+33/35 也隨之連通。
 
 ---
 
-## 4. 改動檔案
+## 4. 改動檔案(本輪:op_79 / op_5B / 子區 relocate)
 
-- `opendw_remake/tools/verify/dump_worldmap_tiles.cpp`(新增)— area 0 逐格 → IDX 盤點 grounding。
-- `opendw_remake/tools/verify/probe_subarea_entry.cpp`(新增)— 母區事件 script 動態探測
-  (gs 寫入 / op58 tag / halt opcode)。
-- `opendw_remake/tools/verify/verify_mainline_reachable.cpp` — 新增「非世界圖子區入口診斷」段。
-- `opendw_remake/CMakeLists.txt` — 註冊上述兩支新工具(觀測用,非 ctest)。
-- `opendw_remake/src/resource/level.hpp` — 修正 `worldmap_dest()` 註解:特殊格為 **tile 0x1C**
-  (原誤作 0x1D)、27 格中 26 格合法、移除誤列的「菲巴斯=6」(菲巴斯非世界圖格)、
-  補註菲巴斯/拜占儂為子區。
-- `docs/54_*.md`(本檔)。
-- **未改 opendw;DRAGON.COM / 權威圖檔 未入庫。**
+- `opendw_remake/src/vm/interpreter.{hpp,cpp}` — 實作 + 掛 dispatch:
+  - **op_79**(0x47FA,DRAGON.COM 反組譯)= `op79_draw_and_emit_data()` ≡ op_7A(draw_pattern
+    為 render 副作用,略)。
+  - **op_5B**(0x427A,opendw 對拍移植)= `op5B_get_map_tile()`:dx=gs[1]、bx=gs[0]、清 cf
+    (level-grid 重算 word_551F/11C6/11C8 在 headless 不復刻,誠實標示)。
+- `opendw_remake/src/resource/level.hpp` — 新增 `subarea_relocs()`:靜態解 `1A 41/43/45 + 58 05`
+  → (目的地 area, 入口 X, 入口 Y)。
+- `opendw_remake/tools/verify/verify_mainline_reachable.cpp` — 新增「子區 relocate 邊」(用
+  `subarea_relocs()` 補邊);診斷段更新。
+- `opendw_remake/tests/vm_selftest.cpp` — 新增 2 項:op_79(≡ op_7A、r2 推進)、op_5B(暫存器/旗標契約)。
+- `docs/52_*.md` / `docs/54_*.md`(本檔)。
+- **未改 opendw;DRAGON.COM(md5 3aa427d4…,56673 bytes)/ 權威圖檔 未入庫。**
 
 ## 5. 驗證
 
-- `ctest`:**20/20 PASS**(含 `render_sweep` 154-case、`verify_areaswitch`、`verify_wrap`、
-  `verify_op58`、`smoke_app`)。無回歸。
+- `ctest`:**20/20 PASS**(含 `vm_selftest`〔+2 新項〕、`render_sweep` 154-case、`verify_combat*`、
+  `verify_areaswitch`、`verify_wrap`、`verify_op58`、`smoke_app`)。無回歸。
+- `mainline_events`:op_79×15 / op_5B×3 卡點全消;唯一字串 53→72(area 8/29 等城內對話 emit)。
+- `verify_mainline_reachable`:連通 **27/40 → 33/40**(子區 relocate 邊 24)。
 - docker `dwsdl`(先 `rm -rf build build_*`,Make 產生器;image 無 ninja)。
 
 ## 附:實據(絕對路徑)
 
 - 世界圖資料:`opendw_remake/assets/bundle/maps/0.lvl`(Dilmun 32×47 flags=0x0E wraps)。
 - 全 40 關 `.lvl`:`opendw_remake/assets/bundle/maps/<0..39>.lvl`(本輪確認全部可載入)。
-- 共享處理常式:`opendw_remake/assets/bundle/scripts/{5,8}.bin`(皆 dispatch 表起頭)。
-- 攻略交叉:`docs/38_SOFTWORLD_WALKTHROUGH.md`(§5.4-5.5 菲巴斯、§5.14 拜占儂)、
-  `docs/39_SOFTWORLD_FULLTEXT_AND_MAPS.md`。
-- opendw 未實作證據:`OPCODE_REFERENCE.md`(op_79/68/6B/70 標 ❌ NULL)。
+- 共享處理常式:`opendw_remake/assets/bundle/scripts/{5,8}.bin`(皆 dispatch 表起頭;
+  resource 5 relocate Yes 分支 @0x005F = `19 41 00 / 19 43 01 / 19 45 02`)。
+- DRAGON.COM 反組譯:op_77@0x47E3 / op_78@0x47EC / **op_79@0x47FA**(call 0x3380 draw_pattern
+  後落入 op_7A@0x4801)/ op_7A@0x4801(extract_string from word_3ADF[r2])/ 跳表 base 0x3960。
+- op_5B opendw body:`opendw/src/lib/engine.c` `op_5B_unused()`(line 2510)+ `get_map_tile_data()`
+  (line 5206)。
+- 攻略交叉:`docs/38_SOFTWORLD_WALKTHROUGH.md`(§5.4-5.5 菲巴斯、§5.14 拜占儂)。
 - 機制反組譯來源:`docs/51_WORLDMAP_AREA_SWITCH_RE.md`。

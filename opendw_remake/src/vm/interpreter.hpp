@@ -114,6 +114,7 @@ private:
   // 字串輸出 opcode(解字串 + 推進 pc + emit 給 sink)
   void op77_draw_and_set();    // 0x77
   void op78_set_msg();         // 0x78
+  void op79_draw_and_emit_data();  // 0x79  DRAGON.COM 反組譯:draw_pattern + op_7A(資料資源字串)
   void op7B_ui_header();       // 0x7B
   void emit_string();          // 共用:在 pc 解字串、推進 pc、回呼 sink
 
@@ -134,6 +135,7 @@ private:
   void op4D_prng();            // 0x4D  偽隨機:r2 = (ax*r2) 高位
   void op58_xcall();           // 0x58  跨資源 script call(push context、切資源、跳 src_offset)
   void op59_xret();            // 0x59  op_58 的返回(pop context)
+  void op5B_get_map_tile();    // 0x5B  get_map_tile_data:dx=gs[1]、bx=gs[0]、清 cf(opendw 對拍)
   void op5C_party_loop();      // 0x5C  依 gs[0x1F] 重複 run_script(子 script 迴圈)
   void op62_scan_char();       // 0x62  掃描隊伍角色屬性(無 party 資料→消耗 operand、設旗標)
 

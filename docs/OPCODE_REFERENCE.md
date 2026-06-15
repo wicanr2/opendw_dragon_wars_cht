@@ -300,7 +300,7 @@ Column key / 欄位說明:
 | 0x76 | 0x47D9 | ✅ | `op_76` | Draw pattern (draw_pattern & draw_rect) | 繪製圖案（draw_pattern & draw_rect） | A |
 | 0x77 | 0x47E3 | ✅ | `op_77` | Draw pattern then set_msg (draw + text output) | draw_pattern 後 set_msg（繪製圖案並輸出訊息） | C |
 | 0x78 | 0x47EC | ✅ | `set_msg` | Extract compressed string from script stream; call handle_byte_callback | 從腳本流提取壓縮字串並呼叫 handle_byte_callback | C |
-| 0x79 | 0x47FA | ❌ | *(inferred)* set_msg with params ⭐ L10N KEY | (inferred) Parameterised set_msg variant — colour/position/flag string output; possibly `draw_string_at_position` or `set_msg_with_flags` | 推測：set_msg 帶參數變體，可能帶顏色/位置/旗標的字串輸出 | C |
+| 0x79 | 0x47FA | ✅ | `op79_draw_and_emit_data` (= draw_pattern + op_7A) | **RE-confirmed (DRAGON.COM disasm, opendw targets[]=NULL)**: `push si; call 0x3380 (draw_pattern); pop si;` falls through into op_7A (0x4801) — emit compressed string from `word_3ADF->bytes[word_3AE2]`, advance r2. Symmetric to op_77 = draw_pattern + op_78. | **已逆出（DRAGON.COM 反組譯；opendw NULL）**：draw_pattern + op_7A（自資料資源 word_3ADF[r2] emit 字串、推進 r2）。與 op_77=draw_pattern+op_78 對稱；draw_pattern 純 render，VM 效應同 op_7A。 | C |
 | 0x7A | 0x4801 | ✅ | `op_7A` | Extract compressed string from word_3ADF resource stream | 從 word_3ADF 資源流提取壓縮字串 | C |
 | 0x7B | 0x482D | ✅ | `read_header_bytes` | Set UI header (set_ui_header) | 設定 UI header（set_ui_header） | C |
 | 0x7C | 0x4817 | ✅ | `op_7C` | Random encounter, set UI header | 隨機遭遇，設定 UI header | C |
@@ -525,7 +525,7 @@ Implemented opcodes are listed as background context; unimplemented ones are mar
 
 | Priority | Index | Status | Note — English | 備註 — 中文 |
 |---|---|---|---|---|
-| 1 | **0x79** | ❌ | `set_msg` parameterised variant — missing link in string output main path | set_msg 帶參數變體 — 字串輸出主路徑上的缺失環節 |
+| 1 | **0x79** | ✅ | RE-confirmed = draw_pattern + op_7A (emit string from data resource word_3ADF[r2]); NOT a "parameterised set_msg" — symmetric to op_77=draw_pattern+op_78 | 已逆出 = draw_pattern + op_7A（自資料資源 word_3ADF[r2] emit 字串）；非「帶參數 set_msg」，與 op_77=draw_pattern+op_78 對稱 |
 | 2 | **0x7E** | ❌ | Formatted string output or character name formatting — character display path | 字串輸出或角色名稱格式化 — 角色顯示路徑 |
 | 3 | **0x7F** | ❌ | Cursor/string-end control — affects text layout | 游標/字串結束控制 — 影響文字佈局 |
 | 4 | **0x8F** | ❌ | read_string variant — player naming/input flow | read_string 變體 — 玩家命名輸入流程 |
