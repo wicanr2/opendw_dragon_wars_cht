@@ -245,6 +245,12 @@ target_link_libraries(probe_subarea_entry PRIVATE dwr_vm)
 add_executable(trace_subarea_dyn tools/verify/trace_subarea_dyn.cpp)
 target_link_libraries(trace_subarea_dyn PRIVATE dwr_vm)
 
+add_executable(trace_quest_gates tools/verify/trace_quest_gates.cpp)
+target_link_libraries(trace_quest_gates PRIVATE dwr_vm)
+
+add_executable(render_endgame tools/verify/render_endgame.cpp)
+target_link_libraries(render_endgame PRIVATE dwr_vm dwr_render dwr_i18n)
+
 add_executable(verify_city_entry tools/verify/verify_city_entry.cpp)
 target_link_libraries(verify_city_entry PRIVATE dwr_vm)
 add_test(NAME verify_city_entry
