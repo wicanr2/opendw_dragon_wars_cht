@@ -1201,6 +1201,50 @@ int main(int argc, char** argv) {
     tl.add(render::kW - 78, 13, "F4:lang", 8, PX_UI * 3 / 4);
   };
 
+  // ── 探索/戰鬥畫面 UI chrome(docs/59「該修」#1/#2/#3,往 1990 原版靠攏)───────────
+  //
+  // 誠實標示(grounding):原版的藍石磚邊框與金色「Dragon Wars」立繪 logo 是 DRAGON.COM
+  //   內的 UI piece 資源(com 0x6AE0,opendw ui.c:798 `ui_pieces`)。本專案 bundle **未**抽出
+  //   該資源(assets/bundle/viewport/README.md 標示「⏳ UI 框件另行抽取」),且執行期不依賴
+  //   DRAGON.COM,故 **無法 byte-for-byte 還原石磚紋理與立繪 logo**。
+  //   以下為 **近似(approximate,非 byte-for-byte)**:
+  //     - 邊框:用藍色(調色盤 1/9)實線外框框住 viewport + 隊伍面板 + 底部訊息列,
+  //       還原原版「整個 UI 被一圈藍框包住」的版面結構(非石磚紋理)。
+  //     - logo:沿用 remake 既有標題文字 tr("Dragon Wars")(zh→火龍之戰),置於隊伍面板
+  //       正上方(對齊原版 logo 位置),金色 ── 文字近似,非原版立繪。
+  //   一旦日後抽出 com 0x6AE0 的 ui_pieces,可改以原始資源 blit 取代本近似層。
+  //
+  // viewport 幾何固定:160×136 @ (16,8)(像素層,render_sweep 154 對拍鎖定,不動)。
+  constexpr int kVpX = 16, kVpY = 8, kVpW = 160, kVpH = 136;  // viewport 像素框
+  constexpr int kPanelX = 0x36 * 4;                            // 216,隊伍面板狀態條 x 起點
+  constexpr int kPanelX1 = 0x4E * 4;                           // 312,狀態條 x 終點
+  // 在 framebuffer 畫一個矩形外框(四邊各一條;color = DOS 調色盤索引)。
+  auto frame_rect = [&](int x0, int y0, int x1, int y1, std::uint8_t color) {
+    for (int x = x0; x <= x1; ++x) { fb.put(x, y0, color); fb.put(x, y1, color); }
+    for (int y = y0; y <= y1; ++y) { fb.put(x0, y, color); fb.put(x1, y, color); }
+  };
+  // 底部訊息列(原版:viewport 下方白底黑字框)。近似:藍框 + 黑底,文字走文字層。
+  //   只佔 viewport 正下方寬度(對齊原版),不橫跨到隊伍面板區。
+  constexpr int kMsgStripX0 = kVpX - 2;                 // 14
+  constexpr int kMsgStripX1 = kVpX + kVpW + 1;          // 177(viewport 右緣外一格)
+  constexpr int kMsgStripY0 = kVpY + kVpH + 6;          // 150
+  constexpr int kMsgStripY1 = render::kH - 8;           // 192
+  auto draw_msg_strip = [&](const std::string& line, std::uint8_t text_col) {
+    for (int y = kMsgStripY0; y <= kMsgStripY1; ++y)        // 黑底(原版白底;此處與在地化深色系一致)
+      for (int x = kMsgStripX0; x <= kMsgStripX1; ++x) fb.put(x, y, 0);
+    frame_rect(kMsgStripX0, kMsgStripY0, kMsgStripX1, kMsgStripY1, 9);  // 亮藍外框
+    if (!line.empty())
+      tl.add(kMsgStripX0 + 4, kMsgStripY0 + 3, line, text_col, PX_UI);
+  };
+  // 探索/戰鬥共用框架:viewport 藍外框 + 面板藍外框 + logo(面板上方)。
+  //   不畫到 viewport / 面板「內部」像素(只在框外一格描線),不影響 render_sweep。
+  auto draw_explore_chrome = [&]() {
+    frame_rect(kVpX - 2, kVpY - 2, kVpX + kVpW + 1, kVpY + kVpH + 1, 9);  // viewport 外框(亮藍)
+    frame_rect(kPanelX - 4, kVpY - 2, kPanelX1 + 3, kVpY + kVpH + 1, 9);  // 隊伍面板外框(亮藍)
+    // logo:面板正上方(對齊原版右上 logo 位置),金色文字近似。
+    tl.add(kPanelX - 2, 2, tr.tr("Dragon Wars"), 14, PX_UI);
+  };
+
   // ── 訊息/段落檢視器框幾何(320×200 虛擬座標)──
   // 落在畫面下半 + 左右留邊;CJK 內文 24px、行距適中。每頁行數由框內可用高度算。
   const int MB_X = 6, MB_W = render::kW - 12;        // 框左 + 寬(左右各留 6)
@@ -2063,39 +2107,50 @@ int main(int argc, char** argv) {
   // 畫遭遇畫面:怪物 sprite(viewport 區 @16,8)+ 怪名 + 隊伍面板 + 戰/逃選單 + log。
   auto draw_encounter = [&]() {
     fb.clear(0);
-    // 怪物圖:畫進 framebuffer (16,8),160×136(對齊 oracle viewport 區)。
-    if (enc.sprite) enc.sprite->blit(fb, 16, 8, 6);  // 6 = encounter 棕色背景透明
+    // 怪物圖:畫進 framebuffer (16,8),裁切限制在 160×136 viewport 框內
+    //   (docs/59 #4:避免立繪溢出蓋到右側面板)。clip = [16,176) × [8,144)。
+    if (enc.sprite)
+      enc.sprite->blit_clipped(fb, 16, 8, 6,                  // 6 = encounter 棕色背景透明
+                               kVpX, kVpY, kVpX + kVpW, kVpY + kVpH);
     else { // 無 sprite → 畫空框(像素層),維持版面對齊。
       for (int x = 16; x < 16 + 160; ++x) { fb.put(x, 8, 8); fb.put(x, 8 + 135, 8); }
       for (int y = 8; y < 8 + 136; ++y) { fb.put(16, y, 8); fb.put(16 + 159, y, 8); }
     }
+    // UI chrome(藍外框 + logo;docs/59 #1/#2)。畫在 viewport / 面板框外,不蓋立繪。
+    draw_explore_chrome();
     // 怪群描述(i18n;viewport 上方):「N 隻 {怪名}」(存活/總數)。單怪時只顯示怪名。
+    //   白字對齊原版場景/怪名色(docs/59 #6)。
     if (enc.group && enc.group_loop && enc.mon_count > 1) {
       char gbuf[128];
       // zh-TW:「6 隻 禁衛軍(存活 4)」;en passthrough:「6 King's Guard (4 left)」。
       std::snprintf(gbuf, sizeof gbuf, tr.tr("%d %s (%d left)").c_str(),
                     enc.mon_count, tr.tr(enc.mon_name_en).c_str(),
                     enc.group_loop->monsters_alive());
-      tl.add(16, 2, gbuf, 14, PX_UI);
+      tl.add(16, 2, gbuf, 15, PX_UI);
     } else {
-      tl.add(16, 2, tr.tr(enc.mon_name_en), 14, PX_UI);
+      tl.add(16, 2, tr.tr(enc.mon_name_en), 15, PX_UI);
     }
     // 右側隊伍狀態面板(沿用 party_panel)。
     party.draw_status_panel(fb, tl, PX_UI);
     add_lang_badge();
-    // 選單列(熱鍵對齊原版戰鬥選單資源 Section 0x12:Fight / Run + 施咒 C)。
-    int menu_y = 8 + 136 + 4;
-    tl.add(16, menu_y, tr.tr("F:Fight  R:Run"), 11, PX_UI);
-    tl.add(16 + 110, menu_y, tr.tr("C:Cast"), 11, PX_UI);
+    // 底部訊息列(原版:viewport 下方白框)。先畫框底,選單/戰報文字疊在框內。(docs/59 #3)
+    draw_msg_strip("", 7);
+    // 選單列(熱鍵對齊原版戰鬥選單資源 Section 0x12:Fight / Run + 施咒 C),移進訊息列。
+    int menu_y = kMsgStripY0 + 3;
+    tl.add(kMsgStripX0 + 4, menu_y, tr.tr("F:Fight  R:Run"), 11, PX_UI);
+    tl.add(kMsgStripX0 + 4 + 110, menu_y, tr.tr("C:Cast"), 11, PX_UI);
+    // 施法選單(C 開啟)/戰報 log:放右側面板下方空白區(對齊原版「逐人動作選單在右側面板區」),
+    //   不擠進底部訊息列(訊息列高度有限)。rx 對齊隊伍面板 x;ry 落在面板狀態條下方。
+    int rx = kVpX + kVpW + 8;     // 184,右側欄起點(對齊隊伍面板 x≈216 左側留邊)
     // 施法選單(C 開啟):列出可施法術(已習得 + Power 足夠),熱鍵 1-9 + 上下游標。
     if (enc.casting) {
-      int cy = menu_y + 14;
+      int cy = 100;
       char hbuf[160];
       std::snprintf(hbuf, sizeof hbuf, "%s (PW %d)", tr.tr("Choose spell:").c_str(),
                     enc.hero_power);
-      tl.add(16, cy, hbuf, 14, PX_UI); cy += 12;
+      tl.add(rx, cy, hbuf, 14, PX_UI); cy += 12;
       if (enc.spellbook.empty()) {
-        tl.add(24, cy, tr.tr("No spells"), 7, PX_UI);
+        tl.add(rx + 8, cy, tr.tr("No spells"), 7, PX_UI);
       } else {
         for (int i = 0; i < (int)enc.spellbook.size() && i < 9; ++i) {
           const game::SpellDef* s = game::find_spell(enc.spellbook[i]);
@@ -2103,19 +2158,19 @@ int main(int argc, char** argv) {
           std::snprintf(hbuf, sizeof hbuf, "%c%d %s (%d)",
                         i == enc.cast_sel ? '>' : ' ', i + 1,
                         tr.tr(s->name_key).c_str(), s->power_cost);
-          tl.add(24, cy, hbuf, i == enc.cast_sel ? 15 : 7, PX_UI);
+          tl.add(rx + 8, cy, hbuf, i == enc.cast_sel ? 15 : 7, PX_UI);
           cy += 12;
         }
       }
       add_lang_badge();
       return;  // 施法選單期間不疊戰報(避免版面擁擠)
     }
-    // 戰鬥 log(在地化:hit/miss/slain 走 tr;含數字部分原樣)。
-    int ly = menu_y + 14;
+    // 戰鬥 log(在地化:hit/miss/slain 走 tr;含數字部分原樣)。右側欄顯示。
+    int ly = 100;
     for (const auto& line : enc.log) {
       // 把鍵化片段(hit/miss/slain/->)逐字保留;只翻可翻片段太細,這裡整行顯示英文鍵
       // + 末行若 over 顯示在地化結果。簡化:整行直接顯示(英文戰報)。
-      tl.add(16, ly, line, 7, PX_UI); ly += 12;
+      tl.add(rx, ly, line, 7, PX_UI); ly += 12;
     }
     if (enc.over) {
       std::string tail;
@@ -2126,9 +2181,8 @@ int main(int argc, char** argv) {
       else tail = enc.group ? tr.tr("Victory!")
                             : (!enc.mon.alive() ? (tr.tr(enc.mon_name_en) + " " + tr.tr("slain"))
                                                 : (enc.hero.name + " down"));
-      // 結果橫幅放右側面板下方空白區(y≈110;不與下方戰報 log 爭垂直空間)。
-      int rx = 16 + 160 + 8;     // 右側欄起點(對齊隊伍面板 x)
-      int ry = 110;
+      // 結果橫幅放右側面板下方空白區(ry 落在戰報 log 下方,不爭垂直空間)。
+      int ry = ly + 6;
       tl.add(rx, ry, tail, tail_col, PX_UI);
       if (enc.victory)           // 勝利:右欄顯示簡短 XP 橫幅(全文在下方戰報 log)
         tl.add(rx, ry + 14, tr.tr("Each member +80 XP"), 14, PX_UI);
@@ -2153,13 +2207,15 @@ int main(int argc, char** argv) {
     // 右側隊伍狀態面板(同 fp 模式;像素層狀態條 + 文字層角色名)。
     // 段落 overlay 近全螢幕 → 隱藏面板/關卡名,避免文字層名字穿透蓋在段落上。
     if (!para.active) {
+      draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, level->name, 14, PX_UI);              // 文字層:關卡名
+      tl.add(8, 2, level->name, 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/59 #6)
     }
     add_lang_badge();
-    int hint_y = oy + H * cs + 6;
-    if (!msg.active && !para.active && !sheet.active)    // 子畫面期間隱藏控制提示(避免穿透框)
-      tl.add(8, hint_y, "I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7, PX_UI);
+    // 控制提示移到底部訊息列(原版:viewport 下方白框)。訊息列獨立,不擠進原本的提示位置。
+    // (docs/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
+    if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
+      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -2177,12 +2233,14 @@ int main(int argc, char** argv) {
     //   像素層 = 狀態條(HP/暈眩/法力);文字層 = 角色名(PX_UI 字級)。
     // 段落 overlay 近全螢幕 → 隱藏面板/關卡名,避免文字層名字穿透蓋在段落上。
     if (!para.active) {
+      draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, level->name, 14, PX_UI);              // 文字層:關卡名
+      tl.add(8, 2, level->name, 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/59 #6)
     }
     add_lang_badge();
-    if (!msg.active && !para.active && !sheet.active)    // 子畫面期間隱藏控制提示(避免穿透框)
-      tl.add(8, 150, "I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7, PX_UI);
+    // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/59 #3)
+    if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
+      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:

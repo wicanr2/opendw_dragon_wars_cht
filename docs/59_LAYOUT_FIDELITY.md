@@ -206,3 +206,27 @@ SDL_VIDEODRIVER=dummy ./build/opendw_remake --map 0 --char-sheet 1 --frames 0 --
 PPM → PNG:以最小 zlib PNG 編碼器轉(docker 內 python3 zlib;見產出流程)。並排對照以本機 PIL 合成。
 
 > 註:`--char-sheet N` 需 `state==S_GAME && party>0`,故須配 `--map`;單獨 `--char-sheet` 會落回主選單畫面。
+
+---
+
+## 修正記錄(2026-06-16,往原版靠攏)
+
+依上方「Top 偏差」清單實作了 #1/#2/#3/#4/#5/#6(#7=#5 同項;#3 角色屬性網格、#6 已含於下;遭遇/逐人動作選單 #6 系統項待戰鬥結算落地)。viewport 像素層 byte-for-byte 不動 —— `render_sweep` 154 全 PASS、ctest 25/25 全 PASS。
+
+對照圖:`docs/layout_compare/06_fp_explore_after.png`、`07_combat_encounter_after.png`(左=原版、右=修正後 remake);remake 單張在 `docs/layout_compare/remake_after/`。
+
+| 項 | 修了什麼 | grounded vs 近似 | 改動檔 |
+|----|---------|------------------|--------|
+| ★1 Dragon Wars logo | 探索(`draw_game`/`draw_game_fp`)與戰鬥(`draw_encounter`)右側面板正上方加 logo,位置對齊原版 | **近似(文字)**:原版立繪 logo 是 DRAGON.COM `ui_pieces`(com 0x6AE0)資源,本 bundle **未抽出**(`assets/bundle/viewport/README.md` 標「⏳ UI 框件另行抽取」)、執行期不依賴 DRAGON.COM → 無法 byte-for-byte。改用 remake 既有標題文字 `tr("Dragon Wars")`(zh→火龍之戰),金色,對齊原版位置 | `src/main.cpp` |
+| ★2 藍石磚裝飾外框 | viewport / 隊伍面板 / 底部訊息列各加一圈藍色實線外框,還原原版「整個 UI 被藍框包住」結構 | **近似(實線非紋理)**:石磚紋理同屬 com 0x6AE0 `ui_pieces`,未抽出 → 不硬畫不像的石磚紋,改畫亮藍(調色盤 9)實線外框,只還原版面分區結構。日後抽出 ui_pieces 可改 blit 原資源 | `src/main.cpp`(`draw_explore_chrome`/`frame_rect`) |
+| ★3 訊息列 vs 控制提示 | 底部新增獨立訊息列框(viewport 正下方,對齊原版白框位置);控制提示 `I:fwd…` 移進該列,不再壓在原本提示位置 | grounded(版面位置對齊原版)。**近似**:框底用黑底(原版白底)以與在地化深色系一致;戰鬥訊息列同步加框 | `src/main.cpp`(`draw_msg_strip`) |
+| ★4 怪物立繪裁切 | 遭遇怪物 sprite 改用 `blit_clipped`,限制在 160×136 viewport 框內 `[16,176)×[8,144)`,不再向右/下溢出蓋到面板 | **grounded**:對齊原版 `draw_random_encounter_graphic` viewport 區;新增 `Sprite::blit_clipped`(不影響既有 `blit` 與 encounter golden) | `src/render/sprite.{hpp,cpp}`、`src/main.cpp` |
+| ★5 HP 條色 紅→紫 | 第一條(健康)由亮紅 `0x0C` 改亮洋紅/紫 `0x0D`,對齊手冊 L135「第一條(紫色)=健康」 | **grounded(依手冊文字)**:opendw `color_data[]={00,FF,CC,AA,99}` 未含紫,故依手冊逐字描述選色(非 opendw 像素層)。已於程式註解標明 | `src/game/party_panel.cpp` |
+| ★6 場景名色 金→白 | 場景名 / 怪群名由金 `14` 改白 `15`,對齊原版白字 | **grounded** | `src/main.cpp` |
+
+### 仍為近似 / 待辦(誠實標示)
+
+- **logo 與外框為「文字 / 實線近似」,非原版石磚紋理立繪**:根因是 DRAGON.COM 的 `ui_pieces`(com 0x6AE0)從未抽進 bundle,且本專案執行期刻意不依賴 DRAGON.COM。要 byte-for-byte 還原,需先把 com 0x6AE0 的 43 份 `ui_pieces`(opendw `ui_load`,ui.c:798;每片 = w,h,offset_delta,y_pos + w×h nibble bitmap)抽成 bundle 資產,再以 `draw_ui_piece` 等價邏輯 blit。屬資產萃取工作,非本次版面修正範圍。
+- **訊息列底色**:原版白底黑字;remake 維持深色底白字,與中文化深藍訊息框(`fill_msg_box`)的視覺系統一致(刻意保留)。
+- **隊伍面板偏右、與 viewport 間距較大**:面板狀態條 x 起點鎖定 216(`0x36<<2`,對拍 opendw `draw_player_status`),未動;新增的面板外框讓此區視覺上成為獨立分區。原版面板更貼近 viewport,屬幾何偏差(docs/59 [1] 已記),本次不動已驗證的面板座標。
+- **#3 角色屬性網格、遭遇/逐人動作選單**:屬版型重寫 / 戰鬥系統未落地,非本次「探索/戰鬥主畫面 chrome」範圍,維持原判定。

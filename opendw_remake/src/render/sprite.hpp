@@ -23,6 +23,11 @@ struct Sprite {
   // 畫進 framebuffer(像素 px,py)。transparent_index <0 表示不透明全畫;
   // 否則該索引視為透明不畫(預設 6 = encounter 棕色背景)。
   void blit(Framebuffer& fb, int px, int py, int transparent_index = -1) const;
+
+  // 同 blit,但裁切到 [clip_x0, clip_x1) × [clip_y0, clip_y1)(framebuffer 座標,半開區間)。
+  // 用於把怪物立繪限制在 160×136 viewport 框內(docs/59 #4),避免溢出蓋到右側面板。
+  void blit_clipped(Framebuffer& fb, int px, int py, int transparent_index,
+                    int clip_x0, int clip_y0, int clip_x1, int clip_y1) const;
 };
 
 }  // namespace dw::render
