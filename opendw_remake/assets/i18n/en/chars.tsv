@@ -1,1 +1,5 @@
 # en — 角色屬性表標籤 passthrough。無條目 → tr() 回退英文原文(Strength/Dexterity/…)。
+# RPG growth labels (skill names need explicit English; others passthrough).
+skill_bandage	Bandage
+skill_lockpick	Lockpick
+skill_fist	Fistfighting

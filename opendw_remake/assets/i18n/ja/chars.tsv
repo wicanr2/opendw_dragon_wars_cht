@@ -35,3 +35,17 @@ AV	攻撃
 DV	防御
 member(s)	人
 add  - subtract	加算 - 減算
+# ── RPG 成長(レベルアップ / Xポイント配分 / アイテム使用 / 装備）──
+Advancement points	成長ポイント
+Spend AP (X):	ポイント配分(X):
+Point spent.	1ポイント配分。
+No AP / at cap.	ポイント不足または上限。
+skill_bandage	包帯
+skill_lockpick	鍵開け
+skill_fist	格闘
+Power restored.	パワー回復。
+Spell learned.	呪文を習得。
+Item cast a spell.	アイテムが呪文を放った。
+Nothing happens.	何も起こらない。
+Equipped.	装備した。
+Unequipped.	外した。

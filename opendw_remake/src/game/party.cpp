@@ -114,14 +114,18 @@ int CharacterRecord::effective_av() const {
   // SDA:base AV = DEX/4;最終 AV =(base ± 武器 AV 修正)+ 武器技能(1:1 隱形)。
   // stored av(>0)代表原版已 runtime 算好 → 直接採用(起始隊伍為 0,走計算路徑)。
   EquipItem w = main_weapon();
+  // 只有「已裝備的武器」才貢獻 AV 修正與武器技能加成。main_weapon() 在無已裝備
+  // 武器時會回退第 0 格的精簡視圖(可能是未裝備物品)→ 須以 w.equipped 過濾,
+  // 否則背包裡未裝備的武器也會錯誤地加成(裝備穿脫 UI 上線後此 bug 會顯形)。
+  bool has_equipped_weapon = w.present && w.equipped;
   int skill_bonus = 0;
-  if (w.present) {
+  if (has_equipped_weapon) {
     int si = weapon_skill_index(w.item_type);
     if (si >= 0) skill_bonus = skills[si];
   }
   if (av > 0) return static_cast<int>(av) + skill_bonus;
   int base = dexterity / 4;
-  return base + (w.present ? w.av_mod : 0) + skill_bonus;
+  return base + (has_equipped_weapon ? w.av_mod : 0) + skill_bonus;
 }
 
 int CharacterRecord::effective_dv() const {
@@ -158,7 +162,11 @@ CharacterRecord Party::parse_record(const std::uint8_t* p) {
   std::memcpy(r.spells.data(), p + 60, 8);
   r.status = p[0x4C];          // [76]
   r.gender = p[0x4E];          // [78]
-  r.level = rd16(p, 0x4F);     // [79]
+  r.level = p[0x4F];           // [79] 1 byte(docs/44 §1:level=[79]、XP=[80] 各 1B)。
+  // ↑ 原以 rd16(0x4F) 讀 2B,會把 [80] XP 併入高位元組;XP 一旦非 0(戰鬥 +80)
+  //   Level 顯示即被污染。docs/44 明列 level=[79] 1B、XP=[80] 1B → 改讀單 byte,
+  //   與 chargen.serialize(只寫 raw[0x4F]=level 1B)一致;回歸:起始隊伍/建角 level
+  //   高位元組恆 0,單 byte 與 rd16 結果相同。
   r.xp = p[80];                // [80]
   r.gold8 = p[81];             // [81](fraterrisus gold;見 hpp 註)
   r.av = p[82]; r.dv = p[83]; r.ac = p[84]; r.flags = p[85];
