@@ -200,6 +200,12 @@ struct Combatant {
   int dodge_dv = 0;
   bool disarmed = false;
 
+  // ── 召喚狀態(remake 設計,grounded 手冊;見 spells.hpp make_summon)──────────
+  //   summoned:此 combatant 為法術召喚出的臨時友方(召喚風/地/水/火元素、野獸、
+  //            樹木精靈、精靈、火蜥蜴)。參與回合、可被擊倒;**戰鬥結束後消失**
+  //            (不回寫隊伍存檔,不計入永久隊員)。XP 仍依清場扁平制發給真實隊員。
+  bool summoned = false;
+
   // 仍在場上(未死亡、未逃離)。逃離者視同離場 → 不參戰、不被瞄準、不計入存活。
   bool in_combat() const { return alive() && !fled; }
   // 本回合是否被控制(眩目)而無法行動。

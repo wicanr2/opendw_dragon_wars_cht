@@ -49,6 +49,8 @@ struct CombatEvent {
   // ── 特殊攻擊事件(remake 設計 grounded 手冊;見 combat.hpp SpecialAttack)──────────
   bool special_disarm = false;  // 卸武裝命中:target 武器被打掉(傷害骰回退徒手)
   bool special_dodge = false;   // attacker 採閃避姿態(本回合提高 DV,不攻擊;target==attacker)
+  // ── 召喚事件(remake 設計 grounded 手冊;見 spells.hpp make_summon)──────────────
+  bool summoned = false;        // 召喚成功:attacker 召出臨時友方(target==召喚物名,加入我方)
 };
 
 // 戰鬥結果。
@@ -94,8 +96,24 @@ class CombatLoop {
   // 每個受影響對象套效果並追加 CombatEvent;最後 recompute_outcome(控制清場可提早結束)。
   // 回傳「對主要對象」的 CastResult(power_spent 為單次施放消耗,呼叫端據此扣 Power)。
   // 確定性:RNG 副作用順序 = 依對象 index 升序逐一 cast_spell。
+  //   caster_int / magic_ranks:Zap 攻擊判定用(docs/58 門檻 12+ranks+INT−DV);預設 0 相容。
+  //   power_points:variable_power 法術投入點數(docs/58「N hp/pt」),上限由 cast_spell 依
+  //     2×magic_ranks 夾;固定 power 法術忽略。
   CastResult cast(std::uint8_t spell_id, int caster_power, int caster_str,
-                  bool caster_is_player = true);
+                  bool caster_is_player = true, int caster_int = 0,
+                  int magic_ranks = 0, int power_points = 1);
+
+  // ── 召喚整合(remake 設計 grounded 手冊;見 spells.hpp make_summon)──────────────
+  // 隊伍施召喚法術:結算 cast_spell(扣 Power、回填 r.summon),並把召喚出的臨時友方
+  //   (make_summon)加入我方陣營(party_,is_player=true、summoned=true),參與後續回合、
+  //   可被擊倒。**戰鬥結束後消失**(不回寫存檔;XP 依清場扁平制只發真實隊員)。
+  //   召喚物加入後重排行動順序(納入戰鬥)。追加 CombatEvent(summoned=true)供 UI 戰報。
+  //   回傳 CastResult(power_spent / summon / handled);呼叫端負責 power -= power_spent。
+  CastResult summon(std::uint8_t spell_id, int caster_power, int caster_str,
+                    bool caster_is_player = true);
+
+  // 召喚出的臨時友方數(UI / 測試參考)。
+  int summoned_count() const;
 
   // ── 特殊攻擊整合(remake 設計 grounded 手冊;見 combat.hpp SpecialAttack)──────────
   // actor:採取特殊攻擊的單位(is_player=true 預設隊伍第 0 名,actor_index 指定)。

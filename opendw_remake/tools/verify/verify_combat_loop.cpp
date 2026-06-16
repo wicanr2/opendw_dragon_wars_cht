@@ -226,6 +226,59 @@ int main(int argc, char** argv) {
     check(loop.xp_award() == 80, "fled-clear victory still awards flat 80 XP (DOS)");
     check(power == 999 - kGroup * 8, "Power deducted 8 per Cowardice cast");
   }
+
+  std::printf("== C3. 召喚 / Zap / PerPoint 經 CombatLoop::cast 整合 ==\n");
+  {
+    // 召喚:Air Summon(0x15)經 cast → 加臨時友方(summoned=true),party 人數 +1。
+    Combatant mon = mon_proto; mon.hp = mon.max_hp = 50;
+    std::vector<Combatant> grp(kGroup, mon);
+    CombatLoop loop(party_proto, grp, CombatRng(0x1234, 0));
+    int party_before = (int)loop.party().size();
+    CastResult r = loop.cast(0x15, 99, 20, /*player=*/true, /*int=*/30, /*ranks=*/5, 1);
+    check(r.ok && r.summon == SummonKind::AirElemental, "Air Summon cast ok, summon kind set");
+    check((int)loop.party().size() == party_before + 1, "summon adds one ally to party");
+    check(loop.summoned_count() == 1, "summoned_count == 1");
+    check(loop.party().back().summoned && loop.party().back().is_player &&
+              loop.party().back().in_combat(),
+          "summoned ally: summoned/is_player/in_combat");
+    bool ev_ok = false;
+    for (const auto& e : loop.events()) if (e.summoned) ev_ok = true;
+    check(ev_ok, "summon emits a summoned CombatEvent");
+  }
+  {
+    // 多次召喚持續加人(隊伍滿 7 人不可召喚的守則由 UI 層守,本層不硬擋)。
+    Combatant mon = mon_proto; mon.hp = mon.max_hp = 50;
+    std::vector<Combatant> grp(kGroup, mon);
+    CombatLoop loop(party_proto, grp, CombatRng(0x55, 0));
+    int n0 = (int)loop.party().size();
+    loop.cast(0x24, 99, 20, true, 30, 5, 1);  // Beast Call
+    loop.cast(0x18, 99, 20, true, 30, 5, 1);  // Fire Summon
+    check((int)loop.party().size() == n0 + 2 && loop.summoned_count() == 2,
+          "two summons add two allies");
+  }
+  {
+    // Zap 經 cast:高 INT/ranks → 必中(Mage Fire OneEnemy → 首個敵人,1d8)。
+    Combatant mon = mon_proto; mon.hp = mon.max_hp = 100;
+    std::vector<Combatant> grp(kGroup, mon);
+    CombatLoop loop(party_proto, grp, CombatRng(0x1234, 0));
+    int hp_before = loop.monsters().at(0).hp;
+    CastResult r = loop.cast(0x00, 99, 20, true, 99, 99, 1);
+    check(r.ok && r.is_zap && r.zap_hit && r.amount >= 1 && r.amount <= 8,
+          "Mage Fire via cast: zap hit, dmg [1,8]");
+    check(loop.monsters().at(0).hp == hp_before - r.amount, "first monster took zap damage");
+  }
+  {
+    // PerPoint 經 cast:Inferno(0x2B,AllEnemy)投入 3 點、ranks 5 → 每點 1d4,必中。
+    Combatant mon = mon_proto; mon.hp = mon.max_hp = 100;
+    std::vector<Combatant> grp(kGroup, mon);
+    CombatLoop loop(party_proto, grp, CombatRng(0x1234, 0));
+    int hp_before = loop.monsters().at(0).hp;
+    CastResult r = loop.cast(0x2B, 99, 20, true, 99, 5, /*pts=*/3);
+    check(r.ok && r.power_spent == 3, "Inferno via cast spends 3 Power (pts=3, cap 2x5=10)");
+    int dealt = hp_before - loop.monsters().at(0).hp;
+    check(dealt >= 3 && dealt <= 12, "Inferno 3pt hit on first monster in [3,12]");
+  }
+
   {
     // 確定性:含控制施法的整場序列,同 seed 兩次 byte-identical。
     auto run_ctrl = [&](std::uint16_t seed) -> std::string {

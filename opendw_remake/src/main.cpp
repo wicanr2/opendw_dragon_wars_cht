@@ -639,6 +639,9 @@ int main(int argc, char** argv) {
     // hero 對應隊伍第 0 名;施法需 Power/STR/已習得法術 → 由該角色 record 帶入。
     int hero_power = 0;                    // 施法者當前法力(扣 Power 後寫回此處)
     int hero_str = 0;                      // 施法者 STR(PowerScaled/buff 結算)
+    int hero_int = 0;                      // 施法者 INT(Zap 攻擊判定;docs/58 門檻 12+ranks+INT−DV)
+    int hero_ranks = 0;                    // 魔法技能 ranks 估計(Zap 判定 + var. 上限 2×ranks)
+                                           //   受阻:技能槽→法術系對映未反編出,以 level 為保守 proxy(誠實標示)
     std::vector<std::uint8_t> spellbook;   // 已習得且當前可施法的法術 id(castable_spells)
     bool casting = false;                  // 施法選單開啟中(C 進;上下選;Enter 施放;Esc 取消)
     int cast_sel = 0;                      // 施法選單游標
@@ -1006,6 +1009,8 @@ int main(int argc, char** argv) {
       case TSR::TrapsSensed:   std::fprintf(stderr, "cast Sense Traps -> sensed\n");  return "You sense the traps nearby.";
       case TSR::TrapDisarmed:  std::fprintf(stderr, "cast Disarm Trap -> disarmed\n"); return "The trap is disarmed.";
       case TSR::StoneSoftened: std::fprintf(stderr, "cast Soften Stone -> softened\n"); return "The stone softens and crumbles.";
+      case TSR::WallCreated:   std::fprintf(stderr, "cast Create Wall -> wall placed @(%d,%d)\n", fx, fy); return "A wall of stone rises.";
+      case TSR::LightLit:      std::fprintf(stderr, "cast Mage Light -> light lit\n"); return "Light fills the area.";
       case TSR::NoEffect:
       case TSR::NotTerrain:
       default:
@@ -2028,10 +2033,13 @@ int main(int argc, char** argv) {
       enc.hero = game::Combatant::from_player(c0);
       enc.hero_power = (int)c0.power;        // 施法者法力池(record Power[28-31])
       enc.hero_str = (int)c0.strength;       // PowerScaled / +STR 結算用
+      enc.hero_int = (int)c0.intel;          // Zap 攻擊判定(docs/58 門檻含 INT)
+      // 魔法技能 ranks:技能槽→法術系對映未反編出(受阻)→ 以角色等級當保守 proxy(誠實標示)。
+      enc.hero_ranks = (int)c0.level;
       enc.spellbook = game::castable_spells(c0, enc.hero_power);  // 已習得且可施法
     } else { enc.hero.name = "Hero"; enc.hero.is_player = true; enc.hero.hp = enc.hero.max_hp = 20;
            enc.hero.av = 5; enc.hero.dv = 5; enc.hero.ac = 0; enc.hero.dmg_dice = 1; enc.hero.dmg_sides = 6;
-           enc.hero_power = 0; enc.hero_str = 12; enc.spellbook.clear(); }
+           enc.hero_power = 0; enc.hero_str = 12; enc.hero_int = 12; enc.hero_ranks = 1; enc.spellbook.clear(); }
     enc.mon = game::Combatant::from_monster(monsters[idx]);
     // ── 完整戰鬥迴圈:整隊(存活成員)vs 怪群 ──
     //   怪群數量 = combat_count(預設 6;沿用怪物表領頭怪 monsters[idx])。
@@ -2091,6 +2099,7 @@ int main(int argc, char** argv) {
       enc.hero = enc.group_loop->party().at(0);
       const auto& c0 = party.at(0);
       enc.hero_power = (int)c0.power; enc.hero_str = (int)c0.strength;
+      enc.hero_int = (int)c0.intel; enc.hero_ranks = (int)c0.level;  // Zap 判定;ranks proxy=level(受阻)
       enc.spellbook = game::castable_spells(c0, enc.hero_power);
     }
     enc.shown_events = 0;
@@ -2231,8 +2240,15 @@ int main(int argc, char** argv) {
     if (!enc.group_loop || enc.over) return;
     const game::SpellDef* sp = game::find_spell(spell_id);
     if (!sp) return;
+    // 召喚守則(任務要求):戰鬥陣營已達 7 人(kMaxPartyMembers,含既有召喚物)→ 不可再召喚。
+    if (game::summon_kind_of(spell_id) != game::SummonKind::None &&
+        (int)enc.group_loop->party().size() >= game::kMaxPartyMembers) {
+      enc.log.emplace_back(tr.tr("The party is full."));
+      return;
+    }
     game::CastResult cr = enc.group_loop->cast(spell_id, enc.hero_power, enc.hero_str,
-                                               /*caster_is_player=*/true);
+                                               /*caster_is_player=*/true,
+                                               enc.hero_int, enc.hero_ranks, /*power_points=*/1);
     if (!cr.ok) { enc.log.emplace_back(tr.tr("Not enough power")); return; }
     enc.hero_power -= cr.power_spent;  // 扣法力(寫回 encounter 狀態)
     // 施法戰報(英文鍵化;tr 在地化)。
@@ -2251,17 +2267,24 @@ int main(int argc, char** argv) {
         std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(),
                       caster.c_str(), tr.tr(sp->name_key).c_str());
       }
+    } else if (cr.summon != game::SummonKind::None) {  // 召喚:臨時友方加入(cast 已加事件)
+      std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(), caster.c_str(),
+                    tr.tr(sp->name_key).c_str());
     } else if (sp->effect == game::SpellEffect::Heal) {
       std::snprintf(buf, sizeof buf, "%s casts %s heals %d", caster.c_str(),
                     sp->name_key, cr.amount);
-    } else if (cr.handled && cr.amount > 0) {  // 傷害類
+    } else if (cr.handled && cr.is_zap && !cr.zap_hit) {  // Zap miss:仍吃半傷(docs/58)
+      std::snprintf(buf, sizeof buf, "%s casts %s on %s grazes %d damage", caster.c_str(),
+                    sp->name_key, tr.tr(enc.mon_name_en).c_str(), cr.amount);
+    } else if (cr.handled && cr.amount > 0) {  // 傷害類(命中)
       std::snprintf(buf, sizeof buf, "%s casts %s on %s %d damage", caster.c_str(),
                     sp->name_key, tr.tr(enc.mon_name_en).c_str(), cr.amount);
     } else if (cr.handled) {  // buff/debuff
       std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(), caster.c_str(),
                     tr.tr(sp->name_key).c_str());
-    } else {  // 工具/召喚(仍 TODO)
-      std::snprintf(buf, sizeof buf, "%s casts %s TODO", caster.c_str(), sp->name_key);
+    } else {  // 工具類(光源/補給/指引等探索態,戰鬥內無數值效果)
+      std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(), caster.c_str(),
+                    tr.tr(sp->name_key).c_str());
     }
     enc.log.emplace_back(buf);
     enc.shown_events = enc.group_loop->events().size();  // cast 已自行追加事件,跳過免重複翻譯
@@ -2319,7 +2342,8 @@ int main(int argc, char** argv) {
                         sp->effect == game::SpellEffect::BuffDex);
     game::Combatant& tgt = ally_target ? enc.hero : enc.mon;
     game::CastResult cr =
-        game::cast_spell(spell_id, enc.hero_power, enc.hero_str, tgt, enc.rng);
+        game::cast_spell(spell_id, enc.hero_power, enc.hero_str, tgt, enc.rng,
+                         enc.hero_int, enc.hero_ranks, /*power_points=*/1);
     if (!cr.ok) {  // Power 不足(理論上選單已過濾)→ 提示,不消回合
       enc.log.emplace_back("Not enough power");
       return;

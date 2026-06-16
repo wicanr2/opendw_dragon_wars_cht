@@ -238,11 +238,54 @@ CastResult CombatLoop::cast_control(std::uint8_t spell_id, int caster_power,
   return r;
 }
 
+int CombatLoop::summoned_count() const {
+  int n = 0;
+  for (const auto& p : party_) if (p.summoned) ++n;
+  return n;
+}
+
+CastResult CombatLoop::summon(std::uint8_t spell_id, int caster_power,
+                              int caster_str, bool caster_is_player) {
+  // 召喚法術:結算扣 Power(透過 cast_spell;召喚不作用於敵人,故傳一個 dummy target),
+  //   成功則 make_summon 加入「召喚方陣營」(玩家施法 → party_;怪施法 → monsters_),
+  //   重排行動順序納入戰鬥。臨時友方 summoned=true,戰鬥結束消失(由呼叫端不回寫存檔)。
+  CastResult r;
+  const SpellDef* sp = find_spell(spell_id);
+  if (!sp) { r.note = "unknown spell"; return r; }
+  SummonKind sk = summon_kind_of(spell_id);
+  if (sk == SummonKind::None) { r.note = "not a summon spell"; return r; }
+  // 用一個 dummy target 結算 Power / handled(召喚不傷敵)。
+  Combatant dummy;
+  dummy.hp = dummy.max_hp = 1;
+  r = cast_spell(spell_id, caster_power, caster_str, dummy, rng_);
+  if (!r.ok || r.summon == SummonKind::None) return r;  // Power 不足等
+  std::vector<Combatant>& side = caster_is_player ? party_ : monsters_;
+  Combatant ally = make_summon(r.summon, caster_str);
+  ally.is_player = caster_is_player;  // 召喚物隸屬召喚方陣營
+  std::string ally_name = ally.name;
+  side.push_back(std::move(ally));
+  build_turn_order();  // 納入新單位重排行動順序(不耗 RNG,確定性)
+  // 戰報事件:施法者「召喚出」臨時友方(target = 召喚物名)。
+  std::string caster = !side.empty() ? side.front().name : "caster";
+  CombatEvent ev;
+  ev.attacker = caster;
+  ev.target = ally_name;
+  ev.attacker_is_player = caster_is_player;
+  ev.summoned = true;
+  events_.push_back(std::move(ev));
+  recompute_outcome();
+  return r;
+}
+
 CastResult CombatLoop::cast(std::uint8_t spell_id, int caster_power,
-                            int caster_str, bool caster_is_player) {
+                            int caster_str, bool caster_is_player,
+                            int caster_int, int magic_ranks, int power_points) {
   CastResult primary;
   const SpellDef* sp = find_spell(spell_id);
   if (!sp) { primary.note = "unknown spell"; return primary; }
+  // 召喚類:委派 summon()(加臨時友方),不走下方「對單一對象 cast_spell」鋪設。
+  if (summon_kind_of(spell_id) != SummonKind::None)
+    return summon(spell_id, caster_power, caster_str, caster_is_player);
   std::vector<Combatant>& foes = caster_is_player ? monsters_ : party_;
   std::vector<Combatant>& allies = caster_is_player ? party_ : monsters_;
   std::string caster = (!allies.empty()) ? allies[0].name : "caster";
@@ -286,7 +329,8 @@ CastResult CombatLoop::cast(std::uint8_t spell_id, int caster_power,
   bool first = true;
   for (int idx : targets) {
     Combatant& t = pool[idx];
-    CastResult r = cast_spell(spell_id, caster_power, caster_str, t, rng_);
+    CastResult r = cast_spell(spell_id, caster_power, caster_str, t, rng_,
+                              caster_int, magic_ranks, power_points);
     if (first) { primary = r; first = false; }
     // 套效果有意義者(傷害/治療/控制 Daze/Flee)→ 追加事件。buff/debuff/dispel/工具不發事件。
     bool emit = r.ok && r.handled &&

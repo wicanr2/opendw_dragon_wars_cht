@@ -85,12 +85,28 @@ int main() {
     r = apply_terrain_spell(ts4, SP_SoftenStone, A, 3, 3, 0x01, 1, 1, 0x01);
     check(r == TerrainSpellResult::NoEffect, "Soften Stone with no stone = NoEffect");
 
+    // Create Wall(0x21):在前方可走的一般地面格放石牆 → 變不可走;牆上施放 = NoEffect。
+    TerrainState ts5;
+    r = apply_terrain_spell(ts5, SP_CreateWall, A, 4, 4, 0x01 /*floor*/, 1, 1, 0x01);
+    check(r == TerrainSpellResult::WallCreated && ts5.has(A, 4, 4, TF_WallPlaced),
+          "Create Wall places wall on forward floor");
+    check(!terrain_walkable(ts5, A, 4, 4, 0x01), "placed wall blocks a normally-walkable floor");
+    r = apply_terrain_spell(ts5, SP_CreateWall, A, 4, 4, 0x01, 1, 1, 0x01);
+    check(r == TerrainSpellResult::NoEffect, "Create Wall on already-walled cell = NoEffect");
+    r = apply_terrain_spell(ts5, SP_CreateWall, A, 5, 5, 0x00 /*wall*/, 1, 1, 0x01);
+    check(r == TerrainSpellResult::NoEffect, "Create Wall on existing wall tile = NoEffect");
+
+    // Mage Light(0x05):party 層級光源 → 回報 LightLit(無格作用)。
+    r = apply_terrain_spell(ts5, SP_MageLight, A, 4, 4, 0x01, 1, 1, 0x01);
+    check(r == TerrainSpellResult::LightLit, "Mage Light reports LightLit (party-wide)");
+
     // 非地形法術 id → NotTerrain。
-    r = apply_terrain_spell(ts4, 0x00 /*Mage Fire*/, A, 3, 3, TT_Stone, 1, 1, 0x01);
+    r = apply_terrain_spell(ts4, 0x07 /*Elvar's Fire*/, A, 3, 3, TT_Stone, 1, 1, 0x01);
     check(r == TerrainSpellResult::NotTerrain, "combat spell = NotTerrain");
     check(is_terrain_spell(SP_DisarmTrap) && is_terrain_spell(SP_SoftenStone) &&
-              is_terrain_spell(SP_SenseTraps) && !is_terrain_spell(0x00),
-          "is_terrain_spell classifies correctly");
+              is_terrain_spell(SP_SenseTraps) && is_terrain_spell(SP_CreateWall) &&
+              is_terrain_spell(SP_MageLight) && !is_terrain_spell(0x07),
+          "is_terrain_spell classifies correctly (incl. Create Wall / Mage Light)");
   }
 
   std::printf("== 3) TerrainState 序列化 round-trip ==\n");
