@@ -14,10 +14,12 @@ namespace dw::game {
 
 namespace {
 
-// 狀態條色(對照 opendw color_data[] = {00,FF,CC,AA,99} & 0x0F)。
-constexpr std::uint8_t kBarColorHp    = 0x0C;  // 亮紅
-constexpr std::uint8_t kBarColorStun  = 0x0A;  // 亮綠
-constexpr std::uint8_t kBarColorPower = 0x09;  // 亮藍
+// 狀態條色(對照手冊 L135 逐字:第一條=紫=健康、第二條=綠=體力、第三條=藍=法力)。
+//   docs/59 #5:HP 條改紫(0x0D 亮洋紅)以對齊手冊;原 remake 用亮紅(0x0C)。
+//   註:opendw color_data[]={00,FF,CC,AA,99} 未含紫,本色依手冊文字(非 opendw 像素層)選定。
+constexpr std::uint8_t kBarColorHp    = 0x0D;  // 亮洋紅(紫,對齊手冊「第一條紫色=健康」)
+constexpr std::uint8_t kBarColorStun  = 0x0A;  // 亮綠(體力)
+constexpr std::uint8_t kBarColorPower = 0x09;  // 亮藍(法力)
 constexpr std::uint8_t kBgColor       = 0x00;  // 背景黑
 
 constexpr int kRowStride = 0x10;      // 16 掃描線/角色

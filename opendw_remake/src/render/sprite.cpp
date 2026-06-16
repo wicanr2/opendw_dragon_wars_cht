@@ -41,4 +41,19 @@ void Sprite::blit(Framebuffer& fb, int px, int py, int transparent) const {
     }
 }
 
+void Sprite::blit_clipped(Framebuffer& fb, int px, int py, int transparent,
+                          int cx0, int cy0, int cx1, int cy1) const {
+  for (int y = 0; y < h; ++y) {
+    int fy = py + y;
+    if (fy < cy0 || fy >= cy1) continue;
+    for (int x = 0; x < w; ++x) {
+      int fx = px + x;
+      if (fx < cx0 || fx >= cx1) continue;
+      std::uint8_t i = idx[static_cast<std::size_t>(y) * w + x];
+      if (transparent >= 0 && i == transparent) continue;
+      fb.put(fx, fy, i);
+    }
+  }
+}
+
 }  // namespace dw::render
