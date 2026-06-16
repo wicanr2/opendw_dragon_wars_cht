@@ -42,7 +42,7 @@ add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
-add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp src/render/viewport_compose.cpp src/render/minimap.cpp)
+add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp src/render/viewport_compose.cpp src/render/minimap.cpp src/render/ui_pieces.cpp)
 target_link_libraries(dwr_render PUBLIC dwr_resource)
 add_library(dwr_i18n STATIC src/i18n/strings.cpp src/i18n/string_table.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
@@ -157,6 +157,10 @@ target_link_libraries(extract_monsters PRIVATE dwr_resource)
 add_executable(extract_items tools/extract/extract_items.cpp)
 target_link_libraries(extract_items PRIVATE dwr_resource)
 
+# tools/extract:從 DRAGON.COM com 0x6AE0 萃取 UI chrome ui_pieces → bundle/viewport/ui_pieces.bin。
+#   自包含(執行期不需 DRAGON.COM);byte-for-byte 同原版 ui_pieces 資料(對拍 opendw ui_load)。
+add_executable(extract_ui_pieces tools/extract/extract_ui_pieces.cpp)
+
 # tools/verify:物品/裝備格式解碼 PASS/FAIL(類型/售價/真實 DATA1 物品對拍 + 13 格物品欄 + AC 聚合)。
 # grounded in docs/44 §2(fraterrisus Equipment Format)。
 add_executable(verify_equipment tools/verify/verify_equipment.cpp)
@@ -257,6 +261,15 @@ add_test(NAME verify_encounter_golden_wolf
          COMMAND verify_encounter_golden
          ${CMAKE_SOURCE_DIR}/assets/bundle/sprites/168_wolf.spr
          ${CMAKE_SOURCE_DIR}/assets/bundle/sprites/golden/168_wolf.viewport.ppm)
+
+# tools/verify:遊戲內 UI chrome(石磚邊框 + Dragon Wars logo + pillar)渲染 vs oracle golden
+#   (byte-for-byte;UiPieces::draw_chrome 對拍 opendw draw_ui_piece/ui_draw/ui_header_draw)。
+add_executable(verify_ui_pieces_golden tools/verify/verify_ui_pieces_golden.cpp)
+target_link_libraries(verify_ui_pieces_golden PRIVATE dwr_render)
+add_test(NAME verify_ui_pieces_golden
+         COMMAND verify_ui_pieces_golden
+         ${CMAKE_SOURCE_DIR}/assets/bundle/viewport/ui_pieces.bin
+         ${CMAKE_SOURCE_DIR}/assets/bundle/viewport/golden/ui_pieces.chrome.ppm)
 
 # tools/verify:掃所有關卡找會改 gs[2](area)/入口 gs[0/1/3] 的事件(換場逆向)。
 add_executable(probe_areaswitch tools/verify/probe_areaswitch.cpp)

@@ -25,4 +25,19 @@
   - `data6820.bin`(com 0x6820)= 玩家位置標記,`draw_minimap_from_data6820` 用。
   - 實作 `src/render/minimap.{hpp,cpp}`;golden `tools_build/minimap_golden/`;
     ctest `verify_automap_l1`(area 1 三點 PASS);截圖 `docs/automap_demo/`。
-- ⏳ UI 框件(com 0x6AE0,`ui_pieces`)另行抽取。
+- ✅ **UI 框件(com 0x6AE0,`ui_pieces`)已抽出 + chrome 升級為真值**:
+  - `ui_pieces.bin`(magic `DWUIP`)= 43 片 chrome 框件,**byte-for-byte 同 DRAGON.COM
+    com 0x6AE0**(對拍 opendw `ui_load` ui.c:785;extract 校驗第一筆偏移 == 表尾 0x6B36)。
+    含:石磚邊框各段(pieces 0/3 底部橫條 + 頂端分隔、1/2/4/6 側欄)、Dragon Wars
+    **原版立繪 logo**(piece 5,48×32 @ x=216 y=0)、右側 pillar(piece 9,20×144 @ x=176)、
+    頂端石磚磚塊(pieces 0x17..,4×8 tiling)、右側面板狀態條框件(pieces 10–26)。
+  - 萃取工具 `tools/extract/extract_ui_pieces`;渲染 `src/render/ui_pieces.{hpp,cpp}`
+    (`UiPieces::draw_chrome`,忠實 port `draw_ui_piece`@546 / `ui_draw`@744 / `ui_header_draw`@762)。
+  - golden `golden/ui_pieces.chrome.ppm`;ctest `verify_ui_pieces_golden`(320×200 byte-for-byte
+    對拍獨立 oracle `tools_build/ui_pieces_golden/golden_ui_pieces.c`)。對照圖 `docs/ui_chrome_demo/`。
+  - **版本注意**:本 bundle 全部用 **DRAGON.COM v1.1(56,673 bytes,md5 3aa427d4…)**,
+    非 opendw doc 標的 v1.0(55,217 bytes)。v1.0 在 com 0x6758 / 0x6AE0 版面不同
+    (0x6AE0 已是像素而非偏移表);既有 `vp0.bin` 等與 ui_pieces 同源 v1.1(已對拍確認)。
+  - 格式:`magic "DWUIP\0"`(6)+ `version u16=1` + `count u16=43`,其後每片
+    `w u8, h u8, offset_delta u8, y_pos u8, data_len u16, data[data_len]`(nibble bitmap,
+    byte=2px hi/lo;x 起點 = offset_delta*4,y = y_pos)。逐片 com offset 見 `ui_pieces.manifest.json`。

@@ -11,6 +11,16 @@
 
 remake 把每個畫面該有的**元素都畫到了、相對位置大致正確**(viewport 在左、隊伍面板在右、訊息/提示在下、角色屬性與選單為獨立子畫面),核心 viewport 與怪物立繪甚至對拍 opendw 達 byte-for-byte。但**整體視覺框架與原版差距明顯**,主要是兩類:
 
+> **更新(ui_pieces 已抽、chrome 升級為真值)**:項目 #1/#2 的「裝飾框架 + 標題 logo」已從文字/實線近似升級為**原版真值**。
+> 從 DRAGON.COM(v1.1)com 0x6AE0 反組譯萃取 43 片 `ui_pieces`(`assets/bundle/viewport/ui_pieces.bin`,
+> byte-for-byte 同原版,對拍 opendw `ui_load`),以 `src/render/ui_pieces.cpp`(忠實 port `draw_ui_piece` /
+> `ui_draw` / `ui_header_draw`)在 S_GAME / S_COMBAT 畫**原版石磚藍/綠框 + Dragon Wars 立繪 logo + pillar**,
+> 取代 `main.cpp` 舊的 `frame_rect` 藍實線 + `tr("Dragon Wars")` 文字。chrome 渲染 320×200 對拍獨立 oracle
+> **byte-for-byte**(ctest `verify_ui_pieces_golden` PASS);viewport 154-case 不動(render_sweep 仍 PASS)。
+> 對照圖見 `docs/ui_chrome_demo/chrome_compare.png`(原版 vs remake chrome,像素級吻合)。
+> logo 維持原版英文立繪(在地化選單仍繁中;in-game chrome logo 用原版美術即真值,中文 logo 另議)。
+> 下方 #1/#2 原文敘述保留以記錄升級前狀態;★1/★2 修補項已落地。
+
 1. **缺少原版的裝飾框架與標題 logo**。原版整個畫面被一圈藍色石磚邊框包住,右上角有金色「Dragon Wars」logo;remake 是純黑底、無邊框、探索/戰鬥畫面**完全沒有 logo**(只有右上 `[繁中]` 語系標)。
 2. **子畫面(角色屬性、戰鬥選單)的排版邏輯被改寫**。原版角色屬性是「全螢幕、每列 4 欄」的緊湊網格;remake 是「半螢幕藍框、每列 1 個屬性」的直式清單。原版戰鬥有「遭遇選單 + 逐人動作選單」佔據右側面板;remake 用底部一行 `F:戰鬥 R:逃跑 C:施法` 取代。
 
@@ -175,8 +185,8 @@ remake:無此逐人動作選單(戰鬥結算為 placeholder),底部僅 `F/R/C` �
 
 | 優先 | 偏差 | 畫面 | 性質 | 建議 |
 |:---:|------|------|------|------|
-| ★1 | **右上 Dragon Wars logo 缺失** | 1,2 | 可補(原版資源存在) | 探索/戰鬥畫面把 logo blit 到右側面板正上方 |
-| ★2 | **藍石磚裝飾外框缺失** | 1,2,(3) | 可補 | 補一圈石磚邊框框住 UI(或至少底部框) |
+| ★1 | ~~右上 Dragon Wars logo 缺失~~ → **已修(真值)** | 1,2 | ✅ 落地 | ui_pieces 抽出(piece 5 原版立繪),`UiPieces::draw_chrome` 畫在右上;對拍 oracle byte-for-byte |
+| ★2 | ~~藍石磚裝飾外框缺失~~ → **已修(真值)** | 1,2 | ✅ 落地 | ui_pieces 石磚框各段(pieces 0–9 + 0x17.. brick),取代 frame_rect 藍實線近似;ctest `verify_ui_pieces_golden` PASS |
 | ★3 | **角色屬性版面重寫**(全螢幕網格 → 半螢幕直式) | 3 | 刻意/可改 | 決定:回原版網格 or 明文標注為 remake 設計;補回 AV/DV/AC |
 | ★4 | **訊息列改成控制提示**(下方白框被佔用) | 1,2 | 可改 | 回填白底黑字訊息框,控制提示移位 |
 | ★5 | **怪物立繪溢出 viewport 框** | 2,4 | bug-ish | 立繪裁切/縮放限制在 160×136 框內 |
@@ -188,7 +198,7 @@ remake:無此逐人動作選單(戰鬥結算為 placeholder),底部僅 `F/R/C` �
 ## 偏差性質:刻意 vs 該修
 
 - **刻意(保留)**:`[繁中]/[EN]/[日]` 語系標、F4 即時切語、訊息/段落框改深藍底白邊以利 CJK 24px 字渲染、角色屬性若採直式清單為可讀性設計 — 這些是中文化/重製的正當取捨,**不建議為了像素忠實而移除**,但應在文件標注「與原版不同且為刻意」。
-- **該修(往原版靠)**:右上 logo、石磚外框、訊息列被控制提示佔用、怪物立繪溢出框 — 這些不影響中文化,補回即可更貼近原版,成本可控。
+- **該修(往原版靠)**:~~右上 logo、石磚外框~~(✅ 已升級為原版真值,見 BLUF 更新 + ★1/★2)、訊息列被控制提示佔用、怪物立繪溢出框 — 其餘不影響中文化,補回即可更貼近原版,成本可控。
 - **待系統落地**:遭遇選單、逐人戰鬥動作選單 — 受限於戰鬥結算尚為 placeholder(`42_COMBAT_BYTECODE.md`),非版面問題,屬功能缺口。
 
 ---
