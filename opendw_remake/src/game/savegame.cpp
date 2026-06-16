@@ -77,6 +77,9 @@ bool save(const SaveState& st, const std::filesystem::path& path) {
   // v2:fog of war seen bitmap(u32 長度 + bytes)。
   put_u32(b, static_cast<std::uint32_t>(st.seen_blob.size()));
   b.insert(b.end(), st.seen_blob.begin(), st.seen_blob.end());
+  // v3:探索互動狀態 terrain bitmap(u32 長度 + bytes)。
+  put_u32(b, static_cast<std::uint32_t>(st.terrain_blob.size()));
+  b.insert(b.end(), st.terrain_blob.begin(), st.terrain_blob.end());
 
   // 自動建立上層目錄(如 save/)。
   std::error_code ec;
@@ -146,6 +149,15 @@ bool load(const std::filesystem::path& path, SaveState& out) {
     if (!rd.get_u32(seen_len)) return false;
     st.seen_blob.resize(seen_len);
     if (seen_len && !rd.get_bytes(st.seen_blob.data(), seen_len)) return false;
+  }
+
+  // v3:探索互動狀態(向後相容:v1/v2 無此段 → terrain 為空)。
+  if (ver >= 3) {
+    std::uint32_t terrain_len;
+    if (!rd.get_u32(terrain_len)) return false;
+    st.terrain_blob.resize(terrain_len);
+    if (terrain_len && !rd.get_bytes(st.terrain_blob.data(), terrain_len))
+      return false;
   }
 
   out = std::move(st);

@@ -38,13 +38,19 @@ struct SaveState {
   // 俯視地圖 fog of war:per-area seen bitmap 的序列化 bytes(game::SeenMap::serialize();
   // 空 = 無探索進度)。v2 起納入存檔;v1 舊檔讀回時此欄為空(向後相容)。
   std::vector<std::uint8_t> seen_blob;
+
+  // 探索互動狀態:門開啟/密門粉碎/陷阱解除/觸發 的 per-area 旗標
+  // (game::TerrainState::serialize();空 = 無互動進度)。v3 起納入存檔;
+  // v1/v2 舊檔讀回時此欄為空(向後相容)。
+  std::vector<std::uint8_t> terrain_blob;
 };
 
 // 存檔魔數 + 版本(寫在檔頭;load 嚴格校驗)。
 //   v1:area/x/y/facing + game_state[256] + party records。
 //   v2:追加 seen_blob(u32 長度 + bytes);可讀 v1(seen 視為空)。
+//   v3:追加 terrain_blob(u32 長度 + bytes);可讀 v1/v2(terrain 視為空)。
 inline constexpr char     kSaveMagic[4] = {'D', 'W', 'S', 'V'};  // Dragon Wars SaVe
-inline constexpr std::uint16_t kSaveVersion = 2;
+inline constexpr std::uint16_t kSaveVersion = 3;
 
 // 把 SaveState 序列化寫到 path(會自動建立上層目錄)。回傳是否成功。
 bool save(const SaveState& st, const std::filesystem::path& path);

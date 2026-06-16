@@ -55,6 +55,9 @@ SaveState make_state() {
   // v2:非平凡 fog of war seen blob(確定性內容,涵蓋空 byte 與高位)。
   for (int i = 0; i < 137; ++i)
     s.seen_blob.push_back((std::uint8_t)((i * 7 + 5) & 0xFF));
+  // v3:非平凡探索互動 terrain blob(確定性內容)。
+  for (int i = 0; i < 53; ++i)
+    s.terrain_blob.push_back((std::uint8_t)((i * 11 + 3) & 0xFF));
   return s;
 }
 
@@ -66,6 +69,7 @@ bool fields_equal(const SaveState& a, const SaveState& b) {
   for (std::size_t i = 0; i < a.party_records.size(); ++i)
     if (a.party_records[i] != b.party_records[i]) return false;
   if (a.seen_blob != b.seen_blob) return false;
+  if (a.terrain_blob != b.terrain_blob) return false;
   return true;
 }
 

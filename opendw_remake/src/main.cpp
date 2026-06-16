@@ -48,6 +48,8 @@
 #include "game/combat_loop.hpp"
 #include "game/spells.hpp"
 #include "game/seen_map.hpp"
+#include "game/terrain_state.hpp"
+#include "game/terrain.hpp"
 #include "game/progression.hpp"
 #include "game/shop.hpp"
 #include "game/recruit.hpp"
@@ -255,6 +257,22 @@ struct TavernUi {
   void close() { active = false; flash.clear(); }
 };
 
+// ExploreCast — 戰鬥外探索施法子狀態(手冊 C=施法;S_GAME 期間)。
+//
+// Deep module:對外只露 open/close/active + 游標 + 可施法清單(隊伍第 0 名
+//   castable_spells)。地形法術(Soften Stone / Disarm Trap / Sense Traps)的效果
+//   委派 game::apply_terrain_spell(terrain.hpp);其餘法術(戰鬥傷害/治療類)在
+//   探索時施放只扣 Power(無探索效果,提示「沒有任何效果」)。誠實標示:探索施法
+//   結算為 remake 設計(opendw 探索施法 op 未反編;見 docs/57)。
+struct ExploreCast {
+  bool active = false;
+  int cursor = 0;
+  std::vector<std::uint8_t> spellbook;  // 隊伍第 0 名 castable_spells
+  std::string flash;                    // 施法結果提示
+  void open() { active = true; cursor = 0; flash.clear(); }
+  void close() { active = false; flash.clear(); }
+};
+
 // 配點項目 → progression 操作的對映(0-3 屬性、4-6 技能 index)。
 // 回傳 {is_attr, target, label_en}:is_attr=true 時 target 為 AttrTarget,否則 skills index。
 struct AllocTarget { bool is_attr; int target; const char* label_en; };
@@ -360,6 +378,7 @@ int main(int argc, char** argv) {
   int combat_count = 6;         // --combat-count N:怪群數量(預設 6;沿用怪物表領頭怪)
   int cast_spell_id = -1;       // --cast <spellId>:headless 在遭遇中施放該法術一次(驗證)
   bool cast_force = false;      // --cast-force:即使該角色未習得也施放(僅供驗證效果套用)
+  int terrain_cast_id = -1;     // --terrain-cast <id>:headless 在 S_GAME 對前方/當前格施放地形法術一次(驗證)
   // ── 終戰 Namtar + 結局序列(可通關收官)──
   bool fight_namtar = false;    // --fight-namtar:用(預設/讀檔)隊伍 vs Namtar Boss 戰鬥(combat_loop)
   bool show_ending = false;     // --ending:headless 直接進結局序列(demo / 截圖,不打 Namtar)
@@ -413,6 +432,7 @@ int main(int argc, char** argv) {
     else if (eq("--combat-count") && i + 1 < argc) combat_count = std::atoi(argv[++i]);    // 怪群數量
     else if (eq("--cast") && i + 1 < argc) cast_spell_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 施放法術
     else if (eq("--cast-force")) cast_force = true;     // 即使未習得也施放(驗證效果)
+    else if (eq("--terrain-cast") && i + 1 < argc) terrain_cast_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 探索地形施法
     else if (eq("--newgame")) newgame = true;           // 啟動即進建角畫面
     else if (eq("--newgame-demo") && i + 1 < argc) newgame_demo = argv[++i];  // 腳本化建角(headless)
     else if (eq("--newgame-screen") && i + 1 < argc) newgame_screen = argv[++i];  // 停在配點畫面截圖
@@ -564,6 +584,9 @@ int main(int argc, char** argv) {
   // 俯視地圖 fog of war:per-area「已看過」格;玩家每步標記當前格(對齊
   // opendw refresh_viewport,engine.c:5688)。存檔保存;換 area 各關獨立。
   game::SeenMap seen;
+  // 探索互動狀態(門開啟/密門粉碎/陷阱解除·觸發/陷阱感知);per-area(x,y)旗標。
+  // 存檔保存;.lvl 只讀,不就地改 byte(同 SeenMap;見 docs/57)。
+  game::TerrainState terrain;
   // 持久 VM 遊戲狀態(對拍 opendw game_state.unknown[256]):跨事件保留,存檔/讀檔的核心欄位。
   // run_event 跑事件腳本時以此為初值並回寫,使旗標(門/開關/劇情)能持久累積。
   std::array<std::uint8_t, 256> game_state{};
@@ -575,6 +598,7 @@ int main(int argc, char** argv) {
   CharGenUi cg;                   // 新遊戲建角流程(選單 B → S_CREATE;見 CharGenUi)
   ShopUi shop_ui;                 // 商店買賣子狀態(P / 踩商店格 / --shop;active 時暫停移動)
   TavernUi tavern_ui;             // 酒館招募子狀態(T / 踩酒館格 / --recruit;active 時暫停移動)
+  ExploreCast cast_ui;            // 探索施法子狀態(C / --terrain-cast;active 時暫停移動)
   game::Shop shop_data = game::Shop::load(bundle);  // 商店庫存(bundle/shop/stock.json;自包含)
   // 遊戲內 UI chrome(石磚邊框 + Dragon Wars logo + pillar)原版資源(bundle/viewport/ui_pieces.bin;
   // byte-for-byte 同 DRAGON.COM com 0x6AE0,對拍 opendw ui_load)。載入失敗 → 退回文字/實線近似。
@@ -816,6 +840,7 @@ int main(int argc, char** argv) {
     s.game_state = game_state;
     s.party_records = party.raw_records();
     s.seen_blob = seen.serialize();   // fog of war 探索進度(per-area seen bitmap)
+    s.terrain_blob = terrain.serialize();  // 探索互動進度(門/密門/陷阱 per-area 旗標)
     return s;
   };
   // 把 SaveState 套回目前遊戲(重載該 area + 還原位置/朝向/game_state/party)。回傳是否成功。
@@ -827,6 +852,12 @@ int main(int argc, char** argv) {
         std::fprintf(stderr, "load: seen bitmap deserialize failed (ignored)\n");
     } else {
       seen.clear();   // v1 舊檔無 seen → 探索進度清空
+    }
+    if (!s.terrain_blob.empty()) {
+      if (!terrain.deserialize(s.terrain_blob.data(), s.terrain_blob.size()))
+        std::fprintf(stderr, "load: terrain state deserialize failed (ignored)\n");
+    } else {
+      terrain.clear();   // v1/v2 舊檔無 terrain → 互動進度清空
     }
     if (s.area < 0 || !enter_map(s.area)) {
       std::fprintf(stderr, "load: invalid/unloadable area %d\n", s.area);
@@ -855,6 +886,130 @@ int main(int argc, char** argv) {
       return false;
     }
     return apply_state(s);
+  };
+
+  // ── 探索互動:門 / 密門 / 陷阱 / 地形法術(remake 設計,grounded 手冊;見 docs/57)──
+  // 確定性 RNG(供 Lockpick 檢定 / 陷阱傷害擲骰;可 seed,headless 可重現)。
+  game::CombatRng terrain_rng{0x5117};
+  // 隊伍最高 Lockpick 技能等級(0 = 無人會開鎖)。
+  auto party_best_lockpick = [&]() -> int {
+    int best = 0;
+    for (std::size_t i = 0; i < party.size(); ++i) {
+      if (party.at(i).status & 0x01) continue;  // 死亡隊員不算
+      best = std::max(best, (int)party.at(i).skills[game::progression::kLockpick]);
+    }
+    return best;
+  };
+  // K:對面向前方格做開門 / 破密門。回傳語意(供訊息提示)。
+  auto open_door_forward = [&]() -> game::DoorAction {
+    if (!level) return game::DoorAction::None;
+    int fx = px + dx4[dir], fy = py + dy4[dir];
+    if (level->wraps()) { fx = level->wrap_x(fx); fy = level->wrap_y(fy); }
+    std::uint8_t t = level->tile(fx, fy);
+    using DA = game::DoorAction;
+    switch (t) {
+      case game::TT_DoorClosed:
+        if (terrain.has(current_area, fx, fy, game::TF_DoorOpen)) return DA::AlreadyOpen;
+        terrain.set(current_area, fx, fy, game::TF_DoorOpen);
+        std::fprintf(stderr, "door open @(%d,%d) [sound:door_open]\n", fx, fy);
+        return DA::Opened;
+      case game::TT_DoorLocked: {
+        if (terrain.has(current_area, fx, fy, game::TF_DoorOpen)) return DA::AlreadyOpen;
+        // Lockpick 檢定(手冊 p33:開鎖進鎖住房間)。難度暫定 10(remake 設計)。
+        auto res = game::try_lockpick(
+            [&]() -> const game::CharacterRecord& {
+              // 取最高 Lockpick 者做檢定;隊伍空則用第 0 名(必有,K 已 gate party>0)。
+              std::size_t best_i = 0; int best = -1;
+              for (std::size_t i = 0; i < party.size(); ++i) {
+                if (party.at(i).status & 0x01) continue;
+                if ((int)party.at(i).skills[game::progression::kLockpick] > best) {
+                  best = (int)party.at(i).skills[game::progression::kLockpick]; best_i = i;
+                }
+              }
+              return party.at(best_i);
+            }(),
+            10, terrain_rng);
+        if (party_best_lockpick() <= 0 || !res.success) {
+          std::fprintf(stderr, "door locked @(%d,%d) lockpick=%d roll=%d (fail)\n",
+                       fx, fy, party_best_lockpick(), res.roll);
+          return DA::LockedNeedPick;
+        }
+        terrain.set(current_area, fx, fy, game::TF_DoorOpen);
+        std::fprintf(stderr, "door unlocked @(%d,%d) lockpick=%d [sound:door_open]\n",
+                     fx, fy, party_best_lockpick());
+        return DA::Unlocked;
+      }
+      case game::TT_SecretDoor:
+        if (terrain.has(current_area, fx, fy, game::TF_SecretBroken)) return DA::AlreadyOpen;
+        terrain.set(current_area, fx, fy, game::TF_SecretBroken);
+        std::fprintf(stderr, "secret door smashed @(%d,%d) [sound:door_open]\n", fx, fy);
+        return DA::SecretBroken;
+      case game::TT_Stone:
+        // 石牆障礙:K 無法破(需 Soften Stone 法術);提示。
+        if (terrain.has(current_area, fx, fy, game::TF_SecretBroken)) return DA::AlreadyOpen;
+        std::fprintf(stderr, "stone wall @(%d,%d): need Soften Stone spell\n", fx, fy);
+        return DA::StoneBlocked;
+      default:
+        std::fprintf(stderr, "open door: no door/wall ahead @(%d,%d) tile=0x%02X\n",
+                     fx, fy, t);
+        return DA::None;
+    }
+  };
+  // 踩到陷阱格(0x33)結算:未解除·未觸發 → 對全隊擲傷害(remake 設計,grounded 手冊
+  //   「陷阱」概念;骰式量化)。回傳是否觸發。
+  auto trigger_trap_here = [&]() -> bool {
+    if (!level || party.size() == 0) return false;
+    if (level->tile(px, py) != game::TT_Trap) return false;
+    if (terrain.has(current_area, px, py, game::TF_TrapDisarmed)) return false;
+    if (terrain.has(current_area, px, py, game::TF_TrapSprung)) return false;
+    terrain.set(current_area, px, py, game::TF_TrapSprung);
+    // 傷害 1d8(remake 設計;手冊未給陷阱數值)。對全活著隊員施加。
+    int dmg = 1 + (int)terrain_rng.below(8);
+    for (std::size_t i = 0; i < party.size(); ++i) {
+      auto& c = party.at(i);
+      if (c.status & 0x01) continue;
+      int hp = (int)c.health - dmg;
+      if (hp < 0) hp = 0;
+      c.health = (std::uint16_t)hp;
+      c.raw[0x14] = (std::uint8_t)(hp & 0xFF);
+      c.raw[0x15] = (std::uint8_t)((hp >> 8) & 0xFF);
+      if (hp == 0) { c.status |= 0x01; c.raw[76] |= 0x01; }
+    }
+    std::fprintf(stderr, "trap sprung @(%d,%d) dmg=%d to party\n", px, py, dmg);
+    return true;
+  };
+  // 探索施法結算:隊伍第 0 名施放 spell_id。地形法術(Soften Stone/Disarm Trap/
+  //   Sense Traps)套用到前方/當前格;其餘法術探索時只扣 Power(無探索效果)。
+  //   回傳訊息 i18n key(英文)。扣 Power 寫回 record [0x1C]。
+  auto resolve_explore_cast = [&](std::uint8_t spell_id) -> const char* {
+    if (!level || party.size() == 0) return "Nothing happens.";
+    const game::SpellDef* sp = game::find_spell(spell_id);
+    if (!sp) return "Nothing happens.";
+    auto& c0 = party.at(0);
+    if ((int)c0.power < sp->power_cost) return "Not enough power.";
+    // 扣 Power(variable_power 扣最低投入;對齊 cast_spell)。
+    int pw = (int)c0.power - sp->power_cost;
+    c0.power = (std::uint16_t)pw;
+    c0.raw[0x1C] = (std::uint8_t)(pw & 0xFF);
+    c0.raw[0x1D] = (std::uint8_t)((pw >> 8) & 0xFF);
+    // 地形效果:對面向前方格 + 當前格。
+    int fx = px + dx4[dir], fy = py + dy4[dir];
+    if (level->wraps()) { fx = level->wrap_x(fx); fy = level->wrap_y(fy); }
+    std::uint8_t ft = level->tile(fx, fy), ct = level->tile(px, py);
+    using TSR = game::TerrainSpellResult;
+    TSR r = game::apply_terrain_spell(terrain, spell_id, current_area, fx, fy, ft,
+                                      px, py, ct);
+    switch (r) {
+      case TSR::TrapsSensed:   std::fprintf(stderr, "cast Sense Traps -> sensed\n");  return "You sense the traps nearby.";
+      case TSR::TrapDisarmed:  std::fprintf(stderr, "cast Disarm Trap -> disarmed\n"); return "The trap is disarmed.";
+      case TSR::StoneSoftened: std::fprintf(stderr, "cast Soften Stone -> softened\n"); return "The stone softens and crumbles.";
+      case TSR::NoEffect:
+      case TSR::NotTerrain:
+      default:
+        std::fprintf(stderr, "cast spell 0x%02X -> no terrain effect (power -%d)\n",
+                     spell_id, sp->power_cost);
+        return "Nothing happens.";
+    }
   };
 
   // ── 建角流程(手冊選單 B → 建立人物)──
@@ -1688,6 +1843,37 @@ int main(int argc, char** argv) {
     tl.add(CS_VAL_X, iy, "Up/Dn Ent Esc", 8, PX_UI);
   };
 
+  // 探索施法畫面:底框 + 標題(主角 Power)+ 可施法清單(法術名 + Power)+ flash。
+  auto draw_cast = [&]() {
+    fill_char_sheet();
+    int tx = CS_X + CS_PAD;
+    int y = CS_Y + CS_PAD;
+    int pw = party.size() > 0 ? (int)party.at(0).power : 0;
+    char head[96];
+    std::snprintf(head, sizeof head, "%s  -  Power %d", tr.tr("Cast which spell?").c_str(), pw);
+    tl.add(tx, y, head, 14, PX_BODY);
+    y += CS_LINE_H + 2;
+    for (int i = 0; i < (int)cast_ui.spellbook.size() && y < CS_Y + CS_H - 2 * CS_LINE_H; ++i) {
+      std::uint8_t sid = cast_ui.spellbook[(std::size_t)i];
+      const game::SpellDef* sp = game::find_spell(sid);
+      bool cur = (i == cast_ui.cursor);
+      std::string nm = sp ? tr.tr(sp->name_key) : "?";
+      // 地形法術以青色標示(戰鬥外實際有效),其餘灰白。
+      bool terr = game::is_terrain_spell(sid);
+      char row[96];
+      std::snprintf(row, sizeof row, "%s%s", cur ? "> " : "  ", nm.c_str());
+      tl.add(tx, y, row, cur ? 15 : (terr ? 11 : 7), PX_BODY);
+      if (sp) { char pr[16]; std::snprintf(pr, sizeof pr, "P%d", sp->power_cost);
+                tl.add(CS_X + CS_W - 46, y, pr, cur ? 14 : 7, PX_UI); }
+      y += CS_LINE_H;
+    }
+    if (!cast_ui.flash.empty())
+      tl.add(tx, CS_Y + CS_H - 2 * CS_LINE_H - 2, cast_ui.flash, 14, PX_BODY);
+    int iy = CS_Y + CS_H - CS_LINE_H - 2;
+    tl.add(tx, iy, tr.tr("Cast"), 8, PX_UI);
+    tl.add(CS_VAL_X, iy, "Up/Dn Ent Esc", 8, PX_UI);
+  };
+
   // ── 建角畫面(S_CREATE):全螢幕,像素層底 + 文字層(TTF / i18n)。──
   // PhName:名字輸入列(游標 _)。PhAttr:四屬性配點 + 衍生值 + 剩餘點數 + 性別 + 已建隊員。
   auto draw_chargen = [&]() {
@@ -2303,6 +2489,7 @@ int main(int argc, char** argv) {
       }
       if (shop_ui.active) draw_shop();               // 商店買賣疊在最上層
       if (tavern_ui.active) draw_tavern();           // 酒館招募疊在最上層
+      if (cast_ui.active) draw_cast();               // 探索施法選單疊在最上層
       return;
     }
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
@@ -2419,7 +2606,15 @@ int main(int argc, char** argv) {
   }
 
   int frames = 0;
+  // --terrain-cast:headless 一次性套用(在 S_GAME、首幀對前方/當前格施地形法術後印結果)。
+  bool terrain_cast_done = false;
   for (;;) {
+    if (terrain_cast_id >= 0 && !terrain_cast_done && state == S_GAME) {
+      terrain_cast_done = true;
+      const char* m = resolve_explore_cast((std::uint8_t)terrain_cast_id);
+      std::fprintf(stderr, "terrain-cast 0x%02X @(%d,%d) dir=%d -> %s\n",
+                   terrain_cast_id, px, py, dir, m);
+    }
     render_now();
     vid.present(fb);
     render::Input in = vid.poll();
@@ -2518,6 +2713,24 @@ int main(int argc, char** argv) {
             if (nn > 0) shop_ui.cursor %= nn; else shop_ui.cursor = 0;
           } else shop_ui.flash = tr.tr("Nothing to sell.");
         }
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;
+    }
+    // 探索施法啟用時:接管輸入(↑↓ 選法術、Enter 施放、Esc 離開)。暫停移動。
+    if (cast_ui.active) {
+      int n = (int)cast_ui.spellbook.size();
+      if (in.back) { cast_ui.close(); }
+      else if (in.up)   { if (n > 0) cast_ui.cursor = (cast_ui.cursor - 1 + n) % n; cast_ui.flash.clear(); }
+      else if (in.down) { if (n > 0) cast_ui.cursor = (cast_ui.cursor + 1) % n; cast_ui.flash.clear(); }
+      else if (in.select && n > 0 && cast_ui.cursor < n) {
+        std::uint8_t sid = cast_ui.spellbook[(std::size_t)cast_ui.cursor];
+        const char* msg = resolve_explore_cast(sid);
+        cast_ui.flash = tr.tr(msg);
+        // 施放後可施法清單可能因 Power 改變,重算(游標夾回界內)。
+        cast_ui.spellbook = game::castable_spells(party.at(0), (int)party.at(0).power);
+        int nn = (int)cast_ui.spellbook.size();
+        if (nn > 0) cast_ui.cursor %= nn; else cast_ui.cursor = 0;
       }
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;
@@ -2715,11 +2928,44 @@ int main(int argc, char** argv) {
           // 以標準環繞慣例補上)。非 wrap 關卡 walkable_wrap 退回一般 walkable。
           if (level && level->walkable_wrap(nx, ny)) {
             if (level->wraps()) { nx = level->wrap_x(nx); ny = level->wrap_y(ny); }
-            px = nx; py = ny;
-            mark_seen_here();   // 對齊 refresh_viewport:踏上新格即標記 seen
+            // 探索互動門/密門/石牆閘(remake 設計;見 docs/57):關門/鎖門未開、
+            //   密門未破、石牆未軟化 → 仍擋路(像牆)。陷阱可走(踩格才結算)。
+            std::uint8_t nt = level->tile(nx, ny);
+            if (game::terrain_walkable(terrain, current_area, nx, ny, nt)) {
+              px = nx; py = ny;
+              mark_seen_here();   // 對齊 refresh_viewport:踏上新格即標記 seen
+              trigger_trap_here();  // 踩到陷阱格 → 結算傷害(未解除/未觸發時)
+            }
           }
         }
-        if (in.key == 'K') std::fprintf(stderr, "open door (stub)\n");
+        // K:打開關閉的門 / 粉碎牆中密門(手冊 p176/184;遊戲層動作,opendw 未反編 → remake 設計)。
+        if (in.key == 'K' && party.size() > 0) {
+          using DA = game::DoorAction;
+          DA act = open_door_forward();
+          const char* key = nullptr;
+          switch (act) {
+            case DA::Opened:        key = "The door opens."; break;
+            case DA::Unlocked:      key = "You pick the lock."; break;
+            case DA::LockedNeedPick:key = "The door is locked."; break;
+            case DA::SecretBroken:  key = "You smash a secret door!"; break;
+            case DA::StoneBlocked:  key = "A solid stone wall blocks the way."; break;
+            case DA::AlreadyOpen:   key = "The door is already open."; break;
+            case DA::None:          key = "There is nothing to open ahead."; break;
+          }
+          if (key) { open_msg(tr.tr(key)); last_event_tile = -1; }
+        }
+        // C:施法(手冊;S_GAME 探索施法)。開法術選單(隊伍第 0 名可施法清單)。
+        //   opendw 探索施法 op 未反編 → 結算為 remake 設計(見 docs/57)。
+        if (in.key == 'C' && party.size() > 0) {
+          cast_ui.spellbook = game::castable_spells(party.at(0), (int)party.at(0).power);
+          if (cast_ui.spellbook.empty()) {
+            open_msg(tr.tr("No spells available.")); last_event_tile = -1;
+          } else {
+            cast_ui.open();
+            std::fprintf(stderr, "explore cast: open (castable=%zu)\n",
+                         cast_ui.spellbook.size());
+          }
+        }
         // 事件格(對拍 op_71:tile 值變了才觸發);事件文字 → 開訊息檢視器(分頁捲動)
         if (level) {
           int tv = level->tile(px, py);
