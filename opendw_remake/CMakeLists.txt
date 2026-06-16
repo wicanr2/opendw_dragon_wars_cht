@@ -49,7 +49,7 @@ target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
 # --- game 模組(隊伍角色資料 + 右側狀態面板渲染 + 戰鬥結算)---
-add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/combat_loop.cpp src/game/spells.cpp src/game/seen_map.cpp src/game/chargen.cpp src/game/progression.cpp src/game/shop.cpp src/game/recruit.cpp)
+add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/combat_loop.cpp src/game/spells.cpp src/game/seen_map.cpp src/game/terrain_state.cpp src/game/chargen.cpp src/game/progression.cpp src/game/shop.cpp src/game/recruit.cpp)
 target_include_directories(dwr_game PUBLIC src)
 target_link_libraries(dwr_game PUBLIC dwr_render)
 
@@ -61,6 +61,11 @@ target_include_directories(dwr_save PUBLIC src)
 add_executable(verify_save tools/verify/verify_save.cpp)
 target_link_libraries(verify_save PRIVATE dwr_save)
 add_test(NAME verify_save COMMAND verify_save)
+
+# 探索互動(門/密門/陷阱/地形法術)機制自測(不需 SDL;印 PASS/FAIL)。
+add_executable(verify_terrain tools/verify/verify_terrain.cpp)
+target_link_libraries(verify_terrain PRIVATE dwr_game)
+add_test(NAME verify_terrain COMMAND verify_terrain)
 
 # golden 測試:remake 渲染 title,與 golden 對拍(見 tools_build/render_golden.sh)。
 add_executable(render_title tools/verify/render_title.cpp)
@@ -294,6 +299,18 @@ target_link_libraries(verify_mainline_reachable PRIVATE dwr_vm)
 # grounding 用(docs/54 盤點表來源),非 ctest gate。
 add_executable(dump_worldmap_tiles tools/verify/dump_worldmap_tiles.cpp)
 target_link_libraries(dump_worldmap_tiles PRIVATE dwr_resource)
+
+# tools/verify:逐 area dump 牆屬性 word_11C6 nibble + tile 型分佈(門/陷阱逆向 grounding;
+# docs/57 §2 結論來源),非 ctest gate。
+add_executable(dump_wall_attr tools/verify/dump_wall_attr.cpp)
+target_link_libraries(dump_wall_attr PRIVATE dwr_resource)
+
+# tools/verify:逐 area dump data_56C6 牆/門型表(兩半)+ 牆 nibble→tag + hilo 牆型碼
+# (門牆識別深掘;docs/57 §2「可識別前方牆型 byte、門語意受阻」結論來源),非 ctest gate。
+add_executable(dump_door_table tools/verify/dump_door_table.cpp)
+target_link_libraries(dump_door_table PRIVATE dwr_resource dwr_render)
+add_executable(dump_door_cells tools/verify/dump_door_cells.cpp)
+target_link_libraries(dump_door_cells PRIVATE dwr_resource dwr_render)
 
 # tools/verify:非世界圖子區入口探測(跑母區事件 script,觀測 gs 寫入 / op58 tag /
 # halt opcode)。用於判定 Phoebus(6)/Byzanople(9) 等子區是否卡在未實作 opcode。

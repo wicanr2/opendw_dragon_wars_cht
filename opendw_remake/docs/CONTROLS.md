@@ -43,7 +43,9 @@
 ## remake 實作狀態(2026-06-14)
 
 - **選單**:`B`(開始,預設四人)/ `C`(繼續:有存檔則讀檔進遊戲)快捷字母 + ↑↓/Enter 輔助、`Esc`/`Q` 離開 —— 已實作。`D`/`R`(刪除/改名)、建角流程未實作。
-- **移動**:`I`/↑ 前進、`J`/← 左轉、`L`/→ 右轉、`K` 開門(stub)、`Esc` 返回 —— 已實作(真實關卡 .lvl)。
+- **移動**:`I`/↑ 前進、`J`/← 左轉、`L`/→ 右轉、`Esc` 返回 —— 已實作(真實關卡 .lvl)。
+- **開門 / 破密門(`K`)**:面向前方格 → 關閉的門開啟、鎖門做 Lockpick 檢定、牆中密門粉碎、石牆障礙提示需 Soften Stone;門/密門/石牆未開時擋路(像牆),陷阱格可走但踩中觸發傷害。狀態 per-area 保存(存檔 v3)。**真值層級:remake 設計(opendw 主遊戲 K handler 未反編;見 `57_DOORS_TRAPS_TERRAIN.md`)**;tile 型 0x30..0x34 為機制保留約定,真實 .lvl 目前未含 → 不影響既有關卡。機制以 ctest `verify_terrain` 驗證。
+- **戰鬥外施法(`C`)/ 陷阱**:`C` 開探索施法選單(隊伍第 0 名 castable);Soften Stone(0x22)軟化前方石牆、Disarm Trap(0x36)解除陷阱、Sense Traps(0x14)標記陷阱可見。陷阱踩中扣血(remake 1d8)。headless `--terrain-cast <id>`。**真值層級:remake 設計**。
 - **第一人稱 viewport**:`--fp` → S_GAME 透視牆面 viewport(對拍 opendw;ctest `verify_fp_l1` 4/4、`render_sweep` 全 40 關 154 case byte-for-byte)。
 - **地圖區域切換**:踩到出入口/階梯事件 → 換 area + 入口位置(對齊 opendw poll 重載;ctest `verify_areaswitch` 8/8)。wrap 邊界關卡(opendw 自身未實作)跳過。
 - **事件文字(訊息檢視器)**:踩事件格(tile>1,對拍 op_71)→ 跑該關事件 script(VM op_58 跨資源 call,自包含)→ i18n 在地化 → 畫面下半訊息框(深藍底+白邊,文字層 24px CJK,自動換行 + 依框高分頁約 7 行)。翻頁 `Space`/`Enter`/`↓`/`I`,末頁再按關閉;`Esc` 直接關;多頁左下 `▼ 頁碼/總頁數`。檢視期間暫停移動,`F4` 切語系就地重排。
@@ -52,7 +54,7 @@
 - **存檔 / 讀檔**:`S` 存檔(訊息提示);選單 `C` 或 `--load` 讀檔還原 area/位置/朝向/game_state/隊伍。round-trip byte-for-byte(ctest `verify_save`)。
 - **遭遇 / 戰鬥畫面(S_COMBAT)**:`--encounter <id>` → 怪物圖(@ (16,8) 對齊 opendw 佈局,golden byte-for-byte)+ 隊伍面板 + `F`戰鬥 / `R`逃跑。**戰鬥結算為乾淨室 placeholder**(opendw C 本身未實作結算,詳見 `42_COMBAT_BYTECODE.md`),非原版真值。
 - **多語**:`F4` 循環 繁中 / EN / 日;`--locale <id>`。
-- **未實作指令**(U/X/O/?、施法、建角、Ctrl+S 聲音):待對應系統接入。
+- **未實作指令**(U/O、Ctrl+S 聲音):待對應系統接入(`C` 探索施法、`K` 開門、`X` 配點已接入)。
 
 ## 測試 / headless 旗標
 
@@ -72,6 +74,7 @@
 | `--encounter <id>` | 進遭遇畫面(怪物表 index);配 `--combat-seed`/`--combat-rounds` |
 | `--load <path>` / `--save-path <path>` | 讀檔 / 指定存檔路徑 |
 | `--selftest-save` | headless 存讀檔 round-trip 自測 |
+| `--terrain-cast <id>` | S_GAME 首幀對前方/當前格施放地形法術一次(驗證 Soften Stone/Disarm Trap/Sense Traps) |
 
 範例(自包含,不需 DATA1;SDL dummy driver):
 
