@@ -25,6 +25,12 @@ public:
   using MessageSink = std::function<void(std::size_t offset, const std::string&)>;
   void set_message_sink(MessageSink sink) { msg_sink_ = std::move(sink); }
 
+  // 音效 sink:op_90(op_sound_effect)dispatch 時以 func_5060 索引(音效編號)回呼。
+  //   VM 本身不發聲(音效屬 audio 副作用);呼叫端把索引轉成 audio::SoundId 播放。
+  //   保持 VM 與 SDL/audio 解耦(同 MessageSink 模式)。預設 nullptr → 純消耗 operand。
+  using SoundSink = std::function<void(int dispatch_index)>;
+  void set_sound_sink(SoundSink sink) { snd_sink_ = std::move(sink); }
+
   // 跨資源 call(op_58/op_5C)的資源提供者。等同直接設 VmState::resource_provider。
   void set_resource_provider(VmState::ResourceProvider p) {
     s_.resource_provider = std::move(p);
@@ -231,6 +237,7 @@ private:
   void set_flags();
 
   MessageSink msg_sink_;
+  SoundSink snd_sink_;
   XcallObserver xcall_obs_;
 };
 

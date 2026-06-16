@@ -92,12 +92,30 @@ if(SDL2_FOUND)
       set(DWR_HAVE_TTF TRUE)
     endif()
   endif()
+  # --- audio 模組(R7:PC speaker 風格方波音效;需 SDL2 audio)---
+  #   對外窄介面 play(SoundId);內部隱藏 SDL2 audio device + 方波合成。
+  #   真值層級:func_5060 索引→語意 + dx/bx = opendw 真值;Hz/ms 換算 = remake 設計
+  #   (見 src/audio/sound.hpp 檔頭)。
+  add_library(dwr_audio STATIC src/audio/sound.cpp)
+  target_include_directories(dwr_audio PUBLIC src)
+  target_link_libraries(dwr_audio PUBLIC SDL2::SDL2)
+
   add_executable(opendw_remake
     src/main.cpp
     src/render/sdl_video.cpp
     src/render/text_layer.cpp
     src/game/party_panel.cpp)
-  target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n dwr_game dwr_save SDL2::SDL2)
+  target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n dwr_game dwr_save dwr_audio SDL2::SDL2)
+
+  # tools/verify:音效子系統確定性 PASS/FAIL(headless,SDL_AUDIODRIVER=dummy)。
+  #   驗:init OK(實體/dummy/靜音皆成功)+ op_90 func_5060 索引→SoundId 對映 +
+  #   grounded dx/bx 真值(door/wall/effect_88)+ VM sound sink 派發路徑 + 乾淨退出。
+  add_executable(verify_audio tools/verify/verify_audio.cpp)
+  target_link_libraries(verify_audio PRIVATE dwr_audio dwr_vm)
+  add_test(NAME verify_audio COMMAND verify_audio)
+  set_tests_properties(verify_audio PROPERTIES
+    ENVIRONMENT "SDL_AUDIODRIVER=dummy;SDL_VIDEODRIVER=dummy")
+
   if(DWR_HAVE_TTF)
     target_include_directories(opendw_remake PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
     target_link_libraries(opendw_remake PRIVATE ${SDL2_TTF_LIBRARIES})
@@ -187,6 +205,15 @@ target_link_libraries(verify_combat_loop PRIVATE dwr_game)
 add_test(NAME verify_combat_loop
          COMMAND verify_combat_loop ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# tools/verify:4 種特殊攻擊 + Dodge(強力一擊 / 卸武裝 / 前進 / 快速戰鬥 / 閃避)。
+#   真值層級:命中/傷害/卸武裝/DV 修正係數 = remake 設計 grounded 手冊(opendw 戰鬥結算
+#   未實作、res3 戰鬥 bytecode 全閉環受阻,見 combat.hpp/combat_loop.hpp 檔頭);底層單次
+#   攻擊仍走 resolve_attack(命中/傷害公式 = bytecode 真值),特殊攻擊只套修正不重寫公式。
+#   驗:強力一擊傷害加成、卸武裝降骰、前進 AV bonus、快速=一般、閃避提 DV 降被命中、確定性。
+add_executable(verify_combat_special tools/verify/verify_combat_special.cpp)
+target_link_libraries(verify_combat_special PRIVATE dwr_game)
+add_test(NAME verify_combat_special COMMAND verify_combat_special)
+
 # tools/verify:可通關收官 —— 終戰 Namtar 可勝 + 確定性(combat_loop)。
 #   驗:預設隊伍(第 0 名持受祝福自由之劍)vs Namtar Boss,多 seed 皆 Victory + 隊伍存活;
 #   同 seed 兩次執行一致(確定性)。Boss 屬性/祝福加成 = remake 平衡設計(誠實標示,
@@ -219,6 +246,13 @@ add_test(NAME verify_chargen COMMAND verify_chargen)
 add_executable(verify_progression tools/verify/verify_progression.cpp)
 target_link_libraries(verify_progression PRIVATE dwr_game)
 add_test(NAME verify_progression COMMAND verify_progression)
+
+# tools/verify:次要指令(刪除 / 改名 / 重排 / 物品轉移 / 丟棄)確定性 PASS/FAIL。
+#   真值層級:remake 設計 grounded 手冊(D/R 手冊 147、O 重排 CONTROLS、Item Discard/Transfer)。
+#   驗 raw[] 同步 + 512B round-trip(存檔相容)。
+add_executable(verify_party_ops tools/verify/verify_party_ops.cpp)
+target_link_libraries(verify_party_ops PRIVATE dwr_game)
+add_test(NAME verify_party_ops COMMAND verify_party_ops)
 
 # tools/verify:法術系統確定性 PASS/FAIL(法術表筆數/效果值對拍手冊 + 施法扣 Power +
 #   傷害/治療在手冊範圍 + 確定性)。grounded in docs/33 手冊;非 oracle(見 spells.hpp 檔頭)。

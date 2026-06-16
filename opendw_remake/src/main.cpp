@@ -38,6 +38,7 @@
 #include "render/minimap.hpp"
 #include "render/ui_pieces.hpp"
 #include "render/sdl_video.hpp"
+#include "audio/sound.hpp"
 #include "resource/level.hpp"
 #include "resource/paragraphs.hpp"
 #include "i18n/strings.hpp"
@@ -197,6 +198,15 @@ struct CharSheet {
   bool alloc_mode = false;  // 屬性表中按 X → 進 AP 配點模式(↑↓ 選項目、+ 加點)。
   int alloc_cursor = 0;     // 配點游標:0-3=STR/DEX/INT/SPI、4-6=包紮/開鎖/徒手技能。
   int inv_cursor = 0;       // 物品欄游標(U 使用 / Enter 裝備穿脫的目標格,0-based「已顯示」序)。
+  // ── 物品轉移子模式(手冊 Item:Transfer)──
+  bool transfer_mode = false;  // 物品欄按 T → 進「選目標隊員」模式(↑↓ 選、Enter 確認、Esc 取消)。
+  int transfer_slot = -1;      // 待轉移的真實 slot(0..12;進入子模式時鎖定)。
+  int target_cursor = 0;       // 目標隊員游標(0-based,跳過自己)。
+  // ── 刪除人物確認子模式(手冊 D)──
+  bool delete_confirm = false; // 屬性表按 D → 進刪除確認(Y 確認 / N/Esc 取消)。
+  // ── 改名輸入子模式(手冊 R)──
+  bool rename_mode = false;    // 屬性表按 R → 進改名輸入(TTF 文字輸入;Enter 確認 / Esc 取消)。
+  std::string rename_buf;      // 改名輸入緩衝。
   std::string flash;        // 暫時提示行(配點/用物品/裝備結果)。
 
   static constexpr int kAllocCount = 7;  // 配點可選項目數(4 屬性 + 3 高價值技能)
@@ -208,23 +218,30 @@ struct CharSheet {
     active = count > 0;
     show_inventory = false;
     alloc_mode = false; alloc_cursor = 0; inv_cursor = 0; flash.clear();
+    clear_submodes();
+  }
+  // 重置所有次要指令子模式(轉移 / 刪除確認 / 改名)。
+  void clear_submodes() {
+    transfer_mode = false; transfer_slot = -1; target_cursor = 0;
+    delete_confirm = false; rename_mode = false; rename_buf.clear();
   }
   void toggle_view() {            // 屬性表 ⇄ 物品欄(離開配點模式)
     show_inventory = !show_inventory;
     alloc_mode = false; inv_cursor = 0; flash.clear();
+    clear_submodes();
   }
-  void close() { active = false; show_inventory = false; alloc_mode = false; flash.clear(); }
+  void close() { active = false; show_inventory = false; alloc_mode = false; flash.clear(); clear_submodes(); }
   void prev() {
     if (count > 0) idx = (idx - 1 + count) % count;
-    inv_cursor = 0; alloc_cursor = 0; flash.clear();
+    inv_cursor = 0; alloc_cursor = 0; flash.clear(); clear_submodes();
   }
   void next() {
     if (count > 0) idx = (idx + 1) % count;
-    inv_cursor = 0; alloc_cursor = 0; flash.clear();
+    inv_cursor = 0; alloc_cursor = 0; flash.clear(); clear_submodes();
   }
   // 數字鍵 1-count 直選;越界忽略。回傳是否命中。
   bool select(int n) {
-    if (n >= 1 && n <= count) { idx = n - 1; inv_cursor = 0; alloc_cursor = 0; flash.clear(); return true; }
+    if (n >= 1 && n <= count) { idx = n - 1; inv_cursor = 0; alloc_cursor = 0; flash.clear(); clear_submodes(); return true; }
     return false;
   }
 };
@@ -255,6 +272,21 @@ struct TavernUi {
   std::string flash;
   void open() { active = true; cursor = 0; flash.clear(); }
   void close() { active = false; flash.clear(); }
+};
+
+// ReorderUi — 重排隊伍子狀態(手冊 / CONTROLS:O 重排隊伍順序;S_GAME 期間)。
+//
+// Deep module:對外只露 open/close/active + 游標 + 「已抓起」的成員。操作:↑↓ 移游標,
+//   Enter / Space「抓起 / 放下」當前成員(抓起後 ↑↓ 把它與相鄰成員對調,即 Party::move)。
+//   重排影響戰鬥站位(第 0 名 = 主角 / 施法者)與右側面板顯示順序。
+//   真值層級:remake 設計(grounded 手冊「O 重排隊伍」)。
+struct ReorderUi {
+  bool active = false;
+  int cursor = 0;        // 當前游標位置(0-based)。
+  int grabbed = -1;      // 已抓起的成員索引(-1 = 未抓起;= cursor 時隨游標移動)。
+  std::string flash;
+  void open() { active = true; cursor = 0; grabbed = -1; flash.clear(); }
+  void close() { active = false; grabbed = -1; flash.clear(); }
 };
 
 // ExploreCast — 戰鬥外探索施法子狀態(手冊 C=施法;S_GAME 期間)。
@@ -376,6 +408,8 @@ int main(int argc, char** argv) {
   unsigned combat_seed = 0x1234;// --combat-seed N:結算 RNG 種子(確定性)
   int combat_rounds = 0;        // --combat-rounds N:dump 前自動打 N 回合(headless 驗證戰報)
   int combat_count = 6;         // --combat-count N:怪群數量(預設 6;沿用怪物表領頭怪)
+  std::string combat_special;   // --combat-special <type>:headless 隊伍第 0 名用特殊攻擊一回合(驗證)
+                                //   type ∈ mighty|disarm|advance|quick|dodge(grounded 手冊)
   int cast_spell_id = -1;       // --cast <spellId>:headless 在遭遇中施放該法術一次(驗證)
   bool cast_force = false;      // --cast-force:即使該角色未習得也施放(僅供驗證效果套用)
   int terrain_cast_id = -1;     // --terrain-cast <id>:headless 在 S_GAME 對前方/當前格施放地形法術一次(驗證)
@@ -383,6 +417,9 @@ int main(int argc, char** argv) {
   bool fight_namtar = false;    // --fight-namtar:用(預設/讀檔)隊伍 vs Namtar Boss 戰鬥(combat_loop)
   bool show_ending = false;     // --ending:headless 直接進結局序列(demo / 截圖,不打 Namtar)
   bool namtar_blessed = true;   // --no-bless:關閉「自由之劍受祝福」加成(預設套用,讓可勝)
+  // ── 音效(PC speaker 風格方波;預設可關)──
+  //   --mute 或環境變數 DWR_MUTE=1 → 靜音模式(CI/headless 不依賴音效裝置)。
+  bool mute = (std::getenv("DWR_MUTE") != nullptr);
   // ── 建角流程(新遊戲 / 建立人物;手冊選單 B)──
   bool newgame = false;         // --newgame:啟動直接進建角畫面(S_CREATE)
   std::string newgame_demo;     // --newgame-demo SPEC:headless 腳本化建角 + 出圖/驗證(見下方解析)
@@ -430,6 +467,7 @@ int main(int argc, char** argv) {
     else if (eq("--combat-seed") && i + 1 < argc) combat_seed = (unsigned)std::strtoul(argv[++i], nullptr, 0);
     else if (eq("--combat-rounds") && i + 1 < argc) combat_rounds = std::atoi(argv[++i]);  // dump 前自動打 N 回合
     else if (eq("--combat-count") && i + 1 < argc) combat_count = std::atoi(argv[++i]);    // 怪群數量
+    else if (eq("--combat-special") && i + 1 < argc) combat_special = argv[++i];           // 特殊攻擊驗證
     else if (eq("--cast") && i + 1 < argc) cast_spell_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 施放法術
     else if (eq("--cast-force")) cast_force = true;     // 即使未習得也施放(驗證效果)
     else if (eq("--terrain-cast") && i + 1 < argc) terrain_cast_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 探索地形施法
@@ -439,8 +477,15 @@ int main(int argc, char** argv) {
     else if (eq("--fight-namtar")) fight_namtar = true;   // 終戰 Namtar(隊伍 vs Boss)
     else if (eq("--ending")) show_ending = true;          // 直接進結局序列(demo)
     else if (eq("--no-bless")) namtar_blessed = false;    // 關閉自由之劍祝福加成
+    else if (eq("--mute")) mute = true;                   // 靜音(關音效;CI/headless 安全)
   }
   if (scale < 1) scale = 1;
+
+  // 音效子系統:RAII 開啟(靜音模式不碰實體裝置)。play() 在任何情況皆安全 no-op,
+  //   絕不導致初始化失敗或卡住(headless / CI 不依賴音效裝置)。
+  //   真值層級見 src/audio/sound.hpp 檔頭(func_5060 索引/dx/bx = oracle 真值)。
+  audio::Sound g_sound;
+  g_sound.open(mute);
 
   auto font = render::Font8x8::load_table(font_raw);
   if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }
@@ -599,6 +644,7 @@ int main(int argc, char** argv) {
   ShopUi shop_ui;                 // 商店買賣子狀態(P / 踩商店格 / --shop;active 時暫停移動)
   TavernUi tavern_ui;             // 酒館招募子狀態(T / 踩酒館格 / --recruit;active 時暫停移動)
   ExploreCast cast_ui;            // 探索施法子狀態(C / --terrain-cast;active 時暫停移動)
+  ReorderUi reorder_ui;           // 重排隊伍子狀態(O / --reorder;active 時暫停移動)
   game::Shop shop_data = game::Shop::load(bundle);  // 商店庫存(bundle/shop/stock.json;自包含)
   // 遊戲內 UI chrome(石磚邊框 + Dragon Wars logo + pillar)原版資源(bundle/viewport/ui_pieces.bin;
   // byte-for-byte 同 DRAGON.COM com 0x6AE0,對拍 opendw ui_load)。載入失敗 → 退回文字/實線近似。
@@ -636,6 +682,9 @@ int main(int argc, char** argv) {
     // hero 對應隊伍第 0 名;施法需 Power/STR/已習得法術 → 由該角色 record 帶入。
     int hero_power = 0;                    // 施法者當前法力(扣 Power 後寫回此處)
     int hero_str = 0;                      // 施法者 STR(PowerScaled/buff 結算)
+    int hero_int = 0;                      // 施法者 INT(Zap 攻擊判定;docs/58 門檻 12+ranks+INT−DV)
+    int hero_ranks = 0;                    // 魔法技能 ranks 估計(Zap 判定 + var. 上限 2×ranks)
+                                           //   受阻:技能槽→法術系對映未反編出,以 level 為保守 proxy(誠實標示)
     std::vector<std::uint8_t> spellbook;   // 已習得且當前可施法的法術 id(castable_spells)
     bool casting = false;                  // 施法選單開啟中(C 進;上下選;Enter 施放;Esc 取消)
     int cast_sel = 0;                      // 施法選單游標
@@ -725,6 +774,12 @@ int main(int argc, char** argv) {
       if (s.rfind("Read paragraph", 0) == 0) read_para_pending = true;
       if (!out.empty()) out += ' ';
       out += t;
+    });
+    // op_90(op_sound_effect)dispatch:func_5060 索引 → audio::SoundId → 播放。
+    //   VM 不直接相依 audio;由此 sink 轉接(對照 opendw dispatch_sound_effect)。
+    ip.set_sound_sink([&](int idx) {
+      audio::SoundId id;
+      if (audio::dispatch_index_to_sound(idx, id)) g_sound.play(id);
     });
     ip.run();
     game_state = st.game_state;   // 回寫:事件對遊戲狀態的修改持久保留
@@ -912,6 +967,7 @@ int main(int argc, char** argv) {
         if (terrain.has(current_area, fx, fy, game::TF_DoorOpen)) return DA::AlreadyOpen;
         terrain.set(current_area, fx, fy, game::TF_DoorOpen);
         std::fprintf(stderr, "door open @(%d,%d) [sound:door_open]\n", fx, fy);
+        g_sound.play(audio::SoundId::DoorOpen);   // func_5060[2] play_sound_door_open
         return DA::Opened;
       case game::TT_DoorLocked: {
         if (terrain.has(current_area, fx, fy, game::TF_DoorOpen)) return DA::AlreadyOpen;
@@ -937,12 +993,14 @@ int main(int argc, char** argv) {
         terrain.set(current_area, fx, fy, game::TF_DoorOpen);
         std::fprintf(stderr, "door unlocked @(%d,%d) lockpick=%d [sound:door_open]\n",
                      fx, fy, party_best_lockpick());
+        g_sound.play(audio::SoundId::DoorOpen);   // func_5060[2] play_sound_door_open
         return DA::Unlocked;
       }
       case game::TT_SecretDoor:
         if (terrain.has(current_area, fx, fy, game::TF_SecretBroken)) return DA::AlreadyOpen;
         terrain.set(current_area, fx, fy, game::TF_SecretBroken);
         std::fprintf(stderr, "secret door smashed @(%d,%d) [sound:door_open]\n", fx, fy);
+        g_sound.play(audio::SoundId::DoorOpen);   // func_5060[2] play_sound_door_open
         return DA::SecretBroken;
       case game::TT_Stone:
         // 石牆障礙:K 無法破(需 Soften Stone 法術);提示。
@@ -987,6 +1045,7 @@ int main(int argc, char** argv) {
     if (!sp) return "Nothing happens.";
     auto& c0 = party.at(0);
     if ((int)c0.power < sp->power_cost) return "Not enough power.";
+    g_sound.play(audio::SoundId::Cast);   // 施法音效(remake 設計;見 sound.hpp)
     // 扣 Power(variable_power 扣最低投入;對齊 cast_spell)。
     int pw = (int)c0.power - sp->power_cost;
     c0.power = (std::uint16_t)pw;
@@ -1003,6 +1062,8 @@ int main(int argc, char** argv) {
       case TSR::TrapsSensed:   std::fprintf(stderr, "cast Sense Traps -> sensed\n");  return "You sense the traps nearby.";
       case TSR::TrapDisarmed:  std::fprintf(stderr, "cast Disarm Trap -> disarmed\n"); return "The trap is disarmed.";
       case TSR::StoneSoftened: std::fprintf(stderr, "cast Soften Stone -> softened\n"); return "The stone softens and crumbles.";
+      case TSR::WallCreated:   std::fprintf(stderr, "cast Create Wall -> wall placed @(%d,%d)\n", fx, fy); return "A wall of stone rises.";
+      case TSR::LightLit:      std::fprintf(stderr, "cast Mage Light -> light lit\n"); return "Light fills the area.";
       case TSR::NoEffect:
       case TSR::NotTerrain:
       default:
@@ -1137,6 +1198,17 @@ int main(int argc, char** argv) {
   if (!load_path.empty()) {
     if (do_load(load_path)) { /* state = S_GAME(已於 apply_state 設) */ }
     else std::fprintf(stderr, "load: falling back to menu\n");
+  }
+
+  // --shop / --recruit / --char-sheet 單獨使用(無 --map/--load/--newgame)時:
+  //   這些是 headless 驗證旗標,需 S_GAME 才會被消費(見下方 2565+/2579+)。預設隊伍
+  //   已於啟動載入(load_default),但 state 仍停在 S_MENU → 旗標靜默跳過(game tester
+  //   發現:單獨 --shop/--recruit/--char-sheet 落在主選單)。此處在沒有地圖/讀檔/建角把
+  //   我們帶進 S_GAME 時,直接進 S_GAME(子畫面不需地圖),使這些旗標可獨立 headless 驗證。
+  if (state == S_MENU && party.size() > 0 &&
+      (shop_open || recruit_open || char_sheet >= 1)) {
+    state = S_GAME;
+    std::fprintf(stderr, "headless flag (shop/recruit/char-sheet) without map → enter S_GAME with default party\n");
   }
 
   // --newgame:啟動即進建角畫面(互動)。
@@ -1687,6 +1759,20 @@ int main(int argc, char** argv) {
         y += CS_LINE_H;
       }
     }
+    // ── 刪除確認(手冊 D):Y/N 提示 ──
+    if (!sheet.alloc_mode && sheet.delete_confirm) {
+      y += 4;
+      char q[96];
+      std::snprintf(q, sizeof q, "%s (%s)", tr.tr("Delete this character?").c_str(),
+                    "Y/N");
+      tl.add(tx, y, q, 12, PX_BODY); y += CS_LINE_H;
+    }
+    // ── 改名輸入(手冊 R):顯示輸入緩衝 + 游標 ──
+    if (!sheet.alloc_mode && sheet.rename_mode) {
+      y += 4;
+      std::string line = tr.tr("New name:") + " " + sheet.rename_buf + "_";
+      tl.add(tx, y, line, 14, PX_BODY); y += CS_LINE_H;
+    }
     if (!sheet.flash.empty()) {
       tl.add(tx, y, sheet.flash, 11, PX_BODY); y += CS_LINE_H;
     }
@@ -1694,8 +1780,12 @@ int main(int argc, char** argv) {
     // 底部操作提示。
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
-    tl.add(CS_VAL_X, iy, sheet.alloc_mode ? "Up/Dn  +:add  X:done"
-                                          : "1-4  E:Items  X:AP  Esc", 8, PX_UI);
+    const char* hint =
+        sheet.alloc_mode      ? "Up/Dn  +:add  X:done"
+      : sheet.delete_confirm  ? "Y: confirm   N: cancel"
+      : sheet.rename_mode     ? "Type name  Enter:OK  Esc"
+                              : "1-4 E:Items X:AP D:Del R:Name Esc";
+    tl.add(CS_VAL_X, iy, hint, 8, PX_UI);
   };
 
   // 畫物品欄(背包):底框 + 標題 + 13 格物品列(名稱 + 類型 + AV/AC 修正 + 已裝備標記)。
@@ -1744,11 +1834,27 @@ int main(int argc, char** argv) {
     char eff[80];
     std::snprintf(eff, sizeof eff, "AV %d  AC %d", c.effective_av(), c.effective_ac());
     tl.add(tx, y, eff, 11, PX_BODY); y += CS_LINE_H;
+
+    // ── 物品轉移子模式:列出目標隊員(↑↓ 選、Enter 確認)──
+    if (sheet.transfer_mode) {
+      tl.add(tx, y, tr.tr("Transfer to:"), 14, PX_BODY); y += CS_LINE_H;
+      int shown_t = 0;
+      for (int t = 0; t < (int)party.size(); ++t) {
+        if (t == sheet.idx) continue;
+        bool cur = (shown_t == sheet.target_cursor);
+        const auto& tc = party.at((std::size_t)t);
+        std::string nm = (cur ? "> " : "  ") + (tc.name.empty() ? std::string("?") : tc.name);
+        tl.add(tx + 4, y, nm, cur ? 15 : 7, PX_BODY);
+        y += CS_LINE_H;
+        ++shown_t;
+      }
+    }
     if (!sheet.flash.empty()) tl.add(tx, y, sheet.flash, 14, PX_BODY);
 
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
-    tl.add(CS_VAL_X, iy, "Up/Dn U:use Ent:equip E Esc", 8, PX_UI);
+    tl.add(CS_VAL_X, iy, sheet.transfer_mode ? "Up/Dn  Enter:to  Esc:cancel"
+                                             : "U:use Ent:eq D:drop T:give E Esc", 8, PX_UI);
   };
 
   // 商店買賣畫面:底框 + 標題(含主角金幣)+ 庫存(買)/ 背包(賣)清單 + flash。
@@ -1841,6 +1947,31 @@ int main(int argc, char** argv) {
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("Recruit"), 8, PX_UI);
     tl.add(CS_VAL_X, iy, "Up/Dn Ent Esc", 8, PX_UI);
+  };
+
+  // 重排隊伍畫面:底框 + 標題 + 隊員列(序號 + 名;游標 > 高亮;抓起的成員亮黃 [#])。
+  auto draw_reorder = [&]() {
+    fill_char_sheet();
+    int tx = CS_X + CS_PAD;
+    int y = CS_Y + CS_PAD;
+    tl.add(tx, y, tr.tr("Reorder party"), 14, PX_BODY);
+    y += CS_LINE_H + 2;
+    for (int i = 0; i < (int)party.size(); ++i) {
+      const auto& c = party.at((std::size_t)i);
+      bool cur = (i == reorder_ui.cursor);
+      bool grabbed = (i == reorder_ui.grabbed);
+      char row[96];
+      std::snprintf(row, sizeof row, "%s%d. %s%s", cur ? "> " : "  ", i + 1,
+                    c.name.empty() ? "?" : c.name.c_str(), grabbed ? "  [*]" : "");
+      tl.add(tx, y, row, grabbed ? 14 : (cur ? 15 : 7), PX_BODY);
+      y += CS_LINE_H;
+    }
+    if (!reorder_ui.flash.empty())
+      tl.add(tx, CS_Y + CS_H - 2 * CS_LINE_H - 2, reorder_ui.flash, 14, PX_BODY);
+    int iy = CS_Y + CS_H - CS_LINE_H - 2;
+    tl.add(tx, iy, tr.tr("Reorder party"), 8, PX_UI);
+    tl.add(CS_VAL_X, iy, reorder_ui.grabbed >= 0 ? "Up/Dn:move  Ent:drop  Esc"
+                                                 : "Up/Dn  Ent:grab  Esc", 8, PX_UI);
   };
 
   // 探索施法畫面:底框 + 標題(主角 Power)+ 可施法清單(法術名 + Power)+ flash。
@@ -2014,10 +2145,13 @@ int main(int argc, char** argv) {
       enc.hero = game::Combatant::from_player(c0);
       enc.hero_power = (int)c0.power;        // 施法者法力池(record Power[28-31])
       enc.hero_str = (int)c0.strength;       // PowerScaled / +STR 結算用
+      enc.hero_int = (int)c0.intel;          // Zap 攻擊判定(docs/58 門檻含 INT)
+      // 魔法技能 ranks:技能槽→法術系對映未反編出(受阻)→ 以角色等級當保守 proxy(誠實標示)。
+      enc.hero_ranks = (int)c0.level;
       enc.spellbook = game::castable_spells(c0, enc.hero_power);  // 已習得且可施法
     } else { enc.hero.name = "Hero"; enc.hero.is_player = true; enc.hero.hp = enc.hero.max_hp = 20;
            enc.hero.av = 5; enc.hero.dv = 5; enc.hero.ac = 0; enc.hero.dmg_dice = 1; enc.hero.dmg_sides = 6;
-           enc.hero_power = 0; enc.hero_str = 12; enc.spellbook.clear(); }
+           enc.hero_power = 0; enc.hero_str = 12; enc.hero_int = 12; enc.hero_ranks = 1; enc.spellbook.clear(); }
     enc.mon = game::Combatant::from_monster(monsters[idx]);
     // ── 完整戰鬥迴圈:整隊(存活成員)vs 怪群 ──
     //   怪群數量 = combat_count(預設 6;沿用怪物表領頭怪 monsters[idx])。
@@ -2077,6 +2211,7 @@ int main(int argc, char** argv) {
       enc.hero = enc.group_loop->party().at(0);
       const auto& c0 = party.at(0);
       enc.hero_power = (int)c0.power; enc.hero_str = (int)c0.strength;
+      enc.hero_int = (int)c0.intel; enc.hero_ranks = (int)c0.level;  // Zap 判定;ranks proxy=level(受阻)
       enc.spellbook = game::castable_spells(c0, enc.hero_power);
     }
     enc.shown_events = 0;
@@ -2117,7 +2252,20 @@ int main(int argc, char** argv) {
         enc.log.emplace_back(buf);
         continue;
       }
+      // 特殊攻擊事件(remake 設計 grounded 手冊)。
+      if (e.special_dodge) {  // 閃避姿態:不攻擊,本回合 DV 提高
+        std::snprintf(buf, sizeof buf, tr.tr("%s takes a defensive stance!").c_str(),
+                      atk.c_str());
+        enc.log.emplace_back(buf);
+        continue;
+      }
+      if (e.special_disarm) {  // 卸武裝命中:打掉敵人武器(本次不造成身體傷害)
+        std::snprintf(buf, sizeof buf, tr.tr("%s is disarmed!").c_str(), tgt.c_str());
+        enc.log.emplace_back(buf);
+        continue;
+      }
       if (e.hit) {
+        g_sound.play(audio::SoundId::Hit);   // 命中音效(remake 設計;見 sound.hpp)
         // 模板鍵「combat.hit.fmt」帶 3 槽:%1$=攻擊者 %2$=目標 %3$=傷害值。
         //   zh-TW:「%s 攻擊 %s,命中 %d 點傷害」;en passthrough:「%s attacks %s for %d damage」。
         std::snprintf(buf, sizeof buf, tr.tr("%s attacks %s for %d damage").c_str(),
@@ -2167,6 +2315,37 @@ int main(int argc, char** argv) {
     }
     while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
   };
+  // 特殊攻擊一回合(remake 設計 grounded 手冊;見 combat.hpp SpecialAttack)。
+  //   隊伍第 0 名對首個參戰怪用 type 特殊攻擊 → 轉戰報 → 怪反擊一回合(同 cast 模式)。
+  //   Dodge 不攻擊也不挑目標:只提高自身 DV,接著怪反擊(被命中率因 DV 加成下降)。
+  auto special_attack_round = [&](game::SpecialAttack type) {
+    if (!enc.group_loop || enc.over) return;
+    game::AttackResult ar =
+        enc.group_loop->special_attack(type, /*actor_is_player=*/true, 0, -1);
+    (void)ar;
+    append_group_events();
+    using O = game::CombatOutcome;
+    O o = enc.group_loop->outcome();
+    if (o == O::Victory) {
+      enc.victory = true; enc.over = true;
+      enc.log.emplace_back(tr.tr("Each member gets 80 experience points for combat."));
+      if (!enc.xp_awarded) { party.award_xp(game::kXpPerVictory); enc.xp_awarded = true; }
+      level_up_party();
+    } else {
+      group_round();  // 怪反擊一回合(Dodge 時享 DV 加成)
+    }
+    while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
+  };
+  // 把 --combat-special <type> 字串解析為 SpecialAttack(無效回 Normal)。
+  auto parse_special = [](const std::string& s) -> game::SpecialAttack {
+    using SA = game::SpecialAttack;
+    if (s == "mighty")  return SA::MightyBlow;
+    if (s == "disarm")  return SA::Disarm;
+    if (s == "advance") return SA::Advance;
+    if (s == "quick")   return SA::QuickFight;
+    if (s == "dodge")   return SA::Dodge;
+    return SA::Normal;
+  };
   // 群戰施法回合:隊伍第 0 名施放 spell_id(走 CombatLoop::cast,依 SpellTarget 自動鋪對象)。
   //   傷害/治療/buff/控制全部結算(grounded 手冊;控制持續/逃離為 remake 設計)。
   //   施法後若戰鬥未結束 → 推進一個怪群回合(怪反擊)。Power 照扣。
@@ -2174,9 +2353,17 @@ int main(int argc, char** argv) {
     if (!enc.group_loop || enc.over) return;
     const game::SpellDef* sp = game::find_spell(spell_id);
     if (!sp) return;
+    // 召喚守則(任務要求):戰鬥陣營已達 7 人(kMaxPartyMembers,含既有召喚物)→ 不可再召喚。
+    if (game::summon_kind_of(spell_id) != game::SummonKind::None &&
+        (int)enc.group_loop->party().size() >= game::kMaxPartyMembers) {
+      enc.log.emplace_back(tr.tr("The party is full."));
+      return;
+    }
     game::CastResult cr = enc.group_loop->cast(spell_id, enc.hero_power, enc.hero_str,
-                                               /*caster_is_player=*/true);
+                                               /*caster_is_player=*/true,
+                                               enc.hero_int, enc.hero_ranks, /*power_points=*/1);
     if (!cr.ok) { enc.log.emplace_back(tr.tr("Not enough power")); return; }
+    g_sound.play(audio::SoundId::Cast);   // 施法音效(remake 設計;見 sound.hpp)
     enc.hero_power -= cr.power_spent;  // 扣法力(寫回 encounter 狀態)
     // 施法戰報(英文鍵化;tr 在地化)。
     char buf[192];
@@ -2194,17 +2381,24 @@ int main(int argc, char** argv) {
         std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(),
                       caster.c_str(), tr.tr(sp->name_key).c_str());
       }
+    } else if (cr.summon != game::SummonKind::None) {  // 召喚:臨時友方加入(cast 已加事件)
+      std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(), caster.c_str(),
+                    tr.tr(sp->name_key).c_str());
     } else if (sp->effect == game::SpellEffect::Heal) {
       std::snprintf(buf, sizeof buf, "%s casts %s heals %d", caster.c_str(),
                     sp->name_key, cr.amount);
-    } else if (cr.handled && cr.amount > 0) {  // 傷害類
+    } else if (cr.handled && cr.is_zap && !cr.zap_hit) {  // Zap miss:仍吃半傷(docs/58)
+      std::snprintf(buf, sizeof buf, "%s casts %s on %s grazes %d damage", caster.c_str(),
+                    sp->name_key, tr.tr(enc.mon_name_en).c_str(), cr.amount);
+    } else if (cr.handled && cr.amount > 0) {  // 傷害類(命中)
       std::snprintf(buf, sizeof buf, "%s casts %s on %s %d damage", caster.c_str(),
                     sp->name_key, tr.tr(enc.mon_name_en).c_str(), cr.amount);
     } else if (cr.handled) {  // buff/debuff
       std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(), caster.c_str(),
                     tr.tr(sp->name_key).c_str());
-    } else {  // 工具/召喚(仍 TODO)
-      std::snprintf(buf, sizeof buf, "%s casts %s TODO", caster.c_str(), sp->name_key);
+    } else {  // 工具類(光源/補給/指引等探索態,戰鬥內無數值效果)
+      std::snprintf(buf, sizeof buf, tr.tr("%s casts %s").c_str(), caster.c_str(),
+                    tr.tr(sp->name_key).c_str());
     }
     enc.log.emplace_back(buf);
     enc.shown_events = enc.group_loop->events().size();  // cast 已自行追加事件,跳過免重複翻譯
@@ -2262,7 +2456,8 @@ int main(int argc, char** argv) {
                         sp->effect == game::SpellEffect::BuffDex);
     game::Combatant& tgt = ally_target ? enc.hero : enc.mon;
     game::CastResult cr =
-        game::cast_spell(spell_id, enc.hero_power, enc.hero_str, tgt, enc.rng);
+        game::cast_spell(spell_id, enc.hero_power, enc.hero_str, tgt, enc.rng,
+                         enc.hero_int, enc.hero_ranks, /*power_points=*/1);
     if (!cr.ok) {  // Power 不足(理論上選單已過濾)→ 提示,不消回合
       enc.log.emplace_back("Not enough power");
       return;
@@ -2338,6 +2533,10 @@ int main(int argc, char** argv) {
     int menu_y = kMsgStripY0 + 3;
     tl.add(kMsgStripX0 + 4, menu_y, tr.tr("F:Fight  R:Run"), 11, PX_UI);
     tl.add(kMsgStripX0 + 4 + 110, menu_y, tr.tr("C:Cast"), 11, PX_UI);
+    // 第二列:特殊攻擊熱鍵(手冊 §戰鬥;remake 設計結算)。群戰才顯示(單怪 demo 不支援)。
+    if (enc.group && !enc.over)
+      tl.add(kMsgStripX0 + 4, menu_y + 11,
+             tr.tr("M:Mighty D:Disarm A:Advance Q:Quick E:Dodge"), 9, PX_UI);
     // 施法選單(C 開啟)/戰報 log:放右側面板下方空白區(對齊原版「逐人動作選單在右側面板區」),
     //   不擠進底部訊息列(訊息列高度有限)。rx 對齊隊伍面板 x;ry 落在面板狀態條下方。
     int rx = kVpX + kVpW + 8;     // 184,右側欄起點(對齊隊伍面板 x≈216 左側留邊)
@@ -2490,6 +2689,7 @@ int main(int argc, char** argv) {
       if (shop_ui.active) draw_shop();               // 商店買賣疊在最上層
       if (tavern_ui.active) draw_tavern();           // 酒館招募疊在最上層
       if (cast_ui.active) draw_cast();               // 探索施法選單疊在最上層
+      if (reorder_ui.active) draw_reorder();         // 重排隊伍疊在最上層
       return;
     }
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
@@ -2564,6 +2764,27 @@ int main(int argc, char** argv) {
         std::fprintf(stderr, "cast: id=0x%02X not castable (known=%d sp=%p)\n",
                      sid, (int)known, (const void*)sp);
       }
+    }
+    // --combat-special <type>:headless 隊伍第 0 名用特殊攻擊一回合(驗證命中/傷害修正、
+    //   卸武裝、DV 提升)。前後印怪/英雄狀態 + 旗標到 stderr 供斷言。
+    if (!combat_special.empty() && enc.group && enc.group_loop) {
+      game::SpecialAttack sa = parse_special(combat_special);
+      const auto& mons0_before = enc.group_loop->monsters().at(0);
+      int mon_hp_before = mons0_before.hp;
+      bool mon_disarmed_before = mons0_before.disarmed;
+      int hero_dodge_before = enc.group_loop->party().at(0).dodge_dv;
+      game::AttackResult ar =
+          enc.group_loop->special_attack(sa, /*actor_is_player=*/true, 0, -1);
+      append_group_events();
+      const auto& mons0 = enc.group_loop->monsters().at(0);
+      const auto& hero0 = enc.group_loop->party().at(0);
+      std::fprintf(stderr,
+                   "combat-special: type=%s hit=%d dmg=%d "
+                   "mon_hp %d->%d mon_disarmed %d->%d hero_dodge_dv %d->%d\n",
+                   combat_special.c_str(), (int)ar.hit, ar.damage, mon_hp_before,
+                   mons0.hp, (int)mon_disarmed_before, (int)mons0.disarmed,
+                   hero_dodge_before, hero0.dodge_dv);
+      for (const auto& line : enc.log) std::fprintf(stderr, "  %s\n", line.c_str());
     }
     // --combat-rounds N:自動打 N 回合(headless 驗證戰報 / 確定性)。群戰走 group_round。
     for (int r = 0; r < combat_rounds && !enc.over; ++r) {
@@ -2735,6 +2956,32 @@ int main(int argc, char** argv) {
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;
     }
+    // 重排隊伍啟用時:接管輸入。暫停移動。
+    //   未抓起:↑↓ 移游標,Enter/Space 抓起當前成員。
+    //   已抓起:↑↓ 把抓起成員與相鄰成員對調(= Party::move),Enter/Space 放下,Esc 取消放下。
+    if (reorder_ui.active) {
+      int n = (int)party.size();
+      if (in.back) { reorder_ui.close(); }
+      else if (reorder_ui.grabbed < 0) {
+        if (in.up)   { if (n > 0) reorder_ui.cursor = (reorder_ui.cursor - 1 + n) % n; reorder_ui.flash.clear(); }
+        else if (in.down) { if (n > 0) reorder_ui.cursor = (reorder_ui.cursor + 1) % n; reorder_ui.flash.clear(); }
+        else if (in.select && n > 1) { reorder_ui.grabbed = reorder_ui.cursor; reorder_ui.flash.clear(); }
+      } else {
+        if (in.up && reorder_ui.cursor > 0) {
+          party.move((std::size_t)reorder_ui.grabbed, (std::size_t)(reorder_ui.cursor - 1));
+          reorder_ui.cursor--; reorder_ui.grabbed = reorder_ui.cursor;
+        } else if (in.down && reorder_ui.cursor < n - 1) {
+          party.move((std::size_t)reorder_ui.grabbed, (std::size_t)(reorder_ui.cursor + 1));
+          reorder_ui.cursor++; reorder_ui.grabbed = reorder_ui.cursor;
+        } else if (in.select) {                 // 放下
+          reorder_ui.grabbed = -1;
+          reorder_ui.flash = tr.tr("Party reordered.");
+          std::fprintf(stderr, "reorder: party order updated\n");
+        }
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;
+    }
     // 酒館招募啟用時:接管輸入(↑↓ 選、Enter 招募、Esc 離開)。暫停移動。
     if (tavern_ui.active) {
       int n = (int)game::RecruitRoster::roster().size();
@@ -2768,7 +3015,30 @@ int main(int argc, char** argv) {
         if (max_frames >= 0 && ++frames >= max_frames) break;
         continue;
       }
-      // ── 物品欄:↑↓ 移游標、U 使用、Enter 裝備穿脫、E 回屬性表、Esc 關閉 ──
+      // ── 物品轉移子模式:選目標隊員(↑↓ 選、Enter 確認、Esc/T 取消)──
+      //   目標清單 = 隊伍除自己外的所有成員(0-based,跳過 sheet.idx)。
+      if (sheet.show_inventory && sheet.transfer_mode) {
+        std::vector<int> targets;
+        for (int t = 0; t < (int)party.size(); ++t) if (t != sheet.idx) targets.push_back(t);
+        int tn = (int)targets.size();
+        if (in.back || in.key == 'T') { sheet.transfer_mode = false; sheet.transfer_slot = -1; sheet.flash.clear(); }
+        else if (in.up)   { if (tn > 0) sheet.target_cursor = (sheet.target_cursor - 1 + tn) % tn; }
+        else if (in.down) { if (tn > 0) sheet.target_cursor = (sheet.target_cursor + 1) % tn; }
+        else if (in.select && tn > 0 && sheet.target_cursor < tn) {
+          int to = targets[sheet.target_cursor];
+          bool ok = party.transfer_item((std::size_t)sheet.idx, sheet.transfer_slot, (std::size_t)to);
+          sheet.flash = tr.tr(ok ? "Item transferred." : "Target pack is full.");
+          sheet.transfer_mode = false; sheet.transfer_slot = -1;
+          // 來源物品數可能變動 → 夾住游標。
+          int left = 0;
+          for (int s = 0; s < game::CharacterRecord::kInventorySlots; ++s)
+            if (cs.item_at(s).present) ++left;
+          if (left > 0) sheet.inv_cursor %= left; else sheet.inv_cursor = 0;
+        }
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
+      // ── 物品欄:↑↓ 移游標、U 使用、Enter 裝備穿脫、D 丟棄、T 轉移、E 回屬性表、Esc 關閉 ──
       if (sheet.show_inventory) {
         // 統計 present 物品的真實 slot,供游標 → slot 映射。
         std::vector<int> pslots;
@@ -2790,6 +3060,22 @@ int main(int argc, char** argv) {
           else if (u.casts_spell)    sheet.flash = tr.tr("Item cast a spell.");
           if (n > 0) { int nn = u.consumed ? n - 1 : n; if (nn > 0) sheet.inv_cursor %= nn; else sheet.inv_cursor = 0; }
         }
+        else if (in.key == 'D' && n > 0 && sheet.inv_cursor < n) {    // D:丟棄(從背包移除)
+          int slot = pslots[sheet.inv_cursor];
+          bool ok = party.discard_item((std::size_t)sheet.idx, slot);
+          sheet.flash = tr.tr(ok ? "Item discarded." : "Nothing happens.");
+          int left = n - (ok ? 1 : 0);
+          if (left > 0) sheet.inv_cursor %= left; else sheet.inv_cursor = 0;
+        }
+        else if (in.key == 'T' && n > 0 && sheet.inv_cursor < n) {    // T:轉移給其他隊員
+          if (party.size() < 2) { sheet.flash = tr.tr("No one to transfer to."); }
+          else {
+            sheet.transfer_mode = true;
+            sheet.transfer_slot = pslots[sheet.inv_cursor];
+            sheet.target_cursor = 0;
+            sheet.flash.clear();
+          }
+        }
         else if (in.select && n > 0 && sheet.inv_cursor < n) {       // Enter:裝備穿脫
           int slot = pslots[sheet.inv_cursor];
           game::EquipResult e = game::toggle_equip(cs, slot);
@@ -2798,13 +3084,45 @@ int main(int argc, char** argv) {
         if (max_frames >= 0 && ++frames >= max_frames) break;
         continue;
       }
-      // ── 屬性表(預設):切角色 / E 物品欄 / X 進配點 / Esc 關閉 ──
+      // ── 改名輸入子模式(手冊 R):TTF 文字輸入;Enter 確認 / Esc 取消 ──
+      if (!sheet.show_inventory && !sheet.alloc_mode && sheet.rename_mode) {
+        if (in.back) { sheet.rename_mode = false; sheet.rename_buf.clear(); sheet.flash.clear(); }
+        else if (in.backspace) { if (!sheet.rename_buf.empty()) sheet.rename_buf.pop_back(); }
+        else if (in.text_char && (int)sheet.rename_buf.size() < 12)
+          sheet.rename_buf.push_back((char)in.text_char);
+        else if (in.select) {                            // Enter:確認改名
+          bool ok = party.rename((std::size_t)sheet.idx, sheet.rename_buf);
+          sheet.flash = tr.tr(ok ? "Name changed." : "Name unchanged.");
+          sheet.rename_mode = false; sheet.rename_buf.clear();
+        }
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
+      // ── 刪除人物確認子模式(手冊 D):Y 確認 / N/Esc 取消 ──
+      if (!sheet.show_inventory && !sheet.alloc_mode && sheet.delete_confirm) {
+        if (in.key == 'Y') {                             // 確認刪除
+          int removed = sheet.idx;
+          party.remove((std::size_t)removed);
+          sheet.delete_confirm = false;
+          if (party.size() == 0) { sheet.close(); }      // 隊伍空 → 關閉
+          else { sheet.count = (int)party.size();
+                 if (sheet.idx >= sheet.count) sheet.idx = sheet.count - 1;
+                 sheet.flash = tr.tr("Character deleted."); }
+        } else if (in.key == 'N' || in.back) {           // 取消
+          sheet.delete_confirm = false; sheet.flash.clear();
+        }
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
+      // ── 屬性表(預設):切角色 / E 物品欄 / X 進配點 / D 刪除 / R 改名 / Esc 關閉 ──
       if (in.back) { sheet.close(); }                    // Esc:關閉回遊戲
       else if (in.up) sheet.prev();
       else if (in.down) sheet.next();
       else if (in.key >= '1' && in.key <= '9') sheet.select(in.key - '0');
       else if (in.key == 'E') sheet.toggle_view();       // E:屬性表 ⇄ 物品欄
       else if (in.key == 'X') { sheet.alloc_mode = true; sheet.alloc_cursor = 0; sheet.flash.clear(); }  // X:進配點
+      else if (in.key == 'D') { sheet.delete_confirm = true; sheet.flash.clear(); }  // D:刪除人物(進確認)
+      else if (in.key == 'R') { sheet.rename_mode = true; sheet.rename_buf.clear(); sheet.flash.clear(); }  // R:改名(進輸入)
       else if (in.key == 'V') sheet.close();             // V 再按一次 → 關閉
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;                                          // 屬性表期間不處理移動
@@ -2886,6 +3204,16 @@ int main(int argc, char** argv) {
         enc.fled = true; enc.over = true;
         if (enc.group && enc.group_loop) enc.group_loop->flee();
         enc.log.emplace_back(tr.tr("The party flees!"));
+      } else if (enc.group && in.key == 'M') {             // M:強力一擊(Mighty Blow)
+        special_attack_round(game::SpecialAttack::MightyBlow);
+      } else if (enc.group && in.key == 'D') {             // D:卸武裝(Disarm)
+        special_attack_round(game::SpecialAttack::Disarm);
+      } else if (enc.group && in.key == 'A') {             // A:前進(Advance)
+        special_attack_round(game::SpecialAttack::Advance);
+      } else if (enc.group && in.key == 'Q') {             // Q:快速戰鬥(Quickly fight)
+        special_attack_round(game::SpecialAttack::QuickFight);
+      } else if (enc.group && in.key == 'E') {             // E:閃避敵人(Dodge enemies)
+        special_attack_round(game::SpecialAttack::Dodge);
       } else if (in.key == 'F' || in.select) {            // F/Enter:打一回合(全體自動攻擊)
         if (enc.group) group_round(); else combat_round();
       }
@@ -2917,6 +3245,7 @@ int main(int argc, char** argv) {
       //   remake 地圖事件格資料尚未對映商店/酒館類型,故先以快捷鍵 + headless --shop/--recruit 提供)。
       else if (in.key == 'P' && party.size() > 0) { shop_ui.open(); }
       else if (in.key == 'T' && party.size() > 0) { tavern_ui.open(); }
+      else if (in.key == 'O' && party.size() > 0) { reorder_ui.open(); }  // O:重排隊伍順序(手冊)
       else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
         sheet.open((int)party.size(), in.key - '1');
       else {
@@ -2926,6 +3255,7 @@ int main(int argc, char** argv) {
           int nx = px + dx4[dir], ny = py + dy4[dir];
           // wrap 關卡(flag&2):走出邊緣 → modular 環繞到對邊(opendw exit(1) 未實作,
           // 以標準環繞慣例補上)。非 wrap 關卡 walkable_wrap 退回一般 walkable。
+          bool moved = false;
           if (level && level->walkable_wrap(nx, ny)) {
             if (level->wraps()) { nx = level->wrap_x(nx); ny = level->wrap_y(ny); }
             // 探索互動門/密門/石牆閘(remake 設計;見 docs/57):關門/鎖門未開、
@@ -2933,10 +3263,13 @@ int main(int argc, char** argv) {
             std::uint8_t nt = level->tile(nx, ny);
             if (game::terrain_walkable(terrain, current_area, nx, ny, nt)) {
               px = nx; py = ny;
+              moved = true;
               mark_seen_here();   // 對齊 refresh_viewport:踏上新格即標記 seen
               trigger_trap_here();  // 踩到陷阱格 → 結算傷害(未解除/未觸發時)
             }
           }
+          // 撞牆:前進被擋(牆/門/石牆閘)→ 撞牆音效(func_5060[3] play_sound_wall_bump)。
+          if (!moved) g_sound.play(audio::SoundId::WallBump);
         }
         // K:打開關閉的門 / 粉碎牆中密門(手冊 p176/184;遊戲層動作,opendw 未反編 → remake 設計)。
         if (in.key == 'K' && party.size() > 0) {

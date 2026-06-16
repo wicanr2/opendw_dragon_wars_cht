@@ -130,6 +130,25 @@ public:
   // 不檢查上限(由呼叫端 recruit.hpp 守 7 員 + identifier gate)。
   void add_record(const std::array<std::uint8_t, 512>& rec);
 
+  // ── 次要指令支援(手冊明列;remake 設計 grounded 手冊)────────────────────
+  // 刪除人物 D(手冊 147):移除第 i 名(0-based)。越界 → false 不變。
+  bool remove(std::size_t i);
+  // 改人物名字 R(手冊 147):把第 i 名改名(同步 raw[0..11] 高位元終止編碼,
+  //   存檔 round-trip 一致)。名字空 / 越界 → false 不變。
+  bool rename(std::size_t i, const std::string& name);
+  // 重排隊伍 O(手冊 / CONTROLS):把第 from 名移到 to 位置(其餘順移)。
+  //   影響戰鬥站位(第 0 名為主角 / 施法者)與右側面板顯示。越界 → false。
+  bool move(std::size_t from, std::size_t to);
+
+  // ── 物品轉移 / 丟棄(手冊「Item」段 Discard / Transfer)──────────────────
+  // Discard 丟棄:把第 owner 名第 slot 格(0..12)物品從背包移除(清 23B)。
+  //   該格無物品 / 越界 → false。同步 raw[]。
+  bool discard_item(std::size_t owner, int slot);
+  // Transfer 轉移:把第 from 名第 slot 格物品搬給第 to 名第一個空格。
+  //   來源格無物品 / 目標背包已滿(13 格全滿)/ 越界 / from==to → false。
+  //   搬移整 23B(含裝備位元 / 名);搬移後清來源格。同步雙方 raw[]。
+  bool transfer_item(std::size_t from, int slot, std::size_t to);
+
   std::size_t size() const { return members_.size(); }
   const CharacterRecord& at(std::size_t i) const { return members_.at(i); }
   // 可變存取(供成長 / 戰後結算改角色;progression 模組用)。越界丟例外。

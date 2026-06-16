@@ -26,6 +26,7 @@ enum TerrainFlag : std::uint8_t {
   TF_TrapDisarmed = 0x04,  // 陷阱已解除(踩過不再觸發;Disarm Trap 法術或解除技能)
   TF_TrapSprung   = 0x08,  // 陷阱已觸發過(踩中扣血後標記,不重複扣)
   TF_TrapSensed   = 0x10,  // 陷阱已感知(Sense Traps;UI 顯示提示用)
+  TF_WallPlaced   = 0x20,  // 已放置石牆障礙(Create Wall;原為可走的格 → 變不可走,直到離關重載)
 };
 
 class TerrainState {

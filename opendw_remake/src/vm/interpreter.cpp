@@ -1376,11 +1376,13 @@ void Interpreter::op83_print_char() {
 
 // op_90(op_sound_effect @0x49E7):讀 1 byte operand(音效編號),dispatch_sound_effect(al)。
 //   VM 可見副作用:消耗 1 operand + cpu.ax;不改 r2/r4/flags/game_state。
-//   remake 無音效子系統 → 忠實消耗 operand(音效播放屬 render/audio 副作用)。
+//   operand al 即 func_5060 索引(音效編號)。VM 狀態不變;若掛了 sound sink,
+//   把索引回呼出去由呼叫端轉 audio::SoundId 播放(VM 不直接相依 SDL/audio)。
 void Interpreter::op90_sound_effect() {
   std::uint8_t al = s_.fetch8();
   s_.ax = (s_.ax & 0xFF00) | al;
-  // dispatch_sound_effect 為音效副作用,VM 狀態不變。
+  // dispatch_sound_effect 為音效副作用,VM 狀態不變;只回呼音效索引。
+  if (snd_sink_) snd_sink_(al);
 }
 
 // --- batch 12:角色資料存取(char_data = data_C960)---

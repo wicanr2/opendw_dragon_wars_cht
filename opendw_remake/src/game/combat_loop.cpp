@@ -59,6 +59,12 @@ int CombatLoop::pick_target(bool attacker_is_player) {
   return alive[pick];
 }
 
+int CombatLoop::pick_first_in_combat(const std::vector<Combatant>& pool) {
+  for (int i = 0; i < static_cast<int>(pool.size()); ++i)
+    if (pool[i].in_combat()) return i;
+  return -1;
+}
+
 std::size_t CombatLoop::advance_round() {
   if (over()) return 0;
   std::size_t before = events_.size();
@@ -66,6 +72,9 @@ std::size_t CombatLoop::advance_round() {
   for (const Actor& a : order_) {
     if (over()) break;  // 一方全滅 / 全逃即停(本回合剩餘行動不再進行)
     Combatant& attacker = a.is_player ? party_[a.index] : monsters_[a.index];
+    // Dodge(閃避)臨時 DV 只保護到「該單位下次行動前」:輪到它時清除(remake 設計)。
+    //   故閃避後對方的一輪攻擊享受加成,等自己再行動時失效。
+    attacker.dodge_dv = 0;
     if (!attacker.in_combat()) continue;  // 行動者已倒下或已逃離 → 跳過
     if (attacker.dazzled()) {  // 被眩目/迷失/困住 → 本回合不行動,消耗一層控制(remake 設計)
       attacker.dazzle_turns--;
@@ -162,6 +171,51 @@ CombatEvent make_cast_event(const std::string& caster_name, bool caster_is_playe
 }
 }  // namespace
 
+AttackResult CombatLoop::special_attack(SpecialAttack type, bool actor_is_player,
+                                        int actor_index, int target_index) {
+  // 特殊攻擊整合(remake 設計 grounded 手冊)。actor 對對方陣營目標結算一次特殊攻擊。
+  AttackResult r;
+  std::vector<Combatant>& allies = actor_is_player ? party_ : monsters_;
+  std::vector<Combatant>& foes = actor_is_player ? monsters_ : party_;
+  if (actor_index < 0 || actor_index >= static_cast<int>(allies.size())) return r;
+  Combatant& actor = allies[actor_index];
+  if (!actor.in_combat()) return r;
+
+  // Dodge:不攻擊,對自身套本回合 DV 加成。事件 special_dodge=true(target==attacker)。
+  if (type == SpecialAttack::Dodge) {
+    actor.dodge_dv = kDodgeDvBonus;
+    CombatEvent ev;
+    ev.attacker = actor.name;
+    ev.target = actor.name;
+    ev.attacker_is_player = actor_is_player;
+    ev.hit = false;
+    ev.special_dodge = true;
+    events_.push_back(std::move(ev));
+    return r;  // hit=false, damage=0(no-op 攻擊)
+  }
+
+  // 攻擊類:挑目標(指定 index,或自動首個參戰敵人)。
+  int ti = target_index;
+  if (ti < 0 || ti >= static_cast<int>(foes.size()) || !foes[ti].in_combat())
+    ti = pick_first_in_combat(foes);
+  if (ti < 0) { recompute_outcome(); return r; }  // 對方已全滅
+  Combatant& target = foes[ti];
+
+  r = resolve_special_attack(actor, target, type, rng_);
+  CombatEvent ev;
+  ev.attacker = actor.name;
+  ev.target = target.name;
+  ev.attacker_is_player = actor_is_player;
+  ev.hit = r.hit;
+  ev.damage = r.damage;
+  ev.target_died = r.target_died;
+  ev.stunned = r.hit && !r.target_died && r.damage >= kStunThreshold;
+  ev.special_disarm = (type == SpecialAttack::Disarm && r.hit);
+  events_.push_back(std::move(ev));
+  recompute_outcome();
+  return r;
+}
+
 CastResult CombatLoop::cast_control(std::uint8_t spell_id, int caster_power,
                                     int caster_str, bool caster_is_player,
                                     int target_index) {
@@ -184,11 +238,54 @@ CastResult CombatLoop::cast_control(std::uint8_t spell_id, int caster_power,
   return r;
 }
 
+int CombatLoop::summoned_count() const {
+  int n = 0;
+  for (const auto& p : party_) if (p.summoned) ++n;
+  return n;
+}
+
+CastResult CombatLoop::summon(std::uint8_t spell_id, int caster_power,
+                              int caster_str, bool caster_is_player) {
+  // 召喚法術:結算扣 Power(透過 cast_spell;召喚不作用於敵人,故傳一個 dummy target),
+  //   成功則 make_summon 加入「召喚方陣營」(玩家施法 → party_;怪施法 → monsters_),
+  //   重排行動順序納入戰鬥。臨時友方 summoned=true,戰鬥結束消失(由呼叫端不回寫存檔)。
+  CastResult r;
+  const SpellDef* sp = find_spell(spell_id);
+  if (!sp) { r.note = "unknown spell"; return r; }
+  SummonKind sk = summon_kind_of(spell_id);
+  if (sk == SummonKind::None) { r.note = "not a summon spell"; return r; }
+  // 用一個 dummy target 結算 Power / handled(召喚不傷敵)。
+  Combatant dummy;
+  dummy.hp = dummy.max_hp = 1;
+  r = cast_spell(spell_id, caster_power, caster_str, dummy, rng_);
+  if (!r.ok || r.summon == SummonKind::None) return r;  // Power 不足等
+  std::vector<Combatant>& side = caster_is_player ? party_ : monsters_;
+  Combatant ally = make_summon(r.summon, caster_str);
+  ally.is_player = caster_is_player;  // 召喚物隸屬召喚方陣營
+  std::string ally_name = ally.name;
+  side.push_back(std::move(ally));
+  build_turn_order();  // 納入新單位重排行動順序(不耗 RNG,確定性)
+  // 戰報事件:施法者「召喚出」臨時友方(target = 召喚物名)。
+  std::string caster = !side.empty() ? side.front().name : "caster";
+  CombatEvent ev;
+  ev.attacker = caster;
+  ev.target = ally_name;
+  ev.attacker_is_player = caster_is_player;
+  ev.summoned = true;
+  events_.push_back(std::move(ev));
+  recompute_outcome();
+  return r;
+}
+
 CastResult CombatLoop::cast(std::uint8_t spell_id, int caster_power,
-                            int caster_str, bool caster_is_player) {
+                            int caster_str, bool caster_is_player,
+                            int caster_int, int magic_ranks, int power_points) {
   CastResult primary;
   const SpellDef* sp = find_spell(spell_id);
   if (!sp) { primary.note = "unknown spell"; return primary; }
+  // 召喚類:委派 summon()(加臨時友方),不走下方「對單一對象 cast_spell」鋪設。
+  if (summon_kind_of(spell_id) != SummonKind::None)
+    return summon(spell_id, caster_power, caster_str, caster_is_player);
   std::vector<Combatant>& foes = caster_is_player ? monsters_ : party_;
   std::vector<Combatant>& allies = caster_is_player ? party_ : monsters_;
   std::string caster = (!allies.empty()) ? allies[0].name : "caster";
@@ -232,7 +329,8 @@ CastResult CombatLoop::cast(std::uint8_t spell_id, int caster_power,
   bool first = true;
   for (int idx : targets) {
     Combatant& t = pool[idx];
-    CastResult r = cast_spell(spell_id, caster_power, caster_str, t, rng_);
+    CastResult r = cast_spell(spell_id, caster_power, caster_str, t, rng_,
+                              caster_int, magic_ranks, power_points);
     if (first) { primary = r; first = false; }
     // 套效果有意義者(傷害/治療/控制 Daze/Flee)→ 追加事件。buff/debuff/dispel/工具不發事件。
     bool emit = r.ok && r.handled &&

@@ -46,6 +46,9 @@ inline bool is_terrain_tile(std::uint8_t t) {
 // 回傳:true = 可走(或本模組不攔);false = 被門/密門/石牆擋住。
 inline bool terrain_walkable(const TerrainState& ts, int area, int x, int y,
                              std::uint8_t t) {
+  // Create Wall(remake 設計):在原本可走的格放石牆 → 變不可走(對稱 Soften Stone)。
+  //   TF_WallPlaced 優先於 tile 型判定(連一般地面格也擋)。離關重載即消失(狀態不寫 .lvl)。
+  if (ts.has(area, x, y, TF_WallPlaced)) return false;
   switch (t) {
     case TT_DoorClosed:
     case TT_DoorLocked:
@@ -63,7 +66,9 @@ inline bool terrain_walkable(const TerrainState& ts, int area, int x, int y,
 // 地形法術(戰鬥外)effect id(對齊 spells.cpp:0x14 感知陷阱、0x36 解除陷阱、
 // 0x22 軟化石頭)。
 enum TerrainSpellId : std::uint8_t {
+  SP_MageLight   = 0x05,  // Mage Light:法師魔光(黑暗中視物)→ 點亮探索光源狀態(party 層級)
   SP_SenseTraps  = 0x14,  // Sense Traps:標記當前 area 已知陷阱格可見
+  SP_CreateWall  = 0x21,  // Create Wall:在面向前方格放石牆障礙 → 變不可走(對稱 Soften Stone)
   SP_SoftenStone = 0x22,  // Soften Stone:軟化面向前方石牆障礙 → 可走
   SP_DisarmTrap  = 0x36,  // Disarm Trap:解除面向前方或當前格陷阱
 };
@@ -74,6 +79,8 @@ enum class TerrainSpellResult : std::uint8_t {
   TrapsSensed,   // Sense Traps 已對前方/當前陷阱標記可見
   TrapDisarmed,  // Disarm Trap 已解除一個陷阱
   StoneSoftened, // Soften Stone 已軟化前方石牆
+  WallCreated,   // Create Wall 已在前方格放置石牆障礙
+  LightLit,      // Mage Light 已點亮探索光源(party 層級;由呼叫端維護光源旗標)
   NoEffect,      // 是地形法術但目標處無對應地形(無效果)
 };
 
@@ -112,6 +119,21 @@ inline TerrainSpellResult apply_terrain_spell(TerrainState& ts, std::uint8_t spe
       }
       return TerrainSpellResult::NoEffect;
     }
+    case SP_CreateWall: {
+      // 在面向前方格放石牆障礙(對稱 Soften Stone)。手冊:在你和敵人之間建立一道障礙。
+      //   remake 設計:只要前方格本來可走(非牆 fwd_tile!=0)且尚未放牆,即標 TF_WallPlaced。
+      //   不可在牆(fwd_tile==0)上放(無意義);保留段門/密門/陷阱格亦不疊放(語意衝突)。
+      if (fwd_tile != 0 && !is_terrain_tile(fwd_tile) &&
+          !ts.has(area, fx, fy, TF_WallPlaced)) {
+        ts.set(area, fx, fy, TF_WallPlaced);
+        return TerrainSpellResult::WallCreated;
+      }
+      return TerrainSpellResult::NoEffect;
+    }
+    case SP_MageLight:
+      // 法師魔光:party 層級光源(無格作用)。本函式僅回報「應點亮」,實際光源旗標由
+      //   呼叫端(探索層)維護(對齊 Sense/Soften 之外的 party-wide 狀態)。
+      return TerrainSpellResult::LightLit;
     default:
       return TerrainSpellResult::NotTerrain;
   }
@@ -120,7 +142,8 @@ inline TerrainSpellResult apply_terrain_spell(TerrainState& ts, std::uint8_t spe
 // 某法術是否為「戰鬥外可用的地形法術」。
 inline bool is_terrain_spell(std::uint8_t spell_id) {
   return spell_id == SP_SenseTraps || spell_id == SP_SoftenStone ||
-         spell_id == SP_DisarmTrap;
+         spell_id == SP_DisarmTrap || spell_id == SP_CreateWall ||
+         spell_id == SP_MageLight;
 }
 
 // K 互動(對面向前方格)的結果語意。

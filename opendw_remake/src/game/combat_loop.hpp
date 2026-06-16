@@ -46,6 +46,11 @@ struct CombatEvent {
   bool dazed_skip = false;   // attacker 因被眩目/迷失/困住而本回合跳過行動(target==attacker)
   bool target_fled = false;  // 控制施法使 target 逃離戰鬥(cast_control,Cowardice/Scare)
   bool dazed_applied = false;// 控制施法使 target 進入眩目(cast_control,Dazzle 等)
+  // ── 特殊攻擊事件(remake 設計 grounded 手冊;見 combat.hpp SpecialAttack)──────────
+  bool special_disarm = false;  // 卸武裝命中:target 武器被打掉(傷害骰回退徒手)
+  bool special_dodge = false;   // attacker 採閃避姿態(本回合提高 DV,不攻擊;target==attacker)
+  // ── 召喚事件(remake 設計 grounded 手冊;見 spells.hpp make_summon)──────────────
+  bool summoned = false;        // 召喚成功:attacker 召出臨時友方(target==召喚物名,加入我方)
 };
 
 // 戰鬥結果。
@@ -91,8 +96,36 @@ class CombatLoop {
   // 每個受影響對象套效果並追加 CombatEvent;最後 recompute_outcome(控制清場可提早結束)。
   // 回傳「對主要對象」的 CastResult(power_spent 為單次施放消耗,呼叫端據此扣 Power)。
   // 確定性:RNG 副作用順序 = 依對象 index 升序逐一 cast_spell。
+  //   caster_int / magic_ranks:Zap 攻擊判定用(docs/58 門檻 12+ranks+INT−DV);預設 0 相容。
+  //   power_points:variable_power 法術投入點數(docs/58「N hp/pt」),上限由 cast_spell 依
+  //     2×magic_ranks 夾;固定 power 法術忽略。
   CastResult cast(std::uint8_t spell_id, int caster_power, int caster_str,
-                  bool caster_is_player = true);
+                  bool caster_is_player = true, int caster_int = 0,
+                  int magic_ranks = 0, int power_points = 1);
+
+  // ── 召喚整合(remake 設計 grounded 手冊;見 spells.hpp make_summon)──────────────
+  // 隊伍施召喚法術:結算 cast_spell(扣 Power、回填 r.summon),並把召喚出的臨時友方
+  //   (make_summon)加入我方陣營(party_,is_player=true、summoned=true),參與後續回合、
+  //   可被擊倒。**戰鬥結束後消失**(不回寫存檔;XP 依清場扁平制只發真實隊員)。
+  //   召喚物加入後重排行動順序(納入戰鬥)。追加 CombatEvent(summoned=true)供 UI 戰報。
+  //   回傳 CastResult(power_spent / summon / handled);呼叫端負責 power -= power_spent。
+  CastResult summon(std::uint8_t spell_id, int caster_power, int caster_str,
+                    bool caster_is_player = true);
+
+  // 召喚出的臨時友方數(UI / 測試參考)。
+  int summoned_count() const;
+
+  // ── 特殊攻擊整合(remake 設計 grounded 手冊;見 combat.hpp SpecialAttack)──────────
+  // actor:採取特殊攻擊的單位(is_player=true 預設隊伍第 0 名,actor_index 指定)。
+  // 一次「特殊攻擊行動」= 該 actor 對「對方陣營一個參戰目標」結算一次 resolve_special_attack
+  //   並追加 CombatEvent。**不自動推進整個回合**(回合推進/反擊由呼叫端 advance_round 編排,
+  //   對齊既有 cast 之後 group_round 反擊的模式)。
+  //   • MightyBlow / Advance / Disarm:對 target_index 結算(<0 → 自動挑首個參戰敵人)。
+  //   • Dodge:對 actor 自身套 dodge_dv(本回合提高 DV);target_index 忽略。
+  //   • QuickFight:語意 = 一般攻擊(快速由 UI 跳過動畫;結算同 Normal)。
+  // 回傳 AttackResult(hit/damage…);呼叫端可據此顯示戰報。
+  AttackResult special_attack(SpecialAttack type, bool actor_is_player,
+                              int actor_index, int target_index);
 
   CombatOutcome outcome() const { return outcome_; }
   bool over() const { return outcome_ != CombatOutcome::Ongoing; }
@@ -123,6 +156,8 @@ class CombatLoop {
   void build_turn_order();
   // 為 actor 選一個對方陣營的存活目標 index;無存活回 -1。
   int pick_target(bool attacker_is_player);
+  // 回傳 pool 中首個「仍參戰」單位 index;無則 -1(特殊攻擊自動選敵用,確定性)。
+  static int pick_first_in_combat(const std::vector<Combatant>& pool);
   void recompute_outcome();
 
   std::vector<Combatant> party_;

@@ -218,6 +218,87 @@ void Party::add_record(const std::array<std::uint8_t, 512>& rec) {
   members_.push_back(parse_record(rec.data()));
 }
 
+// ── 次要指令:刪除 / 改名 / 重排 / 物品轉移 / 丟棄(手冊明列)────────────────
+
+// 名字寫進 raw[0..11]:高位元終止編碼(與 chargen.cpp write_name 同規則)。
+namespace {
+void write_name_into(std::array<std::uint8_t, 512>& r, const std::string& name) {
+  int n = static_cast<int>(name.size());
+  if (n > 12) n = 12;
+  for (int i = 0; i < 12; ++i) r[i] = 0;             // 先清名欄
+  for (int i = 0; i < n; ++i) {
+    std::uint8_t b = static_cast<std::uint8_t>(name[i] & 0x7F);
+    if (i + 1 < n) b |= 0x80;                         // 非末字元設高位元
+    r[i] = b;                                         // 末字元高位元為 0 → 終止
+  }
+}
+}  // namespace
+
+bool Party::remove(std::size_t i) {
+  if (i >= members_.size()) return false;
+  members_.erase(members_.begin() + static_cast<std::ptrdiff_t>(i));
+  return true;
+}
+
+bool Party::rename(std::size_t i, const std::string& name) {
+  if (i >= members_.size() || name.empty()) return false;
+  auto& m = members_[i];
+  write_name_into(m.raw, name);
+  m.name = read_name(m.raw.data());   // 從 raw 回讀 → 與存檔內容一致
+  return true;
+}
+
+bool Party::move(std::size_t from, std::size_t to) {
+  std::size_t n = members_.size();
+  if (from >= n || to >= n || from == to) return false;
+  CharacterRecord moved = members_[from];
+  members_.erase(members_.begin() + static_cast<std::ptrdiff_t>(from));
+  members_.insert(members_.begin() + static_cast<std::ptrdiff_t>(to), moved);
+  return true;
+}
+
+// 第 slot 格的 raw 起始 offset;格超出 512B record 容納範圍時回 -1(slot 12 不適用,
+// 與 item_at 的 base+11>512 守門一致:13 格中實際只有 0..11 落在 record 內)。
+namespace {
+int slot_base(int slot) {
+  if (slot < 0 || slot >= CharacterRecord::kInventorySlots) return -1;
+  int base = CharacterRecord::kInventoryBase + slot * CharacterRecord::kItemStride;
+  if (base + CharacterRecord::kItemStride > 512) return -1;
+  return base;
+}
+}  // namespace
+
+bool Party::discard_item(std::size_t owner, int slot) {
+  if (owner >= members_.size()) return false;
+  int base = slot_base(slot);
+  if (base < 0) return false;
+  auto& m = members_[owner];
+  if (!m.item_at(slot).present) return false;
+  for (int b = 0; b < CharacterRecord::kItemStride; ++b) m.raw[base + b] = 0;
+  return true;
+}
+
+bool Party::transfer_item(std::size_t from, int slot, std::size_t to) {
+  if (from >= members_.size() || to >= members_.size() || from == to) return false;
+  int sb = slot_base(slot);
+  if (sb < 0) return false;
+  auto& src = members_[from];
+  auto& dst = members_[to];
+  if (!src.item_at(slot).present) return false;
+  // 目標第一個「在 record 容納範圍內且為空」的格。
+  int db = -1;
+  for (int s = 0; s < CharacterRecord::kInventorySlots; ++s) {
+    int b = slot_base(s);
+    if (b >= 0 && !dst.item_at(s).present) { db = b; break; }
+  }
+  if (db < 0) return false;   // 目標背包已滿
+  for (int b = 0; b < CharacterRecord::kItemStride; ++b) {
+    dst.raw[db + b] = src.raw[sb + b];   // 整 23B 搬移(含裝備位元 / 名)
+    src.raw[sb + b] = 0;                 // 清來源格
+  }
+  return true;
+}
+
 Party Party::load_default(const std::filesystem::path& bundle_dir) {
   std::filesystem::path p = bundle_dir / "party" / "default_party.bin";
   std::FILE* f = std::fopen(p.string().c_str(), "rb");
