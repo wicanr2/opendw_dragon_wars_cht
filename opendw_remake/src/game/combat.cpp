@@ -101,20 +101,49 @@ Combatant Combatant::from_monster(const MonsterRecord& m) {
   Combatant u;
   u.name = m.name;
   u.is_player = false;
-  // ── remake 暫定 stat 對映(非 oracle 真值;見 combat.hpp 註解)──
-  // opendw 未解出 21 bytes 逐欄語意。為驅動確定性切片,暫以固定 byte 位置投影。
-  // 一旦逆出真實欄位,只需改此函式即可,blob 格式不動(21 bytes 全保留)。
-  // 假設(待驗證):attr[0]=HP, attr[1]=attack, attr[2]=defense/AC,
-  //               attr[3]=dmg_dice, attr[4]=dmg_sides, attr[5]=dmg_bonus。
-  auto nz = [](std::uint8_t v, int dflt) { return v ? static_cast<int>(v) : dflt; };
-  u.max_hp = nz(m.attr[0], 4);
+  // ── res31 怪物記錄 → 戰鬥屬性(2026-06-16 反組譯逆出 + 推斷,見 combat.hpp 檔頭)──
+  //
+  // 【反組譯逆出,bytecode 逐指令對齊】res3 戰鬥屬性 setup driver @0x08B6 怪物分支:
+  //   • AV/DV base = byte[0x01] >> 2(0x08CE `op_10 0x41,0x01; >>1 >>1`;= 玩家 DEX/4)。
+  //   • STR(傷害修正源)= byte[0x00](傷害路徑 0x0D63 char_data[0x0c]=STR,怪物同槽)。
+  //   交叉驗:Robber DEX8→AV2、King's Guard DEX16→AV4、Humbaba STR66(終戰強怪)。
+  //
+  // 【推斷,逆出受阻(誠實標示)】HP/AC/傷害骰:
+  //   • HP 是「遭遇群模板」屬性(res31 0x4FE 區),經 (template>>2)&0x0f 算出,非個別
+  //     怪 record byte;記錄端代理 = byte[0x09](hp_hint),夾合理範圍。
+  //   • AC/防禦:to-hit 目標防禦 = DEF_array(0x0372)= 群緩衝 byte[0x28] + DV,落在
+  //     res31 記錄名字打包區 + 多實例 builder 寫入,21B 記錄端無法乾淨逆出。DOS §9:
+  //     有甲怪(King's Guard)耐打來自命中率低(高 DV/AC),非高 HP;但記錄端無乾淨
+  //     armor 旗標欄 → 不臆造 AC/DV 加成,DV=AV=base(見下)。
+  //   • 傷害骰:怪物攻擊走 op_68 裝備路徑或徒手骰表,記錄哪欄=武器 descriptor 受
+  //     多實例 builder + op_68 自改碼阻擋,未逐欄逆出 → 以 STR 推小骰。
+  //   完整逐怪精確逆出卡在 actor 迴圈動作指派 driver(docs/42 §14),非單一 opcode 缺。
+  //
+  // blob 21B 格式不動;此函式只改「怪物 record → Combatant」投影。
+
+  // AV/DV:bytecode 逆出 = 敏捷 >> 2(與玩家 DEX/4 同式)。
+  int avdv = m.avdv_base();                    // = byte[0x01] >> 2
+
+  // HP/STUN:推斷(群模板間接化;byte[0x09] 代理)。
+  u.max_hp = m.hp_hint();
   u.hp = u.max_hp;
-  u.av = static_cast<int>(m.attr[1]);          // 暫定:命中
-  u.dv = static_cast<int>(m.attr[2]);          // 暫定:閃避
-  u.ac = static_cast<int>(m.attr[6]);          // 暫定:護甲(0 = 無減傷)
-  u.dmg_dice = nz(m.attr[3], 1);
-  u.dmg_sides = nz(m.attr[4], 4);
-  u.dmg_bonus = static_cast<int>(m.attr[5]);
+
+  // AV / DV:bytecode 逆出 = 敏捷 >> 2(setup driver 怪物分支 0x08CE,同玩家 DEX/4)。
+  //   AV bonus(byte[0x27])與 AC/防禦(byte[0x28] → DEF_array)落在 res31 記錄名字
+  //   打包區 + 多實例 builder,**無法由 21B 記錄端乾淨逆出**(見 combat.hpp 檔頭)。
+  //   故 AV=DV=base;不臆造 armor/AC 加成(誠實標示)。有甲怪的耐打(DOS §9:命中率
+  //   低而非高 HP)在原版來自 DEF_array;remake 此處無乾淨來源,維持 base,標「受阻」。
+  u.av = avdv;
+  u.dv = avdv;
+  // AC:不另減傷(bytecode 真值:AC 在命中側,見 resolve_attack)。怪物 AC 來源受阻。
+  u.ac = 0;
+
+  // 傷害骰:推斷。怪物 STR(byte[0x00])決定傷害量級,以小骰 + STR/5 回退。
+  //   強怪(STR 高)傷害較大;弱怪 1d4 左右。徒手骰表回退(無法逐欄取武器 descriptor)。
+  int str = m.strength();
+  u.dmg_dice = 1;
+  u.dmg_sides = str >= 40 ? 8 : (str >= 16 ? 6 : 4);  // STR 量級 → 骰面(推斷)
+  u.dmg_bonus = str_damage_bonus(str);                // floor(STR/5)(逆出係數)
   u.status = 0;
   return u;
 }

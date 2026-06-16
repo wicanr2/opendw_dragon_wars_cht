@@ -263,6 +263,69 @@ int main(int argc, char** argv) {
     check(r0.hit && r1.hit && r0.damage == r1.damage, "傷害與目標 AC 無關");
   }
 
+  std::printf("\n== F. 怪物 stat 對映(反組譯逆出:AV/DV=byte[0x01]>>2、STR=byte[0x00])==\n");
+  {
+    // 反組譯逆出(res3 setup driver 0x08B6 怪物分支):AV/DV base = 敏捷 byte[0x01] >> 2。
+    // 由 monsters.bin 取已命名怪,驗 from_monster 投影 == bytecode 逆出語意。
+    auto monsters2 = MonsterTable::load(bundle);
+    auto party2 = Party::load_default(bundle);
+    check(!monsters2.empty(), "monsters loaded for stat mapping");
+    if (!monsters2.empty()) {
+      // 逐怪:av == byte[0x01]>>2(逆出);印量級供 DOS/攻略交叉檢視。
+      bool av_ok = true;
+      const MonsterRecord* robber = nullptr;
+      const MonsterRecord* humbaba = nullptr;
+      const MonsterRecord* guard = nullptr;
+      for (const auto& m : monsters2) {
+        Combatant c = Combatant::from_monster(m);
+        if (c.av != (m.attr[0x01] >> 2)) av_ok = false;
+        if (m.name == "Robber") robber = &m;
+        if (m.name == "Humbaba") humbaba = &m;
+        if (m.name == "King's Guard") guard = &m;
+      }
+      check(av_ok, "所有怪 av == byte[0x01]>>2(bytecode 逆出 res3 0x08CE)");
+
+      // DOS/攻略交叉驗:量級合理。
+      if (robber) {
+        Combatant r = Combatant::from_monster(*robber);
+        std::printf("    Robber:       DEX=%d AV/DV=%d/%d HP=%d STR=%d → DOS『弱、必中、一擊死』\n",
+                    robber->attr[0x01], r.av, r.dv, r.max_hp, robber->attr[0x00]);
+        check(r.av <= 3, "Robber AV 低(DOS:弱怪)");
+        check(r.max_hp <= 6, "Robber HP 低(DOS:一擊可死)");
+      }
+      if (guard) {
+        Combatant g = Combatant::from_monster(*guard);
+        std::printf("    King's Guard: DEX=%d AV/DV=%d/%d HP=%d STR=%d → DOS『有甲』(AC 源受阻)\n",
+                    guard->attr[0x01], g.av, g.dv, g.max_hp, guard->attr[0x00]);
+        check(g.av == 4, "King's Guard AV=4(DEX16>>2,bytecode)");
+        check(g.dv == g.av, "DV=AV=base(AC/armor 來源受阻,不臆造)");
+      }
+      if (humbaba) {
+        Combatant h = Combatant::from_monster(*humbaba);
+        std::printf("    Humbaba:      DEX=%d AV/DV=%d/%d HP=%d STR=%d → 攻略:終戰強怪\n",
+                    humbaba->attr[0x01], h.av, h.dv, h.max_hp, humbaba->attr[0x00]);
+        check(humbaba->attr[0x00] >= 40, "Humbaba STR 極高(攻略:終戰強怪)");
+      }
+
+      // 戰鬥平衡:弱怪(Robber)對起始隊員可被擊敗;強怪傷害非秒殺滿血隊員。
+      if (robber && party2.size() > 0) {
+        CombatRng rng(0x4321, 0);
+        Combatant hero = Combatant::from_player(party2.at(0));
+        Combatant mon = Combatant::from_monster(*robber);
+        int hero_start = hero.hp;
+        bool mon_killed = false;
+        for (int r = 0; r < 30 && hero.alive() && mon.alive(); ++r) {
+          if (resolve_attack(hero, mon, rng).target_died) { mon_killed = true; break; }
+          resolve_attack(mon, hero, rng);
+        }
+        check(mon_killed, "弱怪(Robber)可被起始隊員擊敗");
+        check(hero.hp > 0, "弱怪不秒殺起始隊員");
+        std::printf("    平衡:hero %d→%d HP, Robber %s\n", hero_start, hero.hp,
+                    mon_killed ? "killed" : "survived");
+      }
+    }
+  }
+
   std::printf("\n%s\n", g_fail == 0 ? "verify_combat: ALL PASS" : "verify_combat: FAIL");
   return g_fail == 0 ? 0 : 1;
 }
