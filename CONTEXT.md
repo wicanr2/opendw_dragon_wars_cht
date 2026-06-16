@@ -3,6 +3,8 @@
 > 本檔為 Dragon Wars 中文化的**標準術語對照**。命名變數、寫翻譯、寫文件一律以此為準。
 > 譯名優先序:**官方臺灣中文手冊(珍066-火龍之戰)** > 約定俗成 > 直譯。
 > 格式:`English — 中文. _Avoid_: 禁用同義詞`
+>
+> **作品釐清(避免查譯名時混淆)**:本專案 = **Interplay《Dragon Wars / 火龍之戰》(1989 原版,1990/1991 DOS 與各家用機移植)第一人稱 CRPG**。**與 2007 年韓國電影《D-War / 龍之戰爭》(심형래/Shim Hyung-rae 執導的怪獸特效片)毫無關係**。查證固有名詞、地名、人物時,一律以本遊戲手冊 / 軟體世界攻略 / 反組譯結果為來源,**不得引用該電影或其他同名影視作品的譯名與設定**。
 
 ---
 
@@ -49,7 +51,7 @@
 - **Slaveholder Mog — 奴隸主莫格**. _莫格宅院(area 37,絕望島)主人;軟體世界 25 期攻略(docs/39);信心:中_
 - **Long John Ugly / Ugly — 醜約翰**. _海盜竊穴(area 10)頭目,可載玩家往陳屍所;軟體世界攻略(docs/39);信心:中_
 - Enkidu — _保留原文待確認_
-- **Myrilla / Myrolla — 蜜瑞拉 / 蜜蘿拉**(雙胞胎公主). _京雄城肖像長廊;純音譯(攻略無記載),兩名相近音刻意區分;**信心:低,待審**_
+- **Myrilla / Myrolla — 蜜瑞拉 / 蜜蘿拉**(雙胞胎公主). _京雄城肖像長廊;純音譯(攻略無記載),兩名相近音刻意區分;**已核可 2026-06-16**_
 
 ## 屬性 / Stats (角色狀態畫面)
 
@@ -109,7 +111,7 @@
 - **Stosstrupen — Stosstrupen(突擊隊)**. _德文 Stoßtruppen=突擊隊;納達的精銳追捕部隊(菲巴斯/area 6);**軟體世界攻略保留原文**,events 採「保留原文+括註突擊隊」;信心:中(原文 game 偶拼 Strosstrupen)_
 - **Universal God / Priest of the Universal God — 宇宙之神 / 宇宙之神的祭司**. _納達信仰體系;直譯,待手冊核對;信心:中_
 - **Black Market / black marketeer — 黑市 / 黑市商人**. _波卡城、軍營(area 29)等地;信心:高_
-- **店家 NPC 名(area 9/38 等,純音譯,攻略無記載,信心:低,待審)**:Marik(馬瑞克,拜占儂盔甲匠)、Bart(巴特,拜占儂武器匠)、Boris(鮑里斯,拜占儂煉金術士/治療者)、Exeter(艾克斯特,蘭斯克地下城盔甲商)、Doctor Death(死亡博士,蘭斯克地下城武器商,意譯)
+- **店家 NPC 名(area 9/38 等,純音譯,攻略無記載,已核可 2026-06-16)**:Marik(馬瑞克,拜占儂盔甲匠)、Bart(巴特,拜占儂武器匠)、Boris(鮑里斯,拜占儂煉金術士/治療者)、Exeter(艾克斯特,蘭斯克地下城盔甲商)、Doctor Death(死亡博士,蘭斯克地下城武器商,意譯)
 
 ## UI / 系統訊息
 
@@ -134,5 +136,9 @@
 - 多數地名/人名(Oceana/Tars/Nisir/Lansk/Enkidu)手冊 OCR 不清,**暫保留原文**,待人工核對掃描圖再定譯名。
 - 怪物中文名為暫定,需與手冊掃描圖最終核對(見 `docs/26_MONSTERS_AND_SPRITES.md`)。
 - **句子碎片問題**:遊戲以「片段 + 變數」組句(英語語序)。中文翻譯時語序需重排,部分組合句需在 #2 階段調整 opcode 或片段切法,不能逐片直譯。詳見 `docs/15_TRANSLATION_DRAFT.md`。
-- **以下固有名詞已由軟體世界攻略(docs/38/39)回填(信心:中),但攻略=約定俗成而非官方臺灣手冊,待使用者最終裁決**:美斯達(Mystalvision)、杜拉克國王(King Drake)、喬丹王子(Prince Jordan)、烏娜皮什提姆(Utnapishtim,攻略譯名不一)、查頓(Zaton)、亞蘇水(Apsu Waters)、奎格(Quag)、王島(King's Isle)、絕望島(Isle of Forlorn)、冒險酒店(Icarian Triumph Tavern)、鐵頭巴克(Buck Ironhead)、莫格(Mog)、醜約翰(Ugly)。
-- **以下純音/意譯、攻略無記載,信心:低,優先待審**:蜜瑞拉/蜜蘿拉(Myrilla/Myrolla,雙胞胎公主同音需區分)、店家 NPC 馬瑞克/巴特/鮑里斯/艾克斯特/死亡博士(Marik/Bart/Boris/Exeter/Doctor Death)、Stosstrupen(突擊隊,是否音譯待定)、日光殿(Solarium)。
+## Resolved(已裁決)
+
+> 2026-06-16:以下 21 項固有名詞經使用者(語言權威)核可為**正式譯名**,自此視同 canonical,各詞條原「信心:中/低,待審」標記即解除。後續若官方臺灣手冊掃描圖出現更權威譯名,再以手冊為準回填。
+
+- **原中信心 13 項(軟體世界攻略回填,已核可)**:美斯達(Mystalvision)、杜拉克國王(King Drake)、喬丹王子(Prince Jordan)、烏娜皮什提姆(Utnapishtim)、查頓(Zaton)、亞蘇水(Apsu Waters)、奎格(Quag)、王島(King's Isle)、絕望島(Isle of Forlorn)、冒險酒店(Icarian Triumph Tavern)、鐵頭巴克(Buck Ironhead)、莫格(Mog)、醜約翰(Ugly)。
+- **原低信心 8 項(純音/意譯,已核可)**:蜜瑞拉/蜜蘿拉(Myrilla/Myrolla,雙胞胎公主同音刻意區分)、店家 NPC 馬瑞克/巴特/鮑里斯/艾克斯特/死亡博士(Marik/Bart/Boris/Exeter/Doctor Death)、Stosstrupen(保留原文+括註突擊隊)、日光殿(Solarium)。
