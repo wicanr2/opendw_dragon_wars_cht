@@ -56,6 +56,21 @@ docker run --rm -v "$PWD":/app -w /app dwr bash -c \
 # 預期印出: Interplay / Do you wish to.. / Begin a new game / Continue an old game ...
 ```
 
+## 打包(可攜發佈包)
+
+```bash
+bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x86_64.tar.gz
+```
+
+腳本流程:cmake build → `cpack -G TGZ` 產包 → 解開 → 啟動器 headless `--frames 0` 執行
+驗證(全綠才產出)。安裝佈局:`bin/opendw-remake`(binary)+ `bin/opendw-remake.sh`
+(啟動器,自動 `cd` 至資產目錄)+ `share/opendw-remake/assets/`(自包含 bundle/fonts/i18n)。
+**不含原始 `DRAGON.COM`/`DATA1`/`DATA2`**;字型不打包,執行期搜尋系統 CJK 字型(可用
+`DWR_FONT` 指定)。亦可 `cmake --install build --prefix <dir>` 直接安裝。
+
+跨平台 CI(`.github/workflows/ci.yml`):Linux(已實機驗證 build+ctest+package)、
+Windows(vcpkg/MSVC)、macOS(Homebrew)——後兩者 CI 設定已備,未在本機環境實機驗證。
+
 ## 授權
 
 重寫程式碼(本目錄)為原創,採 BSD。執行所需資產衍生自 Interplay Dragon Wars (1989),屬保存/中文化範疇。

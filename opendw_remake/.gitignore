@@ -2,6 +2,9 @@
 build/
 build_*/
 *.ppm
+# 發佈包產物(打包腳本輸出,勿入庫)
+dist/
+*.tar.gz
 # 例外:golden 對拍 fixture 是刻意入庫的測試資料(否則 CI fresh checkout 缺檔 → verify_encounter_golden 失敗)
 !assets/bundle/sprites/golden/*.ppm
 !assets/bundle/viewport/golden/*.ppm

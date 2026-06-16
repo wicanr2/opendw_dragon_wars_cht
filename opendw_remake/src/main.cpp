@@ -1406,6 +1406,38 @@ int main(int argc, char** argv) {
       }
   }
 
+  // 文字層 CJK 字型解析(可攜性):若 --font-ttf / 預設路徑不存在(非本機 wqy 安裝路徑),
+  //   依序退而搜常見 CJK 字型路徑,讓發佈包在未裝特定字型的環境也能找到中/日字型。
+  //   不打包字型(授權考量),改執行期探測;DWR_FONT 環境變數可強制指定。
+  {
+    auto readable = [](const std::string& p) {
+      if (p.empty()) return false;
+      std::FILE* f = std::fopen(p.c_str(), "rb");
+      if (f) { std::fclose(f); return true; }
+      return false;
+    };
+    if (const char* env = std::getenv("DWR_FONT"); env && *env) font_ttf = env;
+    if (!readable(font_ttf)) {
+      static const char* kFontCandidates[] = {
+        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",         // Debian/Ubuntu fonts-wqy-zenhei
+        "/usr/share/fonts/wenquanyi/wqy-zenhei/wqy-zenhei.ttc", // Fedora/Arch
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/google-noto-cjk/NotoSansCJK-Regular.ttc",
+        "/System/Library/Fonts/PingFang.ttc",                  // macOS
+        "/System/Library/Fonts/STHeiti Light.ttc",
+        "C:/Windows/Fonts/msjh.ttc",                           // Windows 微軟正黑
+        "C:/Windows/Fonts/msyh.ttc",                           // Windows 微軟雅黑
+      };
+      for (const char* c : kFontCandidates) {
+        if (readable(c)) { font_ttf = c; break; }
+      }
+      std::fprintf(stderr, "font-ttf: 回退搜尋 → %s%s\n", font_ttf.c_str(),
+                   readable(font_ttf) ? "" : "(仍未找到;文字層將停用,可設 DWR_FONT 指定)");
+    }
+  }
+
   // ── 雙層渲染:像素層(framebuffer)由各 draw_* 建;文字層(CJK/ASCII)丟給 SdlVideo::text()。
   //    headless 條件:有 --dump 且未設 DISPLAY → 用 dummy driver 合成高解析畫面。──
   const bool headless = !dump.empty() && std::getenv("DISPLAY") == nullptr;

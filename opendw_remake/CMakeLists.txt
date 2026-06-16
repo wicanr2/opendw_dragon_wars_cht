@@ -123,6 +123,49 @@ if(SDL2_FOUND)
   else()
     message(FATAL_ERROR "SDL2_ttf not found (required for text layer). Install libsdl2-ttf-dev.")
   endif()
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 安裝 / 打包規則(可攜發佈包:引擎 binary + 自包含 assets;不含原始遊戲檔)
+  #
+  #   佈局(GNUInstallDirs):
+  #     <prefix>/bin/opendw-remake          實體 binary(install RENAME)
+  #     <prefix>/bin/opendw-remake.sh        啟動器 wrapper(cd 至 assets 後 exec binary)
+  #     <prefix>/share/opendw-remake/assets/ 自包含資產(bundle / fonts / i18n)
+  #     <prefix>/share/doc/opendw-remake/    README
+  #
+  #   玩家自備合法原版遊戲;本專案資產已自包含,執行期不需原始 DRAGON.COM/DATA1/DATA2。
+  #   字型不打包(授權):binary 內建 CJK 字型回退搜尋,或以 DWR_FONT 環境變數指定。
+  # ──────────────────────────────────────────────────────────────────────────
+  include(GNUInstallDirs)
+
+  # 啟動器 wrapper:由模板產生(填入安裝佈局假設)。
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/packaging/opendw-remake.sh.in
+    ${CMAKE_CURRENT_BINARY_DIR}/opendw-remake.sh
+    @ONLY)
+
+  # 實體 binary 以連字號命名安裝(對齊啟動器 wrapper 預期的 bin/opendw-remake)。
+  install(PROGRAMS $<TARGET_FILE:opendw_remake>
+          DESTINATION ${CMAKE_INSTALL_BINDIR}
+          RENAME opendw-remake)
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/opendw-remake.sh
+          DESTINATION ${CMAKE_INSTALL_BINDIR})
+  # 自包含資產(不含原始遊戲檔;assets/ 內無 DRAGON.COM/DATA1/DATA2,見 .gitignore)。
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/assets
+          DESTINATION ${CMAKE_INSTALL_DATADIR}/opendw-remake)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md
+          DESTINATION ${CMAKE_INSTALL_DOCDIR})
+
+  # CPack:預設產 .tar.gz 可攜包(make package / cpack -G TGZ)。
+  set(CPACK_PACKAGE_NAME "opendw-remake")
+  set(CPACK_PACKAGE_VENDOR "opendw_dragon_wars_cht")
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "火龍之戰 (Dragon Wars, 1989) C++20/SDL2 繁中重製")
+  set(CPACK_PACKAGE_VERSION "0.1.0")
+  set(CPACK_GENERATOR "TGZ")
+  set(CPACK_SOURCE_GENERATOR "TGZ")
+  set(CPACK_PACKAGE_FILE_NAME
+      "opendw-remake-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+  include(CPack)
 else()
   message(STATUS "SDL2 not found: skip opendw_remake app (only build/test libs)")
 endif()
