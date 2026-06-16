@@ -38,6 +38,7 @@
 #include "render/minimap.hpp"
 #include "render/ui_pieces.hpp"
 #include "render/sdl_video.hpp"
+#include "audio/sound.hpp"
 #include "resource/level.hpp"
 #include "resource/paragraphs.hpp"
 #include "i18n/strings.hpp"
@@ -416,6 +417,9 @@ int main(int argc, char** argv) {
   bool fight_namtar = false;    // --fight-namtar:用(預設/讀檔)隊伍 vs Namtar Boss 戰鬥(combat_loop)
   bool show_ending = false;     // --ending:headless 直接進結局序列(demo / 截圖,不打 Namtar)
   bool namtar_blessed = true;   // --no-bless:關閉「自由之劍受祝福」加成(預設套用,讓可勝)
+  // ── 音效(PC speaker 風格方波;預設可關)──
+  //   --mute 或環境變數 DWR_MUTE=1 → 靜音模式(CI/headless 不依賴音效裝置)。
+  bool mute = (std::getenv("DWR_MUTE") != nullptr);
   // ── 建角流程(新遊戲 / 建立人物;手冊選單 B)──
   bool newgame = false;         // --newgame:啟動直接進建角畫面(S_CREATE)
   std::string newgame_demo;     // --newgame-demo SPEC:headless 腳本化建角 + 出圖/驗證(見下方解析)
@@ -473,8 +477,15 @@ int main(int argc, char** argv) {
     else if (eq("--fight-namtar")) fight_namtar = true;   // 終戰 Namtar(隊伍 vs Boss)
     else if (eq("--ending")) show_ending = true;          // 直接進結局序列(demo)
     else if (eq("--no-bless")) namtar_blessed = false;    // 關閉自由之劍祝福加成
+    else if (eq("--mute")) mute = true;                   // 靜音(關音效;CI/headless 安全)
   }
   if (scale < 1) scale = 1;
+
+  // 音效子系統:RAII 開啟(靜音模式不碰實體裝置)。play() 在任何情況皆安全 no-op,
+  //   絕不導致初始化失敗或卡住(headless / CI 不依賴音效裝置)。
+  //   真值層級見 src/audio/sound.hpp 檔頭(func_5060 索引/dx/bx = oracle 真值)。
+  audio::Sound g_sound;
+  g_sound.open(mute);
 
   auto font = render::Font8x8::load_table(font_raw);
   if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }
@@ -764,6 +775,12 @@ int main(int argc, char** argv) {
       if (!out.empty()) out += ' ';
       out += t;
     });
+    // op_90(op_sound_effect)dispatch:func_5060 索引 → audio::SoundId → 播放。
+    //   VM 不直接相依 audio;由此 sink 轉接(對照 opendw dispatch_sound_effect)。
+    ip.set_sound_sink([&](int idx) {
+      audio::SoundId id;
+      if (audio::dispatch_index_to_sound(idx, id)) g_sound.play(id);
+    });
     ip.run();
     game_state = st.game_state;   // 回寫:事件對遊戲狀態的修改持久保留
     return out;
@@ -950,6 +967,7 @@ int main(int argc, char** argv) {
         if (terrain.has(current_area, fx, fy, game::TF_DoorOpen)) return DA::AlreadyOpen;
         terrain.set(current_area, fx, fy, game::TF_DoorOpen);
         std::fprintf(stderr, "door open @(%d,%d) [sound:door_open]\n", fx, fy);
+        g_sound.play(audio::SoundId::DoorOpen);   // func_5060[2] play_sound_door_open
         return DA::Opened;
       case game::TT_DoorLocked: {
         if (terrain.has(current_area, fx, fy, game::TF_DoorOpen)) return DA::AlreadyOpen;
@@ -975,12 +993,14 @@ int main(int argc, char** argv) {
         terrain.set(current_area, fx, fy, game::TF_DoorOpen);
         std::fprintf(stderr, "door unlocked @(%d,%d) lockpick=%d [sound:door_open]\n",
                      fx, fy, party_best_lockpick());
+        g_sound.play(audio::SoundId::DoorOpen);   // func_5060[2] play_sound_door_open
         return DA::Unlocked;
       }
       case game::TT_SecretDoor:
         if (terrain.has(current_area, fx, fy, game::TF_SecretBroken)) return DA::AlreadyOpen;
         terrain.set(current_area, fx, fy, game::TF_SecretBroken);
         std::fprintf(stderr, "secret door smashed @(%d,%d) [sound:door_open]\n", fx, fy);
+        g_sound.play(audio::SoundId::DoorOpen);   // func_5060[2] play_sound_door_open
         return DA::SecretBroken;
       case game::TT_Stone:
         // 石牆障礙:K 無法破(需 Soften Stone 法術);提示。
@@ -1025,6 +1045,7 @@ int main(int argc, char** argv) {
     if (!sp) return "Nothing happens.";
     auto& c0 = party.at(0);
     if ((int)c0.power < sp->power_cost) return "Not enough power.";
+    g_sound.play(audio::SoundId::Cast);   // 施法音效(remake 設計;見 sound.hpp)
     // 扣 Power(variable_power 扣最低投入;對齊 cast_spell)。
     int pw = (int)c0.power - sp->power_cost;
     c0.power = (std::uint16_t)pw;
@@ -2244,6 +2265,7 @@ int main(int argc, char** argv) {
         continue;
       }
       if (e.hit) {
+        g_sound.play(audio::SoundId::Hit);   // 命中音效(remake 設計;見 sound.hpp)
         // 模板鍵「combat.hit.fmt」帶 3 槽:%1$=攻擊者 %2$=目標 %3$=傷害值。
         //   zh-TW:「%s 攻擊 %s,命中 %d 點傷害」;en passthrough:「%s attacks %s for %d damage」。
         std::snprintf(buf, sizeof buf, tr.tr("%s attacks %s for %d damage").c_str(),
@@ -2341,6 +2363,7 @@ int main(int argc, char** argv) {
                                                /*caster_is_player=*/true,
                                                enc.hero_int, enc.hero_ranks, /*power_points=*/1);
     if (!cr.ok) { enc.log.emplace_back(tr.tr("Not enough power")); return; }
+    g_sound.play(audio::SoundId::Cast);   // 施法音效(remake 設計;見 sound.hpp)
     enc.hero_power -= cr.power_spent;  // 扣法力(寫回 encounter 狀態)
     // 施法戰報(英文鍵化;tr 在地化)。
     char buf[192];
@@ -3232,6 +3255,7 @@ int main(int argc, char** argv) {
           int nx = px + dx4[dir], ny = py + dy4[dir];
           // wrap 關卡(flag&2):走出邊緣 → modular 環繞到對邊(opendw exit(1) 未實作,
           // 以標準環繞慣例補上)。非 wrap 關卡 walkable_wrap 退回一般 walkable。
+          bool moved = false;
           if (level && level->walkable_wrap(nx, ny)) {
             if (level->wraps()) { nx = level->wrap_x(nx); ny = level->wrap_y(ny); }
             // 探索互動門/密門/石牆閘(remake 設計;見 docs/57):關門/鎖門未開、
@@ -3239,10 +3263,13 @@ int main(int argc, char** argv) {
             std::uint8_t nt = level->tile(nx, ny);
             if (game::terrain_walkable(terrain, current_area, nx, ny, nt)) {
               px = nx; py = ny;
+              moved = true;
               mark_seen_here();   // 對齊 refresh_viewport:踏上新格即標記 seen
               trigger_trap_here();  // 踩到陷阱格 → 結算傷害(未解除/未觸發時)
             }
           }
+          // 撞牆:前進被擋(牆/門/石牆閘)→ 撞牆音效(func_5060[3] play_sound_wall_bump)。
+          if (!moved) g_sound.play(audio::SoundId::WallBump);
         }
         // K:打開關閉的門 / 粉碎牆中密門(手冊 p176/184;遊戲層動作,opendw 未反編 → remake 設計)。
         if (in.key == 'K' && party.size() > 0) {

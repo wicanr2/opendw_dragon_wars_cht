@@ -92,12 +92,30 @@ if(SDL2_FOUND)
       set(DWR_HAVE_TTF TRUE)
     endif()
   endif()
+  # --- audio 模組(R7:PC speaker 風格方波音效;需 SDL2 audio)---
+  #   對外窄介面 play(SoundId);內部隱藏 SDL2 audio device + 方波合成。
+  #   真值層級:func_5060 索引→語意 + dx/bx = opendw 真值;Hz/ms 換算 = remake 設計
+  #   (見 src/audio/sound.hpp 檔頭)。
+  add_library(dwr_audio STATIC src/audio/sound.cpp)
+  target_include_directories(dwr_audio PUBLIC src)
+  target_link_libraries(dwr_audio PUBLIC SDL2::SDL2)
+
   add_executable(opendw_remake
     src/main.cpp
     src/render/sdl_video.cpp
     src/render/text_layer.cpp
     src/game/party_panel.cpp)
-  target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n dwr_game dwr_save SDL2::SDL2)
+  target_link_libraries(opendw_remake PRIVATE dwr_vm dwr_render dwr_i18n dwr_game dwr_save dwr_audio SDL2::SDL2)
+
+  # tools/verify:音效子系統確定性 PASS/FAIL(headless,SDL_AUDIODRIVER=dummy)。
+  #   驗:init OK(實體/dummy/靜音皆成功)+ op_90 func_5060 索引→SoundId 對映 +
+  #   grounded dx/bx 真值(door/wall/effect_88)+ VM sound sink 派發路徑 + 乾淨退出。
+  add_executable(verify_audio tools/verify/verify_audio.cpp)
+  target_link_libraries(verify_audio PRIVATE dwr_audio dwr_vm)
+  add_test(NAME verify_audio COMMAND verify_audio)
+  set_tests_properties(verify_audio PROPERTIES
+    ENVIRONMENT "SDL_AUDIODRIVER=dummy;SDL_VIDEODRIVER=dummy")
+
   if(DWR_HAVE_TTF)
     target_include_directories(opendw_remake PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
     target_link_libraries(opendw_remake PRIVATE ${SDL2_TTF_LIBRARIES})
