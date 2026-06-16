@@ -16,3 +16,33 @@ Ice Chill	アイスチル
 Fire Storm	ファイアストーム
 Kill Ray	キルレイ
 Death Curse	死の呪い
+# ── 一般的・記述的な呪文名のみ追加(汎用語; 固有名/人名由来の呪文は
+#    X68000 実機原文が未抽出のため英語フォールバックで保留)。
+Big Chill	大氷結
+Whirl Wind	竜巻
+Fire Blast	炎の爆発
+Fire Light	炎の光
+Inferno	業火
+Column of Fire	炎の柱
+Light Flash	閃光
+Sun Light	太陽の光
+Heal	回復
+Major Heal	大回復
+Group Heal	全体回復
+Cure All	完全治癒
+Create Wall	石壁生成
+Soften Stone	岩石軟化
+Sense Traps	罠感知
+Disarm Trap	罠解除
+Disarm	武装解除
+Scare	恐怖
+Brambles	茨
+Insect Plague	虫害
+Air Summon	風の精召喚
+Earth Summon	地の精召喚
+Water Summon	水の精召喚
+Fire Summon	火の精召喚
+Beast Call	獣寄せ
+Wood Spirit	木の精
+Exorcism	除霊
+Sun Stroke	日射
