@@ -128,6 +128,8 @@ public:
 
   std::size_t size() const { return members_.size(); }
   const CharacterRecord& at(std::size_t i) const { return members_.at(i); }
+  // 可變存取(供成長 / 戰後結算改角色;progression 模組用)。越界丟例外。
+  CharacterRecord& at(std::size_t i) { return members_.at(i); }
 
   // 戰鬥勝利後給每名隊員加 XP(DOS 實機:清怪每員 +80,見 combat_loop.hpp)。
   // 同步更新 CharacterRecord.xp 與 raw[80](1 byte,飽和到 255 → 存檔 round-trip 一致)。

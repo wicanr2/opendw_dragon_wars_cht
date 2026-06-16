@@ -49,7 +49,7 @@ target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
 # --- game 模組(隊伍角色資料 + 右側狀態面板渲染 + 戰鬥結算)---
-add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/combat_loop.cpp src/game/spells.cpp src/game/seen_map.cpp src/game/chargen.cpp)
+add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/combat_loop.cpp src/game/spells.cpp src/game/seen_map.cpp src/game/chargen.cpp src/game/progression.cpp)
 target_include_directories(dwr_game PUBLIC src)
 target_link_libraries(dwr_game PUBLIC dwr_render)
 
@@ -202,6 +202,14 @@ target_link_libraries(probe_namtar_balance PRIVATE dwr_game)
 add_executable(verify_chargen tools/verify/verify_chargen.cpp)
 target_link_libraries(verify_chargen PRIVATE dwr_game)
 add_test(NAME verify_chargen COMMAND verify_chargen)
+
+# tools/verify:RPG 成長迴圈確定性 PASS/FAIL(升級 XP→Level+2AP+HP/STUN/STR、
+#   X 配點 AP 守恆 + effective_av 隨 DEX、使用物品 U 效果+消耗、裝備穿脫 AV/AC 隨變、
+#   技能檢定等級→成功率、包紮回 HP、512B raw round-trip)。
+#   grounded:升級+2AP=SDA(docs/44 L103)、STR/HP 隨等級=手冊;XP 曲線/技能難度=remake(誠實標)。
+add_executable(verify_progression tools/verify/verify_progression.cpp)
+target_link_libraries(verify_progression PRIVATE dwr_game)
+add_test(NAME verify_progression COMMAND verify_progression)
 
 # tools/verify:法術系統確定性 PASS/FAIL(法術表筆數/效果值對拍手冊 + 施法扣 Power +
 #   傷害/治療在手冊範圍 + 確定性)。grounded in docs/33 手冊;非 oracle(見 spells.hpp 檔頭)。

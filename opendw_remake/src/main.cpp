@@ -47,6 +47,7 @@
 #include "game/combat_loop.hpp"
 #include "game/spells.hpp"
 #include "game/seen_map.hpp"
+#include "game/progression.hpp"
 using namespace dw;
 
 static std::vector<std::string> lines_of(const std::string& s) {
@@ -187,6 +188,13 @@ struct CharSheet {
   int idx = 0;           // 當前檢視的角色(0-based)
   int count = 0;         // 隊伍人數(夾住 idx)
   bool show_inventory = false;  // false=屬性表;true=物品欄(背包)。E 鍵切換。
+  // ── 成長操作子模式(手冊 X=屬性分配畫面 / U=使用物品 / 裝備穿脫)──
+  bool alloc_mode = false;  // 屬性表中按 X → 進 AP 配點模式(↑↓ 選項目、+ 加點)。
+  int alloc_cursor = 0;     // 配點游標:0-3=STR/DEX/INT/SPI、4-6=包紮/開鎖/徒手技能。
+  int inv_cursor = 0;       // 物品欄游標(U 使用 / Enter 裝備穿脫的目標格,0-based「已顯示」序)。
+  std::string flash;        // 暫時提示行(配點/用物品/裝備結果)。
+
+  static constexpr int kAllocCount = 7;  // 配點可選項目數(4 屬性 + 3 高價值技能)
 
   void open(int n, int start = 0) {
     count = n < 1 ? 0 : n;
@@ -194,17 +202,44 @@ struct CharSheet {
     if (count > 0) { if (idx < 0) idx = 0; if (idx >= count) idx = count - 1; }
     active = count > 0;
     show_inventory = false;
+    alloc_mode = false; alloc_cursor = 0; inv_cursor = 0; flash.clear();
   }
-  void toggle_view() { show_inventory = !show_inventory; }  // 屬性表 ⇄ 物品欄
-  void close() { active = false; show_inventory = false; }
-  void prev() { if (count > 0) idx = (idx - 1 + count) % count; }
-  void next() { if (count > 0) idx = (idx + 1) % count; }
+  void toggle_view() {            // 屬性表 ⇄ 物品欄(離開配點模式)
+    show_inventory = !show_inventory;
+    alloc_mode = false; inv_cursor = 0; flash.clear();
+  }
+  void close() { active = false; show_inventory = false; alloc_mode = false; flash.clear(); }
+  void prev() {
+    if (count > 0) idx = (idx - 1 + count) % count;
+    inv_cursor = 0; alloc_cursor = 0; flash.clear();
+  }
+  void next() {
+    if (count > 0) idx = (idx + 1) % count;
+    inv_cursor = 0; alloc_cursor = 0; flash.clear();
+  }
   // 數字鍵 1-count 直選;越界忽略。回傳是否命中。
   bool select(int n) {
-    if (n >= 1 && n <= count) { idx = n - 1; return true; }
+    if (n >= 1 && n <= count) { idx = n - 1; inv_cursor = 0; alloc_cursor = 0; flash.clear(); return true; }
     return false;
   }
 };
+
+// 配點項目 → progression 操作的對映(0-3 屬性、4-6 技能 index)。
+// 回傳 {is_attr, target, label_en}:is_attr=true 時 target 為 AttrTarget,否則 skills index。
+struct AllocTarget { bool is_attr; int target; const char* label_en; };
+static AllocTarget alloc_target_at(int cursor) {
+  using namespace dw::game::progression;
+  switch (cursor) {
+    case 0: return {true,  kAttrStr, "Strength"};
+    case 1: return {true,  kAttrDex, "Dexterity"};
+    case 2: return {true,  kAttrInt, "Intel"};
+    case 3: return {true,  kAttrSpi, "Spirit"};
+    case 4: return {false, kBandage,        "skill_bandage"};
+    case 5: return {false, kLockpick,       "skill_lockpick"};
+    case 6: return {false, 0x2B - 0x24,     "skill_fist"};   // 徒手 0x2B
+    default: return {true, kAttrStr, "Strength"};
+  }
+}
 
 // CharGenUi — 新遊戲建角流程(手冊選單 B → 建立人物)子狀態(S_CREATE)。
 //
@@ -274,6 +309,8 @@ int main(int argc, char** argv) {
   int para_scroll = 0;            // --para-scroll N:dump 前先「逐頁」下捲 N 次(headless 驗證跨頁無遺漏)
   int char_sheet = -1;            // --char-sheet N:直接開第 N 名(1-based)角色屬性表(headless 驗證)
   bool show_inventory = false;    // --inventory:配合 --char-sheet 直接開物品欄(背包)子畫面
+  bool alloc_open = false;        // --alloc:配合 --char-sheet 直接進 X 配點模式(headless 出圖)
+  bool demo_grow = false;         // --demo-grow:給角色 0 注入 AP + 範例可用/可裝備物品(成長 UI 出圖)
   int automap_area = -1;          // --automap N:headless 直接開第 N 區俯視平面地圖(`?` 鍵功能)
   int mm_seed = 0;                // --mm-seed:0=全圖探索 1=只玩家格 2=不 seed(測試/展示)
   bool mm_seed_set = false;       // 是否顯式給 --mm-seed;否則遊戲內用真實 fog of war
@@ -326,6 +363,8 @@ int main(int argc, char** argv) {
     else if (eq("--para-scroll") && i + 1 < argc) para_scroll = std::atoi(argv[++i]); // dump 前逐頁下捲 N 次
     else if (eq("--char-sheet") && i + 1 < argc) char_sheet = std::atoi(argv[++i]); // 直接開第 N 名角色屬性表
     else if (eq("--inventory")) show_inventory = true;                               // 配合 --char-sheet 開物品欄
+    else if (eq("--alloc")) alloc_open = true;                                       // 配合 --char-sheet 進 X 配點模式
+    else if (eq("--demo-grow")) demo_grow = true;                                    // 注入 AP + 範例物品(成長 UI 出圖)
     else if (eq("--load") && i + 1 < argc) load_path = argv[++i];        // 啟動讀檔還原
     else if (eq("--save-path") && i + 1 < argc) save_path = argv[++i];   // 覆寫存/讀檔路徑
     else if (eq("--selftest-save")) selftest_save = true;               // round-trip 自測
@@ -450,6 +489,33 @@ int main(int argc, char** argv) {
       }
       std::fclose(f);
     }
+  }
+  // --demo-grow:給角色 0 注入成長點數 + 範例「可使用 / 可裝備」物品(成長 UI 出圖用)。
+  //   AP=4(模擬升 2 級後可花);slot0=回法力藥水(Use 回 Power);slot1=劍(可裝備,AV+2)。
+  //   bit 佈局對齊 equipment.cpp parse_item(byte0 equipped/charges、byte5 type、byte6/7 magic、byte3 av/ac)。
+  if (demo_grow && party.size() > 0) {
+    auto recs = party.raw_records();
+    recs[0][59] = 4;  // AP=4
+    auto put = [&](int slot, std::uint8_t b0, std::uint8_t type, std::uint8_t mhi,
+                   std::uint8_t mlo, std::uint8_t avac, const char* name) {
+      int base = 236 + slot * 23;
+      for (int b = 0; b < 23; ++b) recs[0][base + b] = 0;
+      recs[0][base + 0] = b0;            // bit0 equipped + bit3-7 charges
+      recs[0][base + 3] = avac;          // bit24-27 av_mod + bit28-31 ac_mod
+      recs[0][base + 5] = type;          // type 低 5 bit
+      recs[0][base + 6] = mhi;           // magic hi
+      recs[0][base + 7] = mlo;           // magic lo
+      int n = 0; while (name[n]) ++n;
+      for (int i = 0; i < n && i < 12; ++i) {
+        std::uint8_t bb = (std::uint8_t)(name[i] & 0x7F);
+        if (i + 1 < n && i + 1 < 12) bb |= 0x80;
+        recs[0][base + 11 + i] = bb;
+      }
+    };
+    put(0, 0x08 /*charges=1*/, 0x00, 0x84, 30, 0x00, "Power Potion");   // 回法力 30
+    put(1, 0x00 /*未裝備*/,    0x05, 0x00, 0x00, 0x02, "Iron Sword");   // 劍,AV+2
+    party = game::Party::from_raw_records(recs);
+    std::fprintf(stderr, "demo-grow: char 0 AP=4 + Power Potion + Iron Sword\n");
   }
   // 怪物表(res31 萃取,oracle 對拍 25 筆);遭遇畫面用。
   std::vector<game::MonsterRecord> monsters = game::MonsterTable::load(bundle);
@@ -1326,24 +1392,56 @@ int main(int argc, char** argv) {
       y += CS_LINE_H;
     };
 
-    row("Strength",  c.strength,  c.max_strength);
-    row("Dexterity", c.dexterity, c.max_dexterity);
-    row("Intel",     c.intel,     c.max_intel);
-    row("Spirit",    c.spirit,    c.max_spirit);
+    // 配點模式時:四屬性已列在下方配點清單 → 上方不重複(讓出空間,清單完整顯示)。
+    if (!sheet.alloc_mode) {
+      row("Strength",  c.strength,  c.max_strength);
+      row("Dexterity", c.dexterity, c.max_dexterity);
+      row("Intel",     c.intel,     c.max_intel);
+      row("Spirit",    c.spirit,    c.max_spirit);
+    }
     row("Health",    c.health,    c.max_health);
     row("Stun",      c.stun,      c.max_stun);
     row("Power",     c.power,     c.max_power);
     row1("Level",    std::to_string(c.level));
-    row1("Gold",     std::to_string(c.gold));
-    row1("Status",   tr.tr(game::Party::status_key(c.status)),
-         c.status ? 12 : 11);                            // 異常亮紅,正常亮綠
-    // 性別(原版 record 0x4E:0 男 / 1 女)。
-    row1("Gender", tr.tr(c.gender ? "Female" : "Male"), 7);
+    // 成長點數 AP(可花於 X 配點;>0 時亮黃提示玩家可分配)。
+    int ap = game::available_ap(c);
+    row1("Advancement points", std::to_string(ap), ap > 0 ? 14 : 7);
+    // 配點模式時隱藏金幣/狀態列(讓出空間給配點清單;不重疊出框)。
+    if (!sheet.alloc_mode) {
+      row1("Gold",     std::to_string(c.gold));
+      row1("Status",   tr.tr(game::Party::status_key(c.status)),
+           c.status ? 12 : 11);                          // 異常亮紅,正常亮綠
+      // 性別(原版 record 0x4E:0 男 / 1 女)。
+      row1("Gender", tr.tr(c.gender ? "Female" : "Male"), 7);
+    }
+
+    // ── X 配點模式:列出可加項目(屬性/技能),游標 > 高亮,+ 加 1 點 ──
+    if (sheet.alloc_mode) {
+      y += 4;
+      tl.add(tx, y, tr.tr("Spend AP (X):") , 14, PX_BODY); y += CS_LINE_H;
+      for (int i = 0; i < CharSheet::kAllocCount; ++i) {
+        AllocTarget at = alloc_target_at(i);
+        int val = at.is_attr
+            ? (at.target == 0 ? c.strength : at.target == 1 ? c.dexterity
+               : at.target == 2 ? c.intel : c.spirit)
+            : (int)c.skills[at.target];
+        bool cur = (i == sheet.alloc_cursor);
+        char line[80];
+        std::snprintf(line, sizeof line, "%s%s: %d", cur ? "> " : "  ",
+                      tr.tr(at.label_en).c_str(), val);
+        tl.add(tx + 4, y, line, cur ? 15 : 7, PX_BODY);
+        y += CS_LINE_H;
+      }
+    }
+    if (!sheet.flash.empty()) {
+      tl.add(tx, y, sheet.flash, 11, PX_BODY); y += CS_LINE_H;
+    }
 
     // 底部操作提示。
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
-    tl.add(CS_VAL_X, iy, "1-4  E:Items  Esc", 8, PX_UI);
+    tl.add(CS_VAL_X, iy, sheet.alloc_mode ? "Up/Dn  +:add  X:done"
+                                          : "1-4  E:Items  X:AP  Esc", 8, PX_UI);
   };
 
   // 畫物品欄(背包):底框 + 標題 + 13 格物品列(名稱 + 類型 + AV/AC 修正 + 已裝備標記)。
@@ -1362,15 +1460,16 @@ int main(int argc, char** argv) {
     y += CS_LINE_H + 2;
 
     auto inv = c.inventory();
-    int shown = 0;
+    int shown = 0;                 // 已顯示(present)物品數 → 游標範圍
     for (int s = 0; s < (int)inv.size(); ++s) {
       const auto& it = inv[s];
       if (!it.present) continue;
+      bool cur = (shown == sheet.inv_cursor);   // 游標所在格(以「已顯示序」計)
       ++shown;
-      // 名稱(白;已裝備亮綠)。
+      // 名稱(白;已裝備亮綠;游標列前加 >)。
       std::uint8_t ncol = it.equipped ? 10 : 15;
-      std::string nm = it.name.empty() ? tr.tr("(empty)") : it.name;
-      tl.add(tx, y, nm, ncol, PX_BODY);
+      std::string nm = (cur ? "> " : "  ") + (it.name.empty() ? tr.tr("(empty)") : it.name);
+      tl.add(tx, y, nm, cur ? 15 : ncol, PX_BODY);
       // 類型(灰)+ AV/AC 修正 + 已裝備標記。
       char meta[96];
       char mods[48] = "";
@@ -1386,10 +1485,16 @@ int main(int argc, char** argv) {
     }
     if (shown == 0)
       tl.add(tx, y, tr.tr("no items"), 8, PX_BODY);
+    // 有效 AV/AC(隨裝備變)+ flash 提示。
+    y += 2;
+    char eff[80];
+    std::snprintf(eff, sizeof eff, "AV %d  AC %d", c.effective_av(), c.effective_ac());
+    tl.add(tx, y, eff, 11, PX_BODY); y += CS_LINE_H;
+    if (!sheet.flash.empty()) tl.add(tx, y, sheet.flash, 14, PX_BODY);
 
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
-    tl.add(CS_VAL_X, iy, "1-4  E:Stats  Esc", 8, PX_UI);
+    tl.add(CS_VAL_X, iy, "Up/Dn U:use Ent:equip E Esc", 8, PX_UI);
   };
 
   // ── 建角畫面(S_CREATE):全螢幕,像素層底 + 文字層(TTF / i18n)。──
@@ -1653,6 +1758,21 @@ int main(int argc, char** argv) {
     // 畫面只放最後 4 行(對齊版面;結束時讓勝負/XP 末行可見,不被擠出 200px 視窗)。
     while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
   };
+  // 戰後成長:對全隊跑升級檢查(XP 達門檻 → level+1、+2 AP、HP/STUN/STR 提升)。
+  //   每名升級者推一行戰報(i18n「{名} 升到 {等級} 級!」)。grounded:+2AP=SDA、
+  //   STR/HP 隨等級=手冊;XP 曲線=remake(見 progression.hpp)。award_xp 後呼叫。
+  auto level_up_party = [&]() {
+    for (std::size_t i = 0; i < party.size(); ++i) {
+      game::LevelUpResult lr = game::check_level_up(party.at(i));
+      if (lr.leveled()) {
+        char buf[160];
+        std::snprintf(buf, sizeof buf, tr.tr("%s reaches level %d!").c_str(),
+                      party.at(i).name.c_str(), lr.new_level);
+        enc.log.emplace_back(buf);
+      }
+    }
+    while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
+  };
   // 推進一個完整群戰回合 + 轉戰報 + 結算勝負/XP。
   auto group_round = [&]() {
     if (!enc.group_loop || enc.over) return;
@@ -1663,7 +1783,7 @@ int main(int argc, char** argv) {
     if (o == O::Victory) {
       enc.victory = true; enc.over = true;
       enc.log.emplace_back(tr.tr("Each member gets 80 experience points for combat."));
-      if (!enc.xp_awarded) { party.award_xp(game::kXpPerVictory); enc.xp_awarded = true; }
+      if (!enc.xp_awarded) { party.award_xp(game::kXpPerVictory); enc.xp_awarded = true; } level_up_party();
     } else if (o == O::Defeat) {
       enc.defeat = true; enc.over = true;
       enc.log.emplace_back(tr.tr("The party has fallen."));
@@ -1717,7 +1837,7 @@ int main(int argc, char** argv) {
     if (o == O::Victory) {
       enc.victory = true; enc.over = true;
       enc.log.emplace_back(tr.tr("Each member gets 80 experience points for combat."));
-      if (!enc.xp_awarded) { party.award_xp(game::kXpPerVictory); enc.xp_awarded = true; }
+      if (!enc.xp_awarded) { party.award_xp(game::kXpPerVictory); enc.xp_awarded = true; } level_up_party();
     } else {
       group_round();  // 戰鬥續行 → 怪反擊一回合(append_group_events 接續)
     }
@@ -2001,9 +2121,10 @@ int main(int argc, char** argv) {
   if (state == S_GAME && char_sheet >= 1 && party.size() > 0) {
     sheet.open((int)party.size(), char_sheet - 1);
     sheet.show_inventory = show_inventory;   // --inventory:直接開物品欄
-    std::fprintf(stderr, "char sheet: showing character %d/%zu (\"%s\")%s\n",
+    if (alloc_open && !show_inventory) sheet.alloc_mode = true;  // --alloc:直接進 X 配點模式
+    std::fprintf(stderr, "char sheet: showing character %d/%zu (\"%s\")%s%s\n",
                  sheet.idx + 1, party.size(), party.at((std::size_t)sheet.idx).name.c_str(),
-                 show_inventory ? " [inventory]" : "");
+                 show_inventory ? " [inventory]" : "", sheet.alloc_mode ? " [alloc]" : "");
   }
   // --encounter N:進遭遇畫面(headless 可 --dump 驗證圖層;互動下 F 戰鬥 / R 逃跑)。
   if (encounter_mode) {
@@ -2147,11 +2268,58 @@ int main(int argc, char** argv) {
     // 角色屬性表啟用時:接管輸入(切角色/關閉),暫停移動。
     //   ↑↓ 或數字 1-4 切角色;Esc 關閉。F4(語系)已於上方處理。
     if (sheet.active) {
+      game::CharacterRecord& cs = party.at((std::size_t)sheet.idx);
+      // ── 屬性表 X 配點模式:↑↓ 選項目、+ 加 1 點、X/Esc 離開 ──
+      if (!sheet.show_inventory && sheet.alloc_mode) {
+        if (in.back || in.key == 'X') { sheet.alloc_mode = false; sheet.flash.clear(); }
+        else if (in.up)   sheet.alloc_cursor = (sheet.alloc_cursor - 1 + CharSheet::kAllocCount) % CharSheet::kAllocCount;
+        else if (in.down) sheet.alloc_cursor = (sheet.alloc_cursor + 1) % CharSheet::kAllocCount;
+        else if (in.right || in.key == '=' || in.select) {   // 加 1 點(右/+/Enter)
+          AllocTarget at = alloc_target_at(sheet.alloc_cursor);
+          bool ok = at.is_attr ? game::spend_ap_on_attr(cs, at.target)
+                               : game::spend_ap_on_skill(cs, at.target);
+          sheet.flash = tr.tr(ok ? "Point spent." : "No AP / at cap.");
+        }
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
+      // ── 物品欄:↑↓ 移游標、U 使用、Enter 裝備穿脫、E 回屬性表、Esc 關閉 ──
+      if (sheet.show_inventory) {
+        // 統計 present 物品的真實 slot,供游標 → slot 映射。
+        std::vector<int> pslots;
+        for (int s = 0; s < game::CharacterRecord::kInventorySlots; ++s)
+          if (cs.item_at(s).present) pslots.push_back(s);
+        int n = (int)pslots.size();
+        if (in.back) { sheet.close(); }
+        else if (in.key == 'E') sheet.toggle_view();
+        else if (in.key == 'V') sheet.close();
+        else if (in.up)   { if (n > 0) sheet.inv_cursor = (sheet.inv_cursor - 1 + n) % n; sheet.flash.clear(); }
+        else if (in.down) { if (n > 0) sheet.inv_cursor = (sheet.inv_cursor + 1) % n; sheet.flash.clear(); }
+        else if (in.key >= '1' && in.key <= '9') sheet.select(in.key - '0');
+        else if (in.key == 'U' && n > 0 && sheet.inv_cursor < n) {   // 使用物品
+          int slot = pslots[sheet.inv_cursor];
+          game::UseItemResult u = game::use_item(cs, slot);
+          if (!u.ok) sheet.flash = tr.tr("Nothing happens.");
+          else if (u.restored_power) sheet.flash = tr.tr("Power restored.");
+          else if (u.taught_spell)   sheet.flash = tr.tr("Spell learned.");
+          else if (u.casts_spell)    sheet.flash = tr.tr("Item cast a spell.");
+          if (n > 0) { int nn = u.consumed ? n - 1 : n; if (nn > 0) sheet.inv_cursor %= nn; else sheet.inv_cursor = 0; }
+        }
+        else if (in.select && n > 0 && sheet.inv_cursor < n) {       // Enter:裝備穿脫
+          int slot = pslots[sheet.inv_cursor];
+          game::EquipResult e = game::toggle_equip(cs, slot);
+          if (e.ok) sheet.flash = tr.tr(e.now_equipped ? "Equipped." : "Unequipped.");
+        }
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
+      // ── 屬性表(預設):切角色 / E 物品欄 / X 進配點 / Esc 關閉 ──
       if (in.back) { sheet.close(); }                    // Esc:關閉回遊戲
       else if (in.up) sheet.prev();
       else if (in.down) sheet.next();
       else if (in.key >= '1' && in.key <= '9') sheet.select(in.key - '0');
       else if (in.key == 'E') sheet.toggle_view();       // E:屬性表 ⇄ 物品欄
+      else if (in.key == 'X') { sheet.alloc_mode = true; sheet.alloc_cursor = 0; sheet.flash.clear(); }  // X:進配點
       else if (in.key == 'V') sheet.close();             // V 再按一次 → 關閉
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;                                          // 屬性表期間不處理移動

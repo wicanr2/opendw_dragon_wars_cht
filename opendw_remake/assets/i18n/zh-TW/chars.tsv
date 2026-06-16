@@ -35,3 +35,17 @@ PWR	法力
 AV	攻擊值
 DV	防禦值
 member(s)	名隊員
+# ── RPG 成長迴圈(升級 / X 配點 / 使用物品 U / 裝備穿脫;手冊第 8/13/14 頁)──
+Advancement points	成長點數
+Spend AP (X):	分配成長點數(X):
+Point spent.	已加 1 點。
+No AP / at cap.	點數不足或已達上限。
+skill_bandage	包紮
+skill_lockpick	開鎖
+skill_fist	徒手
+Power restored.	法力已回復。
+Spell learned.	已習得法術。
+Item cast a spell.	物品施放了法術。
+Nothing happens.	沒有反應。
+Equipped.	已裝備。
+Unequipped.	已卸下。
