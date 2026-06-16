@@ -1142,6 +1142,17 @@ int main(int argc, char** argv) {
     else std::fprintf(stderr, "load: falling back to menu\n");
   }
 
+  // --shop / --recruit / --char-sheet 單獨使用(無 --map/--load/--newgame)時:
+  //   這些是 headless 驗證旗標,需 S_GAME 才會被消費(見下方 2565+/2579+)。預設隊伍
+  //   已於啟動載入(load_default),但 state 仍停在 S_MENU → 旗標靜默跳過(game tester
+  //   發現:單獨 --shop/--recruit/--char-sheet 落在主選單)。此處在沒有地圖/讀檔/建角把
+  //   我們帶進 S_GAME 時,直接進 S_GAME(子畫面不需地圖),使這些旗標可獨立 headless 驗證。
+  if (state == S_MENU && party.size() > 0 &&
+      (shop_open || recruit_open || char_sheet >= 1)) {
+    state = S_GAME;
+    std::fprintf(stderr, "headless flag (shop/recruit/char-sheet) without map → enter S_GAME with default party\n");
+  }
+
   // --newgame:啟動即進建角畫面(互動)。
   if (newgame && menu_mode) start_chargen();
 
