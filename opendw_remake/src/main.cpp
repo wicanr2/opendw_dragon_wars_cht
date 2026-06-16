@@ -48,6 +48,8 @@
 #include "game/spells.hpp"
 #include "game/seen_map.hpp"
 #include "game/progression.hpp"
+#include "game/shop.hpp"
+#include "game/recruit.hpp"
 using namespace dw;
 
 static std::vector<std::string> lines_of(const std::string& s) {
@@ -224,6 +226,34 @@ struct CharSheet {
   }
 };
 
+// ShopUi — 商店買賣子狀態(踩商店格 / 按 P / headless --shop)。
+//
+// Deep module:對外只露 open/close/active + 游標 + 買賣分頁狀態;買賣規則全委派
+//   game::Shop(shop.hpp)。版面走 char-sheet 風格底框 + 文字層。
+//   買在「商店庫存」清單上操作;賣在「當前角色背包」清單上操作。
+//   付款/收款方 = 隊伍第 0 名(主角;remake 設計,原版以隊伍共用金幣)。
+struct ShopUi {
+  bool active = false;
+  bool sell_mode = false;   // false=買(瀏覽庫存);true=賣(瀏覽背包)。Tab 切換。
+  int cursor = 0;           // 當前頁的游標(買=庫存 index;賣=背包 present 序)。
+  std::string flash;        // 操作結果提示行。
+  void open() { active = true; sell_mode = false; cursor = 0; flash.clear(); }
+  void close() { active = false; flash.clear(); }
+  void toggle_mode() { sell_mode = !sell_mode; cursor = 0; flash.clear(); }
+};
+
+// TavernUi — 酒館招募子狀態(踩酒館格 / 按 T / headless --recruit)。
+//
+// Deep module:對外只露 open/close/active + 游標;招募規則委派 game::recruit_npc
+//   (recruit.hpp)。清單 = RecruitRoster::roster();已在隊伍者標 (in party) 不可再招。
+struct TavernUi {
+  bool active = false;
+  int cursor = 0;           // 招募名冊游標。
+  std::string flash;
+  void open() { active = true; cursor = 0; flash.clear(); }
+  void close() { active = false; flash.clear(); }
+};
+
 // 配點項目 → progression 操作的對映(0-3 屬性、4-6 技能 index)。
 // 回傳 {is_attr, target, label_en}:is_attr=true 時 target 為 AttrTarget,否則 skills index。
 struct AllocTarget { bool is_attr; int target; const char* label_en; };
@@ -310,6 +340,9 @@ int main(int argc, char** argv) {
   int char_sheet = -1;            // --char-sheet N:直接開第 N 名(1-based)角色屬性表(headless 驗證)
   bool show_inventory = false;    // --inventory:配合 --char-sheet 直接開物品欄(背包)子畫面
   bool alloc_open = false;        // --alloc:配合 --char-sheet 直接進 X 配點模式(headless 出圖)
+  bool shop_open = false;         // --shop:headless 直接開商店買賣子畫面
+  bool recruit_open = false;      // --recruit:headless 直接開酒館招募子畫面
+  int grant_gold = -1;            // --gold N:啟動時把隊伍第 0 名 gold[81] 設為 N(商店 demo/截圖)
   bool demo_grow = false;         // --demo-grow:給角色 0 注入 AP + 範例可用/可裝備物品(成長 UI 出圖)
   int automap_area = -1;          // --automap N:headless 直接開第 N 區俯視平面地圖(`?` 鍵功能)
   int mm_seed = 0;                // --mm-seed:0=全圖探索 1=只玩家格 2=不 seed(測試/展示)
@@ -364,6 +397,9 @@ int main(int argc, char** argv) {
     else if (eq("--char-sheet") && i + 1 < argc) char_sheet = std::atoi(argv[++i]); // 直接開第 N 名角色屬性表
     else if (eq("--inventory")) show_inventory = true;                               // 配合 --char-sheet 開物品欄
     else if (eq("--alloc")) alloc_open = true;                                       // 配合 --char-sheet 進 X 配點模式
+    else if (eq("--shop")) shop_open = true;                                         // headless 開商店買賣
+    else if (eq("--recruit")) recruit_open = true;                                   // headless 開酒館招募
+    else if (eq("--gold") && i + 1 < argc) grant_gold = std::atoi(argv[++i]);        // 設隊伍第 0 名 gold[81]
     else if (eq("--demo-grow")) demo_grow = true;                                    // 注入 AP + 範例物品(成長 UI 出圖)
     else if (eq("--load") && i + 1 < argc) load_path = argv[++i];        // 啟動讀檔還原
     else if (eq("--save-path") && i + 1 < argc) save_path = argv[++i];   // 覆寫存/讀檔路徑
@@ -432,6 +468,9 @@ int main(int argc, char** argv) {
     std::string ittsv = "assets/i18n/" + loc + "/items.tsv";  // 物品類型名 + 背包 UI
     if (tr.merge(ittsv))
       std::fprintf(stderr, "i18n: merged %s (total %zu)\n", ittsv.c_str(), tr.size());
+    std::string shtsv = "assets/i18n/" + loc + "/shop.tsv";   // 商店買賣 + 酒館招募 UI + curated 物品名
+    if (tr.merge(shtsv))
+      std::fprintf(stderr, "i18n: merged %s (total %zu)\n", shtsv.c_str(), tr.size());
     // Read paragraph 段落書(隨 locale);缺檔則回退「Read paragraph N」。
     book = res::ParagraphBook::load(bundle + "/paragraphs", loc);
     if (book) std::fprintf(stderr, "paragraphs: loaded %zu (locale=%s)\n", book->size(), loc.c_str());
@@ -533,6 +572,9 @@ int main(int argc, char** argv) {
   ParaViewer para;                // Read Paragraph 長段落捲動檢視器(全螢幕 overlay;active 時暫停移動)
   CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
   CharGenUi cg;                   // 新遊戲建角流程(選單 B → S_CREATE;見 CharGenUi)
+  ShopUi shop_ui;                 // 商店買賣子狀態(P / 踩商店格 / --shop;active 時暫停移動)
+  TavernUi tavern_ui;             // 酒館招募子狀態(T / 踩酒館格 / --recruit;active 時暫停移動)
+  game::Shop shop_data = game::Shop::load(bundle);  // 商店庫存(bundle/shop/stock.json;自包含)
   // run_event 攔到「Read paragraph N」時,把 N 寫進此處(>=0 表示本次事件是段落觸發);
   // main 偵測後改開 ParaViewer(長段落捲動)而非一般訊息框。-1 = 非段落事件。
   int event_para_n = -1;
@@ -1497,6 +1539,98 @@ int main(int argc, char** argv) {
     tl.add(CS_VAL_X, iy, "Up/Dn U:use Ent:equip E Esc", 8, PX_UI);
   };
 
+  // 商店買賣畫面:底框 + 標題(含主角金幣)+ 庫存(買)/ 背包(賣)清單 + flash。
+  //   付款/收款方 = 隊伍第 0 名(主角)。買=庫存清單;賣=主角背包 present 物品清單。
+  auto draw_shop = [&]() {
+    fill_char_sheet();
+    int tx = CS_X + CS_PAD;
+    int y = CS_Y + CS_PAD;
+    int gold = party.size() > 0 ? game::get_gold(party.at(0)) : 0;
+    char head[96];
+    std::snprintf(head, sizeof head, "%s  -  %s %d",
+                  tr.tr(shop_ui.sell_mode ? "Sell" : "Buy").c_str(),
+                  tr.tr("Gold").c_str(), gold);
+    tl.add(tx, y, head, 14, PX_BODY);
+    y += CS_LINE_H + 2;
+
+    if (!shop_ui.sell_mode) {
+      // 買:列出庫存(名稱 i18n + 購買價;買不起者灰)。
+      const auto& stock = shop_data.stock();
+      for (int i = 0; i < (int)stock.size() && y < CS_Y + CS_H - 2 * CS_LINE_H; ++i) {
+        const auto& e = stock[(std::size_t)i];
+        bool cur = (i == shop_ui.cursor);
+        int price = e.buy_price();
+        std::string nm = e.name_key.empty() ? e.parsed().name : tr.tr(e.name_key);
+        std::uint8_t col = cur ? 15 : (gold >= price ? 7 : 8);
+        char row[96];
+        std::snprintf(row, sizeof row, "%s%s", cur ? "> " : "  ", nm.c_str());
+        tl.add(tx, y, row, col, PX_BODY);
+        char pr[24]; std::snprintf(pr, sizeof pr, "%d", price);
+        tl.add(CS_X + CS_W - 46, y, pr, cur ? 14 : col, PX_UI);
+        y += CS_LINE_H;
+      }
+    } else {
+      // 賣:列出主角背包 present 物品(名稱 + 售價=購買價÷2)。
+      if (party.size() > 0) {
+        const auto& c = party.at(0);
+        auto inv = c.inventory();
+        int shown = 0;
+        for (int s = 0; s < (int)inv.size() && y < CS_Y + CS_H - 2 * CS_LINE_H; ++s) {
+          if (!inv[s].present) continue;
+          bool cur = (shown == shop_ui.cursor);
+          ++shown;
+          std::string nm = inv[s].name.empty() ? tr.tr(game::item_type_key(inv[s].type)) : inv[s].name;
+          char row[96];
+          std::snprintf(row, sizeof row, "%s%s", cur ? "> " : "  ", nm.c_str());
+          tl.add(tx, y, row, cur ? 15 : (inv[s].equipped ? 10 : 7), PX_BODY);
+          char pr[24]; std::snprintf(pr, sizeof pr, "%d", inv[s].sale_price);
+          tl.add(CS_X + CS_W - 46, y, pr, cur ? 14 : 7, PX_UI);
+          y += CS_LINE_H;
+        }
+        if (shown == 0) tl.add(tx, y, tr.tr("no items"), 8, PX_BODY);
+      }
+    }
+    if (!shop_ui.flash.empty())
+      tl.add(tx, CS_Y + CS_H - 2 * CS_LINE_H - 2, shop_ui.flash, 14, PX_BODY);
+    int iy = CS_Y + CS_H - CS_LINE_H - 2;
+    tl.add(tx, iy, tr.tr("Buy/Sell"), 8, PX_UI);
+    tl.add(CS_VAL_X - 10, iy, "Tab Up/Dn Ent Esc", 8, PX_UI);
+  };
+
+  // 酒館招募畫面:底框 + 標題 + 可招募 NPC 清單(已在隊伍者標 (in party))+ flash。
+  auto draw_tavern = [&]() {
+    fill_char_sheet();
+    int tx = CS_X + CS_PAD;
+    int y = CS_Y + CS_PAD;
+    char head[96];
+    std::snprintf(head, sizeof head, "%s  (%zu/%d)", tr.tr("Tavern").c_str(),
+                  party.size(), game::kMaxPartyMembers);
+    tl.add(tx, y, head, 14, PX_BODY);
+    y += CS_LINE_H + 2;
+    const auto& roster = game::RecruitRoster::roster();
+    for (int i = 0; i < (int)roster.size(); ++i) {
+      const auto& t = roster[(std::size_t)i];
+      bool cur = (i == tavern_ui.cursor);
+      bool joined = game::party_has_npc(party, t.identifier);
+      std::string nm = tr.tr(t.name);
+      char row[96];
+      std::snprintf(row, sizeof row, "%s%s", cur ? "> " : "  ", nm.c_str());
+      tl.add(tx, y, row, cur ? 15 : (joined ? 8 : 7), PX_BODY);
+      if (joined) tl.add(CS_X + CS_W / 2 + 4, y, tr.tr("(in party)"), 8, PX_UI);
+      else {
+        char st[48];
+        std::snprintf(st, sizeof st, "STR%d DEX%d INT%d", t.strength, t.dexterity, t.intel);
+        tl.add(CS_X + CS_W / 2 - 20, y, st, cur ? 14 : 7, PX_UI);
+      }
+      y += CS_LINE_H;
+    }
+    if (!tavern_ui.flash.empty())
+      tl.add(tx, CS_Y + CS_H - 2 * CS_LINE_H - 2, tavern_ui.flash, 14, PX_BODY);
+    int iy = CS_Y + CS_H - CS_LINE_H - 2;
+    tl.add(tx, iy, tr.tr("Recruit"), 8, PX_UI);
+    tl.add(CS_VAL_X, iy, "Up/Dn Ent Esc", 8, PX_UI);
+  };
+
   // ── 建角畫面(S_CREATE):全螢幕,像素層底 + 文字層(TTF / i18n)。──
   // PhName:名字輸入列(游標 _)。PhAttr:四屬性配點 + 衍生值 + 剩餘點數 + 性別 + 已建隊員。
   auto draw_chargen = [&]() {
@@ -2025,7 +2159,7 @@ int main(int argc, char** argv) {
     add_lang_badge();
     int hint_y = oy + H * cs + 6;
     if (!msg.active && !para.active && !sheet.active)    // 子畫面期間隱藏控制提示(避免穿透框)
-      tl.add(8, hint_y, "I:fwd  J/L:turn  K:door  V:stats  S:save  Esc:back", 7, PX_UI);
+      tl.add(8, hint_y, "I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7, PX_UI);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -2048,7 +2182,7 @@ int main(int argc, char** argv) {
     }
     add_lang_badge();
     if (!msg.active && !para.active && !sheet.active)    // 子畫面期間隱藏控制提示(避免穿透框)
-      tl.add(8, 150, "I:fwd  J/L:turn  K:door  V:stats  S:save  Esc:back", 7, PX_UI);
+      tl.add(8, 150, "I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7, PX_UI);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:
@@ -2096,6 +2230,8 @@ int main(int argc, char** argv) {
         if (sheet.show_inventory) draw_inventory();
         else draw_char_sheet();
       }
+      if (shop_ui.active) draw_shop();               // 商店買賣疊在最上層
+      if (tavern_ui.active) draw_tavern();           // 酒館招募疊在最上層
       return;
     }
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
@@ -2125,6 +2261,22 @@ int main(int argc, char** argv) {
     std::fprintf(stderr, "char sheet: showing character %d/%zu (\"%s\")%s%s\n",
                  sheet.idx + 1, party.size(), party.at((std::size_t)sheet.idx).name.c_str(),
                  show_inventory ? " [inventory]" : "", sheet.alloc_mode ? " [alloc]" : "");
+  }
+  // --gold N:設隊伍第 0 名 gold[81](商店 demo / 截圖 / headless 驗證)。
+  if (state == S_GAME && grant_gold >= 0 && party.size() > 0) {
+    game::set_gold(party.at(0), grant_gold);
+    std::fprintf(stderr, "gold: set party[0] gold[81]=%d\n", game::get_gold(party.at(0)));
+  }
+  // --shop / --recruit:headless 直接開商店買賣 / 酒館招募子畫面(驗證版面 / 在地化)。
+  if (state == S_GAME && shop_open && party.size() > 0) {
+    shop_ui.open();
+    std::fprintf(stderr, "shop: %zu stock items; party[0]='%s' gold=%d\n",
+                 shop_data.size(), party.at(0).name.c_str(), game::get_gold(party.at(0)));
+  }
+  if (state == S_GAME && recruit_open && party.size() > 0) {
+    tavern_ui.open();
+    std::fprintf(stderr, "tavern: %zu recruitable NPCs; party=%zu/%d\n",
+                 game::RecruitRoster::roster().size(), party.size(), game::kMaxPartyMembers);
   }
   // --encounter N:進遭遇畫面(headless 可 --dump 驗證圖層;互動下 F 戰鬥 / R 逃跑)。
   if (encounter_mode) {
@@ -2264,6 +2416,55 @@ int main(int argc, char** argv) {
       }
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;                                          // 建角期間不處理其他輸入
+    }
+    // 商店買賣啟用時:接管輸入(Tab 切買/賣、↑↓ 選、Enter 買/賣、Esc 離開)。暫停移動。
+    if (shop_ui.active) {
+      game::CharacterRecord& buyer = party.at(0);  // 付款/收款方 = 主角(隊伍第 0 名)
+      // 當前頁的項目數。
+      int n = 0;
+      if (!shop_ui.sell_mode) n = (int)shop_data.size();
+      else for (int s = 0; s < game::CharacterRecord::kInventorySlots; ++s)
+             if (buyer.item_at(s).present) ++n;
+      if (in.back) { shop_ui.close(); }
+      else if (in.key == '\t' || in.key == 'B' || in.key == 'A') shop_ui.toggle_mode();  // Tab/B/A 切買賣
+      else if (in.up)   { if (n > 0) shop_ui.cursor = (shop_ui.cursor - 1 + n) % n; shop_ui.flash.clear(); }
+      else if (in.down) { if (n > 0) shop_ui.cursor = (shop_ui.cursor + 1) % n; shop_ui.flash.clear(); }
+      else if (in.select && n > 0 && shop_ui.cursor < n) {
+        if (!shop_ui.sell_mode) {                          // 買
+          game::ShopResult r = shop_data.buy(buyer, (std::size_t)shop_ui.cursor);
+          shop_ui.flash = tr.tr(r.ok ? "Bought." : r.reason);
+        } else {                                           // 賣:游標序 → 實際 slot
+          int target = -1, shown = 0;
+          for (int s = 0; s < game::CharacterRecord::kInventorySlots; ++s) {
+            if (!buyer.item_at(s).present) continue;
+            if (shown == shop_ui.cursor) { target = s; break; }
+            ++shown;
+          }
+          if (target >= 0) {
+            game::ShopResult r = game::Shop::sell(buyer, target);
+            shop_ui.flash = tr.tr(r.ok ? "Sold." : r.reason);
+            int nn = n - (r.ok ? 1 : 0);
+            if (nn > 0) shop_ui.cursor %= nn; else shop_ui.cursor = 0;
+          } else shop_ui.flash = tr.tr("Nothing to sell.");
+        }
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;
+    }
+    // 酒館招募啟用時:接管輸入(↑↓ 選、Enter 招募、Esc 離開)。暫停移動。
+    if (tavern_ui.active) {
+      int n = (int)game::RecruitRoster::roster().size();
+      if (in.back) { tavern_ui.close(); }
+      else if (in.up)   { if (n > 0) tavern_ui.cursor = (tavern_ui.cursor - 1 + n) % n; tavern_ui.flash.clear(); }
+      else if (in.down) { if (n > 0) tavern_ui.cursor = (tavern_ui.cursor + 1) % n; tavern_ui.flash.clear(); }
+      else if (in.select && n > 0 && tavern_ui.cursor < n) {
+        std::uint8_t id = game::RecruitRoster::roster()[(std::size_t)tavern_ui.cursor].identifier;
+        game::RecruitResult r = game::recruit_npc(party, id);
+        tavern_ui.flash = tr.tr(r.ok ? "Recruited!" : r.reason);
+        if (r.ok) std::fprintf(stderr, "recruit: id=0x%02X joined; party now %d\n", id, r.party_size_after);
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;
     }
     // 角色屬性表啟用時:接管輸入(切角色/關閉),暫停移動。
     //   ↑↓ 或數字 1-4 切角色;Esc 關閉。F4(語系)已於上方處理。
@@ -2428,6 +2629,10 @@ int main(int argc, char** argv) {
       }
       // V=查看角色屬性表(手冊);數字 1-4 直接選該角色開表(暫停移動)。
       else if (in.key == 'V') { sheet.open((int)party.size(), 0); }
+      // P=進商店買賣、T=進酒館招募(remake 設計入口鍵;原版以踩商店/酒館格觸發,
+      //   remake 地圖事件格資料尚未對映商店/酒館類型,故先以快捷鍵 + headless --shop/--recruit 提供)。
+      else if (in.key == 'P' && party.size() > 0) { shop_ui.open(); }
+      else if (in.key == 'T' && party.size() > 0) { tavern_ui.open(); }
       else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
         sheet.open((int)party.size(), in.key - '1');
       else {

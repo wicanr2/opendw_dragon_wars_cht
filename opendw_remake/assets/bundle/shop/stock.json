@@ -1,0 +1,65 @@
+{
+  "format": "opendw-shop/1",
+  "source": "grounded items from bundle/items/items.bin (fraterrisus/DATA1) + curated standard equipment (remake design)",
+  "spec": "docs/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format); buy/sell logic = remake design (opendw C 未實作商店)",
+  "slot_bytes": 23,
+  "note": "grounded=true: real DATA1 item byte-for-byte. grounded=false: remake curated equipment with cleanly encoded prices (M x 10^E).",
+  "count": 11,
+  "items": [
+    {
+      "hex": "4100000039008414000000c4f2e1e7efeea0d3f4efee65",
+      "name_key": "Dragon Stone",
+      "grounded": true
+    },
+    {
+      "hex": "0000000014050000000000c4e1e7e7e572000000000000",
+      "name_key": "shop_dagger",
+      "grounded": false
+    },
+    {
+      "hex": "0000000026050000200000d3e8eff2f4a0d3f7eff26400",
+      "name_key": "shop_short_sword",
+      "grounded": false
+    },
+    {
+      "hex": "000000002f050000400000ccefeee7a0d3f7eff2640000",
+      "name_key": "shop_long_sword",
+      "grounded": false
+    },
+    {
+      "hex": "0001000134030000600000c2e1f4f4ece5a0c1f8650000",
+      "name_key": "shop_battle_axe",
+      "grounded": false
+    },
+    {
+      "hex": "0000000032070000400000d7e1f2a0c8e1edede5720000",
+      "name_key": "shop_war_hammer",
+      "grounded": false
+    },
+    {
+      "hex": "0000001024010000000000c2f5e3ebece5720000000000",
+      "name_key": "shop_buckler",
+      "grounded": false
+    },
+    {
+      "hex": "000100212c010000000000cbe9f4e5a0d3e8e9e5ec6400",
+      "name_key": "shop_kite_shield",
+      "grounded": false
+    },
+    {
+      "hex": "0000001025100000000000cce5e1f4e8e5f2a0c1f26d00",
+      "name_key": "shop_leather_armor",
+      "grounded": false
+    },
+    {
+      "hex": "000100323e130000000000c3e8e1e9eea0cde1e96c0000",
+      "name_key": "shop_chain_mail",
+      "grounded": false
+    },
+    {
+      "hex": "000000101e160000000000c9f2efeea0c8e5ecede57400",
+      "name_key": "shop_helmet",
+      "grounded": false
+    }
+  ]
+}

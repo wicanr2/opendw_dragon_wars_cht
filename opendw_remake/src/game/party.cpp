@@ -214,6 +214,10 @@ std::vector<std::array<std::uint8_t, 512>> Party::raw_records() const {
   return out;
 }
 
+void Party::add_record(const std::array<std::uint8_t, 512>& rec) {
+  members_.push_back(parse_record(rec.data()));
+}
+
 Party Party::load_default(const std::filesystem::path& bundle_dir) {
   std::filesystem::path p = bundle_dir / "party" / "default_party.bin";
   std::FILE* f = std::fopen(p.string().c_str(), "rb");

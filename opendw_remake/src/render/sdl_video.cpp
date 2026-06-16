@@ -143,6 +143,7 @@ Input SdlVideo::poll() {
         // 建角配點:+/= 增、-/_ 減(含數字鍵盤 KP_PLUS/KP_MINUS)。
         else if (k == SDLK_EQUALS || k == SDLK_PLUS || k == SDLK_KP_PLUS) in.key = '=';
         else if (k == SDLK_MINUS || k == SDLK_KP_MINUS) in.key = '-';
+        else if (k == SDLK_TAB) in.key = '\t';  // Tab:商店買/賣分頁切換
         break;
     }
   }

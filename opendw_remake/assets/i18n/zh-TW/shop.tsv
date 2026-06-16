@@ -1,0 +1,45 @@
+# 商店買賣 + 酒館招募 UI 字串 + curated 標準裝備名。
+# 譯名以 CONTEXT.md + docs/44 §2 物品類型表為準;curated 物品為 remake 設計裝備。
+# english	chinese
+# ── 商店 UI ──
+Shop	商店
+Buy	購買
+Sell	販售
+Gold	金幣
+Price	價格
+Buy/Sell	買 / 賣
+Tab: Buy/Sell  Up/Down: select  Enter: confirm  Esc: leave	Tab:買/賣  ↑↓:選擇  Enter:確認  Esc:離開
+shop_no_gold	金幣不足。
+shop_full	背包已滿。
+shop_empty_slot	此格沒有物品。
+Bought.	已購買。
+Sold.	已售出。
+Nothing to sell.	沒有可賣的物品。
+Welcome to the shop.	歡迎光臨商店。
+# ── 酒館招募 UI ──
+Tavern	酒館
+Recruit	招募
+Recruit a companion	招募同伴
+Up/Down: select  Enter: recruit  Esc: leave	↑↓:選擇  Enter:招募  Esc:離開
+recruit_already	此人已在你的隊伍中。
+recruit_full	隊伍已滿(最多 7 人)。
+recruit_unknown	找不到這名同伴。
+Recruited!	已加入隊伍!
+(in party)	(已在隊伍)
+The tavern is lively tonight.	今晚的酒館很熱鬧。
+# ── curated 標準裝備名(remake 設計;商店庫存)──
+shop_dagger	匕首
+shop_short_sword	短劍
+shop_long_sword	長劍
+shop_battle_axe	戰斧
+shop_war_hammer	戰錘
+shop_buckler	小圓盾
+shop_kite_shield	鳶形盾
+shop_leather_armor	皮甲
+shop_chain_mail	鎖鏈甲
+shop_helmet	鐵盔
+# ── 可招募 NPC 名(grounded,fraterrisus)──
+Ulrik	烏瑞克
+Louie	路易
+Valar	瓦拉
+Halifax	哈利法克斯

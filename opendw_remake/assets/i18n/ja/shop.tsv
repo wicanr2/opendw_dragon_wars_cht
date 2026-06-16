@@ -1,0 +1,26 @@
+# 店 + 酒場リクルート UI 文字列 + curated 標準装備名。
+# 注:UI ラベルのみ翻訳。固有名詞(NPC 名 / curated 装備名)は使用者(言語権威)の
+#     審定待ち → 英語パススルーのまま(verify_i18n が未訳として検出)。勝手に臆造しない。
+# english	chinese
+Shop	店
+Buy	買う
+Sell	売る
+Gold	ゴールド
+Price	価格
+Buy/Sell	買う/売る
+shop_no_gold	ゴールドが足りません。
+shop_full	持ち物がいっぱいです。
+shop_empty_slot	そのスロットは空です。
+Bought.	購入しました。
+Sold.	売却しました。
+Nothing to sell.	売る物がありません。
+Welcome to the shop.	いらっしゃいませ。
+Tavern	酒場
+Recruit	仲間にする
+Recruit a companion	仲間を募る
+recruit_already	すでにパーティーにいます。
+recruit_full	パーティーが満員です(最大7人)。
+recruit_unknown	そのような仲間はいません。
+Recruited!	仲間になった!
+(in party)	(パーティー中)
+The tavern is lively tonight.	今夜の酒場は賑やかだ。
