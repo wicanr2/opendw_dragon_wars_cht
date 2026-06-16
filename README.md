@@ -14,35 +14,29 @@ OpenDW 是 Interplay 1989/1990 年遊戲 **Dragon Wars** 的開源重製版。
 - 📋 [ADR 0001:Asset Bundle 與 ResourceProvider](docs/adr/0001-asset-bundle-and-resource-provider.md) — resource 脫離 DATA1/DATA2、可編輯/可替換。
 - 📖 [docs 索引](docs/README.md) · [術語表 CONTEXT.md](CONTEXT.md) · [opcode 雙語參考](docs/OPCODE_REFERENCE.md)
 
-## 🐉 重製的第一步(Our First Steps in Dragon Wars)
+## 🐉 可從頭玩到結局(A Complete Playthrough in Traditional Chinese)
 
-`opendw_remake/`(C++20 + SDL2,以 opendw 為逐位元正確性 oracle、資產自包含)目前能跑出的**真實遊戲畫面**——讓中文玩家重溫經典的第一步:
+`opendw_remake/`(C++20 + SDL2,以 opendw 為逐位元正確性 oracle、資產自包含)現在能跑出**完整一輪**:**建立人物 → 探索 38/40 連通世界 → 主線繁中事件 → 終戰 Namtar → 結局 → 全劇終**,全程繁體中文、24×24 銳利 CJK,可選 640×480 視窗。
 
-| 在地化主選單 | 標題畫面 | 真實波卡城地圖 |
+| 在地化主選單 | 第一人稱 + 繁中事件 | Dilmun 世界圖(進城) |
 |:---:|:---:|:---:|
-| ![menu](opendw_remake/docs/showcase/menu.png) | ![title](opendw_remake/docs/showcase/title.png) | ![map](opendw_remake/docs/showcase/map_purgatory.png) |
-| VM 跑 bundle bytecode → i18n 繁中(B 開始/C 繼續,操作對齊原版說明書) | `decode_fullscreen`(title_adjust 去交錯)**逐位元 == 原版** | 從原版抽出的 **40 關真實地圖**(關卡名 100% 對應《軟體世界》攻略) |
+| ![menu](opendw_remake/docs/showcase/menu.png) | ![fp](opendw_remake/docs/screenshots/r9_fp_event_twolayer.png) | ![wm](opendw_remake/docs/wm_world.png) |
+| VM 跑 bundle bytecode → i18n 繁中(操作對齊原版說明書) | 透視走廊 + **踩格顯繁中事件**;雙層渲染(像素層整數放大 + SDL2_ttf 24px CJK 恆銳利) | wrap 樞紐世界圖;**走到城鎮格→切入該城 area**(進城對映反組譯 DRAGON.COM 逆出) |
 
-| **第一人稱 + 繁中事件**(進入遊戲) | 怪物 sprite |
-|:---:|:---:|
-| ![fp](opendw_remake/docs/screenshots/r9_fp_event_twolayer.png) | ![wolf](opendw_remake/docs/showcase/sprite_wolf.png) |
-| 第一人稱透視走廊 +**踩到事件格顯示在地化繁中事件文字**;**雙層渲染**:像素層整數放大 + SDL2_ttf 文字層(中文 24px 恆銳利) | 從 asset bundle 載入,對拍 opendw byte-for-byte |
-
-| 角色屬性表 | 遭遇/戰鬥畫面 | 段落捲動檢視器 |
+| 建立人物 | 終戰 Namtar | 結局・全劇終 |
 |:---:|:---:|:---:|
-| ![char](opendw_remake/docs/party_demo/char_sheet_zh_muskels.png) | ![combat](docs/combat_screens/encounter_humbaba.png) | ![para](opendw_remake/docs/paragraph_demo/para88_top.png) |
-| `V`/1-4 看完整屬性(力量/敏捷/智力/精神/生命/法力/狀態…),i18n 三語 | 怪物圖 @ (16,8) **對齊原版 `draw_random_encounter_graphic` 佈局**(golden byte-for-byte)+ 隊伍面板 + F戰鬥/R逃跑 | **Read Paragraph** 防拷段落以捲動 overlay 顯示完整繁中譯文,不截斷不切字 |
+| ![cre](docs/chargen_screens/03_chargen_attr.png) | ![nam](opendw_remake/docs/screenshots/endgame/namtar_combat.png) | ![end](opendw_remake/docs/screenshots/endgame/ending_page4.png) |
+| `B` 建角:命名 + 50 點屬性配點 + 性別 → 合法 fraterrisus 512B record | 回合制戰鬥:**命中/傷害公式 = 原版 bytecode 真值**;受祝福的自由之劍 vs 深淵之獸 | 戰勝 → 結局序列(area27 敘事 + 結局段落 + 全劇終),繁中可捲動 |
 
-**目前已落地(均經 opendw 對拍或攻略對照驗證;戰鬥結算除外,見下)**:
-- ✅ SDL2 視窗 + DOS 16 色 framebuffer;操作鍵對齊原版說明書(`B`/`C` 選單、`I/J/L/K` 移動、`Esc`/`Q`)。
-- ✅ VM(含 op_58 跨資源 call、角色資料 primitive op_5D/5E/5F/60/61、乘除 op_33-36、op_89 選單跳轉)跑 bundle bytecode;**多國語系**架構(`--locale`,日文 ready);**diff_trace 逐指令 == opendw**。
-- ✅ **40 關真實地圖**從 DATA1/DATA2 抽出(關卡名與攻略地區 100% 對應);**地圖區域切換**(踩出入口→換 area,`verify_areaswitch`);事件腳本 emit 訊息與攻略「訊息 N」吻合。
-- ✅ 標題/場景圖、sprite 渲染 **byte-for-byte == 原版**(`verify_scene_golden.sh`、`verify_viewport` 3/3)。
-- ✅ **第一人稱 viewport** FOV→牆面元件→sprite blit→framebuffer 全鏈,**全 40 關像素對拍 opendw PASS**(`verify_fp`/`fov`/`compose`/`sweep`)。
-- ✅ **踩到事件格 → 顯示在地化繁中事件文字**;**Read Paragraph 段落捲動檢視器**(完整譯文不截斷);**角色屬性表**;**存檔/讀檔**(`S` 存、選單 `C` 繼續,round-trip byte-for-byte);**遭遇畫面**(怪物圖佈局對拍 oracle golden)。**全自包含,執行期不依賴 DATA1**。
-- ⚠️ **戰鬥結算**:opendw 的 C 反編譯**本身未實作**命中/傷害結算(公式在原版未逆出的 bytecode);遭遇畫面 + 怪物資料 + RNG(op_4D)已 **byte-for-byte 對拍 oracle**,但 to-hit/傷害目前是**乾淨室模型(placeholder,非原版真值)**,已於程式碼與 `docs/42` 誠實標示。原版戰鬥 bytecode 已能在 VM 上執行(攻擊迴圈跑滿無 halt),HP-vs-oracle 對拍待 roster pipeline 完整逆向。
+**已落地(均經 opendw 對拍 / DOS 實機 / 攻略交叉驗證,誠實標示真值 vs remake 設計)**:
+- ✅ **渲染逐位元對拍 opendw**:第一人稱 viewport(全 40 關像素 PASS)、標題/場景圖、sprite、俯視地圖(fog of war)、wrap 樞紐;雙層 CJK;`--win640`(真 640×480 + 固定 24/16px CJK)。
+- ✅ **VM ~119 opcode,`diff_trace` 逐指令 == opendw**;反組譯原始 DRAGON.COM 補出 opendw 從未逆向的 op_68/op_79/op_5B 等。
+- ✅ **戰鬥公式 = 原版 bytecode 真值**(端到端執行 res3 驗證):命中 `roll ≤ 13+AV−(DV+AC)`(1d16+3 roll-under)、徒手傷害 `骰 + floor(STR/5)`、武器傷害骰、RNG(op_4D);DOS 實機交叉驗證命中率吻合(`docs/42`/`43`)。
+- ✅ **連通 38/40 area**:世界圖進城 + 子區 relocate + `1A 02` 直寫機制全逆出(`<10%→38/40`);可玩回合制戰鬥(4 人 vs 怪群、勝利 +80XP)+ 61 條法術(傷害/治療/buff/控制)。
+- ✅ **可玩流程**:建角 / 存讀檔(round-trip byte-for-byte) / 角色表 / 背包 / Read Paragraph 捲動檢視器 / 地圖區域切換 / **主線事件繁中 200+ 鍵 + 147 段落 + 結局**;日文 events/怪名(破解 X68000 nibble-swap SJIS)。**全自包含,執行期不依賴 DATA1**。
+- ⚠️ **誠實邊界**:Namtar Boss 屬性(原版 op_8A 怪物 id 無乾淨 res31 record)、自由之劍祝福加成、結局序列 = **remake 平衡/組合設計**(原版勝利畫面 script 逆不出);終戰用 remake `combat_loop`(同 bytecode 真值公式),非 res3 全戰鬥閉環(後者卡遊戲層 context,`docs/42`);area 6/33(Phoebus)為隔離分量。全部標於程式碼 / `docs/42`–`56` / `verify_*`,從不謊稱 oracle。
 
-> 本機執行:`cd opendw_remake && cmake -S . -B build && cmake --build build --target opendw_remake`,再 `./build/opendw_remake`(選單)、`--map 1 --fp`(進波卡城第一人稱)、`--scene 29`(標題)、`--read-para 88`(段落檢視器)、`--encounter 12`(遭遇畫面)。回歸:`cd build && ctest`(8/8)。
+> 本機執行:`cd opendw_remake && cmake -S . -B build && cmake --build build --target opendw_remake`,再 `./build/opendw_remake`(選單,`B` 建角)、`--map 0 --fp`(Dilmun 世界圖)、`--win640`(640×480)、`--read-para 88`(段落)、`--fight-namtar`(終戰→結局)。回歸:`cd build && ctest`(**22/22**)+ GitHub Actions CI。
 
 ## 專案結構
 
