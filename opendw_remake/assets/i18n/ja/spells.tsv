@@ -1,4 +1,7 @@
-# 呪文名 + 詠唱メッセージ(把握のある語のみ;無対応は英語へフォールバック)。
+# 呪文名 + 詠唱メッセージ。
+# 呪文名は X68000 日本語版《ドラゴンウォーズ》DRAGON.X @0x369e4 の SJIS 連続テーブルより抽出（実機原文）。
+# 対位: spells.cpp の呪文 ID 順（0x00..）と DRAGON.X テーブル順を、固有名詞（エルバー/プーグ/サラ/ボルン/ミスラス/ザック/サラマンダー）と
+#       系統境界（Low/High/Druid/Sun）で照合。曖昧な後段（Charger/Guidance/Radiance 等）は英語フォールバックで保留。
 # english	japanese
 Cast	呪文
 C:Cast	C:呪文
@@ -8,41 +11,61 @@ Not enough power	パワー不足
 casts	詠唱
 heals	回復
 damage	ダメージ
-# ── 攻撃/回復系(把握あり)──
-Mage Fire	メイジファイア
-Lesser Heal	軽傷回復
-Healing	回復
-Ice Chill	アイスチル
-Fire Storm	ファイアストーム
-Kill Ray	キルレイ
-Death Curse	死の呪い
-# ── 一般的・記述的な呪文名のみ追加(汎用語; 固有名/人名由来の呪文は
-#    X68000 実機原文が未抽出のため英語フォールバックで保留)。
-Big Chill	大氷結
-Whirl Wind	竜巻
-Fire Blast	炎の爆発
-Fire Light	炎の光
-Inferno	業火
-Column of Fire	炎の柱
-Light Flash	閃光
-Sun Light	太陽の光
-Heal	回復
-Major Heal	大回復
-Group Heal	全体回復
-Cure All	完全治癒
-Create Wall	石壁生成
-Soften Stone	岩石軟化
-Sense Traps	罠感知
-Disarm Trap	罠解除
+# ── 呪文名（DRAGON.X 実機原文; 信頼度 高）──
+Mage Fire	魔法の火
 Disarm	武装解除
-Scare	恐怖
-Brambles	茨
-Insect Plague	虫害
-Air Summon	風の精召喚
-Earth Summon	地の精召喚
-Water Summon	水の精召喚
-Fire Summon	火の精召喚
-Beast Call	獣寄せ
-Wood Spirit	木の精
-Exorcism	除霊
-Sun Stroke	日射
+Charm	魅惑
+Luck	幸運
+Lesser Heal	応急手当
+Mage Light	魔法の灯
+Fire Light	炎の矢
+Elvar's Fire	エルバーの火
+Poog's Vortex	プーグの竜巻
+Ice Chill	冷気
+Big Chill	大寒波
+Dazzle	目くらまし
+Mystic Might	腕力増加
+Reveal Glamour	幻影の除去
+Sala's Swift	サラのツバメ
+Vorn's Guard	ボルンの盾
+Cowardice	臆病者
+Healing	治療
+Group Heal	グループの治療
+Cloak Arcane	不可視のマント
+Sense Traps	ワナの感知
+Air Summon	空気の精霊
+Earth Summon	大地の精霊
+Water Summon	水の精霊
+Fire Summon	火の精霊
+Death Curse	死の呪い
+Fire Blast	炎の一吹き
+Insect Plague	虫の大群
+Whirl Wind	つむじ風
+Scare	士気の向上
+Brambles	イバラのしげみ
+Creater Healing	自然力による回復
+Cure All	全員の治療
+Create Wall	壁の作成
+Soften Stone	石の軟化
+Invoke Spirit	霊魂の召喚
+Beast Call	野獣の召喚
+Wood Spirit	木の魂
+Sun Stroke	太陽の炎
+Exorcism	悪魔払い
+Rage of Mithras	ミスラスの怒り
+Wrath of Mithras	ミスラスの復讐
+Fire Storm	炎の嵐
+Inferno	地獄の炎
+Holy Aim	聖なる導き
+Battle Power	強き力
+Column of Fire	炎の柱
+Mithra's Bless	ミスラスの祝福
+Light Flash	閃光
+Armor of Light	光の鎧
+Sun Light	太陽の光
+Major Heal	強力な治療
+Disarm Trap	ワナの除去
+Summon Salamander	サラマンダーの召喚
+Zak's Speed	ザックのスピード
+Kill Ray	死の光線
+Prison	囚人
