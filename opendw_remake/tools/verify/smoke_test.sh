@@ -70,6 +70,21 @@ if head -c 32 "$TMP/w640.ppm" 2>/dev/null | grep -q "^P6"; then
   else
     echo "  ❌ [640×480] 視窗尺寸 = $dims(預期 640x480)"; fail=1
   fi
+  # letterbox 對齊保證:上 40 列 + 下 40 列應全黑(像素層 ×2=400 垂直置中於 480)。
+  # 任何非黑像素表示像素層溢出黑邊 / 對齊漂移。
+  if python3 - "$TMP/w640.ppm" <<'PY'
+import sys
+f=open(sys.argv[1],"rb"); assert f.readline().strip()==b"P6"
+w,h=map(int,f.readline().split()); f.readline(); d=f.read(w*h*3)
+def nonblack(y): return any(b!=0 for b in d[y*w*3:(y+1)*w*3])
+bad=[y for y in list(range(40))+list(range(440,480)) if nonblack(y)]
+sys.exit(1 if bad else 0)
+PY
+  then
+    echo "  ✅ [640×480] letterbox 上下黑邊純黑(對齊無漂移)"
+  else
+    echo "  ❌ [640×480] letterbox 黑邊有非黑像素(像素層溢出 / 對齊漂移)"; fail=1
+  fi
 else
   echo "  ❌ [640×480] 無 dump 輸出"; fail=1
 fi

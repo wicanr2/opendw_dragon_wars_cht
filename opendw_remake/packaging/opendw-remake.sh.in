@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# OpenDW Remake 啟動器(發佈包用)。
+#
+# 遊戲執行期以「相對 cwd」載入 assets/(bundle、fonts、i18n),且 CJK 文字層需要一個
+# 中/日字型。此 wrapper 解決兩件事:
+#   1. 切到資產所在目錄(packaged share/ 或開發樹),讓相對路徑生效。
+#   2. 若系統無預設 wqy 字型,沿用 binary 內建的字型回退搜尋(見 main.cpp);
+#      亦可透過 DWR_FONT 環境變數明確指定字型檔。
+#
+# 用法:
+#   opendw-remake [遊戲旗標...]
+#   DWR_FONT=/path/to/cjk.ttf opendw-remake --win640
+set -euo pipefail
+
+# 解析本腳本實體位置(支援 symlink)。
+SELF="$0"
+while [ -L "$SELF" ]; do SELF="$(readlink "$SELF")"; done
+HERE="$(cd "$(dirname "$SELF")" && pwd)"
+
+# 安裝佈局:<prefix>/bin/opendw-remake.sh、<prefix>/bin/opendw-remake(實體 binary)、
+#           <prefix>/share/opendw-remake/assets/。
+PREFIX="$(cd "$HERE/.." && pwd)"
+ASSET_DIR="$PREFIX/share/opendw-remake"
+BIN="$HERE/opendw-remake"
+
+# 開發樹回退:若安裝佈局不存在,改用 repo 內 assets/(opendw_remake/)。
+if [ ! -d "$ASSET_DIR/assets" ]; then
+  if [ -d "$PREFIX/assets" ]; then ASSET_DIR="$PREFIX"; fi
+fi
+
+cd "$ASSET_DIR"
+exec "$BIN" "$@"

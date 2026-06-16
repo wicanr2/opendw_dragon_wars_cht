@@ -95,10 +95,48 @@ cmake -S . -B build && cmake --build build --target opendw_remake
 ./build/opendw_remake --win640        # 640×480 視窗
 ./build/opendw_remake --read-para 88  # 段落檢視器
 ./build/opendw_remake --fight-namtar  # 終戰 → 結局
-cd build && ctest                     # 回歸(22 項;GitHub Actions CI 亦跑)
+cd build && ctest                     # 回歸(30 項;GitHub Actions CI 亦跑)
 ```
 
 > 自包含,執行期不需原始 DATA1/DATA2(資產已萃取成 `assets/bundle/`)。需 `libsdl2-dev`、`libsdl2-ttf-dev`、`fonts-wqy-zenhei`。建置以 docker `dwsdl` 為準(`tools_build/`)。
+
+### 打包與發佈
+
+產生可攜發佈包(引擎 binary + 啟動器 + 自包含 `assets/`,**不含原始遊戲檔**):
+
+```bash
+cd opendw_remake
+bash tools/package/build_package.sh        # → dist/opendw-remake-<版本>-Linux-x86_64.tar.gz
+# 內含 build + cpack 產包 + 解開 + headless 執行驗證(全綠才產出)
+```
+
+解開後直接執行啟動器(會自動切到資產目錄、找系統 CJK 字型):
+
+```bash
+tar xzf opendw-remake-*.tar.gz
+./opendw-remake-*/bin/opendw-remake.sh             # 選單(B 建角)
+./opendw-remake-*/bin/opendw-remake.sh --win640    # 640×480
+```
+
+字型:不打包(授權考量),啟動時自動搜尋系統中/日字型(wqy-zenhei / Noto CJK /
+PingFang / 微軟正黑等);找不到可用 `DWR_FONT=/path/to/cjk.ttf` 指定。
+
+**取得與遊玩**:玩家自備合法原版《火龍之戰》;本專案資產已自包含,執行期不需原始
+`DRAGON.COM` / `DATA1` / `DATA2`。下載對應平台發佈包 → 解開 → 跑 `bin/opendw-remake.sh`
+即可,預設繁體中文(遊戲中 `F4` 可切 繁中 / EN / 日)。
+
+### 跨平台
+
+GitHub Actions CI(`.github/workflows/ci.yml`)涵蓋三平台:
+
+| 平台 | 取得 SDL2 | 狀態 |
+|---|---|---|
+| Linux (x86_64) | apt `libsdl2-dev` `libsdl2-ttf-dev` | ✅ 已在 docker `dwsdl` 實機驗證:build + ctest 30/30 + 產包 + headless 執行 |
+| Windows (x64) | vcpkg `sdl2` `sdl2-ttf` (MSVC) | ⏳ CI 設定已備,**未在本環境實機驗證**;待 CI 實跑產出 `.exe` |
+| macOS | Homebrew `sdl2` `sdl2_ttf` | ⏳ CI 設定已備,**未在本環境實機驗證**;待 CI 實跑產出 binary |
+
+> Windows/macOS 產物只提供 CI 設定 + 文件;本地為 Linux 環境,無法實機產出/驗證 Win/Mac
+> binary,故誠實標示「待 CI 跑」。Linux tarball 流程則已在 docker 內完整跑通。
 
 ## 目前狀態(2026-06)
 
