@@ -20,10 +20,18 @@
 - **Oceana — 歐西納**. _官方手冊(太陽系名)_
 - **Dilmum — 迪瑪**. _官方手冊(行星名)_
 - **Nisir — 尼塞**. _官方手冊(山脈,瑪根地底世界所在)_
-- **Kingshome — 京雄城**. _官方手冊地圖_
+- **Kingshome — 京雄城**. _官方手冊地圖_. **King's Isle / King's Island — 王島**(渡輪目的地,Kingshome 所在島). _軟體世界 26 期攻略(docs/39);信心:中_
 - **Byzanople — 拜占儂**. _官方手冊地圖_
 - **Mud Toad / Yellow Mud Toad — 黃泥蟾蜍城**. _官方手冊地圖_
-- Tars / Tarsus / Lansk / Zaton — _保留原文待確認_
+- **Lansk — 蘭斯克**. _攻略沿用音譯;CONTEXT 既有 events 用此名_. **Lansk Undercity — 蘭斯克地下城**. _軟體世界 26 期攻略(docs/39);信心:中_
+- **Zaton — 查頓**. _立石銘文「Master Zaton 宗師查頓」;軟體世界 26 期攻略(docs/39)德魯伊系法師,納達奪其魂魄;信心:中_. _Avoid_: 薩頓
+- **Apsu Waters — 亞蘇水**. _波卡城事件,連接現實與瑪根地底世界;軟體世界 25 期攻略(docs/39)+ 段落 94;信心:中_. _Avoid_: 阿普蘇之水
+- **Quag — 奎格**. _神祕林傳送目的地之一(奎格島);軟體世界 26 期攻略(docs/39);信心:中_
+- **Isle of Forlorn — 絕望島**. _莫格宅院(area 37)繼承劇情來源;軟體世界 27 期攻略(docs/39);信心:中_. _Avoid_: 孤絕島
+- **Icarian Triumph Tavern — 冒險酒店**. _自由港/菲巴斯酒館招牌;軟體世界攻略(docs/39)會面地點;信心:中(意譯,Icarian 未音譯)_
+- **Solarium — 日光殿**. _菲巴斯太陽神勢力區(Mystalvision 所在);信心:中(意譯)_
+- **Dwarf Ruins / Clanhall / Forge — 矮人廢墟 / 矮人城堡 / 矮人鑄爐**. _軟體世界 27 期攻略(docs/39);信心:中_
+- Tars / Tarsus — _保留原文待確認_(Tars 譯「塔斯」見 events「為塔斯哀悼」,城名待手冊核對)
 
 ## 人物 / Characters
 
@@ -32,7 +40,16 @@
 - **Irkalla — 伊爾卡拉**. _瑪根地底世界的黑暗之后 / 冥界女王(Queen of the Underworld);可向其祈禱復活亡魂。手冊段落 137 中被銀鍊綁住者_
 - **Nergal — 奈羅**. _Irkalla 之**夫**(consort),獨立冥神角色。英文手冊確認「Irkalla… and her consort Nergal」_. **⚠ 勿與 Namtar(納達,最終魔王)混淆** —— 軟體世界攻略 OCR 曾將 Nergal 誤判為納達
 - **Clopin Trouillefou — 克洛潘·特魯伊弗**. _奇蹟宮廷之首_
-- Enkidu / Utnapishtim — _保留原文待確認_
+- **Lanac'toor — 拉娜**. _高級魔法宗師(master of High Magic);肢解後碎片須送回黃泥蟾蜍城復原(CONTEXT 既有「拉娜碎片」);軟體世界攻略(docs/38/39)拉娜的實驗室/雕像/眼鏡;信心:高_
+- **Mystalvision — 美斯達**. _背叛的太陽高階祭司(菲巴斯/日光殿);軟體世界 25 期攻略(docs/39)+ 段落 67;信心:中_. _Avoid_: 密斯塔維恩
+- **King Drake — 杜拉克國王**. _京雄城肖像長廊;軟體世界 27 期攻略(docs/39);信心:中_. _Avoid_: 德瑞克國王
+- **Prince Jordan — 喬丹王子**. _杜拉克之子、拜占儂的王子;軟體世界 27 期攻略(docs/39);信心:中_
+- **Utnapishtim — 烏娜皮什提姆**. _魔法學院(area 31)三件法器測驗主持者;軟體世界 27 期攻略(docs/39,亦作「烏娜」「烏納皮什提姆」)+ 段落 141–146;信心:中(攻略譯名不一,取較完整音譯)_
+- **Buck Ironhead — 鐵頭巴克**. _納達麾下首席將軍(尼塞山腹終戰前);意譯姓 Ironhead=鐵頭;信心:中_
+- **Slaveholder Mog — 奴隸主莫格**. _莫格宅院(area 37,絕望島)主人;軟體世界 25 期攻略(docs/39);信心:中_
+- **Long John Ugly / Ugly — 醜約翰**. _海盜竊穴(area 10)頭目,可載玩家往陳屍所;軟體世界攻略(docs/39);信心:中_
+- Enkidu — _保留原文待確認_
+- **Myrilla / Myrolla — 蜜瑞拉 / 蜜蘿拉**(雙胞胎公主). _京雄城肖像長廊;純音譯(攻略無記載),兩名相近音刻意區分;**信心:低,待審**_
 
 ## 屬性 / Stats (角色狀態畫面)
 
@@ -86,6 +103,14 @@
 | Humbaba | 胡姆巴巴 |
 | Yellow Mud Toad / Wood Spirit | 黃泥蟾蜍 / 木靈 |
 
+## 勢力 / 組織 / 稱呼 / Factions & titles
+
+- **Outlander(s) — 外鄉人**. _拜占儂/京雄城/蘭斯克官員對玩家的稱呼;信心:中_. _Avoid_: 外來者、化外之人
+- **Stosstrupen — Stosstrupen(突擊隊)**. _德文 Stoßtruppen=突擊隊;納達的精銳追捕部隊(菲巴斯/area 6);**軟體世界攻略保留原文**,events 採「保留原文+括註突擊隊」;信心:中(原文 game 偶拼 Strosstrupen)_
+- **Universal God / Priest of the Universal God — 宇宙之神 / 宇宙之神的祭司**. _納達信仰體系;直譯,待手冊核對;信心:中_
+- **Black Market / black marketeer — 黑市 / 黑市商人**. _波卡城、軍營(area 29)等地;信心:高_
+- **店家 NPC 名(area 9/38 等,純音譯,攻略無記載,信心:低,待審)**:Marik(馬瑞克,拜占儂盔甲匠)、Bart(巴特,拜占儂武器匠)、Boris(鮑里斯,拜占儂煉金術士/治療者)、Exeter(艾克斯特,蘭斯克地下城盔甲商)、Doctor Death(死亡博士,蘭斯克地下城武器商,意譯)
+
 ## UI / 系統訊息
 
 - **party — 隊伍**；**character — 角色**；**Create/Delete/Rename/View — 建立/刪除/重新命名/檢視**
@@ -109,3 +134,5 @@
 - 多數地名/人名(Oceana/Tars/Nisir/Lansk/Enkidu)手冊 OCR 不清,**暫保留原文**,待人工核對掃描圖再定譯名。
 - 怪物中文名為暫定,需與手冊掃描圖最終核對(見 `docs/26_MONSTERS_AND_SPRITES.md`)。
 - **句子碎片問題**:遊戲以「片段 + 變數」組句(英語語序)。中文翻譯時語序需重排,部分組合句需在 #2 階段調整 opcode 或片段切法,不能逐片直譯。詳見 `docs/15_TRANSLATION_DRAFT.md`。
+- **以下固有名詞已由軟體世界攻略(docs/38/39)回填(信心:中),但攻略=約定俗成而非官方臺灣手冊,待使用者最終裁決**:美斯達(Mystalvision)、杜拉克國王(King Drake)、喬丹王子(Prince Jordan)、烏娜皮什提姆(Utnapishtim,攻略譯名不一)、查頓(Zaton)、亞蘇水(Apsu Waters)、奎格(Quag)、王島(King's Isle)、絕望島(Isle of Forlorn)、冒險酒店(Icarian Triumph Tavern)、鐵頭巴克(Buck Ironhead)、莫格(Mog)、醜約翰(Ugly)。
+- **以下純音/意譯、攻略無記載,信心:低,優先待審**:蜜瑞拉/蜜蘿拉(Myrilla/Myrolla,雙胞胎公主同音需區分)、店家 NPC 馬瑞克/巴特/鮑里斯/艾克斯特/死亡博士(Marik/Bart/Boris/Exeter/Doctor Death)、Stosstrupen(突擊隊,是否音譯待定)、日光殿(Solarium)。

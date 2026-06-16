@@ -8,6 +8,11 @@ Run	逃げる
 Advance	前進
 Attack	攻撃
 F:Fight  R:Run	F:戦う  R:逃げる
+# 戦闘ログ単語（汎用語・高信頼度。slain は既存テンプレート「倒した」と統一）
+hit	命中
+miss	ミス
+damage	ダメージ
+slain	倒した
 The party flees!	パーティは逃げ出した！
 # 戦闘ログのテンプレート（%s/%s/%d の順序固定：攻撃者/対象/ダメージ、入れ替え禁止）
 %s attacks %s for %d damage	%s は %s に %d ポイントのダメージを与えた
