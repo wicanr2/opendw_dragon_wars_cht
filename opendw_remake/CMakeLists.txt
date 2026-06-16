@@ -301,9 +301,16 @@ add_executable(dump_worldmap_tiles tools/verify/dump_worldmap_tiles.cpp)
 target_link_libraries(dump_worldmap_tiles PRIVATE dwr_resource)
 
 # tools/verify:逐 area dump 牆屬性 word_11C6 nibble + tile 型分佈(門/陷阱逆向 grounding;
-# docs/57 「.lvl 牆屬性無獨立門位元」結論來源),非 ctest gate。
+# docs/57 §2 結論來源),非 ctest gate。
 add_executable(dump_wall_attr tools/verify/dump_wall_attr.cpp)
 target_link_libraries(dump_wall_attr PRIVATE dwr_resource)
+
+# tools/verify:逐 area dump data_56C6 牆/門型表(兩半)+ 牆 nibble→tag + hilo 牆型碼
+# (門牆識別深掘;docs/57 §2「可識別前方牆型 byte、門語意受阻」結論來源),非 ctest gate。
+add_executable(dump_door_table tools/verify/dump_door_table.cpp)
+target_link_libraries(dump_door_table PRIVATE dwr_resource dwr_render)
+add_executable(dump_door_cells tools/verify/dump_door_cells.cpp)
+target_link_libraries(dump_door_cells PRIVATE dwr_resource dwr_render)
 
 # tools/verify:非世界圖子區入口探測(跑母區事件 script,觀測 gs 寫入 / op58 tag /
 # halt opcode)。用於判定 Phoebus(6)/Byzanople(9) 等子區是否卡在未實作 opcode。

@@ -7,9 +7,10 @@
 | 機制 | 真值層級 | 依據 |
 |---|---|---|
 | 牆屬性 word_11C6 nibble → 牆/門 sprite | bytecode 真值 | engine.c `move_player_on_map`(0x536B)、`draw_minimap_row`(0x1861)、`viewport_compose` 已逐指令逆出 nibble → `data_56C6` → sprite |
+| **面向前方牆型 byte → `gs[0x26]`(門牆識別線索)** | **可識別(byte 真值)** | engine.c `refresh_viewport` 5663-5673:前方中央格牆 nibble → `data_56C6[nibble+0xF]` → `gs[0x26]`;`hilo` = 逐關牆型碼。**但其值→門/牆語意受阻**(見 §2) |
 | 移動可走判定(`tile != 0`) | bytecode 真值 | engine.c `get_map_tile_data`(0x54D8):`word_11C8 = data_5521[di+2]`,0=void/牆、1=地面、≥2=特殊事件格 |
 | 特殊格事件腳本入口(op_71 / `script_pc`) | bytecode 真值 | `Level::script_pc` 已對拍 op_71;特殊格(word_11C8≥2)以 script PC 進事件 VM |
-| **K 開門 / 破密門「動作」** | **受阻 → remake 設計** | opendw 乾淨反編**無主遊戲 K 開門 handler**(見下) |
+| **K 開門 / 破密門「動作 + 開/鎖/阻擋語意」** | **受阻 → remake 設計** | 能識別前方牆型 byte 與門牆候選位置,但 `gs[0x26]` 消費者(開門語意)在未反編主迴圈(見 §1/§2) |
 | **陷阱觸發 / 傷害 / 解除** | **受阻 → remake 設計** | opendw 乾淨反編**無陷阱結算**;grounded 手冊 |
 | **戰鬥外地形法術結算** | **受阻 → remake 設計** | opendw C 碼法術未實作(同 docs/44 戰鬥結算);grounded 手冊 |
 
@@ -22,13 +23,36 @@
 - `move_player_on_map`(engine.c:5332)**只負責建構第一人稱 viewport 的周邊牆 nibble**(讀前方/側方格、打包成 `word_11CA`/`word_11CC` 供 FOV 元件選擇),**不消費「開門動作」**。
 - 結論:Dragon Wars 主遊戲移動 / K 開門邏輯位於 indirect-jump 後的主迴圈,**不在 opendw 乾淨 C 反編**。
 
-### 2. .lvl 牆屬性無獨立「門位元」
+### 2. .lvl 牆屬性的門線索:可識別到「前方牆型 byte」,但門語意受阻
 
-dump 全 40 關 word_11C6(`tools/verify/dump_wall_attr.cpp`):
+(本節為 2026-06-16 有界深掘的修訂結論,取代舊版「牆屬性完全無門線索」的粗略說法。)
 
-- 高 byte bit3(`(word_11C6>>8)&0x08`,minimap 用的「有結構」測試)**在所有關卡的所有格都未設**。
-- 門 / 密門**沒有專屬位元**:牆 nibble(低 byte 高/低 nibble)只是「選哪張牆/門 sprite」的索引(→ `data_56C6`),哪個 nibble 值對應「門 sprite」是**逐關 metadata**,且其「可否開啟 / 開啟後可走」由**未反編的 bytecode 決定**。
-- 真正的門 / 陷阱在 Dragon Wars 是**特殊事件格**(word_11C8 ≥ 2):各關 word_11C8 有大量唯一值(如 area1 有 0x02..0x29 共數十種,多數只出現 1 次 = 單一事件觸發點),其行為由 `script_pc(tile)` 指向的事件腳本決定。哪些特殊格是「門 / 陷阱」需逐格跑 bytecode 才能斷定,**無法靜態乾淨逆出**。
+牆屬性 word_11C6 的**低 byte**含兩個 nibble(高/低),經 `data_56C6` 牆/門型表選元件 sprite。
+`data_56C6` 建表(engine.c:5096-5110)每筆 2 byte → 拆成兩半:
+
+- **低半** `data_56C6[n]` = `byte_lo & 0x7F` → 元件型 index(選 `data_59E4[idx]` sprite)。
+- **高半** `data_56C6[n+0xF]` = `byte_hi`(原始,含旗標)。
+
+**可識別到的一步(byte-level)**:`refresh_viewport`(engine.c:5663-5673)取**面向前方中央格**
+(`data_5A56[10]`)的牆 nibble,若非 0 → `gs[0x26] = data_56C6[nibble+0xF]`(前方牆的高半 byte)。
+即引擎**確實把「面向前方牆的型別 byte」算出來並存進 `gs[0x26]`**,正是「開門/碰牆」動作會讀的位置。
+其低 nibble(本文記為 `hilo`)為**逐關牆型碼**:dump 全 40 關(`dump_door_table` / `dump_door_cells`)
+可見地牢類關卡(area 27/33/34/8…)有少數牆 nibble 的 `hilo != 0`,與該關「主牆」(`hilo == 0`)區隔。
+
+**受阻的一步(語意,誠實標示)**:`hilo != 0` **不能乾淨判定為「門」**——它是**重載**的牆變體碼:
+- area 27「尼塞山腹」:主牆 `hilo=0`,僅 1 格 rare nibble `hilo=1`(像門);
+- area 34「Lanac'toor's Lab」:**整間實驗室內牆** `hilo=3`(x64 格)——是該關標準牆,**非門**。
+
+且全 40 關牆 nibble 只選到固定 5 個 tag(110/115/122/125/126 + 0x7F 透明),**無專屬「門」sprite tag**。
+因此能識別「前方牆型 byte(`gs[0x26]` 來源)」與「哪些 nibble 牆型異於主牆」,但**「哪個牆型是可開的門 vs 鎖門 vs 實心牆」「K 開門後是否變可走」的語意,完全在消費 `gs[0x26]` 的未反編主迴圈**,靜態無法乾淨逆出。
+
+連可走性本身(move walkability gate)也不在乾淨反編:`move_player_on_map` 只打包 FOV nibble,
+真正的「tile!=0 才可走」判定同樣在未反編主迴圈(remake 沿用此慣例)。
+
+- 補充:真正的門 / 陷阱在 Dragon Wars 多以**特殊事件格**(word_11C8 ≥ 2)+ `script_pc(tile)` 事件腳本承載;
+  哪些特殊格是「門 / 陷阱」需逐格跑 bytecode 才能斷定,亦無法靜態乾淨逆出。
+
+**判定**:可逆到「識別前方牆型 byte 與門牆候選位置」;**開門/上鎖/阻擋語意受阻** → 保留 remake 設計。
 
 ## remake 設計(grounded 手冊)
 

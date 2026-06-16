@@ -4,8 +4,12 @@
 // Level tile + TerrainState 旗標)、(3) 互動結果列舉。內部隱藏旗標組合邏輯。
 //
 // ── 真值層級(務必誠實,見 docs/57)─────────────────────────────────────
-//   opendw 乾淨反編無主遊戲 K 開門 handler、無陷阱結算;.lvl 牆屬性無獨立門位元
-//   (門/陷阱在原版是特殊事件格 word_11C8≥2,行為由未反編 bytecode 決定)。
+//   逆向深掘(2026-06-16):可識別到「面向前方牆型 byte」(engine.c refresh_viewport
+//   5663-5673:前方中央格牆 nibble → data_56C6[nibble+0xF] → gs[0x26]),其低 nibble
+//   hilo 是逐關牆型碼,地牢類部分牆 nibble hilo!=0 與主牆區隔(門牆候選)。**但**
+//   hilo 重載(area34 整間實驗室內牆 hilo=3 是主牆非門)、全 40 關牆 nibble 只選固定
+//   5 個 sprite tag、無專屬門 tag → K 開門「開/鎖/阻擋/開後可走」語意完全在消費
+//   gs[0x26] 的未反編主迴圈,靜態無法乾淨逆出;連 move walkability(tile!=0)亦然。
 //   故以下 tile 型→語意為 **remake 設計約定**(grounded 手冊 K=開門/破密門、
 //   Disarm/Sense Trap/Soften Stone 法術),非 oracle 真值。真實 .lvl 目前未含這些
 //   保留值(0x30..0x34),故不影響既有關卡;機制以 remake 測試關 headless 驗證。
