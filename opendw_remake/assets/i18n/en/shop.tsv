@@ -1,0 +1,34 @@
+# Shop + tavern recruit UI strings + curated standard equipment names (English passthrough).
+# english	chinese
+Shop	Shop
+Buy	Buy
+Sell	Sell
+Gold	Gold
+Price	Price
+Buy/Sell	Buy/Sell
+shop_no_gold	Not enough gold.
+shop_full	Inventory is full.
+shop_empty_slot	Nothing in that slot.
+Bought.	Bought.
+Sold.	Sold.
+Nothing to sell.	Nothing to sell.
+Welcome to the shop.	Welcome to the shop.
+Tavern	Tavern
+Recruit	Recruit
+Recruit a companion	Recruit a companion
+recruit_already	Already in your party.
+recruit_full	Party is full (max 7).
+recruit_unknown	No such companion.
+Recruited!	Recruited!
+(in party)	(in party)
+The tavern is lively tonight.	The tavern is lively tonight.
+shop_dagger	Dagger
+shop_short_sword	Short Sword
+shop_long_sword	Long Sword
+shop_battle_axe	Battle Axe
+shop_war_hammer	War Hammer
+shop_buckler	Buckler
+shop_kite_shield	Kite Shield
+shop_leather_armor	Leather Armor
+shop_chain_mail	Chain Mail
+shop_helmet	Iron Helmet

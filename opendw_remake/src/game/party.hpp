@@ -126,6 +126,10 @@ public:
   // 取每名角色的完整 512B 原始 record(供存檔;與 at(i) 同順序)。
   std::vector<std::array<std::uint8_t, 512>> raw_records() const;
 
+  // 在隊伍尾追加一名角色(自 512B 原始 record;供酒館招募 NPC 入隊)。
+  // 不檢查上限(由呼叫端 recruit.hpp 守 7 員 + identifier gate)。
+  void add_record(const std::array<std::uint8_t, 512>& rec);
+
   std::size_t size() const { return members_.size(); }
   const CharacterRecord& at(std::size_t i) const { return members_.at(i); }
   // 可變存取(供成長 / 戰後結算改角色;progression 模組用)。越界丟例外。

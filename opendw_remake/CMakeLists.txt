@@ -49,7 +49,7 @@ target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
 # --- game 模組(隊伍角色資料 + 右側狀態面板渲染 + 戰鬥結算)---
-add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/combat_loop.cpp src/game/spells.cpp src/game/seen_map.cpp src/game/chargen.cpp src/game/progression.cpp)
+add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/combat_loop.cpp src/game/spells.cpp src/game/seen_map.cpp src/game/chargen.cpp src/game/progression.cpp src/game/shop.cpp src/game/recruit.cpp)
 target_include_directories(dwr_game PUBLIC src)
 target_link_libraries(dwr_game PUBLIC dwr_render)
 
@@ -217,6 +217,22 @@ add_executable(verify_spells tools/verify/verify_spells.cpp)
 target_link_libraries(verify_spells PRIVATE dwr_game)
 add_test(NAME verify_spells
          COMMAND verify_spells ${CMAKE_SOURCE_DIR}/assets/bundle)
+
+# tools/verify:商店買賣確定性 PASS/FAIL(買=gold[81] 扣對 + 物品入背包 + 窮買不到 +
+#   背包滿擋下;賣=gold 加半價 + 物品移除 + 空格擋下;stock.json 載入;512B raw round-trip)。
+#   grounded:23B 物品格式/售價編碼=fraterrisus(docs/44 §2);買賣邏輯/curated 庫存=remake 設計(誠實標)。
+add_executable(verify_shop tools/verify/verify_shop.cpp)
+target_link_libraries(verify_shop PRIVATE dwr_game)
+add_test(NAME verify_shop
+         COMMAND verify_shop ${CMAKE_SOURCE_DIR}/assets/bundle)
+
+# tools/verify:酒館招募確定性 PASS/FAIL(NPC 入隊 + identifier[77] gate 防重複 +
+#   隊伍上限 7 + 未知 id 擋下 + 隊伍 round-trip byte-for-byte + 招募後 raw[77] 正確)。
+#   grounded:512B 格式 + identifier[77] + NPC 名(fraterrisus);NPC 屬性/招募邏輯=remake 設計(誠實標)。
+add_executable(verify_recruit tools/verify/verify_recruit.cpp)
+target_link_libraries(verify_recruit PRIVATE dwr_game)
+add_test(NAME verify_recruit
+         COMMAND verify_recruit ${CMAKE_SOURCE_DIR}/assets/bundle)
 
 # tools/verify:把原版戰鬥腳本(res 3)餵進 remake VM 的調查工具(gap 分析,非 ctest)。
 #   印跑了幾步、停在哪個 opcode/pc。見 docs/42_COMBAT_BYTECODE.md。
