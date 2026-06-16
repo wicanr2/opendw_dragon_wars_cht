@@ -53,6 +53,13 @@
 - **角色屬性表(CharSheet)**:`V` 或 `1`-`4` → 顯示選定角色完整屬性(力量/敏捷/智力/精神/生命/暈眩值/法力/等級/金幣/狀態/性別),`↑↓`/`1`-`4` 切換、`Esc` 關;i18n 三語、`F4` 即時重排。
 - **存檔 / 讀檔**:`S` 存檔(訊息提示);選單 `C` 或 `--load` 讀檔還原 area/位置/朝向/game_state/隊伍。round-trip byte-for-byte(ctest `verify_save`)。
 - **遭遇 / 戰鬥畫面(S_COMBAT)**:`--encounter <id>` → 怪物圖(@ (16,8) 對齊 opendw 佈局,golden byte-for-byte)+ 隊伍面板 + `F`戰鬥 / `R`逃跑 / `C`施法。**命中 / 徒手 / 武器傷害骰公式 = bytecode 真值**(從 res3 + DRAGON.COM 反組譯,詳見 `42_COMBAT_BYTECODE.md`);怪物 21B → AV/DV/STR 亦 bytecode 真值。**仍受阻**:res3 全戰鬥閉環(op_89 動作指派卡點)未真值化 → combat_loop 為 remake 設計(同真值公式,非 res3 閉環);怪物 HP/AC 暫定。
+- **特殊攻擊 + 閃避(S_COMBAT,群戰)**:手冊 §戰鬥列 4 種特殊攻擊 + Dodge,對應熱鍵 `M`強力一擊(Mighty Blow)/ `D`卸武裝(Disarm enemy)/ `A`前進(Advance)/ `Q`快速戰鬥(Quickly fight)/ `E`閃避(Dodge enemies)。**真值層級:remake 設計 grounded 手冊**——opendw C 未實作戰鬥結算(`player.c` spell_info 的 `0x40 Disarm` 是法術 bitmask,非近戰特殊攻擊),res3 戰鬥 bytecode 全閉環受阻,**特殊攻擊的命中/傷害/卸武裝/DV 修正係數無法由 bytecode 逆出**。底層單次攻擊仍走 `resolve_attack`(命中/傷害公式 = bytecode 真值),特殊攻擊只在其上套修正,不重寫公式:
+  - 強力一擊:命中門檻 −`kMightyBlowAvPenalty`(較難命中),命中時傷害 +`kMightyBlowDmgBonus`。
+  - 卸武裝:命中則打掉敵人武器(傷害骰回退徒手 1d4),本次不造成身體傷害。
+  - 前進:remake 無實體 range → 以 AV +`kAdvanceAvBonus` 反映「逼近、站位更好」。
+  - 快速戰鬥:結算等同一般攻擊(「快速」= UI 跳過逐一動畫)。
+  - 閃避:本回合自身 DV +`kDodgeDvBonus`(被命中門檻下降),下回合輪到前清除。
+  - headless `--combat-special <mighty|disarm|advance|quick|dodge>`(配 `--encounter`);ctest `verify_combat_special`。
 - **多語**:`F4` 循環 繁中 / EN / 日;`--locale <id>`。
 - **已接入指令**:`C` 探索施法、`K` 開門/破密門、`X` 配點(角色表內)、`U` 使用物品(角色表物品欄內 `V`→`E`→選格→`U`)、`E` 裝備穿脫、`P` 商店、`T` 招募。
 - **未實作指令**(`O` 重排隊伍、`Ctrl+S` 聲音):待對應系統接入(`O` 需隊伍重排 UI;`Ctrl+S` 需音訊子系統,目前 op_90 忠實 no-op)。
@@ -73,6 +80,7 @@
 | `--msg-page <N>` | 事件訊息檢視器先翻到第 N 頁(0-based)再 dump |
 | `--char-sheet <N>` | 直接開角色 N 屬性表 |
 | `--encounter <id>` | 進遭遇畫面(怪物表 index);配 `--combat-seed`/`--combat-rounds` |
+| `--combat-special <type>` | 隊伍第 0 名用特殊攻擊一回合(`mighty`/`disarm`/`advance`/`quick`/`dodge`);驗證命中/傷害/卸武裝/DV 修正 |
 | `--load <path>` / `--save-path <path>` | 讀檔 / 指定存檔路徑 |
 | `--selftest-save` | headless 存讀檔 round-trip 自測 |
 | `--terrain-cast <id>` | S_GAME 首幀對前方/當前格施放地形法術一次(驗證 Soften Stone/Disarm Trap/Sense Traps) |

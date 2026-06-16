@@ -192,6 +192,14 @@ struct Combatant {
   bool fled = false;
   int dazzle_turns = 0;
 
+  // ── 特殊攻擊狀態(remake 設計,grounded 手冊;見 SpecialAttack / resolve_special_attack)──
+  //   dodge_dv:本回合 Dodge(閃避敵人)帶來的臨時 DV 加成。回合結束(輪到此單位下次行動前)
+  //            由 combat_loop 清 0。提高 DV → 被命中門檻下降(roll-under,門檻 = 13+AV−(DV+AC))。
+  //   disarmed:被「卸武裝」打掉武器 → 傷害骰回退徒手(1d4),不影響 AV/DV。一場戰鬥內持續
+  //            (對齊手冊:武器被打落需重新拾取,remake 簡化為本場持續)。
+  int dodge_dv = 0;
+  bool disarmed = false;
+
   // 仍在場上(未死亡、未逃離)。逃離者視同離場 → 不參戰、不被瞄準、不計入存活。
   bool in_combat() const { return alive() && !fled; }
   // 本回合是否被控制(眩目)而無法行動。
@@ -247,6 +255,48 @@ struct AttackResult {
 //         **武器路徑因 op_68(原版未逆向)仍 best-fit**。
 // RNG 副作用順序固定(先擲命中,命中才擲傷害),確保可重現。
 AttackResult resolve_attack(Combatant& attacker, Combatant& target, CombatRng& rng);
+
+// ── 特殊攻擊(手冊 §戰鬥;**真值層級:remake 設計 grounded 手冊**)────────────────
+// 誠實界定(務必保留):
+//  • 手冊(docs/33 §戰鬥/特殊攻擊;CONTEXT.md 戰鬥術語)列出 4 種特殊攻擊 + Dodge:
+//      Mighty Blow(強力一擊)/ Disarm enemy(卸武裝)/ Advance(前進)/
+//      Quickly fight(快速戰鬥)/ Dodge enemies(閃避敵人)。
+//  • opendw C 反編**未實作任何戰鬥結算**(engine.c 只到載圖 + 動畫;player.c spell_info
+//    的 0x40 "Disarm" 是法術 bitmask,非近戰特殊攻擊);res3 戰鬥 bytecode 全閉環
+//    卡 actor 迴圈動作指派 driver(combat.hpp 檔頭 + combat_loop.hpp §真值來源)。
+//    → **特殊攻擊的命中/傷害/卸武裝修正係數無法由 bytecode 逆出 = 受阻**。
+//  • 故下列係數為 **remake 設計(grounded 手冊定性)**,接在既有 resolve_attack
+//    (命中/傷害公式 = bytecode 真值)之上以「修正 AV/傷害骰/DV」實現,**不重寫公式**。
+//    係數選值見各 case 註解(平衡導向,確定性可驗證)。
+enum class SpecialAttack : std::uint8_t {
+  Normal,      // 一般攻擊(= 既有 resolve_attack)
+  MightyBlow,  // 強力一擊:犧牲命中換高傷害
+  Disarm,      // 卸武裝:命中則打掉敵人武器(傷害骰回退徒手)
+  Advance,     // 前進:近戰逼近(remake 無 range 概念 → 本回合小幅 AV 加成,語意保留)
+  QuickFight,  // 快速戰鬥:本回合快速結算(由 combat_loop 編排,單體公式同一般攻擊)
+  Dodge,       // 閃避敵人:本回合提高自身 DV(不攻擊),降低被命中率
+};
+
+// 特殊攻擊修正係數(**remake 設計,grounded 手冊**;見 SpecialAttack 註解)。
+//  • 強力一擊:命中門檻 −kMightyBlowAvPenalty(較難命中),命中時傷害 +kMightyBlowDmgBonus。
+inline constexpr int kMightyBlowAvPenalty = 4;   // 命中懲罰(門檻 −4,roll-under 下變難命中)
+inline constexpr int kMightyBlowDmgBonus  = 6;   // 命中時固定傷害加成(grounded「強力一擊」)
+//  • 前進:逼近敵人 → 小幅 AV 加成(remake 無實體 range,以命中微利反映「站位更好」)。
+inline constexpr int kAdvanceAvBonus = 2;        // 門檻 +2(較易命中)
+//  • 閃避:本回合 DV 加成(門檻下降 → 被命中率降低)。
+inline constexpr int kDodgeDvBonus = 5;          // 本回合 DV +5(下回合輪到前清除)
+
+// 解算一次「特殊攻擊」:在 resolve_attack 之上套用該 type 的修正(AV/傷害/卸武裝)。
+//   • MightyBlow:臨時改 attacker.av(−penalty)結算命中;命中則 damage += bonus。
+//   • Disarm:走一般命中;命中則 target.disarmed=true 並把其傷害骰降為徒手(1d4),
+//             **本次不直接造成傷害(打武器而非身體)**;hit=true、damage=0(語意:解除武裝)。
+//   • Advance:臨時改 attacker.av(+bonus)結算命中與傷害。
+//   • QuickFight / Normal:等同 resolve_attack(QuickFight 的「快速」由 combat_loop 編排)。
+//   • Dodge:**不結算攻擊**;由呼叫端(combat_loop / UI)改 attacker.dodge_dv;此函式對
+//             Dodge 回傳 hit=false、damage=0(no-op,僅供統一介面)。
+// RNG 副作用順序與 resolve_attack 一致(先命中、命中才傷害),確定性可重現。
+AttackResult resolve_special_attack(Combatant& attacker, Combatant& target,
+                                    SpecialAttack type, CombatRng& rng);
 
 // to-hit 參數【bytecode 反推 + 端到端驗證:res3 to-hit 子程式 @0x0F73】。
 //   roll = 1d16+3 ∈ [3,18](0x0F73 r2=0x10;op_4D→[0,16);op_30 0x03 → +3)。

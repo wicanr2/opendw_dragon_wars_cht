@@ -195,7 +195,9 @@ AttackResult resolve_attack(Combatant& attacker, Combatant& target,
   //   端到端跑 res3 驗證:門檻 = 13 + AV − def(def=DV+AC;armor char_data[0x59] 不影響)。
   //   RNG 副作用順序固定:先擲命中,命中才擲傷害 → 可重現。
   r.to_hit_roll = static_cast<int>(rng.below(kToHitDie)) + kToHitAdd;   // 1d16+3
-  r.to_hit_need = kToHitBase + attacker.av - (target.dv + target.ac);   // 命中門檻
+  // 命中門檻(roll-under):13 + AV − (DV + AC + Dodge 臨時 DV)。
+  //   target.dodge_dv:Dodge(閃避)本回合臨時 DV 加成(remake 設計);門檻下降 → 較難命中。
+  r.to_hit_need = kToHitBase + attacker.av - (target.dv + target.ac + target.dodge_dv);
   if (r.to_hit_roll == kToHitRollMin) {
     r.hit = true;             // roll==3 恆命中
   } else if (r.to_hit_roll == kToHitRollMax) {
@@ -233,6 +235,74 @@ AttackResult resolve_attack(Combatant& attacker, Combatant& target,
   }
   r.target_hp_after = target.hp;
   return r;
+}
+
+AttackResult resolve_special_attack(Combatant& attacker, Combatant& target,
+                                    SpecialAttack type, CombatRng& rng) {
+  // 特殊攻擊(**remake 設計 grounded 手冊**;係數見 combat.hpp)。原則:在 resolve_attack
+  //   (命中/傷害 = bytecode 真值)之上套修正,**不重寫公式**,維持確定性與 RNG 副作用順序。
+  switch (type) {
+    case SpecialAttack::Dodge: {
+      // 閃避:不攻擊。DV 加成由呼叫端(combat_loop / UI)套在 attacker.dodge_dv;
+      //   此處只回 no-op 結果(統一介面)。不耗 RNG。
+      AttackResult r;
+      r.hit = false;
+      r.target_hp_after = target.hp;
+      return r;
+    }
+    case SpecialAttack::MightyBlow: {
+      // 強力一擊:犧牲命中(AV −penalty)換高傷害(命中時 +bonus)。
+      int saved = attacker.av;
+      attacker.av -= kMightyBlowAvPenalty;          // 較難命中(roll-under 門檻下降)
+      AttackResult r = resolve_attack(attacker, target, rng);
+      attacker.av = saved;                          // 還原(僅本次命中判定用 penalty)
+      if (r.hit) {
+        // 命中追加傷害(再扣 target.hp;resolve_attack 已扣骰傷,這裡補加成)。
+        target.hp -= kMightyBlowDmgBonus;
+        r.damage += kMightyBlowDmgBonus;
+        if (target.hp <= 0 && !r.target_died) {
+          target.hp = 0;
+          target.status |= 0x01;
+          r.target_died = true;
+        }
+        r.target_hp_after = target.hp;
+      }
+      return r;
+    }
+    case SpecialAttack::Advance: {
+      // 前進:逼近 → AV 加成(remake 無實體 range,以命中微利反映站位)。
+      int saved = attacker.av;
+      attacker.av += kAdvanceAvBonus;
+      AttackResult r = resolve_attack(attacker, target, rng);
+      attacker.av = saved;
+      return r;
+    }
+    case SpecialAttack::Disarm: {
+      // 卸武裝:走一般命中判定;命中則打掉敵人武器(傷害骰回退徒手 1d4),**本次不造成身體傷害**。
+      //   語意對齊手冊「Disarm enemy」:解除其武裝而非直接殺傷。命中即 disarmed=true。
+      int hp_before = target.hp;            // 先存:resolve_attack 會夾 hp 至 0,還原需用原值
+      std::uint8_t status_before = target.status;
+      AttackResult r = resolve_attack(attacker, target, rng);
+      if (r.hit) {
+        // resolve_attack 已對 target.hp 扣骰傷(可能夾到 0);卸武裝不造成身體傷害 → 完整還原。
+        target.hp = hp_before;
+        target.status = status_before;      // 還原可能被誤設的死亡 bit
+        r.damage = 0;
+        r.target_died = false;
+        if (!target.disarmed) {             // 打掉武器:傷害骰降為徒手 1d4
+          target.disarmed = true;
+          target.dmg_dice = kUnarmedDice;
+          target.dmg_sides = kUnarmedSides;
+        }
+        r.target_hp_after = target.hp;
+      }
+      return r;
+    }
+    case SpecialAttack::QuickFight:
+    case SpecialAttack::Normal:
+    default:
+      return resolve_attack(attacker, target, rng);  // 等同一般攻擊
+  }
 }
 
 }  // namespace dw::game

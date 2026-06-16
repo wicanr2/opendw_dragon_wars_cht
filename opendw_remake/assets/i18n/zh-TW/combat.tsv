@@ -28,6 +28,9 @@ Not enough power	法力不足
 %s is disarmed!	%s 被解除了武裝！
 %s is too disoriented to act!	%s 太過迷失，無法行動！
 %s casts %s	%s 施放了 %s
+# 特殊攻擊（手冊 §戰鬥；命中/傷害/卸武裝/DV 修正係數為 remake 設計 grounded 手冊）
+M:Mighty D:Disarm A:Advance Q:Quick E:Dodge	M:強力 D:卸武 A:前進 Q:快速 E:閃避
+%s takes a defensive stance!	%s 擺出防禦姿態！
 # 勝負結果
 Victory!	勝利！
 The party has fallen.	全隊昏倒。

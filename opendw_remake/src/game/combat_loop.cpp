@@ -59,6 +59,12 @@ int CombatLoop::pick_target(bool attacker_is_player) {
   return alive[pick];
 }
 
+int CombatLoop::pick_first_in_combat(const std::vector<Combatant>& pool) {
+  for (int i = 0; i < static_cast<int>(pool.size()); ++i)
+    if (pool[i].in_combat()) return i;
+  return -1;
+}
+
 std::size_t CombatLoop::advance_round() {
   if (over()) return 0;
   std::size_t before = events_.size();
@@ -66,6 +72,9 @@ std::size_t CombatLoop::advance_round() {
   for (const Actor& a : order_) {
     if (over()) break;  // 一方全滅 / 全逃即停(本回合剩餘行動不再進行)
     Combatant& attacker = a.is_player ? party_[a.index] : monsters_[a.index];
+    // Dodge(閃避)臨時 DV 只保護到「該單位下次行動前」:輪到它時清除(remake 設計)。
+    //   故閃避後對方的一輪攻擊享受加成,等自己再行動時失效。
+    attacker.dodge_dv = 0;
     if (!attacker.in_combat()) continue;  // 行動者已倒下或已逃離 → 跳過
     if (attacker.dazzled()) {  // 被眩目/迷失/困住 → 本回合不行動,消耗一層控制(remake 設計)
       attacker.dazzle_turns--;
@@ -161,6 +170,51 @@ CombatEvent make_cast_event(const std::string& caster_name, bool caster_is_playe
   return ev;
 }
 }  // namespace
+
+AttackResult CombatLoop::special_attack(SpecialAttack type, bool actor_is_player,
+                                        int actor_index, int target_index) {
+  // 特殊攻擊整合(remake 設計 grounded 手冊)。actor 對對方陣營目標結算一次特殊攻擊。
+  AttackResult r;
+  std::vector<Combatant>& allies = actor_is_player ? party_ : monsters_;
+  std::vector<Combatant>& foes = actor_is_player ? monsters_ : party_;
+  if (actor_index < 0 || actor_index >= static_cast<int>(allies.size())) return r;
+  Combatant& actor = allies[actor_index];
+  if (!actor.in_combat()) return r;
+
+  // Dodge:不攻擊,對自身套本回合 DV 加成。事件 special_dodge=true(target==attacker)。
+  if (type == SpecialAttack::Dodge) {
+    actor.dodge_dv = kDodgeDvBonus;
+    CombatEvent ev;
+    ev.attacker = actor.name;
+    ev.target = actor.name;
+    ev.attacker_is_player = actor_is_player;
+    ev.hit = false;
+    ev.special_dodge = true;
+    events_.push_back(std::move(ev));
+    return r;  // hit=false, damage=0(no-op 攻擊)
+  }
+
+  // 攻擊類:挑目標(指定 index,或自動首個參戰敵人)。
+  int ti = target_index;
+  if (ti < 0 || ti >= static_cast<int>(foes.size()) || !foes[ti].in_combat())
+    ti = pick_first_in_combat(foes);
+  if (ti < 0) { recompute_outcome(); return r; }  // 對方已全滅
+  Combatant& target = foes[ti];
+
+  r = resolve_special_attack(actor, target, type, rng_);
+  CombatEvent ev;
+  ev.attacker = actor.name;
+  ev.target = target.name;
+  ev.attacker_is_player = actor_is_player;
+  ev.hit = r.hit;
+  ev.damage = r.damage;
+  ev.target_died = r.target_died;
+  ev.stunned = r.hit && !r.target_died && r.damage >= kStunThreshold;
+  ev.special_disarm = (type == SpecialAttack::Disarm && r.hit);
+  events_.push_back(std::move(ev));
+  recompute_outcome();
+  return r;
+}
 
 CastResult CombatLoop::cast_control(std::uint8_t spell_id, int caster_power,
                                     int caster_str, bool caster_is_player,

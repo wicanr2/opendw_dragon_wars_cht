@@ -376,6 +376,8 @@ int main(int argc, char** argv) {
   unsigned combat_seed = 0x1234;// --combat-seed N:結算 RNG 種子(確定性)
   int combat_rounds = 0;        // --combat-rounds N:dump 前自動打 N 回合(headless 驗證戰報)
   int combat_count = 6;         // --combat-count N:怪群數量(預設 6;沿用怪物表領頭怪)
+  std::string combat_special;   // --combat-special <type>:headless 隊伍第 0 名用特殊攻擊一回合(驗證)
+                                //   type ∈ mighty|disarm|advance|quick|dodge(grounded 手冊)
   int cast_spell_id = -1;       // --cast <spellId>:headless 在遭遇中施放該法術一次(驗證)
   bool cast_force = false;      // --cast-force:即使該角色未習得也施放(僅供驗證效果套用)
   int terrain_cast_id = -1;     // --terrain-cast <id>:headless 在 S_GAME 對前方/當前格施放地形法術一次(驗證)
@@ -430,6 +432,7 @@ int main(int argc, char** argv) {
     else if (eq("--combat-seed") && i + 1 < argc) combat_seed = (unsigned)std::strtoul(argv[++i], nullptr, 0);
     else if (eq("--combat-rounds") && i + 1 < argc) combat_rounds = std::atoi(argv[++i]);  // dump 前自動打 N 回合
     else if (eq("--combat-count") && i + 1 < argc) combat_count = std::atoi(argv[++i]);    // 怪群數量
+    else if (eq("--combat-special") && i + 1 < argc) combat_special = argv[++i];           // 特殊攻擊驗證
     else if (eq("--cast") && i + 1 < argc) cast_spell_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 施放法術
     else if (eq("--cast-force")) cast_force = true;     // 即使未習得也施放(驗證效果)
     else if (eq("--terrain-cast") && i + 1 < argc) terrain_cast_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 探索地形施法
@@ -2117,6 +2120,18 @@ int main(int argc, char** argv) {
         enc.log.emplace_back(buf);
         continue;
       }
+      // 特殊攻擊事件(remake 設計 grounded 手冊)。
+      if (e.special_dodge) {  // 閃避姿態:不攻擊,本回合 DV 提高
+        std::snprintf(buf, sizeof buf, tr.tr("%s takes a defensive stance!").c_str(),
+                      atk.c_str());
+        enc.log.emplace_back(buf);
+        continue;
+      }
+      if (e.special_disarm) {  // 卸武裝命中:打掉敵人武器(本次不造成身體傷害)
+        std::snprintf(buf, sizeof buf, tr.tr("%s is disarmed!").c_str(), tgt.c_str());
+        enc.log.emplace_back(buf);
+        continue;
+      }
       if (e.hit) {
         // 模板鍵「combat.hit.fmt」帶 3 槽:%1$=攻擊者 %2$=目標 %3$=傷害值。
         //   zh-TW:「%s 攻擊 %s,命中 %d 點傷害」;en passthrough:「%s attacks %s for %d damage」。
@@ -2166,6 +2181,37 @@ int main(int argc, char** argv) {
       enc.log.emplace_back(tr.tr("The party has fallen."));
     }
     while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
+  };
+  // 特殊攻擊一回合(remake 設計 grounded 手冊;見 combat.hpp SpecialAttack)。
+  //   隊伍第 0 名對首個參戰怪用 type 特殊攻擊 → 轉戰報 → 怪反擊一回合(同 cast 模式)。
+  //   Dodge 不攻擊也不挑目標:只提高自身 DV,接著怪反擊(被命中率因 DV 加成下降)。
+  auto special_attack_round = [&](game::SpecialAttack type) {
+    if (!enc.group_loop || enc.over) return;
+    game::AttackResult ar =
+        enc.group_loop->special_attack(type, /*actor_is_player=*/true, 0, -1);
+    (void)ar;
+    append_group_events();
+    using O = game::CombatOutcome;
+    O o = enc.group_loop->outcome();
+    if (o == O::Victory) {
+      enc.victory = true; enc.over = true;
+      enc.log.emplace_back(tr.tr("Each member gets 80 experience points for combat."));
+      if (!enc.xp_awarded) { party.award_xp(game::kXpPerVictory); enc.xp_awarded = true; }
+      level_up_party();
+    } else {
+      group_round();  // 怪反擊一回合(Dodge 時享 DV 加成)
+    }
+    while (enc.log.size() > 4) enc.log.erase(enc.log.begin());
+  };
+  // 把 --combat-special <type> 字串解析為 SpecialAttack(無效回 Normal)。
+  auto parse_special = [](const std::string& s) -> game::SpecialAttack {
+    using SA = game::SpecialAttack;
+    if (s == "mighty")  return SA::MightyBlow;
+    if (s == "disarm")  return SA::Disarm;
+    if (s == "advance") return SA::Advance;
+    if (s == "quick")   return SA::QuickFight;
+    if (s == "dodge")   return SA::Dodge;
+    return SA::Normal;
   };
   // 群戰施法回合:隊伍第 0 名施放 spell_id(走 CombatLoop::cast,依 SpellTarget 自動鋪對象)。
   //   傷害/治療/buff/控制全部結算(grounded 手冊;控制持續/逃離為 remake 設計)。
@@ -2338,6 +2384,10 @@ int main(int argc, char** argv) {
     int menu_y = kMsgStripY0 + 3;
     tl.add(kMsgStripX0 + 4, menu_y, tr.tr("F:Fight  R:Run"), 11, PX_UI);
     tl.add(kMsgStripX0 + 4 + 110, menu_y, tr.tr("C:Cast"), 11, PX_UI);
+    // 第二列:特殊攻擊熱鍵(手冊 §戰鬥;remake 設計結算)。群戰才顯示(單怪 demo 不支援)。
+    if (enc.group && !enc.over)
+      tl.add(kMsgStripX0 + 4, menu_y + 11,
+             tr.tr("M:Mighty D:Disarm A:Advance Q:Quick E:Dodge"), 9, PX_UI);
     // 施法選單(C 開啟)/戰報 log:放右側面板下方空白區(對齊原版「逐人動作選單在右側面板區」),
     //   不擠進底部訊息列(訊息列高度有限)。rx 對齊隊伍面板 x;ry 落在面板狀態條下方。
     int rx = kVpX + kVpW + 8;     // 184,右側欄起點(對齊隊伍面板 x≈216 左側留邊)
@@ -2564,6 +2614,27 @@ int main(int argc, char** argv) {
         std::fprintf(stderr, "cast: id=0x%02X not castable (known=%d sp=%p)\n",
                      sid, (int)known, (const void*)sp);
       }
+    }
+    // --combat-special <type>:headless 隊伍第 0 名用特殊攻擊一回合(驗證命中/傷害修正、
+    //   卸武裝、DV 提升)。前後印怪/英雄狀態 + 旗標到 stderr 供斷言。
+    if (!combat_special.empty() && enc.group && enc.group_loop) {
+      game::SpecialAttack sa = parse_special(combat_special);
+      const auto& mons0_before = enc.group_loop->monsters().at(0);
+      int mon_hp_before = mons0_before.hp;
+      bool mon_disarmed_before = mons0_before.disarmed;
+      int hero_dodge_before = enc.group_loop->party().at(0).dodge_dv;
+      game::AttackResult ar =
+          enc.group_loop->special_attack(sa, /*actor_is_player=*/true, 0, -1);
+      append_group_events();
+      const auto& mons0 = enc.group_loop->monsters().at(0);
+      const auto& hero0 = enc.group_loop->party().at(0);
+      std::fprintf(stderr,
+                   "combat-special: type=%s hit=%d dmg=%d "
+                   "mon_hp %d->%d mon_disarmed %d->%d hero_dodge_dv %d->%d\n",
+                   combat_special.c_str(), (int)ar.hit, ar.damage, mon_hp_before,
+                   mons0.hp, (int)mon_disarmed_before, (int)mons0.disarmed,
+                   hero_dodge_before, hero0.dodge_dv);
+      for (const auto& line : enc.log) std::fprintf(stderr, "  %s\n", line.c_str());
     }
     // --combat-rounds N:自動打 N 回合(headless 驗證戰報 / 確定性)。群戰走 group_round。
     for (int r = 0; r < combat_rounds && !enc.over; ++r) {
@@ -2886,6 +2957,16 @@ int main(int argc, char** argv) {
         enc.fled = true; enc.over = true;
         if (enc.group && enc.group_loop) enc.group_loop->flee();
         enc.log.emplace_back(tr.tr("The party flees!"));
+      } else if (enc.group && in.key == 'M') {             // M:強力一擊(Mighty Blow)
+        special_attack_round(game::SpecialAttack::MightyBlow);
+      } else if (enc.group && in.key == 'D') {             // D:卸武裝(Disarm)
+        special_attack_round(game::SpecialAttack::Disarm);
+      } else if (enc.group && in.key == 'A') {             // A:前進(Advance)
+        special_attack_round(game::SpecialAttack::Advance);
+      } else if (enc.group && in.key == 'Q') {             // Q:快速戰鬥(Quickly fight)
+        special_attack_round(game::SpecialAttack::QuickFight);
+      } else if (enc.group && in.key == 'E') {             // E:閃避敵人(Dodge enemies)
+        special_attack_round(game::SpecialAttack::Dodge);
       } else if (in.key == 'F' || in.select) {            // F/Enter:打一回合(全體自動攻擊)
         if (enc.group) group_round(); else combat_round();
       }
