@@ -1,5 +1,17 @@
 # 49 — 系統性「遺漏/未實作」稽核(對照原版完整 RPG 機制)
 
+> ## ⚠️ 更新橫幅(2026-06-16):本表為 2026-06-15 的**快照**,以下原標 ⛔ 的項目已由後續 PR 關閉,**閱讀下方各列時以此橫幅為準**:
+> | 原稽核項 | 現況 | PR |
+> |---|---|---|
+> | 升級 / XP 升等、技能習得 / AP X 配點、技能檢定(開鎖/包紮)、裝備穿脫、使用物品 U | ✅/🟡 已實作(`progression.{hpp,cpp}`) | #127 |
+> | 商店買賣、招募隊員(酒吧) | ✅ 已實作(`shop`/`recruit`) | #129 |
+> | quest flag / gate、結局判定 / 結局事件、主線串接 | 🟡 已實作(135-flag 依賴鏈 + S_ENDING) | #121 / #122 |
+> | 跨區連通(世界圖進城 / 子區 relocate / Byzanople) | 🟡 27→**38/40 area** 可達 | #116 / #119 / #120 |
+> | K 開門 / 破密門、陷阱、戰鬥外施法(C) | 🟡 已實作(remake 設計;`terrain.hpp`、`verify_terrain`) | #135 |
+> | op_46 / 66 / 68 / 69 / 79 / 7A、op_43 / 5F / 60 / 63 | ✅ 已從 DRAGON.COM 反組譯補出(`interpreter.cpp`) | #119 等 |
+> | ctest | **20/20 → 27/27** 全綠 | — |
+> 仍為 ⛔ 的(本表下方仍準確):4 種特殊攻擊 + Dodge、怪物動畫 / 戰鬥特效、復活(Well of Souls)、撿拾 / 丟棄 / 轉移物品、選單 D 刪除 / R 改名、`O` 重排隊伍、音效 / 音樂、戰鬥真值閉環(🔒,res3 op_89 卡點)、武器 STR bonus 真值(🔒)。
+>
 > 日期:2026-06-15
 > 對象:`opendw_remake/`(C++20 / SDL2 重製《火龍之戰》Dragon Wars, Interplay 1989)
 > 方法:**唯讀稽核**。讀 code(`src/`)+ 跑現有 verify(docker `dwsdl`,fresh build + ctest **20/20 全綠**)+ 對照原版機制真值(手冊 `33`、攻略 `38/39`、fraterrisus/SDA `44`、戰鬥 bytecode `42`)。本報告為唯一新增產物,**未改 src / CMakeLists / git**。
@@ -53,8 +65,8 @@
 | 子項 | 狀態 | 現況一句話 | 缺什麼 |
 |---|:---:|---|---|
 | 第一人稱移動 I/J/L | ✅ | `main.cpp:2077-2089` 前進/左右轉,含 wrap 走動 | — |
-| K 開門 / 破密門 | ⛔ | `main.cpp:2089` 僅 `"open door (stub)"`,無任何門/密門邏輯 | 門狀態、密門偵測/粉碎(手冊明列 K 功能) |
-| 陷阱 | ⛔ | 無陷阱偵測/觸發機制(感知陷阱法術也只扣 Power) | 陷阱格、傷害/狀態效果、Sense/Disarm trap 結算 |
+| K 開門 / 破密門 | 🟡 | PR #135:開門/鎖門 Lockpick 檢定/破密門/石牆擋路 + per-area 狀態存檔 v3(`terrain.hpp`、`verify_terrain`)。真值層級=remake 設計(opendw 主遊戲 K handler 未反編);門牆可識別到「前方牆型 byte」但開/鎖/阻擋語意受阻 | 真實 .lvl 哪些格是門/陷阱需逐格跑 bytecode(受阻);保留 tile 0x30..0x34 真實地圖未含 → 機制完備但實戰未觸發 |
+| 陷阱 | 🟡 | PR #135:陷阱格踩中觸發傷害(remake 1d8)、Sense/Disarm Trap 結算(`terrain.hpp`、`verify_terrain`)。真值層級=remake 設計 | 同上:真實 .lvl 陷阱格座標需逆向;傷害值非原版真值 |
 | 自動地圖(?) | ✅ | `SeenMap` per-tile fog of war,存讀檔保留;`render_with_seen` | — |
 | 同區傳送(area27 樓梯) | ✅ | `sync_relocation` gs[2] 未變 → 挪位;`verify_areaswitch` 1-6 PASS | — |
 | 單一 tile 跨區換場 | 🟡 | 機制就緒(`sync_relocation` 換 area 分支);實測全 40 關只 area28→26 一例(`probe_areaswitch`)| 承載換區的 tile 事件幾乎不存在(原版靠 wrap 樞紐) |

@@ -39,7 +39,7 @@
 逐 batch 補齊 256 opcode,每批用差異測試驗。
 **Asset bundle(ADR 0001)**:ResourceProvider 抽象(Data1Provider oracle / BundleProvider 執行期);script bytecode + sprite + 字串皆可走 bundle,BundleProvider 載入 == DATA1 byte-for-byte。sprite 走 bundle `.spr`+PNG+manifest,從 bundle 渲染與 DATA1 解碼**像素一致**且執行期不依賴 DATA1 —— 換檔即換 sprite(未來 X68000/PC-9801 美術)。
 
-> 發現:opendw 未實作 op_43/5F/60/63(targets[] 引用裸名但無實作),這幾個 opcode **無 oracle**,需另從 ASM/spec 實作後人工驗。
+> 發現:opendw 未實作 op_43/5F/60/63(targets[] 引用裸名但無實作),這幾個 opcode **無 C oracle**。**現況(2026-06-16):remake 已從原始 DRAGON.COM ASM 補出並驗**(`interpreter.cpp`:`op43_jump_above` / `op5F_or_char_data` / `op60_and_char_data` / `op63_set_char_ext_word`)。
 
 ## 建置(docker first)
 

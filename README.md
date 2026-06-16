@@ -36,7 +36,7 @@ OpenDW 是 Interplay 1989/1990 年遊戲 **Dragon Wars** 的開源重製版。
 - ✅ **可玩流程**:建角 / 存讀檔(round-trip byte-for-byte) / 角色表 / 背包 / Read Paragraph 捲動檢視器 / 地圖區域切換 / **主線事件繁中 200+ 鍵 + 147 段落 + 結局**;日文 events/怪名(破解 X68000 nibble-swap SJIS)。**全自包含,執行期不依賴 DATA1**。
 - ⚠️ **誠實邊界**:Namtar Boss 屬性(原版 op_8A 怪物 id 無乾淨 res31 record)、自由之劍祝福加成、結局序列 = **remake 平衡/組合設計**(原版勝利畫面 script 逆不出);終戰用 remake `combat_loop`(同 bytecode 真值公式),非 res3 全戰鬥閉環(後者卡遊戲層 context,`docs/42`);area 6/33(Phoebus)為隔離分量。全部標於程式碼 / `docs/42`–`56` / `verify_*`,從不謊稱 oracle。
 
-> 本機執行:`cd opendw_remake && cmake -S . -B build && cmake --build build --target opendw_remake`,再 `./build/opendw_remake`(選單,`B` 建角)、`--map 0 --fp`(Dilmun 世界圖)、`--win640`(640×480)、`--read-para 88`(段落)、`--fight-namtar`(終戰→結局)。回歸:`cd build && ctest`(**22/22**)+ GitHub Actions CI。
+> 本機執行:`cd opendw_remake && cmake -S . -B build && cmake --build build --target opendw_remake`,再 `./build/opendw_remake`(選單,`B` 建角)、`--map 0 --fp`(Dilmun 世界圖)、`--win640`(640×480)、`--read-para 88`(段落)、`--fight-namtar`(終戰→結局)。回歸:`cd build && ctest`(**27/27**)+ GitHub Actions CI。
 
 ## 專案結構
 
@@ -188,20 +188,23 @@ cd build && ctest                     # 回歸(22 項;GitHub Actions CI 亦跑)
 | `sub_F3D` | `draw_viewport_flip_y` | 視埠繪製（Y 翻轉） | Draw viewport flip Y |
 ### ⚠️ 無法判斷 / 未實作的函式
 
+> 下表為 opendw(C 反組譯)階段的歷史快照。**狀態欄已於 2026-06-16 對 `opendw_remake/src/vm/interpreter.cpp` 的 `kImpl` 重新核對**:後續 PR 已從原始 DRAGON.COM 反組譯補出當年 opendw 標 NULL / 未知的數個 opcode(✅ 標記者)。
+
 | 位址 | 狀態 | 說明 |
 |------|------|------|
 | `0x627-0x963` | 未實作 | DOS 設定選單（CGA/EGA/VGA/Tandy 設定） |
-| `0x5C3B-0x5D1D` | 未實作 | PC speaker 音樂播放（PIT timer） |
+| `0x5C3B-0x5D1D` | 未實作 | PC speaker 音樂播放（PIT timer）；remake 無音訊子系統，op_90 忠實 no-op |
 | `op_02` | 未實作 | 未知功能 |
 | `op_1B` | 未實作 | 未知功能 |
 | `op_1E` | 未實作 | 未知功能 |
 | `op_29` | 未實作 | 未知功能 |
 | `op_2C` | 未實作 | 未知功能 |
 | `op_37` | 未實作 | 未知功能 |
-| `op_46` | 未實作 | 未知功能 |
-| `op_64-6B` | 未實作 | 未知功能 |
+| `op_46` | ✅ 已實作 | `op46_js`:sign flag 條件跳轉(remake 已補) |
+| `op_64/65/67/6A/6B` | 未實作 | 未知功能 |
+| `op_66/68/69` | ✅ 已實作 | `op66_test_gs` / `op68_get_char_ext` / `op69_set_char_ext`(角色資料延伸存取,關聯武器傷害骰;從 DRAGON.COM 反組譯補出) |
 | `op_6E-70` | 未實作 | 未知功能 |
-| `op_79` | 未實作 | 未知功能 |
+| `op_79` / `op_7A` | ✅ 已實作 | `op79_draw_and_emit_data` / `op7A_emit_data_string`(@0x47FA 反組譯,對稱 op_77/78;PR #119 補出,opendw 原標 NULL) |
 | `op_7E` | 未實作 | 未知功能 |
 | `op_8E-8F` | 未實作 | 未知功能 |
 | `op_9C` | 未實作 | 未知功能 |

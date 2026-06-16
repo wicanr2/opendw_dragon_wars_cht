@@ -42,7 +42,7 @@
 
 ## remake 實作狀態(2026-06-14)
 
-- **選單**:`B`(開始,預設四人)/ `C`(繼續:有存檔則讀檔進遊戲)快捷字母 + ↑↓/Enter 輔助、`Esc`/`Q` 離開 —— 已實作。`D`/`R`(刪除/改名)、建角流程未實作。
+- **選單**:`B`(開始)/ `C`(繼續:有存檔則讀檔進遊戲)快捷字母 + ↑↓/Enter 輔助、`Esc`/`Q` 離開 —— 已實作。**建角流程已實作**(`B` → S_CREATE:命名 → 屬性配點 → 性別 → 多員,ctest `verify_chargen`)。`D`/`R`(刪除/改名)未實作。
 - **移動**:`I`/↑ 前進、`J`/← 左轉、`L`/→ 右轉、`Esc` 返回 —— 已實作(真實關卡 .lvl)。
 - **開門 / 破密門(`K`)**:面向前方格 → 關閉的門開啟、鎖門做 Lockpick 檢定、牆中密門粉碎、石牆障礙提示需 Soften Stone;門/密門/石牆未開時擋路(像牆),陷阱格可走但踩中觸發傷害。狀態 per-area 保存(存檔 v3)。**真值層級:remake 設計(opendw 主遊戲 K handler 未反編;見 `57_DOORS_TRAPS_TERRAIN.md`)**;tile 型 0x30..0x34 為機制保留約定,真實 .lvl 目前未含 → 不影響既有關卡。機制以 ctest `verify_terrain` 驗證。
 - **戰鬥外施法(`C`)/ 陷阱**:`C` 開探索施法選單(隊伍第 0 名 castable);Soften Stone(0x22)軟化前方石牆、Disarm Trap(0x36)解除陷阱、Sense Traps(0x14)標記陷阱可見。陷阱踩中扣血(remake 1d8)。headless `--terrain-cast <id>`。**真值層級:remake 設計**。
@@ -52,9 +52,10 @@
 - **Read Paragraph 段落捲動檢視器(ParaViewer)**:Read Paragraph N → 近全螢幕 overlay 顯示**完整**繁中譯文(不截斷、不切字)。標題「段落 N」(i18n);捲動 `↑↓` 逐行、`PgUp`/`PgDn`/`Space`/`Enter`/`I`/`K` 逐頁、`Esc` 關閉;底部 `▲▼ 行範圍/總行數`。長段落跨頁可完整閱讀。
 - **角色屬性表(CharSheet)**:`V` 或 `1`-`4` → 顯示選定角色完整屬性(力量/敏捷/智力/精神/生命/暈眩值/法力/等級/金幣/狀態/性別),`↑↓`/`1`-`4` 切換、`Esc` 關;i18n 三語、`F4` 即時重排。
 - **存檔 / 讀檔**:`S` 存檔(訊息提示);選單 `C` 或 `--load` 讀檔還原 area/位置/朝向/game_state/隊伍。round-trip byte-for-byte(ctest `verify_save`)。
-- **遭遇 / 戰鬥畫面(S_COMBAT)**:`--encounter <id>` → 怪物圖(@ (16,8) 對齊 opendw 佈局,golden byte-for-byte)+ 隊伍面板 + `F`戰鬥 / `R`逃跑。**戰鬥結算為乾淨室 placeholder**(opendw C 本身未實作結算,詳見 `42_COMBAT_BYTECODE.md`),非原版真值。
+- **遭遇 / 戰鬥畫面(S_COMBAT)**:`--encounter <id>` → 怪物圖(@ (16,8) 對齊 opendw 佈局,golden byte-for-byte)+ 隊伍面板 + `F`戰鬥 / `R`逃跑 / `C`施法。**命中 / 徒手 / 武器傷害骰公式 = bytecode 真值**(從 res3 + DRAGON.COM 反組譯,詳見 `42_COMBAT_BYTECODE.md`);怪物 21B → AV/DV/STR 亦 bytecode 真值。**仍受阻**:res3 全戰鬥閉環(op_89 動作指派卡點)未真值化 → combat_loop 為 remake 設計(同真值公式,非 res3 閉環);怪物 HP/AC 暫定。
 - **多語**:`F4` 循環 繁中 / EN / 日;`--locale <id>`。
-- **未實作指令**(U/O、Ctrl+S 聲音):待對應系統接入(`C` 探索施法、`K` 開門、`X` 配點已接入)。
+- **已接入指令**:`C` 探索施法、`K` 開門/破密門、`X` 配點(角色表內)、`U` 使用物品(角色表物品欄內 `V`→`E`→選格→`U`)、`E` 裝備穿脫、`P` 商店、`T` 招募。
+- **未實作指令**(`O` 重排隊伍、`Ctrl+S` 聲音):待對應系統接入(`O` 需隊伍重排 UI;`Ctrl+S` 需音訊子系統,目前 op_90 忠實 no-op)。
 
 ## 測試 / headless 旗標
 
