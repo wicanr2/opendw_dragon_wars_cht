@@ -49,3 +49,11 @@ Item cast a spell.	物品施放了法術。
 Nothing happens.	沒有反應。
 Equipped.	已裝備。
 Unequipped.	已卸下。
+# 次要指令 UI(D 刪除 / R 改名 / O 重排 / 物品轉移)
+Delete this character?	刪除此角色?
+Character deleted.	角色已刪除。
+New name:	新名字:
+Name changed.	名字已更改。
+Name unchanged.	名字未更改。
+Reorder party	重排隊伍
+Party reordered.	隊伍已重排。

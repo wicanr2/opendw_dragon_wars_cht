@@ -42,7 +42,10 @@
 
 ## remake 實作狀態(2026-06-14)
 
-- **選單**:`B`(開始)/ `C`(繼續:有存檔則讀檔進遊戲)快捷字母 + ↑↓/Enter 輔助、`Esc`/`Q` 離開 —— 已實作。**建角流程已實作**(`B` → S_CREATE:命名 → 屬性配點 → 性別 → 多員,ctest `verify_chargen`)。`D`/`R`(刪除/改名)未實作。
+- **選單**:`B`(開始)/ `C`(繼續:有存檔則讀檔進遊戲)快捷字母 + ↑↓/Enter 輔助、`Esc`/`Q` 離開 —— 已實作。**建角流程已實作**(`B` → S_CREATE:命名 → 屬性配點 → 性別 → 多員,ctest `verify_chargen`)。
+- **角色管理 `D` 刪除 / `R` 改名**:在角色屬性表(`V` → 選定角色)內,`D` 進刪除確認(`Y`/`N`)、`R` 進改名輸入(TTF;Enter 確認 / Esc 取消)。改名同步 raw[0..11] 高位元終止編碼;刪除後夾住游標 / 空隊則關閉。**真值層級:remake 設計(grounded 手冊 147 B/C/D/R)**;手冊「先按人物號碼再 D」對映為「屬性表內已選定角色 → 按 D/R」。ctest `verify_party_ops`。
+- **`O` 重排隊伍**:S_GAME 按 `O` 開重排子畫面;↑↓ 移游標、Enter/Space 抓起當前成員(再 ↑↓ 與相鄰成員對調 = Party::move)、Enter 放下、Esc 離開。重排影響戰鬥站位(第 0 名 = 主角 / 施法者)與右側面板顯示順序。**真值層級:remake 設計(grounded 手冊 / CONTROLS「O 重排隊伍」)**。ctest `verify_party_ops`。
+- **物品轉移 / 丟棄**(物品欄 `V` → `E`):`D` 丟棄(從背包移除該格)、`T` 轉移給其他隊員(選目標 → 搬整 23B 到對方第一個空格,含裝備位元 / 名)。目標背包滿則失敗提示。**真值層級:remake 設計(grounded 手冊「Item」段 Discard / Transfer)**。ctest `verify_party_ops`(含 512B round-trip 存檔相容)。
 - **移動**:`I`/↑ 前進、`J`/← 左轉、`L`/→ 右轉、`Esc` 返回 —— 已實作(真實關卡 .lvl)。
 - **開門 / 破密門(`K`)**:面向前方格 → 關閉的門開啟、鎖門做 Lockpick 檢定、牆中密門粉碎、石牆障礙提示需 Soften Stone;門/密門/石牆未開時擋路(像牆),陷阱格可走但踩中觸發傷害。狀態 per-area 保存(存檔 v3)。**真值層級:remake 設計(opendw 主遊戲 K handler 未反編;見 `57_DOORS_TRAPS_TERRAIN.md`)**;tile 型 0x30..0x34 為機制保留約定,真實 .lvl 目前未含 → 不影響既有關卡。機制以 ctest `verify_terrain` 驗證。
 - **戰鬥外施法(`C`)/ 陷阱**:`C` 開探索施法選單(隊伍第 0 名 castable);Soften Stone(0x22)軟化前方石牆、Disarm Trap(0x36)解除陷阱、Sense Traps(0x14)標記陷阱可見。陷阱踩中扣血(remake 1d8)。headless `--terrain-cast <id>`。**真值層級:remake 設計**。
@@ -61,8 +64,8 @@
   - 閃避:本回合自身 DV +`kDodgeDvBonus`(被命中門檻下降),下回合輪到前清除。
   - headless `--combat-special <mighty|disarm|advance|quick|dodge>`(配 `--encounter`);ctest `verify_combat_special`。
 - **多語**:`F4` 循環 繁中 / EN / 日;`--locale <id>`。
-- **已接入指令**:`C` 探索施法、`K` 開門/破密門、`X` 配點(角色表內)、`U` 使用物品(角色表物品欄內 `V`→`E`→選格→`U`)、`E` 裝備穿脫、`P` 商店、`T` 招募。
-- **未實作指令**(`O` 重排隊伍、`Ctrl+S` 聲音):待對應系統接入(`O` 需隊伍重排 UI;`Ctrl+S` 需音訊子系統,目前 op_90 忠實 no-op)。
+- **已接入指令**:`C` 探索施法、`K` 開門/破密門、`X` 配點(角色表內)、`U` 使用物品(角色表物品欄內 `V`→`E`→選格→`U`)、`E` 裝備穿脫、`P` 商店、`T` 招募、`O` 重排隊伍、`D`/`R` 刪除/改名(角色表內)、物品 `D` 丟棄 / `T` 轉移(物品欄內)。
+- **未實作指令**(`Ctrl+S` 聲音):待音訊子系統接入(目前 op_90 忠實 no-op)。
 
 ## 測試 / headless 旗標
 

@@ -32,3 +32,9 @@ Equipped	已裝備
 (empty)	(空)
 Items	物品
 no items	無物品
+# 物品轉移 / 丟棄
+Item discarded.	物品已丟棄。
+Item transferred.	物品已轉移。
+Transfer to:	轉移給:
+Target pack is full.	目標背包已滿。
+No one to transfer to.	沒有其他人可轉移。

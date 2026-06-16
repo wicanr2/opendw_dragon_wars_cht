@@ -197,6 +197,15 @@ struct CharSheet {
   bool alloc_mode = false;  // 屬性表中按 X → 進 AP 配點模式(↑↓ 選項目、+ 加點)。
   int alloc_cursor = 0;     // 配點游標:0-3=STR/DEX/INT/SPI、4-6=包紮/開鎖/徒手技能。
   int inv_cursor = 0;       // 物品欄游標(U 使用 / Enter 裝備穿脫的目標格,0-based「已顯示」序)。
+  // ── 物品轉移子模式(手冊 Item:Transfer)──
+  bool transfer_mode = false;  // 物品欄按 T → 進「選目標隊員」模式(↑↓ 選、Enter 確認、Esc 取消)。
+  int transfer_slot = -1;      // 待轉移的真實 slot(0..12;進入子模式時鎖定)。
+  int target_cursor = 0;       // 目標隊員游標(0-based,跳過自己)。
+  // ── 刪除人物確認子模式(手冊 D)──
+  bool delete_confirm = false; // 屬性表按 D → 進刪除確認(Y 確認 / N/Esc 取消)。
+  // ── 改名輸入子模式(手冊 R)──
+  bool rename_mode = false;    // 屬性表按 R → 進改名輸入(TTF 文字輸入;Enter 確認 / Esc 取消)。
+  std::string rename_buf;      // 改名輸入緩衝。
   std::string flash;        // 暫時提示行(配點/用物品/裝備結果)。
 
   static constexpr int kAllocCount = 7;  // 配點可選項目數(4 屬性 + 3 高價值技能)
@@ -208,23 +217,30 @@ struct CharSheet {
     active = count > 0;
     show_inventory = false;
     alloc_mode = false; alloc_cursor = 0; inv_cursor = 0; flash.clear();
+    clear_submodes();
+  }
+  // 重置所有次要指令子模式(轉移 / 刪除確認 / 改名)。
+  void clear_submodes() {
+    transfer_mode = false; transfer_slot = -1; target_cursor = 0;
+    delete_confirm = false; rename_mode = false; rename_buf.clear();
   }
   void toggle_view() {            // 屬性表 ⇄ 物品欄(離開配點模式)
     show_inventory = !show_inventory;
     alloc_mode = false; inv_cursor = 0; flash.clear();
+    clear_submodes();
   }
-  void close() { active = false; show_inventory = false; alloc_mode = false; flash.clear(); }
+  void close() { active = false; show_inventory = false; alloc_mode = false; flash.clear(); clear_submodes(); }
   void prev() {
     if (count > 0) idx = (idx - 1 + count) % count;
-    inv_cursor = 0; alloc_cursor = 0; flash.clear();
+    inv_cursor = 0; alloc_cursor = 0; flash.clear(); clear_submodes();
   }
   void next() {
     if (count > 0) idx = (idx + 1) % count;
-    inv_cursor = 0; alloc_cursor = 0; flash.clear();
+    inv_cursor = 0; alloc_cursor = 0; flash.clear(); clear_submodes();
   }
   // 數字鍵 1-count 直選;越界忽略。回傳是否命中。
   bool select(int n) {
-    if (n >= 1 && n <= count) { idx = n - 1; inv_cursor = 0; alloc_cursor = 0; flash.clear(); return true; }
+    if (n >= 1 && n <= count) { idx = n - 1; inv_cursor = 0; alloc_cursor = 0; flash.clear(); clear_submodes(); return true; }
     return false;
   }
 };
@@ -255,6 +271,21 @@ struct TavernUi {
   std::string flash;
   void open() { active = true; cursor = 0; flash.clear(); }
   void close() { active = false; flash.clear(); }
+};
+
+// ReorderUi — 重排隊伍子狀態(手冊 / CONTROLS:O 重排隊伍順序;S_GAME 期間)。
+//
+// Deep module:對外只露 open/close/active + 游標 + 「已抓起」的成員。操作:↑↓ 移游標,
+//   Enter / Space「抓起 / 放下」當前成員(抓起後 ↑↓ 把它與相鄰成員對調,即 Party::move)。
+//   重排影響戰鬥站位(第 0 名 = 主角 / 施法者)與右側面板顯示順序。
+//   真值層級:remake 設計(grounded 手冊「O 重排隊伍」)。
+struct ReorderUi {
+  bool active = false;
+  int cursor = 0;        // 當前游標位置(0-based)。
+  int grabbed = -1;      // 已抓起的成員索引(-1 = 未抓起;= cursor 時隨游標移動)。
+  std::string flash;
+  void open() { active = true; cursor = 0; grabbed = -1; flash.clear(); }
+  void close() { active = false; grabbed = -1; flash.clear(); }
 };
 
 // ExploreCast — 戰鬥外探索施法子狀態(手冊 C=施法;S_GAME 期間)。
@@ -602,6 +633,7 @@ int main(int argc, char** argv) {
   ShopUi shop_ui;                 // 商店買賣子狀態(P / 踩商店格 / --shop;active 時暫停移動)
   TavernUi tavern_ui;             // 酒館招募子狀態(T / 踩酒館格 / --recruit;active 時暫停移動)
   ExploreCast cast_ui;            // 探索施法子狀態(C / --terrain-cast;active 時暫停移動)
+  ReorderUi reorder_ui;           // 重排隊伍子狀態(O / --reorder;active 時暫停移動)
   game::Shop shop_data = game::Shop::load(bundle);  // 商店庫存(bundle/shop/stock.json;自包含)
   // 遊戲內 UI chrome(石磚邊框 + Dragon Wars logo + pillar)原版資源(bundle/viewport/ui_pieces.bin;
   // byte-for-byte 同 DRAGON.COM com 0x6AE0,對拍 opendw ui_load)。載入失敗 → 退回文字/實線近似。
@@ -1706,6 +1738,20 @@ int main(int argc, char** argv) {
         y += CS_LINE_H;
       }
     }
+    // ── 刪除確認(手冊 D):Y/N 提示 ──
+    if (!sheet.alloc_mode && sheet.delete_confirm) {
+      y += 4;
+      char q[96];
+      std::snprintf(q, sizeof q, "%s (%s)", tr.tr("Delete this character?").c_str(),
+                    "Y/N");
+      tl.add(tx, y, q, 12, PX_BODY); y += CS_LINE_H;
+    }
+    // ── 改名輸入(手冊 R):顯示輸入緩衝 + 游標 ──
+    if (!sheet.alloc_mode && sheet.rename_mode) {
+      y += 4;
+      std::string line = tr.tr("New name:") + " " + sheet.rename_buf + "_";
+      tl.add(tx, y, line, 14, PX_BODY); y += CS_LINE_H;
+    }
     if (!sheet.flash.empty()) {
       tl.add(tx, y, sheet.flash, 11, PX_BODY); y += CS_LINE_H;
     }
@@ -1713,8 +1759,12 @@ int main(int argc, char** argv) {
     // 底部操作提示。
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
-    tl.add(CS_VAL_X, iy, sheet.alloc_mode ? "Up/Dn  +:add  X:done"
-                                          : "1-4  E:Items  X:AP  Esc", 8, PX_UI);
+    const char* hint =
+        sheet.alloc_mode      ? "Up/Dn  +:add  X:done"
+      : sheet.delete_confirm  ? "Y: confirm   N: cancel"
+      : sheet.rename_mode     ? "Type name  Enter:OK  Esc"
+                              : "1-4 E:Items X:AP D:Del R:Name Esc";
+    tl.add(CS_VAL_X, iy, hint, 8, PX_UI);
   };
 
   // 畫物品欄(背包):底框 + 標題 + 13 格物品列(名稱 + 類型 + AV/AC 修正 + 已裝備標記)。
@@ -1763,11 +1813,27 @@ int main(int argc, char** argv) {
     char eff[80];
     std::snprintf(eff, sizeof eff, "AV %d  AC %d", c.effective_av(), c.effective_ac());
     tl.add(tx, y, eff, 11, PX_BODY); y += CS_LINE_H;
+
+    // ── 物品轉移子模式:列出目標隊員(↑↓ 選、Enter 確認)──
+    if (sheet.transfer_mode) {
+      tl.add(tx, y, tr.tr("Transfer to:"), 14, PX_BODY); y += CS_LINE_H;
+      int shown_t = 0;
+      for (int t = 0; t < (int)party.size(); ++t) {
+        if (t == sheet.idx) continue;
+        bool cur = (shown_t == sheet.target_cursor);
+        const auto& tc = party.at((std::size_t)t);
+        std::string nm = (cur ? "> " : "  ") + (tc.name.empty() ? std::string("?") : tc.name);
+        tl.add(tx + 4, y, nm, cur ? 15 : 7, PX_BODY);
+        y += CS_LINE_H;
+        ++shown_t;
+      }
+    }
     if (!sheet.flash.empty()) tl.add(tx, y, sheet.flash, 14, PX_BODY);
 
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("[ continue ]"), 8, PX_UI);
-    tl.add(CS_VAL_X, iy, "Up/Dn U:use Ent:equip E Esc", 8, PX_UI);
+    tl.add(CS_VAL_X, iy, sheet.transfer_mode ? "Up/Dn  Enter:to  Esc:cancel"
+                                             : "U:use Ent:eq D:drop T:give E Esc", 8, PX_UI);
   };
 
   // 商店買賣畫面:底框 + 標題(含主角金幣)+ 庫存(買)/ 背包(賣)清單 + flash。
@@ -1860,6 +1926,31 @@ int main(int argc, char** argv) {
     int iy = CS_Y + CS_H - CS_LINE_H - 2;
     tl.add(tx, iy, tr.tr("Recruit"), 8, PX_UI);
     tl.add(CS_VAL_X, iy, "Up/Dn Ent Esc", 8, PX_UI);
+  };
+
+  // 重排隊伍畫面:底框 + 標題 + 隊員列(序號 + 名;游標 > 高亮;抓起的成員亮黃 [#])。
+  auto draw_reorder = [&]() {
+    fill_char_sheet();
+    int tx = CS_X + CS_PAD;
+    int y = CS_Y + CS_PAD;
+    tl.add(tx, y, tr.tr("Reorder party"), 14, PX_BODY);
+    y += CS_LINE_H + 2;
+    for (int i = 0; i < (int)party.size(); ++i) {
+      const auto& c = party.at((std::size_t)i);
+      bool cur = (i == reorder_ui.cursor);
+      bool grabbed = (i == reorder_ui.grabbed);
+      char row[96];
+      std::snprintf(row, sizeof row, "%s%d. %s%s", cur ? "> " : "  ", i + 1,
+                    c.name.empty() ? "?" : c.name.c_str(), grabbed ? "  [*]" : "");
+      tl.add(tx, y, row, grabbed ? 14 : (cur ? 15 : 7), PX_BODY);
+      y += CS_LINE_H;
+    }
+    if (!reorder_ui.flash.empty())
+      tl.add(tx, CS_Y + CS_H - 2 * CS_LINE_H - 2, reorder_ui.flash, 14, PX_BODY);
+    int iy = CS_Y + CS_H - CS_LINE_H - 2;
+    tl.add(tx, iy, tr.tr("Reorder party"), 8, PX_UI);
+    tl.add(CS_VAL_X, iy, reorder_ui.grabbed >= 0 ? "Up/Dn:move  Ent:drop  Esc"
+                                                 : "Up/Dn  Ent:grab  Esc", 8, PX_UI);
   };
 
   // 探索施法畫面:底框 + 標題(主角 Power)+ 可施法清單(法術名 + Power)+ flash。
@@ -2575,6 +2666,7 @@ int main(int argc, char** argv) {
       if (shop_ui.active) draw_shop();               // 商店買賣疊在最上層
       if (tavern_ui.active) draw_tavern();           // 酒館招募疊在最上層
       if (cast_ui.active) draw_cast();               // 探索施法選單疊在最上層
+      if (reorder_ui.active) draw_reorder();         // 重排隊伍疊在最上層
       return;
     }
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
@@ -2841,6 +2933,32 @@ int main(int argc, char** argv) {
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;
     }
+    // 重排隊伍啟用時:接管輸入。暫停移動。
+    //   未抓起:↑↓ 移游標,Enter/Space 抓起當前成員。
+    //   已抓起:↑↓ 把抓起成員與相鄰成員對調(= Party::move),Enter/Space 放下,Esc 取消放下。
+    if (reorder_ui.active) {
+      int n = (int)party.size();
+      if (in.back) { reorder_ui.close(); }
+      else if (reorder_ui.grabbed < 0) {
+        if (in.up)   { if (n > 0) reorder_ui.cursor = (reorder_ui.cursor - 1 + n) % n; reorder_ui.flash.clear(); }
+        else if (in.down) { if (n > 0) reorder_ui.cursor = (reorder_ui.cursor + 1) % n; reorder_ui.flash.clear(); }
+        else if (in.select && n > 1) { reorder_ui.grabbed = reorder_ui.cursor; reorder_ui.flash.clear(); }
+      } else {
+        if (in.up && reorder_ui.cursor > 0) {
+          party.move((std::size_t)reorder_ui.grabbed, (std::size_t)(reorder_ui.cursor - 1));
+          reorder_ui.cursor--; reorder_ui.grabbed = reorder_ui.cursor;
+        } else if (in.down && reorder_ui.cursor < n - 1) {
+          party.move((std::size_t)reorder_ui.grabbed, (std::size_t)(reorder_ui.cursor + 1));
+          reorder_ui.cursor++; reorder_ui.grabbed = reorder_ui.cursor;
+        } else if (in.select) {                 // 放下
+          reorder_ui.grabbed = -1;
+          reorder_ui.flash = tr.tr("Party reordered.");
+          std::fprintf(stderr, "reorder: party order updated\n");
+        }
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;
+    }
     // 酒館招募啟用時:接管輸入(↑↓ 選、Enter 招募、Esc 離開)。暫停移動。
     if (tavern_ui.active) {
       int n = (int)game::RecruitRoster::roster().size();
@@ -2874,7 +2992,30 @@ int main(int argc, char** argv) {
         if (max_frames >= 0 && ++frames >= max_frames) break;
         continue;
       }
-      // ── 物品欄:↑↓ 移游標、U 使用、Enter 裝備穿脫、E 回屬性表、Esc 關閉 ──
+      // ── 物品轉移子模式:選目標隊員(↑↓ 選、Enter 確認、Esc/T 取消)──
+      //   目標清單 = 隊伍除自己外的所有成員(0-based,跳過 sheet.idx)。
+      if (sheet.show_inventory && sheet.transfer_mode) {
+        std::vector<int> targets;
+        for (int t = 0; t < (int)party.size(); ++t) if (t != sheet.idx) targets.push_back(t);
+        int tn = (int)targets.size();
+        if (in.back || in.key == 'T') { sheet.transfer_mode = false; sheet.transfer_slot = -1; sheet.flash.clear(); }
+        else if (in.up)   { if (tn > 0) sheet.target_cursor = (sheet.target_cursor - 1 + tn) % tn; }
+        else if (in.down) { if (tn > 0) sheet.target_cursor = (sheet.target_cursor + 1) % tn; }
+        else if (in.select && tn > 0 && sheet.target_cursor < tn) {
+          int to = targets[sheet.target_cursor];
+          bool ok = party.transfer_item((std::size_t)sheet.idx, sheet.transfer_slot, (std::size_t)to);
+          sheet.flash = tr.tr(ok ? "Item transferred." : "Target pack is full.");
+          sheet.transfer_mode = false; sheet.transfer_slot = -1;
+          // 來源物品數可能變動 → 夾住游標。
+          int left = 0;
+          for (int s = 0; s < game::CharacterRecord::kInventorySlots; ++s)
+            if (cs.item_at(s).present) ++left;
+          if (left > 0) sheet.inv_cursor %= left; else sheet.inv_cursor = 0;
+        }
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
+      // ── 物品欄:↑↓ 移游標、U 使用、Enter 裝備穿脫、D 丟棄、T 轉移、E 回屬性表、Esc 關閉 ──
       if (sheet.show_inventory) {
         // 統計 present 物品的真實 slot,供游標 → slot 映射。
         std::vector<int> pslots;
@@ -2896,6 +3037,22 @@ int main(int argc, char** argv) {
           else if (u.casts_spell)    sheet.flash = tr.tr("Item cast a spell.");
           if (n > 0) { int nn = u.consumed ? n - 1 : n; if (nn > 0) sheet.inv_cursor %= nn; else sheet.inv_cursor = 0; }
         }
+        else if (in.key == 'D' && n > 0 && sheet.inv_cursor < n) {    // D:丟棄(從背包移除)
+          int slot = pslots[sheet.inv_cursor];
+          bool ok = party.discard_item((std::size_t)sheet.idx, slot);
+          sheet.flash = tr.tr(ok ? "Item discarded." : "Nothing happens.");
+          int left = n - (ok ? 1 : 0);
+          if (left > 0) sheet.inv_cursor %= left; else sheet.inv_cursor = 0;
+        }
+        else if (in.key == 'T' && n > 0 && sheet.inv_cursor < n) {    // T:轉移給其他隊員
+          if (party.size() < 2) { sheet.flash = tr.tr("No one to transfer to."); }
+          else {
+            sheet.transfer_mode = true;
+            sheet.transfer_slot = pslots[sheet.inv_cursor];
+            sheet.target_cursor = 0;
+            sheet.flash.clear();
+          }
+        }
         else if (in.select && n > 0 && sheet.inv_cursor < n) {       // Enter:裝備穿脫
           int slot = pslots[sheet.inv_cursor];
           game::EquipResult e = game::toggle_equip(cs, slot);
@@ -2904,13 +3061,45 @@ int main(int argc, char** argv) {
         if (max_frames >= 0 && ++frames >= max_frames) break;
         continue;
       }
-      // ── 屬性表(預設):切角色 / E 物品欄 / X 進配點 / Esc 關閉 ──
+      // ── 改名輸入子模式(手冊 R):TTF 文字輸入;Enter 確認 / Esc 取消 ──
+      if (!sheet.show_inventory && !sheet.alloc_mode && sheet.rename_mode) {
+        if (in.back) { sheet.rename_mode = false; sheet.rename_buf.clear(); sheet.flash.clear(); }
+        else if (in.backspace) { if (!sheet.rename_buf.empty()) sheet.rename_buf.pop_back(); }
+        else if (in.text_char && (int)sheet.rename_buf.size() < 12)
+          sheet.rename_buf.push_back((char)in.text_char);
+        else if (in.select) {                            // Enter:確認改名
+          bool ok = party.rename((std::size_t)sheet.idx, sheet.rename_buf);
+          sheet.flash = tr.tr(ok ? "Name changed." : "Name unchanged.");
+          sheet.rename_mode = false; sheet.rename_buf.clear();
+        }
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
+      // ── 刪除人物確認子模式(手冊 D):Y 確認 / N/Esc 取消 ──
+      if (!sheet.show_inventory && !sheet.alloc_mode && sheet.delete_confirm) {
+        if (in.key == 'Y') {                             // 確認刪除
+          int removed = sheet.idx;
+          party.remove((std::size_t)removed);
+          sheet.delete_confirm = false;
+          if (party.size() == 0) { sheet.close(); }      // 隊伍空 → 關閉
+          else { sheet.count = (int)party.size();
+                 if (sheet.idx >= sheet.count) sheet.idx = sheet.count - 1;
+                 sheet.flash = tr.tr("Character deleted."); }
+        } else if (in.key == 'N' || in.back) {           // 取消
+          sheet.delete_confirm = false; sheet.flash.clear();
+        }
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
+      // ── 屬性表(預設):切角色 / E 物品欄 / X 進配點 / D 刪除 / R 改名 / Esc 關閉 ──
       if (in.back) { sheet.close(); }                    // Esc:關閉回遊戲
       else if (in.up) sheet.prev();
       else if (in.down) sheet.next();
       else if (in.key >= '1' && in.key <= '9') sheet.select(in.key - '0');
       else if (in.key == 'E') sheet.toggle_view();       // E:屬性表 ⇄ 物品欄
       else if (in.key == 'X') { sheet.alloc_mode = true; sheet.alloc_cursor = 0; sheet.flash.clear(); }  // X:進配點
+      else if (in.key == 'D') { sheet.delete_confirm = true; sheet.flash.clear(); }  // D:刪除人物(進確認)
+      else if (in.key == 'R') { sheet.rename_mode = true; sheet.rename_buf.clear(); sheet.flash.clear(); }  // R:改名(進輸入)
       else if (in.key == 'V') sheet.close();             // V 再按一次 → 關閉
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;                                          // 屬性表期間不處理移動
@@ -3033,6 +3222,7 @@ int main(int argc, char** argv) {
       //   remake 地圖事件格資料尚未對映商店/酒館類型,故先以快捷鍵 + headless --shop/--recruit 提供)。
       else if (in.key == 'P' && party.size() > 0) { shop_ui.open(); }
       else if (in.key == 'T' && party.size() > 0) { tavern_ui.open(); }
+      else if (in.key == 'O' && party.size() > 0) { reorder_ui.open(); }  // O:重排隊伍順序(手冊)
       else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
         sheet.open((int)party.size(), in.key - '1');
       else {

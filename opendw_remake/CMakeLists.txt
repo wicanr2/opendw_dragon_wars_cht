@@ -229,6 +229,13 @@ add_executable(verify_progression tools/verify/verify_progression.cpp)
 target_link_libraries(verify_progression PRIVATE dwr_game)
 add_test(NAME verify_progression COMMAND verify_progression)
 
+# tools/verify:次要指令(刪除 / 改名 / 重排 / 物品轉移 / 丟棄)確定性 PASS/FAIL。
+#   真值層級:remake 設計 grounded 手冊(D/R 手冊 147、O 重排 CONTROLS、Item Discard/Transfer)。
+#   驗 raw[] 同步 + 512B round-trip(存檔相容)。
+add_executable(verify_party_ops tools/verify/verify_party_ops.cpp)
+target_link_libraries(verify_party_ops PRIVATE dwr_game)
+add_test(NAME verify_party_ops COMMAND verify_party_ops)
+
 # tools/verify:法術系統確定性 PASS/FAIL(法術表筆數/效果值對拍手冊 + 施法扣 Power +
 #   傷害/治療在手冊範圍 + 確定性)。grounded in docs/33 手冊;非 oracle(見 spells.hpp 檔頭)。
 add_executable(verify_spells tools/verify/verify_spells.cpp)
