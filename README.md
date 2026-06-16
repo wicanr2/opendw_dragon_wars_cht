@@ -42,35 +42,19 @@ OpenDW 是 Interplay 1989/1990 年遊戲 **Dragon Wars** 的開源重製版。
 
 ```
 opendw_dragon_wars_cht/
-├── docs/                           # 文件
-│   ├── PLAN.md                     # 中文化規劃
-│   ├── ANALYSIS.md                 # 反組譯還原分析
-│   ├── TRANSLATION.md              # 翻譯對照表（100+ 條目）
-│   ├── ALL_TEXT_FROM_DATA1.txt     # DATA1 提取的所有文字（3926 條）
-│   ├── SDL2_IMPLEMENTATION.md      # SDL2 實作計畫
-│   ├── SKILL.md                    # Skill 文件（完整經驗記錄）
-│   ├── Dragon-Wars_Manual_DOS_EN.pdf # 英文手冊（48 頁掃描）
-│   ├── dragon.asm                  # 原始 DOS 反組譯（參考）
-│   └── README.md                   # 本說明
-├── src/                            # OpenDW 原始碼
-│   ├── fe/                         # 前端（SDL2 輸出層）
-│   │   ├── main.c                  # 程式進入點
-│   │   ├── vga_sdl.c               # SDL2 顯示驅動
-│   │   ├── vga_dos.c               # DOS VGA 驅動
-│   │   └── vga_null.c              # 空驅動
-│   ├── lib/                        # 核心引擎
-│   │   ├── engine.c                # 虛擬 CPU + 115 個 opcode
-│   │   ├── ui.c                    # UI 繪製
-│   │   ├── resource.c              # 資源載入
-│   │   ├── tables.c                # 字型表
-│   │   ├── state.c                 # 遊戲狀態
-│   │   ├── player.c                # 角色資料
-│   │   └── ...
-│   ├── tools/                      # 輔助工具
-│   └── tests/                      # 單元測試
-├── CMakeLists.txt                  # CMake 建置
-└── Makefile                        # Make 建置
+├── opendw_remake/         # ★ 主產物:C++20 + SDL2 乾淨重寫的 runtime(可玩)
+│   ├── src/               #   resource / vm / render / game / i18n
+│   ├── tools/verify/      #   對拍/驗證工具(ctest 22 項)
+│   ├── tools/extract/     #   DATA1/DATA2 → 自包含 bundle 萃取
+│   ├── assets/bundle/     #   自包含資產(maps/sprites/scenes/scripts/monsters/items/…)
+│   ├── assets/i18n/       #   zh-TW / en / ja 在地化 TSV
+│   └── docs/              #   remake 專屬截圖/設計筆記
+├── src/                   # opendw(Devin Smith C 反組譯)— 唯讀,當逐位元正確性 oracle
+├── docs/                  # 設計筆記 + 逆向報告(00 索引;42-58 戰鬥/連通/評估/審查)
+└── CONTEXT.md             # 術語表(ubiquitous language)
 ```
+
+> opendw_remake 不依賴原始磁碟檔(資產已萃取成自包含 bundle);`src/`(opendw)僅作為差異測試的對照 oracle。
 
 ## 原始 OpenDW 資訊
 
@@ -101,74 +85,32 @@ This game can be purchased at [GOG](https://www.gog.com/game/dragon_wars).
 | 0x10 | 8,192 B | 字型資料 |
 | 0x11-0x16 | 5.3 KB | 更多遊戲文字 |
 
-## 快速開始
-
-### 建置
+## 建置與執行(opendw_remake)
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
+cd opendw_remake
+cmake -S . -B build && cmake --build build --target opendw_remake
+./build/opendw_remake                 # 選單(B 建立人物 / C 繼續)
+./build/opendw_remake --map 0 --fp    # Dilmun 世界圖第一人稱
+./build/opendw_remake --win640        # 640×480 視窗
+./build/opendw_remake --read-para 88  # 段落檢視器
+./build/opendw_remake --fight-namtar  # 終戰 → 結局
+cd build && ctest                     # 回歸(22 項;GitHub Actions CI 亦跑)
 ```
 
-### 執行
+> 自包含,執行期不需原始 DATA1/DATA2(資產已萃取成 `assets/bundle/`)。需 `libsdl2-dev`、`libsdl2-ttf-dev`、`fonts-wqy-zenhei`。建置以 docker `dwsdl` 為準(`tools_build/`)。
 
-需要原始遊戲檔案（dragon.com, data1, data2）：
+## 目前狀態(2026-06)
 
-```bash
-./src/fe/sdldragon
-```
+可從**建角 → 探索 38/40 連通世界 → 主線繁中 → 終戰 Namtar → 結局**走完一輪。詳見:
 
-## 中文化狀態
+- [docs/57 PM 產品 review](docs/57_PM_REVIEW.md) — vs 1990 原版還原度量化(技術保真 ~75%、玩家內容 ~35-40%)。
+- [docs/49 缺口稽核](docs/49_GAP_AUDIT.md) · [docs/48 可通關 roadmap](docs/48_COMPLETABILITY_ROADMAP.md)
+- [docs/42 戰鬥 bytecode 逆向](opendw_remake/docs/42_COMBAT_BYTECODE.md)(命中/傷害公式 = 原版 bytecode 真值) · [docs/44 資料格式](docs/44_DATA_FORMATS_AND_MECHANICS.md)
 
-- [x] 反組譯還原（52 個 unnamed 函式）
-- [x] DATA1 文字提取（3926 條）
-- [x] 翻譯對照表（100+ 條目）
-- [ ] 640×480 + 24×24 CJK 顯示
-- [ ] 外部字型載入
-- [ ] Big5 編碼支援
-- [ ] UI 佈局調整
+> 誠實標示貫穿全專案:**bytecode 真值 / remake 設計 / 受阻或暫定** 三級分明,從不謊稱 oracle(見 `combat.hpp` 檔頭與各 `docs/42`–`58`)。
 
-## 快速開始
-
-### 建置
-
-```bash
-mkdir build && cd build
-cmake ..
-make
-```
-
-### 執行
-
-需要原始遊戲檔案（dragon.com, data1, data2）：
-
-```bash
-./src/fe/sdldragon
-```
-
-## 中文化狀態
-
-- [ ] 640×480 + 24×24 CJK 顯示
-- [ ] 外部字型載入
-- [ ] Big5 編碼支援
-- [ ] 字串萃取工具
-- [ ] UI 佈局調整
-
-## SDL2 實作計畫
-
-未實作功能的 SDL2 取代方案，請參考 [docs/05_SDL2_IMPLEMENTATION.md](docs/05_SDL2_IMPLEMENTATION.md)。
-
-### 未實作功能的 SDL2 取代
-
-| 原始功能 | 狀態 | SDL2 取代方案 |
-|----------|------|---------------|
-| DOS 設定選單 (`0x627-0963`) | 未實作 | `config.h/c` - 現代設定系統 |
-| PC Speaker 音樂 (`0x5C3B-0x5D1D`) | 未實作 | `audio.h/c` - SDL2 Audio |
-| 圖形模式選擇 (CGA/EGA/Tandy) | 不需要 | SDL2 自動處理 |
-| ~85 個未實作 opcode | 部分完成 | 分類後實作/標記為 unused |
-
-## 反組譯還原進度
+## 反組譯還原進度(歷史紀錄,opendw 反組譯期)
 
 ### ✅ 已成功還原的函式（50+）
 
@@ -266,14 +208,14 @@ make
 | `op_9F` | 未實作 | 未知功能 |
 | `op_A0-FF` (大部分) | 未實作 | 未知功能（可能是未使用的 opcode） |
 
-### 📊 統計
+### 📊 統計(opendw 反組譯期快照)
 
 | 項目 | 數量 |
 |------|------|
 | 已還原的 `sub_XXX` 函式 | 52 |
 | 已命名的 `op_XX` opcode | 143 |
-| 未實作的 opcode | ~85 |
-| 未實作的系統功能 | 2（音樂、設定選單） |
+
+> 上表為 opendw(C 反組譯)階段的歷史數字。**opendw_remake 目前實作 ~119/256 opcode**(`interpreter.cpp` kImpl;含反組譯原始 DRAGON.COM 補出 opendw 從未逆向的 op_68/79/5B 等),`diff_trace` 逐指令 == opendw。完整可玩鏈與保真度見上方「目前狀態」+ docs/57。
 
 ## 授權
 
