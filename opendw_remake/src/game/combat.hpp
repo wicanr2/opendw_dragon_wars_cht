@@ -34,8 +34,48 @@
 namespace dw::game {
 
 // 怪物記錄:21 bytes 原始屬性 + 解碼後名字。
+//
+// ── res31 21B/33B 記錄 → 戰鬥屬性逐欄語意(2026-06-16 反組譯逆出)──────────────
+//  方法:docker 編 opendw `disasm` 反組譯 res3(戰鬥腳本),逐指令逆出
+//    (a) 遭遇 setup loop @res3 0x0500/0x053B/0x05C1(把 res31 記錄展開進群緩衝
+//        data[0x03D6])、(b) 戰鬥屬性 setup driver @res3 0x08B6(怪物分支 0x08C7、
+//        玩家分支 0x08F4)、(c) to-hit @0x0F73、傷害 @0x0D54/0x0D68、HP 結算
+//        @0x0F1C/0x0B46。動態以 probe_monster_stats(headless 跑 res3 setup)佐證
+//        群緩衝實際 byte。res31 記錄逐欄與 25 隻已命名怪(monsters.bin)交叉比對。
+//
+//  逆出確鑿(bytecode 逐指令對齊):
+//    • byte[0x01] = 敏捷(DEX 類)→ **AV/DV base = byte[0x01] >> 2**。
+//        res3 setup driver 怪物分支 0x08CE-0x08D7:`op_10 0x41,0x01; >>1 >>1`,
+//        與玩家分支 0x08F8 `get_char_data 0x0e(DEX); >>1 >>1` 同式(= stat/4)。
+//        交叉驗:Robber DEX=8→AV2、King's Guard DEX=16→AV4、Gladiator DEX=23→AV5,
+//        對齊 DOS §9「無甲近戰 AV 3–6」。
+//    • byte[0x00] = 力量(STR 類)→ 傷害 STR 修正 floor(byte[0x00]/5)。
+//        傷害路徑 0x0D63 `get_char_data 0x0c(STR)` + `op_36 0x05(÷5)`,怪物 STR
+//        = 記錄 byte[0x00](= char_data[0x0c] 同槽)。交叉驗:Humbaba STR=66(終戰
+//        強怪)、robbers STR 6–14,量級合理。
+//    • byte[0x0B] = sprite 資源基底(原已知,engine.c 0x4818)。
+//
+//  逆出受阻(誠實標示,**不臆造**):
+//    • HP/STUN:res3 HP 由「遭遇群定義模板」(res31 0x4FE 區,非個別怪記錄)在
+//        setup 0x05D2-0x05E0 以 `(template>>2)&0x0f`(0→1d10)算出 → **HP 是群層級
+//        屬性,非個別怪 record byte**。記錄端最接近的代理 = byte[0x09],但經群模板
+//        間接化,無法逐怪精確逆出。實作以 byte[0x09] 推 HP 並夾合理範圍,標「推斷」。
+//    • AC/防禦:to-hit 目標防禦 = DEF_array[gs[0x84]](0x0372),setup 0x08E8 由
+//        群緩衝 byte[0x28] + DV 算出;byte[0x28] 落在 res31 記錄 0x21+ 區(與 5-bit
+//        名字打包重疊),且經多實例 builder(0x0646)寫入 → **無法由 21B 記錄端乾淨
+//        逆出**。DOS §9:King's Guard 耐打來自命中率低(有甲),非高 HP;但記錄端無
+//        乾淨 armor 旗標欄(byte[0x12] 等對絕大多數怪非零,非可靠 armor 指標)→
+//        **不臆造 AC/DV 加成**,DV=AV=base,標「受阻」。
+//    • 傷害骰:怪物攻擊走 op_68 裝備路徑(byte[8]=主傷害骰 descriptor,§13 已反組譯)
+//        或徒手骰表;怪物記錄哪欄 = 武器 descriptor 受多實例 builder + op_68 自改碼
+//        阻擋,**未逐欄逆出**。實作以 byte[0x00](STR)+ 小骰回退,標「推斷」。
+//    • 精確逐怪 HP/AC/傷害的完整逆向卡在「per-character 動作指派 driver」(res3
+//        @0x08b6 actor 迴圈,docs/42 §14:headless 動作狀態機不收斂),非單一 opcode
+//        缺失;靜態反組譯已逆出搬運/setup 邏輯,但 actor 迴圈逐欄投影 char_data 槽
+//        需該 driver 跑通才能端到端對拍。
+// ──────────────────────────────────────────────────────────────────────────────
 struct MonsterRecord {
-  std::array<std::uint8_t, 21> attr{};  // record+0x00..+0x20(byte-for-byte)
+  std::array<std::uint8_t, 21> attr{};  // record+0x00..+0x14(byte-for-byte;0x15..0x20 為名字打包區,未存)
   std::string name;
 
   // 已知欄位:sprite 資源索引基底(engine.c trigger_random_encounter @0x4818)。
@@ -43,6 +83,17 @@ struct MonsterRecord {
   // sprite 資源編號 = (base << 1) + 0x8A。
   std::uint16_t sprite_res() const {
     return static_cast<std::uint16_t>((sprite_base() << 1) + 0x8A);
+  }
+
+  // ── 反組譯逆出的戰鬥屬性欄位 ────────────────────────────────────────────
+  std::uint8_t strength() const { return attr[0x00]; }   // STR 類(傷害修正源)
+  std::uint8_t agility() const { return attr[0x01]; }    // DEX 類(AV/DV 源)
+  // AV/DV base = 敏捷 >> 2(= stat/4;bytecode 逆出,res3 0x08CE)。
+  int avdv_base() const { return attr[0x01] >> 2; }
+  // HP 推斷(群模板間接化;byte[0x09] 為記錄端代理,經 (>>2)&0x0f 後夾範圍)。
+  int hp_hint() const {
+    int h = (attr[0x09] >> 2) & 0x0f;
+    return h > 0 ? h : 4;  // 0 表群模板 d10,以中位數 4 代;見檔頭「逆出受阻」
   }
 };
 
@@ -113,8 +164,9 @@ class CombatRng {
 // ── 戰鬥單位 ───────────────────────────────────────────────────────────
 // 把 CharacterRecord / MonsterRecord 投影成統一的戰鬥屬性視圖。
 // 玩家側:av/dv/ac/傷害骰 依 fraterrisus+SDA 規格(見 from_player)。
-// 怪物側:21 bytes 逐欄語意未由 oracle 確認,from_monster 的對映是 **remake 暫定假設**
-//         (已標 TODO),僅為驅動結算切片,非原版真值。
+// 怪物側:**AV/DV(=byte[0x01]>>2)與 STR(=byte[0x00])為反組譯逆出(res3 setup
+//         driver 0x08B6,見 MonsterRecord 檔頭)**;HP/AC/傷害骰因群模板間接化 +
+//         actor 迴圈 driver 受阻(docs/42 §14)為 **推斷**,誠實標示。
 //
 // HP=Stun(SDA):戰鬥傷害作用於 STUN;故 hp 欄載入角色 STUN 值。
 struct Combatant {
