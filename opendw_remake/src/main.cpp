@@ -36,6 +36,7 @@
 #include "render/viewport.hpp"
 #include "render/viewport_compose.hpp"
 #include "render/minimap.hpp"
+#include "render/ui_pieces.hpp"
 #include "render/sdl_video.hpp"
 #include "resource/level.hpp"
 #include "resource/paragraphs.hpp"
@@ -575,6 +576,10 @@ int main(int argc, char** argv) {
   ShopUi shop_ui;                 // 商店買賣子狀態(P / 踩商店格 / --shop;active 時暫停移動)
   TavernUi tavern_ui;             // 酒館招募子狀態(T / 踩酒館格 / --recruit;active 時暫停移動)
   game::Shop shop_data = game::Shop::load(bundle);  // 商店庫存(bundle/shop/stock.json;自包含)
+  // 遊戲內 UI chrome(石磚邊框 + Dragon Wars logo + pillar)原版資源(bundle/viewport/ui_pieces.bin;
+  // byte-for-byte 同 DRAGON.COM com 0x6AE0,對拍 opendw ui_load)。載入失敗 → 退回文字/實線近似。
+  std::optional<render::UiPieces> ui_pieces =
+      render::UiPieces::load(bundle + "/viewport/ui_pieces.bin");
   // run_event 攔到「Read paragraph N」時,把 N 寫進此處(>=0 表示本次事件是段落觸發);
   // main 偵測後改開 ParaViewer(長段落捲動)而非一般訊息框。-1 = 非段落事件。
   int event_para_n = -1;
@@ -1236,13 +1241,21 @@ int main(int argc, char** argv) {
     if (!line.empty())
       tl.add(kMsgStripX0 + 4, kMsgStripY0 + 3, line, text_col, PX_UI);
   };
-  // 探索/戰鬥共用框架:viewport 藍外框 + 面板藍外框 + logo(面板上方)。
-  //   不畫到 viewport / 面板「內部」像素(只在框外一格描線),不影響 render_sweep。
+  // 探索/戰鬥共用框架。
+  //   優先:原版 ui_pieces(石磚邊框 + Dragon Wars 立繪 logo + pillar),對拍 opendw
+  //         draw_ui_piece/ui_draw/ui_header_draw,byte-for-byte 真值(docs/59 收尾)。
+  //   退回(ui_pieces.bin 缺失時):藍色實線外框 + 文字 logo 近似(舊行為)。
+  //   兩者皆只畫 viewport(160×136 @ (16,8))外圍 + 右側面板區,不碰 viewport_memory
+  //   (render_sweep 154 case 鎖定的像素),故不影響第一人稱對拍。
   auto draw_explore_chrome = [&]() {
+    if (ui_pieces) {
+      ui_pieces->draw_chrome(fb);  // 原版石磚框 + 立繪 logo + pillar(真值)
+      return;
+    }
+    // 退回近似(無原版資源時)。
     frame_rect(kVpX - 2, kVpY - 2, kVpX + kVpW + 1, kVpY + kVpH + 1, 9);  // viewport 外框(亮藍)
     frame_rect(kPanelX - 4, kVpY - 2, kPanelX1 + 3, kVpY + kVpH + 1, 9);  // 隊伍面板外框(亮藍)
-    // logo:面板正上方(對齊原版右上 logo 位置),金色文字近似。
-    tl.add(kPanelX - 2, 2, tr.tr("Dragon Wars"), 14, PX_UI);
+    tl.add(kPanelX - 2, 2, tr.tr("Dragon Wars"), 14, PX_UI);              // 金色文字 logo 近似
   };
 
   // ── 訊息/段落檢視器框幾何(320×200 虛擬座標)──
