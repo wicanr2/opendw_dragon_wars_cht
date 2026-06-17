@@ -515,6 +515,14 @@ add_test(NAME verify_automap_l1
                  ${CMAKE_SOURCE_DIR}/assets/bundle/maps/golden
                  ${CMAKE_SOURCE_DIR}/assets/bundle/viewport
                  ${CMAKE_SOURCE_DIR}/assets/bundle/components)
+# area 0 (Dilmun) 大型 wraparound overworld 的 automap 對拍(鎖稽核 #1 回歸:
+#   單趟 per-pass viewport_memory 在大維度/wrap 關卡也須與 golden byte-for-byte;
+#   on-screen 完整鋪滿由 render_full 8 趟疊圖達成,headless dump 目視驗證)。
+add_test(NAME verify_automap_l0
+         COMMAND verify_automap ${CMAKE_SOURCE_DIR}/assets/bundle/maps/0.lvl
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/maps/golden
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/viewport
+                 ${CMAKE_SOURCE_DIR}/assets/bundle/components)
 
 # fog of war seen 累積確定性驗證(走固定路徑 → seen 集合 = 預期聯集 + 揭露正確性)。
 add_executable(verify_seen tools/verify/verify_seen.cpp)

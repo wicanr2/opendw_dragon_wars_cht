@@ -1142,9 +1142,17 @@ int main(int argc, char** argv) {
   }
 
   // --automap N:headless 直接進第 N 區的俯視平面地圖(`?` 鍵功能)。
+  //   例外:同時帶 --char-sheet 時,角色屬性表為使用者明確意圖,優先於 automap。
+  //   automap 仍需 enter_map 載入該區(供屬性表後方場景一致),但 state 留在 S_GAME
+  //   讓 char_sheet 在 2761 被消費(否則 S_MAP 會吞掉 --char-sheet,稽核 #3 根因)。
   if (automap_mode) {
     if (!enter_map(automap_area)) return 1;
-    state = S_MAP;
+    if (char_sheet >= 1) {
+      state = S_GAME;
+      std::fprintf(stderr, "note: --char-sheet 優先於 --automap,state 留在 S_GAME 開屬性表\n");
+    } else {
+      state = S_MAP;
+    }
   }
 
   // ── --selftest-save:headless round-trip 自測(不開 SDL,印 PASS/FAIL 後結束)──
@@ -2131,6 +2139,18 @@ int main(int argc, char** argv) {
     add_title();
     add_lang_badge();
     int y = 40;
+    // 目前隊伍清單(DOS 主選單語意:「Current party… 1)..4) + Begin the game」)。
+    //   remake 啟動已載入預設 / 已建隊伍(party);在選單同屏疊出隊伍,貼近原版整合樣貌。
+    //   空隊(理論上不會發生,預設四人)則略過此區,只顯示選項。
+    if (party.size() > 0) {
+      tl.add(16, y, tr.tr("Current party..."), 11, PX_BODY); y += 14;
+      for (std::size_t i = 0; i < party.size(); ++i) {
+        std::string line = std::to_string(i + 1) + ") " + party.at(i).name;
+        if (party.at(i).status & 0x01) line += " (" + tr.tr("unconscious") + ")";  // 昏倒標記
+        tl.add(32, y, line, 15, PX_BODY); y += 13;
+      }
+      y += 6;  // 隊伍清單與選項間留白
+    }
     if (!header.empty()) { tl.add(16, y, header, 7, PX_BODY); y += 14; }
     for (std::size_t i = 0; i < opts.size(); ++i) {
       bool cur = (int)i == sel;
@@ -2695,12 +2715,13 @@ int main(int argc, char** argv) {
     if (!level) return;
     if (minimap_ok && minimap_dirty) {
       // --mm-seed 顯式給值(測試/展示)→ 用 Seed 模式;否則用遊戲內真實 fog of war。
+      //   用 render_full(8 趟疊圖)鋪滿整個視窗(修稽核 #1:單趟 render 只畫最頂一帶)。
       if (mm_seed_set) {
-        minimap.render(*level, px, py, comps, minimap_seed());
+        minimap.render_full(*level, px, py, comps, minimap_seed());
       } else {
         const std::vector<std::uint8_t>* bm = seen.bitmap(current_area);
-        minimap.render_with_seen(*level, px, py, comps,
-                                 bm ? bm->data() : nullptr, level->w, level->h);
+        minimap.render_full_with_seen(*level, px, py, comps,
+                                      bm ? bm->data() : nullptr, level->w, level->h);
       }
       minimap_dirty = false;
     }

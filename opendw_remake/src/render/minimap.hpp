@@ -74,6 +74,16 @@ public:
   void render(const res::Level& level, int px, int py,
               const ComponentStore& comps, Seed seed = Seed::kAll);
 
+  // 完整 8 趟平面地圖(對齊原版 draw_minimap 的 byte_1964 0..7 捲動疊圖):
+  //   每趟讀不同 map row 帶並疊進 mem 的對應螢幕列,使俯視圖鋪滿整個視窗
+  //   (修稽核 #1:render() 單趟只畫最頂一帶)。to_framebuffer 取到完整地圖。
+  //   render() 仍保留供 golden 對拍(leaf-level 單趟 viewport_memory)。
+  void render_full(const res::Level& level, int px, int py,
+                   const ComponentStore& comps, Seed seed = Seed::kAll);
+  void render_full_with_seen(const res::Level& level, int px, int py,
+                             const ComponentStore& comps,
+                             const std::uint8_t* seen, int seen_w, int seen_h);
+
   // 遊戲內 fog of war:用呼叫端維護的 seen bitmap (row-major, w*h bytes;
   // 非 0 = 該格已看過) 決定哪些格揭露。seen 累積對齊 oracle
   // (refresh_viewport 每步只標記玩家當前格;見 game::SeenMap)。
