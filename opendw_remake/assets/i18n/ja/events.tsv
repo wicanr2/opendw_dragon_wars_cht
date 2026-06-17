@@ -1,7 +1,7 @@
 # english	japanese — 事件格文字（イベントテキスト）日本語。
-# 出典: X68000 日本語版《ドラゴンウォーズ》(Starcraft/Hudson, 1990) の SPECIAL ファイルより抽出（Shift-JIS, 非圧縮）。
-# 対応方法: パーガトリー序盤イベント列の位置 + 意味で英語キーへ直接対位（信頼度: 高）。詳細は docs/46_PC98_JA_EXTRACTION.md。
-# 注意: 一部キーは末尾空白を含む（VM emit 整合のため）。手動 trim しないこと。
+# 出典: X68000 日本語版《ドラゴンウォーズ》(Starcraft/Hudson, 1990) の SPECIAL ファイルより抽出（Shift-JIS, 非圧縮, 原文逐字）。
+# 対応方法: 英語キーへ「意味 + 既存 zh-TW 訳 + イベント列の offset 位置 + 固有名詞」で対位。対応の取れないキーは英語へフォールバック（行を出さない）。
+# 注意: 一部キーは末尾空白を含む（VM emit 整合のため）。手動 trim しないこと。日本語は全て SPECIAL の原文をそのまま採用。
 Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.	地獄から来た怪物ナムターの命令により、君たちは財産も富も全てはぎ取られ、裸で無防備のままパーガトリーの貧民街に投げ込まれた。
 The stone walls of Purgatory stand as a monument to shattered lives and broken dreams.	パーガトリーの石壁が、損なわれた一生と破壊された夢の記念碑のように立ちはだかる。
 You smell the sea. This section of wall must border on the harbor.	海の臭いがする。この辺りの壁は港に隣接しているにちがいない。
@@ -11,7 +11,206 @@ You hear the lusty shouts of a large crowd coming from the east.	東から群衆
 You hear the bloodthirsty howls of a great crowd from behind the wall to the north.	北側の壁の向こうから、群衆の血に飢えたわめき声が聞こえる。
 The sea is cold and rough. Only a good swimmer has a chance out here.	海は冷たく荒れている。泳ぎの達者な者だけがここから逃れるチャンスがある。
 There's a gap in the city wall. Far below, you see the water of the harbor through which you entered this dreaded isle. 	市の壁に割れ目がある。はるか下方に、君たちがこの恐ろしい島に入るとき通った港の水面が見える。
-Is freedom from Purgatory worth a long dive into what might be shallow water, then a desperate swim through the harbor?	パーガトリーからの脱出は、ひょっとしたら浅瀬かもしれない海に高い所から飛び込み、それから死にもの狂いで港を泳ぎ抜くだけの価値があることだろうか。
+Is freedom from Purgatory worth a long dive into what might be shallow water, then a desperate swim through the harbor?	パーガトリーからの脱出は、ひょっとしたら浅瀬かもしれない海に高い所から飛び込み、それから死にもの狂いで港を泳ぎ抜くだけの価値があることだろうか。君たちは運がいいと思うか。
 Ahead lay odd waters.	前方に何か変わった水たまりがある。
 The crowd grows wild with the hope of more victims.	群衆はもっと犠牲者が見れると興奮している。
-You feel strangely energized!	この水たまりに入ると、不思議にも魔力がみなぎって来るのを感じた！
+You feel strangely energized!	不思議なことに、精力を与えられたような気がする！
+You hear someone singing.	だれかの歌声が聞こえる。
+You hear moans of pain from inside the building.	建物の中から苦痛にうめく声が聞こえる。
+A wounded man lays on a pile of straw in the corner. His bandages are fresh but already stained with blood. He tosses and turns in a feverish slumber.	部屋の隅に積まれたワラの上に負傷した男が横たわっている。彼の包帯はまだ新しいのに血ですっかり汚れている。彼は体を投げ出し、熱にうなされて眠っている。
+An old wizard bars your path. "My home is off limits, friend," he says. "You're free go anywhere else you wish, but please respect my privacy."	年寄りの魔術師が君たちの行く手をさえぎった。「同志よ、わしの家は立ち入り禁止だ。どこへ行こうが自由だが、わしのプライバシーは尊重してくれ。」
+The door is locked.	扉にはカギがかかっている。
+Someone looks at you from within the stone building.	だれかが石造りの建物の中から君たちを見ている。
+Corroded stones like rotting teeth jut from the wet soil, marking where the buildings of a proud city once stood. A battered signpost reads, "Weep for Tars."	腐った歯のように、濡れた土から腐食した石が突き出し、かつては見事だった市の建物があったことを示している。風雨にさらされた道標にこう記されている。
+A huge slab of stone lays before you.	目の前に巨大な石板が横たわっている。
+This open area is in better repair than the rest of the city. Strange murals cover the walls.	市の他の場所に比べて、ここは比較的良く修復されている。壁全体に奇妙な壁画が描かれている。
+You notice signs that a party of men have passed this way.	一群の人間がここを通った形跡がある。
+Crumbling ruins mark where the wall has been breached by the engines of war.	ボロボロに砕けた残骸が、戦争兵器によってその壁が突破されたことを示している。
+Loose rubble blocks the way between the walls.	ボロボロのガレキが、壁の間の道をふさいでいる。
+Mud is slowly oozing from a fissure here.	ここの割れ目から、泥がじわじわと湧き出ている。
+This bridge helps shelter the inner harbor.	この橋は内部の港を保護する役目をしている。
+Royal Guards prevent you from entering Kingshome. "Move along, Outlanders!"	王室の衛兵が、キングズホームに入ろうとする君たちを制止した。「出て行け、外国人め！」
+This is a gallery of family portraits. At the head of the gallery is a huge painting of King Drake, looking very fit and authoritarian. On the facing wall of the 	ここは、家族の肖像を飾ってあるギャラリーだ。ギャラリーの最初には、非常に激情的で独裁主義的に見えるドレイク王の巨大な絵がかかっている。
+gallery you see portraits of Drake's children Prince Jordan of Byzanople, and the twin princess Myrilla and Myrolla.	その反対側には、ドレイクの息子、ビザノープルのジョルダン王子と、双子の王女ミリラとミロラの肖像画がある。
+This is a library, long dusty from disuse. This entire wing of the palace doesn't see much use nowadays. Books are available on all variety of subjects concerning Oceana both past and present, but mostly past.	ここは図書館だが、長い間使っていないためホコリだらけだ。宮殿のそで全体が、最近あまり使われていないのが分かる。
+This is the king's wardrobe. Here you find innumerable breeches, capes, boots, and blouses, and all manner of clothing accessories. Although this collection is valuable, it would be recognized instantly if someone tried to sell it.	ここは王の衣装部屋だ。ここには、大量のズボン、ケープ、ブーツ、ブラウス、そしてあらゆる種類の装身具がある。このコレクションは値打ちものだが、売ろうとしてもすぐに足がついてしまうだろう。
+In a closed trunk, you find several dozen simple white robes such as pilgrims wear.	閉まったトランクの中に、巡礼者の服そっくりの似た質素な白いローブが数十着も入っている。
+Fine tapestries and works of art are heaped in the corner. A treasure chest full of gold stands open in the center of the room. Silverware and other luxurious 	部屋の隅に豪華なタペストリーと芸術品が山積みされている。部屋の中央には、ゴールドのぎっしり詰まった宝の箱が開けっ放しにされている。床には銀器と他のぜいたくな品物が散乱している。
+items are scattered across the floor. Whoever piled these valuables here either has no respect for wealth, or no need of the same.	これらの宝物をここに積み上げた者が誰にせよ、富を軽視する者か、富を必要としない者だ。
+Several items of interest lay strewn about.	興味深いアイテムが何個もあちこちにばらまかれている。
+Another baby killed.	また別のヒナが殺された。
+A wave of telepathic hate washes over you. These children had a mother...	憎悪の心がひしひしと伝わってくる。この子供たちにも母親があったのだ。
+Dragon roars are constant, now, as the brood both mourns the passing of their brothers and prepare themselves for war.	ドラゴンのうなり声が絶え間なく続き、巣兄弟の死を嘆き悲しみながら、戦いの準備をしている。
+Nestled amid the rocks you find a dragon's skeleton.	岩の間に静かに横たわっているドラゴンの骸骨を見つけた。
+The air is so thick with death and tension it feels like being underwater.	空気は死と緊張でとても濃い感じで、まるで水中にいるみたいだ。
+The air reeks with the smell of death and burning dragon.	ドラゴンの死臭との燃える臭いで、空気が汚れきっている。
+You hear the distant rumble of a dragon... the likes of which man has never seen.	遠くからドラゴンがゴロゴロと動く音が聞こえる。そんなドラゴンなど今まで見たこともない。
+What will you do for an encore?	アンコールに応えて何をするつもりだ？
+The icy winds of despair tear at your soul!	氷のように冷たい絶望的な風が、君たちの心を引き裂く！
+The very fury of the sun seems to burn in this corridor!	太陽の怒りそのものがこの廊下で燃えているようだ！
+This chamber is bisected by a wall of fire. The heat is overwhelming. On the far side of the fire, you can see the exit from this room.	この部屋は火の壁で二つに分けられている。耐えられない熱さだ。火の向こう側に、この部屋の出口を見ることができた。
+This chamber is heaped with the bones of hundreds of unidentifiable creatures.	この部屋には、無数の正体不明の生き物の骨が、山と積まれている。
+This room is full of sticky spider webs.	この部屋は、ネバネバするクモの巣で一杯だ。
+This natural cavern must lay at the very heart of the universe.	この自然の洞窟は、世界の中心にまで、延びているにちがいない。
+You're falling!! Where did the floor go??	落ちて行く！！　床はどこへ行ったんだ？？
+All is darkness and confusion! Where are you?	すべてが暗闇で何も分からない！　君たちはどこにいるのだ？
+Mad screaming rings in your ears!	狂ったような叫び声が、耳の中に鳴り響く！
+The shore is closest here.	岸はすぐそばだ。
+A natural ford in the river.	川の中に自然にできた浅瀬
+In the bushes by the ford, you find animal tracks.	浅瀬のそばのヤブの中に動物の足跡がある。
+You stand before a large open glade.	君たちは広大な森の空き地の入り口に立っている。
+You find an odd harvest of mushrooms beneath this tree.	この木の下に不思議なキノコがたくさん生えている。
+A magical horn rests at the foot of this statue.	この像の足下に、魔法の角笛が置いてある。
+There's a simple shrine on the island in the midst of a still pond.	静まりかえった池の真ん中の島に、質素な聖堂がある。
+You stand beside a magical pond, shall you wade in?	君たちは魔法の池のそばに立っている。中に入ってみるか？
+Hidden away beside this rock is an arms cache!	この岩陰に武器の隠し場所があった！
+You find a soldier has stashed his arms and armor!	君たちは、兵士が武器と鎧を隠してある場所を発見した！
+Enter Purgatory	パーガトリーに入るか？
+Enter Slave Camp	逃亡奴隷のキャンプに入るか？
+Enter the City of the Yellow Mud Toad	ここは「イエロー・マッド・トード市」だ。入って行くか？
+Enter Smuggler's Cove	密輸業者の入り江だ。入るか？
+Enter ruined city	この廃虚と化した町に、入って行くか？
+Enter decaying city	荒廃した市がある。入って行くか？
+Enter Kingshome	キングズホームだ。入って行くか？
+Enter Royal Game Preserve	ここは王室専用の狩場だ。入って行くか？
+Enter Dragon Valley	ドラゴンの谷だ。入るか？
+Enter Nisir	ここはナイサーだ。入るか？
+Enter Lansk	ここはランスクだ。入って行くか？
+Enter Byzanople	ここはビザノープルだ。入るか？
+Enter Freeport	ここはフリーポートだ。入って行くか？
+Enter Slave Estate	モグの邸宅に入るか？
+Enter Camp	キャンプがある。入って行くか？
+Enter strange building	変わった建物がある。入るか？
+Bridge ahead, approach	前方に橋がある。近づくか？
+Guard bridge ahead, approach	前方に警護された橋がある。近づくか？
+Heavily guarded bridge ahead, approach	前方に厳重に警護された橋がある。近づくか？
+Ruins ahead, Approach	廃虚がある。近づくか？
+Magical forest ahead, Enter	前方になにか不思議な森がある。入って行くか？
+Approach Old Dock	古ぼけた波止場がある。入るか？
+Approach Pilgrim's Dock	巡礼者用の波止場だ。近づくか？
+A Priest of the Universal God blesses you as you pass. "Namtar protect you," he says.	歩いていく君たちに、宇宙神の司祭が祈った。「ナムターがあなたたちをお守り下さいますよう。」
+"Papers, please," he says, holding out his hand to you.	「書類を下さい。」　彼は君たちに手をぐっと差し出して言った。
+"No one uses the front door fool!"	「正面の扉を使うとは馬鹿者が！」
+"Recruits are always welcome in the service of Namtar," he says. Do you wish to join the army?	「新兵はいつでもナムターの軍隊に歓迎する。」と言われた。軍隊に参加するか？
+A group of guards ambush you using powerful magic. "Remember, Namtar wants them alive," is the last thing you hear before....	衛兵の一団が強力な魔法を使って君たちを待ち伏せていた。
+A voice drifts from the darkness, "I do not care for this rampant destruction of my property... it is time you were taught a lesson!"	暗がりから声が聞こえてくる。「よくもわしの財産をこんなにひどく破壊してくれたな。お前たちに教訓を与えてやらなければならない。」
+A voice rings from the shadows, "So you are finally here... I must admit I underestimated you."	暗がりから声が鳴り響く。「ついにここまで来たか。お前たちを甘く見過ぎていたようだ。」
+Buck Ironhead, Namtar's top general, regards you from across the room. "You've hacked past my best men -- I'm not sure what I can do against you," he says "But I'm not going down without a fight..."	ナムターの首席将軍、バック・アイアンヘッドが部屋ごしに君たちをにらみつけている。
+To the south lay the forces of Namtar!	南にナムターの軍隊がいる！
+This is a military parade grounds. A legion of spearmen perform intricate drills beneath the eyes of stern officers.	ここは軍隊の行軍練習場。槍兵の軍隊が、厳しい将校の監視のもとで難しい訓練をしている。
+You hear the sound of soldiers marching from over the wall.	壁の向こう側から兵隊が行進する音が聞こえる。
+Any attempt to continue here will result in certain death.	ここでどんな試みをしたとしても、結局は死ぬだけだろう。
+Surely this must be hell... you will never find Namtar, and Oceana will never be free!	ここは地獄にちがいない。君はナムターを探しだすことはできないだろう。オセアナも決して解放されないだろう！
+"I was wondering when you'd arrive. We've just gotten word from the Isle of Forlorn. Slaveholder Mog has died, and his will leaves his entire estate to you!" He holds up a hand when you press him with questions. "There isn't anything more I can tell you."	「君たちが来るとは、驚いた。フォーローン島から知らせが着いたばかりだ。奴隷所有者のモグが死んだ。彼の意思で彼の全地所が君たちに残された！」
+Inscribed on a standing stone you read, "In memory of our Master Zaton. May his soul rest in peace."	立ててある石に、次のように刻まれている。
+Judging by the ruins here, the city seems to have been on the losing end of a war.	ここの廃墟から判断して、市は勝ち目のない戦いをずっとしている感じがする。
+The owner of this mansion is a lover of art.	このかび臭い寝室で、君たちは雑誌を見つけた。その雑誌から、この家の主人はモグという男で、採鉱事業で富を築いた貴族趣味の男であることを知った。
+Several dead mammals -- among them human beings -- are hung on the walls on hooks. This place looks distressingly like a meat locker.	数匹の死んだ動物が、中には人間もいるようだ、壁にフックで留められてぶら下がっている。ここは肉置き場のような悲惨な光景だ。
+This street is remarkably clean.	この通りは驚くほど清潔だ。
+Citizens avoid walking on this side of the street.	市民たちは通りのこちら側を歩くのを避けている。
+You feel a vibration beneath your feet, as if something is moving under the surface of the city.	足の下に振動を感じる。まるで何かが市の地下で動いているようだ。
+You smell a faint swampy odor from the south.	南からかすかに沼地の臭いがする。
+Something in this muck-covered ground catches your eye.	このゴミにおおわれた地面にある何かが君たちの目を引いた。
+In the heart of this mountain you find a swampy chamber filled with bubbling mud... evidently the faerie lizard folk enjoy this type of place, but you can't help but feel it is not they alone who luxuriate here.	この山の奥深くに、泡立つ泥だらけの沼地の部屋を見つけた。見るからにトカゲ族が喜びそうな場所だが、ここに生息しているのは彼らだけではないと思う。
+Light dances oddly in the air ahead.	前方の空中で光が奇妙に揺れている。
+Ahead you see a portal of power -- wildly shifting colors swirl within a gate of arcane stone.	前方に力場の入り口がある。不思議な石の門の内側で、様々な色が激しく変化し、渦巻いている。
+A wise man might find a way through this rock.	目の前は、深い地面の裂け目だ。賢い者なら、この岩の所を通り抜ける道を見つけられるかもしれない。
+You step onto the tripwire and as logic would dictate, the granite block smashs the party into unrecognizable gore.	君たちは仕掛け線を踏み、そうなるように分かりきっていたように、花崗岩の塊が君たちにぶち当たり、見分けのつかない血の塊にしてしまった。
+You approach the gargoyle and it does a stoning gaze at the party... Your bodies stiffen and harden as you turned into stone...	近づいていく君たちパーティを、ガーゴイルが冷酷な目でにらんだ・・・君たちの体は強ばり、硬くなって石に変えられた・・・
+You fall for many miles and through many worlds, then find yourself sitting on wet rock. The air has a musty odor.	君たちは何キロも、いくつもの世界を通って落ちて行った。気がつくとぬれた岩に腰掛けていた。空気はカビ臭い匂いがする。
+Do you wish to enter the Apsu waters	アプス海に入るか？
+A sign hangs loosely from its hinges reading, "The Icarian Triumph Tavern."	「イカロスの凱旋　酒場」
+Tars City Council."	「ターズ市議会」
+Freeport City Council."	「フリーポート市議会」
+Freeport Arms."	「フリーポート武器屋」
+Ryan's Armor."	「リアンの鎧店」
+The Brew's Brothers."	「醸造の友」　酒場
+The Temple Faith."	「信頼の寺院」
+Bewitching Potions and Elixers."	「魔法の薬と霊薬の店」
+Magic Inc."	「魔法株式会社」
+Governor's Office."	「市長の事務所」
+Visitor's Information Bureau."	「訪問者ご案内」
+Visitor's Registration Department."	「訪問者登録部」
+"Ah! You're the Outlanders," he says. "It is well that you came here. All visitors are required to register." The official points to a chart on the wall, reading aloud what is written there.	「ああ、外国人の方すね。」と彼が言った。　「ここでいいですよ。訪問者は全員、登録が必要です。」　その役人は壁の上の表を指さし、大声でその内容を読んだ。
+"Ah! I heard there were Outlanders in town. Do you have your visitor's registration papers?" he asks. The official smiles again awaiting your reply.	「ああ！　町に外国の方がこられていると聞きました。訪問者用登録書類を持っていますか？」　と彼が聞いた。君たちの返事を待ちながら、彼は笑っている。
+"Ah! Outlanders. You're probably here for a Governor's pass," he says. He hands you a stack of papers. "Have these stamped at the Office of Interior Affairs."	「ああ！　外国の方ですね。市長の通行証が欲しくてここに来たんですね。」　と言って彼は書類の束を差し出した。「内務局事務所で、これにハンコをもらって下さい。」
+At the center of the Solarium you find Mystalvision, the renegade High Priest of the Sun. He lays on his back with his shirt off, evidently in quest of the perfect tan. He does not seem to notice your approach...	サンルームの中央に、サンの背教の高僧ミスタルビジョンがいる。彼は裸であおむけに寝て体を焼いている。彼は君たちが近づくのに気付かない。
+Shadowy figures welcome you to a darkened room. Few words are spoken as you are provided with simple but effective disguises. "Word of your escape will quickly reach the Stosstrupen," one of them 	暗い部屋の中では、影のような人物たちが君たちを迎えた。君たちが、簡単だが効果のある変装をしていると、彼らの一人が短くささやいた。
+whispers. "Leave the city as soon as you are able, and do not return!"	「君たちの逃亡の知らせは、すぐストストルーペンの耳に届くはずだ。できるだけ早く市を去れ。そして二度と戻ってくるな！」
+ says, "The walls of this city were not shattered by man - dragons have been here." 	%sが言う。　「この市の城壁は人間の手で破壊されたものではない。ここにはドラゴンがいたにちがいない。」
+ recognizes this area as a transportation nexus. Do you wish to teleport to the Mystic Wood?	%sは、この地域から転送できることが分かった。
+Utnapishtim is standing to the 	ユトナピシュティムが、北に立っている。
+This finger of rock rises from the very pit that spawned Namtar.	この指のような岩は、ナムターを産み出した深い穴からそびえ立っている。
+The industious people of Lansk maintain this outpost against the dark.	勤勉なランスクの人々は、暗黒に抵抗し、この辺境の植民地を維持している。
+Malign fairy spirits guard this pass. They demand the price of life before you may pass. Do you consent?	よこしまなフェアリーたちがこの道を守っている。彼らは通りたければ生命力を引き替えによこせ要求した。認めるか？
+"Begone, Topsiders," the fairy guard intones. "Only worshippers of Irkalla may pass."	「出ていけ、地上のやつらめ！」　フェアリーの衛兵が声を合わせて怒鳴った。「通れるのはイルカラを崇拝する者だけだ。」
+In the shadows of the mountains you find an eerie cave. Enter?	山陰に不気味な洞窟を見つけた。入るか？
+In the darkness you find a well.	暗闇の中に井戸を見つけた。
+The raging heat saps your strength.	酷熱に体力を絞り取られた。
+You see an island to the east.	東に島が見える。
+Just across the water you see the mainland.	川の真向かいに岸が見える。
+The water is unusually calm on this shore of the Isle of Woe.	このウォウ島の海岸では、海は普通より穏やかだ。
+Despite common sense, you jump over the railing into the bottomless abyss!	常識を物ともせず、君たちは手すりを乗り越えて、底なしの深淵に落ちていった。
+Before you can react, a cosmic force envelopes you...	何もしないうちに、広大な力が君たちの体を包み込んだ・・・
+You wake up in a dungeon cell.	君たちは地下牢の独房で目覚めた。牢の扉は重い鉄の帯で補強されており、外側からのみ操作できるカギが掛かっている。君たちはしばらくの間、ミスタルビジョンの客のようだ。
+The jailor sounds the alarm!	看守が警報を鳴らした！
+You've found the Phoeban treasure vault!	フェーバス人の宝物庫を発見した！
+This is the dungeon armory. A basic selection of arms and armor is available.	ここは兵器庫だ。基本的な兵器と鎧が手に入る。
+A voice that seems to emit from the very rock booms, "Only those who know the word may pass. What will you say?	岩そのものから発せられているような声がとどろいた。
+The loud rumbling of a dragon comes from the pit.	ドラゴンのたてる大きな音が、穴から聞こえてくる。
+"What can I do for ya, stranger?" says the barkeep	「ようこそ。お入りなさい。」と、酒場の主人がまねく。
+At the Black Market, we have what you need...	闇市には、君たちの欲しいものがあるはずだ。入って行くか？
+Many people are here dying of various diseases and afflictions. A robed healer attends to the needs of all.	多くの人々が病気や苦しみで死にかかっている。ローブ姿の医者たちが治療をしている。君たちも入って行くか？
+Behind this tree is an arms cache!	この木の後ろに武器が隠されていた！
+Written on this stone is "To restore the master of High Magic, the various pieces of his body must be found and returned to the City of the Yellow Mud Toad."	「ハイ・マジックのマスターを復元するためには、粉々になった彼の体の破片を見つけ、イエロー・マッド・トード市に戻さねばならない。」
+The bar life in this town is slow and rather boring - no one dares to catch the notice of the Strosstrupen	この町の酒場の生活はのんびりしていて、かなり退屈だ。誰一人、あえてストストルーペンの注意を引こうとはしない。
+A bored Lansk official sits behind a desk. He looks up as you approach. "You shouldn't be in here," he says. "Off with you before I call the guard!" A sign beside the door behind the official reads, "Armory" 	退屈そうなランスクの役人が机にすわっている。彼は君たちが近づくと目を上げて言った。「ここへ来てはならん。衛兵を呼ぶ前に出ていけ！」　役人の後ろの扉の横の看板に、「兵器庫」と書いてある。
+"Welcome to the Cavern Tavern, folks," says the barkeep	「洞窟酒場へようこそ、皆さん」　酒場の主人が歓迎した。
+Magical Mud Inc., we'll ooze your pains away for a price!	「（株） 魔法の泥。安価で苦痛を軽減致します！」
+Before you is the gate to Byzanople. The doors are of stout oak reinforced by bands of steel. City defenders sneer at you as you search in vain for a means past the gate.	君たちはビザノープルの門の前にいる。扉は鋼のたがで補強された頑丈な樫で造られている。市の防衛軍の兵士たちは、いたずらに門を通過する方法を探している君たちをあざ笑った。
+This ruined building seems to have once been part of the city defenses. A large block catches your eye.	この崩壊した建物は、かっては市の防衛施設の役目を果たしていたらしい。大きなブロックが目に止まった。
+You stand before the main gate to the city. If you open it, the Kingshomer army will be able to enter and overwhelm the garrison.	君たちは市へ通じる主要ゲートの前に立っている。そこを開ければ、キングズホームの軍隊は中に入って、防衛軍を圧倒できるだろう。
+Marik was repairing some broken armor when he spots you, "I haven't seen any new customers since the war broke out!"	マリクは壊れた鎧を修理しているところだった。
+"Make your selections quickly, I have a lot of weapons to make!!"	「早く決めてくれよ、俺には作らなきゃならない武器がいっぱいあるんだ！」
+Marik's Armory."	「マリクの鎧店」
+Bart's Weaponsmithing."	「バートの武器製造所」
+Alchemist Boris will heal all for a price.	練金術師ボリスは、有料でどんな病気も治療してくれる。
+Town Healer."	「市営診療所」
+You enter the dock house. Several men lunge for their weapons and challenge you. The men look like pirates and scoundrels. You are heavily outnumbered, and the pirates are well armed.	乗船場に入ると、数人の男が武器を突き出して、いどんできた。彼らは海賊でしかも悪党らしい。海賊の数は君たちよりはるかに多く、彼らは完全武装している。
+Despite Ugly's warning, you try to sneak through the west door. Beyond the door you find a secret dock at which is moored a fast clipper ship.	アグリーの警告を無視して、君たちは西側の扉をこっそり通り抜けようとした。扉の向こうには、快走帆船のつながれた秘密の波止場があった。
+Ugly is as good as his word. You are escorted aboard a tiny ship and set sail for the Necropolis... the City of the Dead.	アグリーは約束を果たした。君たちはちっぽけな船に乗せられ、死の町、ネクロポリスに向けて出帆した。
+A statue of a proud and haughty dwarf stands before you. The stone work is of exceptional quality	目の前に、尊大でごうまんドワーフの彫像が立っている。その石の作品は、並外れて優れたものだ。
+, but the statue has no eyes	だが、その彫像には目がない。
+Once this valley rung with the sound of dwarfen hammers... now it is silent.	かってはこの谷には、ドワーフのハンマー音が鳴り響いていた。しかし、今は静まりかえっている。
+To the west, behind a wall of crystal, you see the fires of a mighty forge.	西側のクリスタルの壁の向こうに、でかい鍛冶場の火が見える。
+A mystical dwarven forge is here, but without a master smith, the forge is useless.	ここは神秘的なドワーフの鍛冶場だが、主人の鍛冶屋がおらず、使われていない。
+Mining work in this room was rapidly abandoned... something must have happened suddenly.	この部屋で行われていた鍛冶作業は、突然中断されたようだ。何かが突発的に起こったにちがいない。
+Several dwarven weapons are neatly stored here.	ここには、数種のドワーフの武器がきちんと保管されている。
+Many valuable items of dwarven manufacture are stored here.	ドワーフの製造した貴重な品物がここに保管されている。
+A wizard stands before shelves filled with many magical scrolls, "I am most skilled in High Magic!"	魔法の巻物がたくさん置かれた棚の前に魔術師が立っている。「わしはハイ・マジックにかなり精通しているぞ。」
+A crass barbarian twirls swords before you in a dazzling display of swordplay, "I only stock the finest arms in the land!"	目の前で粗野な野蛮人があざやかな剣さばきを見せた。「この世界で最良の武器を仕入れたばかりだ！」
+A well-armored warrior blinds your eyes with his highly polished armor, "Welcome to my shop!"	完全武装した戦士のきらめく鎧が君たちの目をくらませた。「私の店にようこそ！」
+An wild-eyed old hag looks into a crystal ball and threatens, "I'll get you my little pretty... oh, paying customers!"	ワイルドな目つきの老婆が、クリスタルの玉をのぞき込んで、君たちをおどかした。「お前たちにあたしのちっちゃくてかわいい物を・・・。おや、お客だ！」
+The bartenders are drunk beyond reason. This seems to be a popular spot	バーテンたちは正体もなく酔っぱらっている。ここは大衆酒場らしい。
+Faith heals all.	「信頼は全てをいやします。」
+In the midst of this dark grotto, you find a giant clam. Is this all that remains of some unfortunate adventurer?	この薄暗い小さなほら穴の真ん中で、巨大なハマグリを見つけた。その開いた殻の中に、頭蓋骨が入っている。これは、とある不幸な冒険家の残した全てなのだろうか？
+A miserable little man in a jester's outfit sits in the corner. "A man is born crying," he says. "When he's cried enough, he dies!"	道化師の衣装を着た見すぼらしい小男が、隅にすわっている。男が言う。「ある男が泣きながら生まれた。充分泣いた後、彼は死んだ！」
+A little boy bearing an over-sized polearm guards the entrance to this hut. "This is the king's boathouse!" he cries. "No one may enter unless on business of the king."	彼には長すぎる棒をかまえた少年がこの小屋の入口を見張っている。「ここは王様のボートハウスだ！」と彼が叫んだ。「王様のご用の者以外誰も入れないよ。」
+"Only people on official business may enter!"	「公務の人間だけが入れるんだ！」
+You find an old man sitting under a tree by the water. "I won't go inside," he says. "You can't make me!"	水際の木の下に老人がすわっていた。「わしは中へ入らん。わしにそうさせることはできん！」
+The ferry manager greets you. He tells you that you can book passage to Lansk for only 500 gold. He also tells you that pilgrims can take the free ferry to the island of Nisir.	渡し船の船長が君たちを歓迎した。彼は、たった５００ドル出せばランスクまでの切符が買えると教えてくれた。彼はまた、巡礼者はナイサーの島まで無料のフェリーに乗れると言った。
+This statue looks like the diety of home computers, but it's really just a cheap clone.	これは、ホーム・コンピュータの神性を祭った像だ。
+Rag-Tag soldiers and infantrymen lay in disorganized beds of hay and straw. Several healers attend to their needs and with powerful magic they are made fit to fight again.	干し草とワラの入り乱れたベッドの中に、下層階級の兵士や歩兵たちが横たわっている。数人の治療者たちが必要な治療を施し、強力な魔法で再び戦えるように元気にしてやっている。
+The black marketeer looks at your equipment. "You won't last five minutes with that stuff, pal!"	武器屋が君たちの装具をながめた。
+Lanac'toor's Spectactles lie here dusty and unused.	ここに、ラナクトールのメガネがホコリまみれで放置されている。
+Many high magic scrolls are neatly hidden in a little cubby hole here.	たくさんのハイ・マジックの巻物が、このこじんまりした穴にきちんと隠されていた。
+Greedily clutched in the hands of a thankfully inanimate corpse, you find a gleaming magic axe.	幸せな事に、死体が手にしっかりと握っている、きらきら光る魔法の斧を見つけた。
+You have found the Byzanople treasure vault!	ビザノープルの宝物庫を発見した！
+Construction of this secret tunnel seems to have been suspended before the job was done.	この秘密のトンネル工事は、完成前に一時中断されているらしい。
+Jackpot!! The Kingshome armory!!	しめた！　キングズホームの兵器庫だ！
+A plaque reads, "Welcome to my garden. Please enjoy the works of art I have created: they are my gift to mankind. Mog."	「私の庭へようこそ。私の作り出した芸術品をお楽しみ下さい。これらは人類に対する私からの贈り物です。
+This appears to be a guardroom, but where are the guards?	ここは衛兵室らしいが、衛兵たちはどこに行ったのだ？
+This room is heaped full of household items. Among them is an uncommon number of mirrors.	この部屋には家事用の道具が山積みされている。その中に、おびただしい数の鏡がある。
+The food layed out for the evening meal in this dining room has long since gone stale.	このダイニングルームに並べられた夕食は、何日も経って腐っている。
+This dressing room is in total disarray. The shattered remains of a full-length mirror lay in a corner.	この化粧室の中はめちゃくちゃだ。粉々になった等身大の鏡が、部屋の隅に散らばっている。
+The walls of this sitting room were formally hung with mirrors, but the mirrors have been destroyed.	この居間の壁は、かっては鏡で飾られてようだが、鏡は壊されている。

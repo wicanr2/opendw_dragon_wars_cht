@@ -65,30 +65,33 @@ dd if=disk.dim of=disk.raw bs=256 skip=1
 
 SJIS 文字列抽出は「先頭 0x81–0x9F/0xE0–0xFC + 後続 0x40–0x7E/0x80–0xFC」の連続を走査し `cp932` でデコード（オフセット付き）。
 
-## 3. 英↔日 対照表（events.tsv、全 13 件）
+## 3. 英↔日 対照表（events.tsv、13 → 212 / 283 件）
 
-remake の `events.tsv` キー（= 英語原文、パーガトリー序盤イベント 0/13）に対し、`SPECIAL` 内の対応日本語を **イベント列の位置 + 意味**で直接対位。**信頼度: 高**（同一シーケンス・固有名詞一致）。
+remake の `events.tsv` キー（= 英語原文、283 ユニークキー）に対し、`SPECIAL` 内の対応日本語を **イベント列の offset 位置 + 意味 + 既存 zh-TW 訳の橋渡し + 固有名詞**で対位。当初の序盤 13 件から、`SPECIAL` 全文（offset 順 ≒ 劇情進行順）を走査して **212 件**に拡張した（信頼度: 高 197 / 中 15）。
 
-| # | 英語キー（要約） | `SPECIAL` offset | 日本語 |
-|---|---|---|---|
-| 1 | Stripped of all possessions… Namtar | 0x27d2 | 地獄から来た怪物ナムターの命令により、君たちは財産も富も全てはぎ取られ、裸で無防備のままパーガトリーの貧民街に投げ込まれた。 |
-| 2 | stone walls … monument | 0x29da | パーガトリーの石壁が、損なわれた一生と破壊された夢の記念碑のように立ちはだかる。 |
-| 3 | smell the sea … border on the harbor | 0x2679 | 海の臭いがする。この辺りの壁は港に隣接しているにちがいない。 |
-| 4 | breeze … sickly stench | 0x38d4 | 港の方から、はき気を催すような匂いの風が吹いてくる。 |
-| 5 | chorus of voices from the west | 0x32a7 | 西から歓声がどっとわき上がった。 |
-| 6 | lusty shouts from the east | 0x323d | 東から群衆の元気な叫び声が聞こえる。 |
-| 7 | bloodthirsty howls from the north | 0x3267 | 北側の壁の向こうから、群衆の血に飢えたわめき声が聞こえる。 |
-| 8 | sea is cold and rough … good swimmer | 0x32d4 | 海は冷たく荒れている。泳ぎの達者な者だけがここから逃れるチャンスがある。 |
-| 9 | gap in the city wall … harbor | 0x28c6 | 市の壁に割れ目がある。はるか下方に、君たちがこの恐ろしい島に入るとき通った港の水面が見える。 |
-| 10 | Is freedom … worth a long dive | 0x2923 | パーガトリーからの脱出は、ひょっとしたら浅瀬かもしれない海に高い所から飛び込み、それから死にもの狂いで港を泳ぎ抜くだけの価値があることだろうか。 |
-| 11 | Ahead lay odd waters | 0x52ea | 前方に何か変わった水たまりがある。 |
-| 12 | crowd grows wild … more victims | 0x5312 | 群衆はもっと犠牲者が見れると興奮している。 |
-| 13 | You feel strangely energized! | 0x5aa7 | この水たまりに入ると、不思議にも魔力がみなぎって来るのを感じた！ |
+### 方法
+- `SPECIAL` から SJIS 文字列を offset 付きで全 dump（`tools_build/` の作業スクリプト、Docker 内）。日本語を含む有効文字列は約 1,400 本。
+- 283 の英語キーを 2 バッチに分け、各キーを「英語の意味 / 既存 zh-TW 訳 / offset 序列（波卡城開幕 → 城壁・港 → 闘技場 → 逃亡奴隷キャンプ → 各都市 → ネクロポリス → ドワーフ → フリーポート → 救いの山 → 終戦）/ 固有名詞（ナムター・パーガトリー・イルカラ・ラナクトール・ビザノープル・フェーバス・キングズホーム・フリーポート・ランスク・ネルガル・アグリー・マリク・ミリラ・ジョルダン・バック・アイアンヘッド・ウォウ島 …）」で対位。
+- **検証**: 採用した 212 件すべての日本語が `SPECIAL` の抽出文字列に **逐字一致**することを機械チェック（捏造・機翻ゼロ）。
 
-対位の確証（#11/#13）: `SPECIAL` 0x52ea「変わった水たまり」と 0x5aa7「水たまりに入ると魔力がみなぎる」が **水たまり** を共有し、英語版の "odd waters → energized" の隣接イベント対と一致。直後に 0x5aed「何も起きない。」(Nothing happens) も存在。
+### 信頼度「中」の 15 件
+意味は対応するが、英語キーが日本語より長い台詞を含む（日本語は事件文を短く切る）、または招牌切り分け粒度が異なるケース。いずれも `SPECIAL` の **実機原文をそのまま採用**（憶測訳はしない）。
+
+### 留空（英語フォールバック）
+71 件は対応を取らなかった。主因:
+- 極短の音効/系統句（`Splash!!`・`Zap!!!`・`Arrrggh! A Pit!!` 等）が日本語では汎用句（「何も起きない。」「ドッボン！」「ブゥーン！」）に集約され、唯一対位できない。
+- 看板/事務所名で X68000 版の店名リストが英語版と一致しない（`Department of Lubrication."`・`Doctor Death's…` 等）。硬く当てると誤配になるため留空。
+- `THE END` / `=== Victory over Namtar ===` / `The Ending of Dragon Wars` / remake 合成結局文（index 200–203）は remake 自製で、X68000 原文に対応なし。
 
 ### 補完先
-`assets/i18n/ja/events.tsv`（新規、13/13）。英語キーは `zh-TW/events.tsv` と完全一致（末尾空白を含むキー #9 も保持）。
+`assets/i18n/ja/events.tsv`（13/283 → **212/283**）。英語キーは `zh-TW/events.tsv` と完全一致（末尾空白を含むキーも保持）。対応の無いキーは行を出さず、実行時に英語へフォールバック。
+
+## 3b. 呪文名（spells.tsv、57 件）
+
+`DRAGON.X` **@0x369e4** 以降の SJIS 連続テーブルから呪文名を抽出し、`spells.cpp` の呪文 ID 順（0x00..0x3C）と照合。固有名詞（エルバー／プーグ／サラ／ボルン／ミスラス／ザック／サラマンダー）と系統境界（Low/High/Druid/Sun）をアンカーに対位し、**57 件**を実機原文へ確定（従来は一部が推測訳だった）。
+- 例: Mage Fire=魔法の火、Elvar's Fire=エルバーの火、Poog's Vortex=プーグの竜巻、Kill Ray=死の光線、Disarm Trap=ワナの除去、Summon Salamander=サラマンダーの召喚。
+- 曖昧な Sun 系後段（Charger / Guidance / Radiance / Holy Aim 周辺の並び差）は英語フォールバックで保留。
+- 0x369e4 のテーブルは呪文に続けてスキル/能力（医術・登山・泳ぎ・各種武器技能・各マジック系統名）も並ぶ（将来の chars.tsv 補完候補）。
 
 ## 4. 検証
 
@@ -170,10 +173,11 @@ text = nibswap(raw_mons).decode("cp932")
 
 | ファイル | 種別 | 内容 |
 |---|---|---|
-| `assets/i18n/ja/events.tsv` | 新規 | 日本語イベント 13 件（信頼度 高） |
-| `assets/fonts/cjk24.atlas` | 更新 | 1653→1790 字形（日本語字形追加、旧字形保持） |
-| `tools_build/fat12_extract.py` | 新規 | Human68k FAT12 抽出ツール（Docker） |
-| `tools_build/gen_cjk_atlas_from_i18n.sh` | 新規 | i18n 全文字から atlas 再生成（Docker + wqy-zenhei） |
-| `docs/46_PC98_JA_EXTRACTION.md` | 新規 | 本書 |
+| `assets/i18n/ja/events.tsv` | 更新 | 日本語イベント **13 → 212 件**（SPECIAL 原文逐字、信頼度 高 197 / 中 15） |
+| `assets/i18n/ja/spells.tsv` | 更新 | 呪文名 **57 件**を `DRAGON.X` 実機原文へ確定（推測訳を置換） |
+| `assets/fonts/cjk24.atlas` | 更新 | 2112→2279 字形（日本語字形追加、旧字形保持・欠字 0） |
+| `tools_build/fat12_extract.py` | 既存 | Human68k FAT12 抽出ツール（Docker） |
+| `tools_build/gen_cjk_atlas_from_i18n.sh` | 既存 | i18n 全文字から atlas 再生成（Docker + wqy-zenhei） |
+| `docs/46_PC98_JA_EXTRACTION.md` | 更新 | 本書 |
 
 原ゲームファイル（X68000 / DOS）は **入庫しない**。
