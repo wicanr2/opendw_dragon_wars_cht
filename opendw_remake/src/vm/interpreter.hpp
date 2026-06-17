@@ -42,6 +42,14 @@ public:
   // 預設 nullptr → 不影響任何現有路徑。
   using XcallObserver = std::function<void(int tag, std::uint16_t off, std::uint16_t ret_pc)>;
   void set_xcall_observer(XcallObserver o) { xcall_obs_ = std::move(o); }
+
+  // 觀測 hook(純診斷,不改 VM 行為):op_5D(get_character_data)讀角色屬性時,
+  // 以 (property_offset, value, script_pc_of_op) 回呼。供技能檢定掃描器逆出
+  // 「哪些事件格 script 讀取角色 skill 欄(0x20-0x3A)並據以分支」。
+  // 預設 nullptr → 不影響任何現有路徑。
+  using CharReadObserver =
+      std::function<void(std::uint8_t prop_off, std::uint8_t value, std::uint16_t op_pc)>;
+  void set_char_read_observer(CharReadObserver o) { char_read_obs_ = std::move(o); }
   // 目前執行所在的程式資源 index(= word_3AE8 / script_res),供 trace 標註。
   int current_script_res() const { return s_.script_res; }
 
@@ -239,6 +247,7 @@ private:
   MessageSink msg_sink_;
   SoundSink snd_sink_;
   XcallObserver xcall_obs_;
+  CharReadObserver char_read_obs_;
 };
 
 }  // namespace dw::vm

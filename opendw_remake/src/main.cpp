@@ -51,6 +51,7 @@
 #include "game/seen_map.hpp"
 #include "game/terrain_state.hpp"
 #include "game/terrain.hpp"
+#include "game/real_terrain.hpp"
 #include "game/progression.hpp"
 #include "game/shop.hpp"
 #include "game/recruit.hpp"
@@ -413,6 +414,7 @@ int main(int argc, char** argv) {
   int cast_spell_id = -1;       // --cast <spellId>:headless 在遭遇中施放該法術一次(驗證)
   bool cast_force = false;      // --cast-force:即使該角色未習得也施放(僅供驗證效果套用)
   int terrain_cast_id = -1;     // --terrain-cast <id>:headless 在 S_GAME 對前方/當前格施放地形法術一次(驗證)
+  bool trap_probe = false;      // --trap-probe:headless 把隊伍移到本關最近真實陷阱格並觸發(驗證真陷阱接線)
   // ── 終戰 Namtar + 結局序列(可通關收官)──
   bool fight_namtar = false;    // --fight-namtar:用(預設/讀檔)隊伍 vs Namtar Boss 戰鬥(combat_loop)
   bool show_ending = false;     // --ending:headless 直接進結局序列(demo / 截圖,不打 Namtar)
@@ -471,6 +473,7 @@ int main(int argc, char** argv) {
     else if (eq("--cast") && i + 1 < argc) cast_spell_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 施放法術
     else if (eq("--cast-force")) cast_force = true;     // 即使未習得也施放(驗證效果)
     else if (eq("--terrain-cast") && i + 1 < argc) terrain_cast_id = (int)std::strtoul(argv[++i], nullptr, 0);  // headless 探索地形施法
+    else if (eq("--trap-probe")) trap_probe = true;                                  // headless 觸發真實陷阱(驗證)
     else if (eq("--newgame")) newgame = true;           // 啟動即進建角畫面
     else if (eq("--newgame-demo") && i + 1 < argc) newgame_demo = argv[++i];  // 腳本化建角(headless)
     else if (eq("--newgame-screen") && i + 1 < argc) newgame_screen = argv[++i];  // 停在配點畫面截圖
@@ -632,6 +635,9 @@ int main(int argc, char** argv) {
   // 探索互動狀態(門開啟/密門粉碎/陷阱解除·觸發/陷阱感知);per-area(x,y)旗標。
   // 存檔保存;.lvl 只讀,不就地改 byte(同 SeenMap;見 docs/57)。
   game::TerrainState terrain;
+  // 真實陷阱格(per-area;路徑 B:VM 跑事件格 script→傷害訊息語意類 → 原版真陷阱座標)。
+  //   每次進關由 enter_map 以當前 .lvl 重算(位置=原版真值,見 real_terrain.hpp)。
+  game::RealTraps real_traps;
   // 持久 VM 遊戲狀態(對拍 opendw game_state.unknown[256]):跨事件保留,存檔/讀檔的核心欄位。
   // run_event 跑事件腳本時以此為初值並回寫,使旗標(門/開關/劇情)能持久累積。
   std::array<std::uint8_t, 256> game_state{};
@@ -817,6 +823,11 @@ int main(int argc, char** argv) {
                  area, level->name.c_str(), level->w, level->h, px, py);
     // 進場即把起始格標記 seen(對齊 opendw:進關後第一次 refresh_viewport 標記玩家格)。
     if (level) seen.mark(current_area, px, py, level->w, level->h);
+    // 識別本關真實陷阱格(路徑 B:逐事件格跑 VM,傷害訊息語意類 → 原版真陷阱座標)。
+    //   位置=原版真值;觸發傷害=remake 設計(見 real_terrain.hpp / docs/57)。
+    real_traps = game::RealTraps::identify(*level, area);
+    if (real_traps.count() > 0)
+      std::fprintf(stderr, "real traps: area %d -> %zu cell(s)\n", area, real_traps.count());
     return true;
   };
   // 把玩家當前格標記為 seen(對齊 opendw refresh_viewport,engine.c:5688:
@@ -1017,7 +1028,8 @@ int main(int argc, char** argv) {
   //   「陷阱」概念;骰式量化)。回傳是否觸發。
   auto trigger_trap_here = [&]() -> bool {
     if (!level || party.size() == 0) return false;
-    if (level->tile(px, py) != game::TT_Trap) return false;
+    // 陷阱格判定:優先真實陷阱(路徑 B,原版座標);相容保留 0x33 測試關 tile。
+    if (!real_traps.is_trap(px, py) && level->tile(px, py) != game::TT_Trap) return false;
     if (terrain.has(current_area, px, py, game::TF_TrapDisarmed)) return false;
     if (terrain.has(current_area, px, py, game::TF_TrapSprung)) return false;
     terrain.set(current_area, px, py, game::TF_TrapSprung);
@@ -1056,8 +1068,10 @@ int main(int argc, char** argv) {
     if (level->wraps()) { fx = level->wrap_x(fx); fy = level->wrap_y(fy); }
     std::uint8_t ft = level->tile(fx, fy), ct = level->tile(px, py);
     using TSR = game::TerrainSpellResult;
+    // 真實陷阱格(路徑 B)讓 Sense/Disarm 對原版陷阱生效(非保留 0x33)。
+    bool fwd_rt = real_traps.is_trap(fx, fy), cur_rt = real_traps.is_trap(px, py);
     TSR r = game::apply_terrain_spell(terrain, spell_id, current_area, fx, fy, ft,
-                                      px, py, ct);
+                                      px, py, ct, fwd_rt, cur_rt);
     switch (r) {
       case TSR::TrapsSensed:   std::fprintf(stderr, "cast Sense Traps -> sensed\n");  return "You sense the traps nearby.";
       case TSR::TrapDisarmed:  std::fprintf(stderr, "cast Disarm Trap -> disarmed\n"); return "The trap is disarmed.";
@@ -2867,6 +2881,21 @@ int main(int argc, char** argv) {
       const char* m = resolve_explore_cast((std::uint8_t)terrain_cast_id);
       std::fprintf(stderr, "terrain-cast 0x%02X @(%d,%d) dir=%d -> %s\n",
                    terrain_cast_id, px, py, dir, m);
+    }
+    // --trap-probe:把隊伍移到本關第一個真實陷阱格,觸發 trigger_trap_here(整合驗證:
+    //   真陷阱座標 → 踩格 → 扣血)。印 PASS/FAIL 後退出。位置=原版真值;傷害=remake 設計。
+    if (trap_probe && state == S_GAME) {
+      trap_probe = false;
+      if (real_traps.count() == 0) { std::fprintf(stderr, "trap-probe: FAIL no real traps in area %d\n", current_area); break; }
+      auto cell = *real_traps.cells().begin();
+      px = cell.first; py = cell.second;
+      std::uint16_t hp0 = party.size() ? party.at(0).health : 0;
+      bool sprung = trigger_trap_here();
+      std::uint16_t hp1 = party.size() ? party.at(0).health : 0;
+      std::fprintf(stderr, "trap-probe area %d @(%d,%d): sprung=%d hp %u->%u (%s)\n",
+                   current_area, px, py, sprung ? 1 : 0, hp0, hp1,
+                   (sprung && hp1 <= hp0) ? "PASS" : "FAIL");
+      break;
     }
     render_now();
     vid.present(fb);
