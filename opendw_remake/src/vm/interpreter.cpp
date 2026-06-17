@@ -814,6 +814,14 @@ void Interpreter::op58_xcall() {
   // si/word_3AE8/dl 的「值」已在 byte-stack 上(供 op_55 peek);
   // op_59 會先從 byte-stack pop 回它們(平衡堆疊),再從 call_stack 取回 bytes。
   VmState::CallFrame fr;
+  // 跨資源 call(目標 != 當前資源):把「即將被暫停的當前資源」live bytes 種進
+  //   res_cache[script_res]。讓子資源對它的「跨資源 op_17 寫入」(res_bytes_by_index
+  //   命中 res_cache)落在**含當前所有自改(怪物 setup / 角色動作陣列)的同一份 buffer**
+  //   上,而非 provider 全新版;返回時(op_59 cross_res 分支)再取回。
+  //   同資源葉子子程式(如骰子 0x06EC)不種 → 維持 §11 自我修改碼語意。
+  if ((int)tag_item != s_.script_res) {
+    s_.res_cache[s_.script_res] = s_.script;
+  }
   fr.script = std::move(s_.script);   // 返回後仍跑當前腳本 bytes
   fr.pc = si;                          // si = 返回 offset(備援)
   fr.data_bytes = std::move(s_.data_bytes);
@@ -846,10 +854,27 @@ void Interpreter::op59_xret() {
   VmState::CallFrame fr = std::move(s_.call_stack.back());
   s_.call_stack.pop_back();
 
+  int child_res = s_.script_res;  // 即將離開的子資源
   // opendw 靠 word_3AE8 重新 resolve running_script(populate_3ADD_and_3ADF)。
-  // remake 用 call_stack 保存的 bytes vector 還原(等價、且不依賴 provider 反查)。
-  s_.script = std::move(fr.script);
-  s_.data_bytes = std::move(fr.data_bytes);
+  //   ── 跨資源返回(child != parent):上層在子資源執行期間可能被「跨資源 op_17」
+  //      寫過(寫入落在 res_cache[parent]);故還原上層時優先取 res_cache[parent]
+  //      (含 action 陣列等寫入),取出即移除避免陳舊;否則用 call frame 備份。
+  //   ── 同資源返回(child == parent,如 res3→res3 葉子/骰子):用 call frame 備份還原 →
+  //      維持 §11 自我修改碼「框內有效、返回丟棄」語意,verify_combat_script 不回歸。
+  bool cross_res = (child_res != (int)restored_script_res);
+  if (cross_res) {
+    auto it = s_.res_cache.find((int)restored_script_res);
+    if (it != s_.res_cache.end()) {
+      s_.script = std::move(it->second);
+      s_.res_cache.erase(it);
+    } else {
+      s_.script = std::move(fr.script);
+    }
+    s_.data_bytes = s_.script;
+  } else {
+    s_.script = std::move(fr.script);
+    s_.data_bytes = std::move(fr.data_bytes);
+  }
   s_.script_res = restored_script_res;  // 對齊 opendw:來自 byte-stack pop 的 word_3AE8
   s_.data_res = fr.data_res;
   s_.pc = si;  // si:返回 offset(來自 byte-stack)
@@ -857,23 +882,35 @@ void Interpreter::op59_xret() {
 
 // run_script(對照 run_script @0x6413):push run_script 框、切資源、從 src_offset 跑到 op_5A。
 void Interpreter::run_script(int script_index, std::uint16_t src_offset) {
+  // 對齊 opendw:resource_get_by_index 回傳「持久 allocation」(同一份 buffer)。
+  //   ── 同一資源(script_index == script_res,如 res3 戰鬥 for_call 0x0761 逐角色):
+  //      **沿用 live s_.script**(含自我修改,如逐角色 initiative 陣列 0x04EA),且
+  //      返回時**保留**子迴圈所做的自改 → 不存/不還原 bytes vector(否則丟失寫入)。
+  //   ── 不同資源:存舊 bytes、載入新資源、返回時還原舊 bytes。
+  bool same_res = (script_index == s_.script_res);
+
   VmState::ScriptFrame fr;
-  fr.script = s_.script;
   fr.pc = s_.pc;
-  fr.data_bytes = s_.data_bytes;
   fr.script_res = s_.script_res;
   fr.data_res = s_.data_res;
   fr.mode = s_.mode;
+  if (!same_res) {
+    fr.script = s_.script;
+    fr.data_bytes = s_.data_bytes;
+  }
   s_.script_frames.push_back(std::move(fr));
 
-  std::vector<std::uint8_t> bytes;
-  if (load_resource(script_index, bytes)) {
-    s_.script = bytes;
-    s_.data_bytes = bytes;
-    s_.script_res = script_index;
-    s_.data_res = script_index;
-  } else if (script_index == s_.script_res) {
-    // 同一資源(level 自身),沿用當前 bytes。
+  if (!same_res) {
+    std::vector<std::uint8_t> bytes;
+    if (load_resource(script_index, bytes)) {
+      s_.script = std::move(bytes);
+      s_.data_bytes = s_.script;
+      s_.script_res = script_index;
+      s_.data_res = script_index;
+    }
+  } else {
+    s_.data_bytes = s_.script;   // 同資源:data_bytes 與 script 同一份(自改可見)
+    s_.data_res = s_.script_res;
   }
   s_.pc = src_offset;
 
@@ -893,8 +930,12 @@ void Interpreter::run_script(int script_index, std::uint16_t src_offset) {
   // 還原上層框。
   VmState::ScriptFrame back = std::move(s_.script_frames.back());
   s_.script_frames.pop_back();
-  s_.script = std::move(back.script);
-  s_.data_bytes = std::move(back.data_bytes);
+  if (!same_res) {
+    s_.script = std::move(back.script);
+    s_.data_bytes = std::move(back.data_bytes);
+  } else {
+    s_.data_bytes = s_.script;   // 同資源:保留 s_.script(含子迴圈自改)
+  }
   s_.script_res = back.script_res;
   s_.data_res = back.data_res;
   s_.mode = back.mode;
@@ -1034,6 +1075,81 @@ void Interpreter::op56_push_r2() {
 
 // op_8B:refresh_viewport(畫面更新);VM 抽取期無副作用。
 void Interpreter::op8B_refresh_viewport() {}
+
+// op_91(@0x4F2..):draw_player_status_panel()。純渲染 leaf,VM 結算狀態無副作用。
+void Interpreter::op91_status_panel() {}
+
+// op_92(@0x49FD):draw_player_status_panel + ui_draw_string + 延遲計時器輪詢輸入。
+//   oracle(engine.c:5940):
+//     draw_player_status_panel(); ui_draw_string();           ; 純渲染 leaf
+//     bx = gs[0xDC]; if (bx != 0) exit(1);                    ; 斷言 gs[0xDC]==0(否則 opendw 自身亦 abort)
+//     timer4 = data_4A5B[0];                                  ; 設延遲計時
+//     while (timer4) { poll_mouse(); if (clicked!=0x80){...}  ; 滑鼠未點 → 0x4A57 return(無副作用)
+//                      else { key=get_key();... } tick; delay }
+//   headless:無滑鼠/鍵盤/計時器。確定性分支 = mouse「未點」(clicked!=0x80)→ 0x4A57 直接 return,
+//     全程不寫任何 game_state(僅渲染 + 等待逾時)。故對 VM 結算狀態而言為 no-op。
+//     gs[0xDC]!=0 時 opendw 自身會 abort(unhandled);此處標 last_unimpl 不臆造、halt。
+void Interpreter::op92_status_delay() {
+  if (s_.game_state[0xDC] != 0) {       // 對照 oracle:bx!=0 → exit(1)
+    last_unimpl_ = 0x92;
+    s_.halted = true;
+    return;
+  }
+  // 渲染 + 延遲輪詢:headless 取「無輸入/逾時」確定性分支 → return,無 game_state 副作用。
+}
+
+// op_82(@0x48D2):讀 1 byte operand → bx;w11C6 = gs[bx]|gs[bx+1]<<8、w11C8 = gs[bx+2]|gs[bx+3]<<8;
+//   print_number_9_digits()(render leaf,把 w11C6:w11C8 組成的數字 emit)。
+//   VM 可見副作用:消耗 1 operand + 設 w11C6/w11C8;列印為渲染,VM 結算狀態不變。
+void Interpreter::op82_print_9digits() {
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al;
+  std::uint16_t bx = al;
+  s_.bx = bx;
+  s_.w11C6 = (std::uint16_t)(s_.game_state[bx & 0xFF] |
+                             (s_.game_state[(bx + 1) & 0xFF] << 8));
+  s_.w11C8 = (std::uint16_t)(s_.game_state[(bx + 2) & 0xFF] |
+                             (s_.game_state[(bx + 3) & 0xFF] << 8));
+  // print_number_9_digits():渲染 leaf,VM 狀態不變。
+}
+
+// op_97(load_char_data @0x42FB):r2 = char_data[ base + operand + r4 ](byte/word,mode 遮罩)。
+//   oracle:bx = 0xC960; bh += gs[gs[6]+0xA]; bx += operand; bx += word_3AE4;
+//          cx = c960[bx-0xC960](word);r2 = cl;若 byte_3AE1 != ax 高位 → r2 = cx(word)。
+//   = op_5D 同定址(char_record_base = selector<<8),但多加 r4(word_3AE4)。
+void Interpreter::op97_load_char_data() {
+  std::uint16_t base = char_record_base();
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al;
+  std::uint16_t addr = (std::uint16_t)(base + al + s_.r4);
+  std::uint8_t cl = (addr < s_.char_data.size()) ? s_.char_data[addr] : 0;
+  std::uint8_t ch = ((std::size_t)addr + 1 < s_.char_data.size()) ? s_.char_data[addr + 1] : 0;
+  s_.cx = (std::uint16_t)((ch << 8) | cl);
+  s_.r2 = (std::uint16_t)(s_.r2 & 0xFF00) | cl;
+  if (s_.mode != ((s_.ax & 0xFF00) >> 8)) {  // byte_3AE1 != ax 高位 → word
+    s_.r2 = s_.cx;
+  }
+}
+
+// op_98(store_char_data @0x4348):op_97 的「寫」孿生。
+//   oracle:di = gs[6];gs[di+0x18] = ax 高位(dispatch 後 = 0);
+//          bx = 0xC960; bh += gs[di+0xA]; bx += operand; bx += r4; cx = r2;
+//          c960[bx-0xC960] = cl;若 byte_3AE1 != ax 高位 → c960[..+1] = ch。
+void Interpreter::op98_store_char_data() {
+  std::uint8_t player_idx = s_.game_state[6];
+  std::uint8_t ah = (s_.ax & 0xFF00) >> 8;          // dispatch 後 = 0
+  s_.game_state[(player_idx + 0x18) & 0xFF] = ah;   // gs[gs[6]+0x18] = ah
+  std::uint16_t base = char_record_base();
+  std::uint8_t al = s_.fetch8();
+  s_.ax = (s_.ax & 0xFF00) | al;
+  std::uint16_t addr = (std::uint16_t)(base + al + s_.r4);
+  s_.cx = s_.r2;
+  if (addr < s_.char_data.size()) s_.char_data[addr] = s_.cx & 0xFF;
+  if (s_.mode != ((s_.ax & 0xFF00) >> 8)) {
+    if ((std::size_t)addr + 1 < s_.char_data.size())
+      s_.char_data[addr + 1] = (s_.cx & 0xFF00) >> 8;
+  }
+}
 
 // --- batch 7:gamestate/資源讀 + r4 byte 堆疊 ---
 
@@ -1203,12 +1319,16 @@ void Interpreter::op89_wait_event() {
   std::uint8_t flags_hi = s_.fetch8();
   (void)flags_lo; (void)flags_hi;       // word_2AA7;UI/輸入旗標,結算分支不需
 
-  // 取本次注入鍵:優先用 headless_keys 序列(逐個 op_89 取用),用完回退 headless_key。
+  // 取本次注入鍵:優先用 key_provider(自適應驅動),回 0 則沿用 headless_keys 序列
+  //   (逐個 op_89 取用),再用完則回退 headless_key。
   std::uint8_t key = 0;
-  if (s_.headless_key_idx < s_.headless_keys.size())
-    key = s_.headless_keys[s_.headless_key_idx++];
-  else
-    key = s_.headless_key;
+  if (s_.key_provider) key = s_.key_provider(s_.script_res, s_.pc);
+  if (key == 0) {
+    if (s_.headless_key_idx < s_.headless_keys.size())
+      key = s_.headless_keys[s_.headless_key_idx++];
+    else
+      key = s_.headless_key;
+  }
   if (key == 0) { s_.halted = true; return; }  // 無注入 → 維持原行為
 
   const auto& base = s_.script;          // running_script bytes(= cpu.base_pc)
@@ -1827,6 +1947,11 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x55] = &Interpreter::op55_peek_pop_r2;
   t[0x56] = &Interpreter::op56_push_r2;
   t[0x8B] = &Interpreter::op8B_refresh_viewport;
+  t[0x92] = &Interpreter::op92_status_delay;
+  t[0x82] = &Interpreter::op82_print_9digits;
+  t[0x97] = &Interpreter::op97_load_char_data;
+  t[0x98] = &Interpreter::op98_store_char_data;
+  t[0x91] = &Interpreter::op91_status_panel;
   // batch 7:gamestate/資源讀 + r4 byte 堆疊
   t[0x0B] = &Interpreter::op0B_r2_from_gs_off;
   t[0x0F] = &Interpreter::op0F_r2_from_res;

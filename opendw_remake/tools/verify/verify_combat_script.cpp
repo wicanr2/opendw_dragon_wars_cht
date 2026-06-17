@@ -204,15 +204,18 @@ int main(int argc, char** argv) {
         wc.label, mn, mx, wc.label, lo, hi);
       check(mn == lo && mx == hi, buf);
     }
-    // 反組譯反推的兩個 byte[2] 分支(端到端確認,記錄於 docs/42):
+    // byte[2] 分支(docs/42 §15 修正:第九輪實作 op_97 load_char_data 後重新端到端驗):
     //   byte[2]&0x1f == 0:純骰(上方已驗),op_36(÷STR)被 0x0D73 jz 跳過 → 無 STR bonus。
-    //   byte[2]&0x1f != 0:傷害 = 定值 (byte[2]&0x1f),覆寫骰擲結果(STR/骰面皆不影響)。
+    //   byte[2]&0x1f != 0:**非定值**(§13「定值」結論為 op_97 未實作時腳本在 0x0D7B
+    //     load_char_data 早停的假象)。op_97 實作後,byte2!=0 走 0x0D76-0x0D7F:
+    //     op_68 0x01(&0x3f)、load STR(op_97)、op_31 gs[0x5d]、op_36(÷5),再進骰擲 →
+    //     gs[0x5d]=byte2 作為起始,疊加 STR/骰修正。端到端實得範圍如下(對拍 = 守護該真值行為)。
     { int mn, mx; run_weapon(20, 0x21 /*2d6*/, 5 /*byte2=5*/, mn, mx);
-      check(mn == 5 && mx == 5,
-            "op_68 0x02!=0:傷害 = 定值(byte[2]&0x1f=5),覆寫骰擲(端到端驗)"); }
+      check(mn == 5 && mx == 15,
+            "op_68 0x02!=0(byte2=5,2d6,STR20):端到端範圍 [5,15](非定值;§13 定值結論已修正)"); }
     { int mn, mx; run_weapon(10, 0x00 /*1d4*/, 2 /*byte2=2*/, mn, mx);
-      check(mn == 2 && mx == 2,
-            "op_68 0x02!=0:傷害 = 定值(byte[2]&0x1f=2),STR/骰面不影響(端到端驗)"); }
+      check(mn == 2 && mx == 5,
+            "op_68 0x02!=0(byte2=2,1d4,STR10):端到端範圍 [2,5](非定值;§13 定值結論已修正)"); }
   }
 
   // ── to-hit 對拍 res3 bytecode(0x0F73):roll-under,門檻 = 13 + AV − def ──

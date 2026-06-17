@@ -170,6 +170,11 @@ private:
   void op55_peek_pop_r2();     // 0x55  peek word→r2、pop byte(word 模式再 pop)
   void op56_push_r2();         // 0x56  push r2(byte/word)
   void op8B_refresh_viewport();// 0x8B  refresh_viewport(render,VM 無副作用)
+  void op92_status_delay();    // 0x92  draw_player_status_panel + delay-timer(UI/timer leaf)
+  void op82_print_9digits();   // 0x82  載 w11C6/w11C8(gs[bx..bx+3])+ print_number_9_digits(render)
+  void op97_load_char_data();  // 0x97  r2 = char_data[base + operand + r4](byte/word,mode 遮罩)
+  void op98_store_char_data(); // 0x98  char_data[base + operand + r4] = r2(op_97 寫孿生)+ gs[gs[6]+0x18]=0
+  void op91_status_panel();    // 0x91  draw_player_status_panel(render leaf,VM 無副作用)
 
   // --- batch 7:gamestate/資源讀 + r4 byte 堆疊 ---
   void op0B_r2_from_gs_off();  // 0x0B  r2 = gs[operand + r4](2-byte,mode 遮罩)

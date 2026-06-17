@@ -13,3 +13,4 @@ dist/
 save/
 *.sav
 _verify_save_tmp/
+bw/

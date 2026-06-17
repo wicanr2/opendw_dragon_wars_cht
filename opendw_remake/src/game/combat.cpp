@@ -85,14 +85,23 @@ Combatant Combatant::from_player(const CharacterRecord& c) {
   //   verify_combat_script 端到端驗:descriptor 0x00/0x21/0x05/0xA3 → 純骰 [1,4]/[2,12]/[6,24]/[4,80]。
   //   (此處 primary_dmg 用 fraterrisus bit[64-71] 解,與 bytecode descriptor 同編碼,已對齊。)
   EquipItem w = c.main_weapon();
-  if (w.present && w.primary_dmg.valid()) {
+  bool armed = (w.present && w.primary_dmg.valid());
+  if (armed) {
     u.dmg_dice = w.primary_dmg.count;
     u.dmg_sides = w.primary_dmg.sides;
   } else {
     u.dmg_dice = kUnarmedDice;
     u.dmg_sides = kUnarmedSides;
   }
-  u.dmg_bonus = str_damage_bonus(c.strength);  // STR 傷害修正
+  // STR 傷害修正:
+  //   【bytecode 端到端驗,第九輪定論 — 受阻序列 B 已解】
+  //   res3 武器主傷害路徑(0x0D68,byte[2]&0x1f==0 純骰)在 0x0D73 `jz 0x0D81` **跳過**
+  //   op_36(÷STR),且 0x0DAD 加的自改 immediate(0x0DAE)每次攻擊前被重設 → **無 STR bonus**。
+  //   實作 op_97(load_char_data,先前未實作使腳本在 0x0D7B 早停而誤判)後,完整戰鬥
+  //   actor 迴圈端到端跑出:武器 1d4 STR5/STR25 皆 [1,4](probe 驗,verify_combat_round 守護
+  //   閉環路徑)→ **武器傷害無 +floor(STR/5)**。徒手路徑(0x0D54)才走 op_36 加 floor(STR/5)。
+  //   (修正第七輪 §13「self-modifying-code 殘留不確定、保留 best-fit」的受阻標示。)
+  u.dmg_bonus = armed ? 0 : str_damage_bonus(c.strength);
   u.status = c.status;
   return u;
 }

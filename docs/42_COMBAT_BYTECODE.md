@@ -436,3 +436,98 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
 - op_89 數字鍵(type 0x01)目標/隊員選擇 headless 處理(逐指令對照 wait_for_event 0x29EF;入 vm_selftest CC/DD)。
 - 精確診斷:卡點 = per-character 動作指派狀態機不收斂(**非 opcode 缺失**,last_unimpl=0);怪物 roster 已建、結算公式已驗。
 - ctest 17/17 不破。下一步:逆向 res3@0x08b6 動作輸入 driver 的「逐角色動作完成標記 + 全員完成偵測」。
+
+---
+
+## 15. 更新(第九輪:res3 全戰鬥閉環打通 — actor 迴圈 → to-hit → 傷害 → 怪物 HP 實扣)
+
+> 日期:2026-06-17
+> 結果:**閉環跑通**。headless 驅動完整一回合動作指派 → 抵達 res3 actor 迴圈(0x0075)→
+>   執行 to-hit(0x0F73)+ 徒手傷害(0x0D54)+ 怪物 HP 扣減(0x07C7),**怪物群緩衝
+>   data[0x03D6] HP byte 實際被扣**。全程無未實作 opcode。新增 `verify_combat_round` 守護。
+
+### 收斂鏈(第八輪卡點解法 — 逆向 res18/res4 動作指派狀態機)
+第八輪誤判「gs[6] 卡在 3」;真正的逐角色計數器是 **gs[0x67]**(非 gs[6]),收斂條件鏈:
+- **res18 主選單 @0x00F8**:Fight `F`(0xC6)→ 0x0108 `gs[0x67]=0`(逐角色動作 index 歸零)。
+- **逐角色迴圈 @0x0111**:設 gs[0x06]=gs[0x67] → 角色動作選單 @0x01EA Attack `A`(0xC1)→0x03BC
+  → 武器檢查 → 攻擊風格選單 @0x0491 Attack blow `A`(0xC1)→0x04AB → 0x04AD `call 0x053B`
+  (寫動作記錄 0x00=攻擊)→ 0x04B4 `op_58 res4`(目標選擇)→ **0x04B8 `jc 0x0111`**。
+- **res4 目標 @0x0000**:`gs[0x92]` 目標模式;數字鍵('1'|0x80=0xB1)選怪 → 0x008F `op_32 0xB1; clc; retf`
+  → res18 0x04B8 carry **clear** → 不跳 0x0111 → 0x04C0 `jmp 0x023E`:**`inc gs[0x67]`**(下一角色)。
+- **全員完成偵測 @0x0240**:`w3AE4=gs[0x67]; check_gs 0x1F; jnc 0x0111`(gs[0x67] < gs[0x1F] → 下一角色;
+  == → 落到 0x0247)。
+- **確認 @0x0247**:`"Use these commands?"` → op_8C prompt → **`Y`(0xD9)→ 0x0265 clc retf**
+  → 返回 res3 0x0069 → 0x006C 載 res3@0x08b6(combat-stat setup)→ 0x0075 **actor 迴圈**。
+
+→ 第八輪缺的兩把鑰匙:**res4 目標數字鍵**(逐角色目標)+ **最終 `Y` 確認**。補上即收斂。
+
+### 三個自我修改碼/持久性 bug(閉環真正卡住的根因,非狀態機本身)
+驅動鍵補齊後,初期仍空轉。逐層追出 remake VM **資源 buffer 持久性與 opendw 不一致**
+(opendw `resource_get_by_index` 回傳持久 allocation;remake 每次重載全新 copy → 自改/跨資源寫入丟失):
+
+1. **run_script 同資源自改丟失**:res3 `for_call 0x0761`(op_5C)逐角色經 run_script 寫
+   **黨側 initiative 陣列 data[0x04EA]**(`op_15 0x04EA`)。run_script 對同一資源(script_index==
+   script_res)重載全新 copy、返回還原舊 copy → 寫入丟失 → gs[0x73](黨 initiative)恆 0
+   → 黨永不行動(0x0AFA=0)。**修**:同資源 run_script 沿用 live s_.script、返回保留自改。
+2. **跨資源 op_17 寫入丟失**:res18 用 `store_data_res`(op_17)把角色動作(0x00=攻擊)寫進
+   **res3 @0x04CE**;res18 返回 res3 後該寫入須可見。原 res_bytes_by_index 對「非當前資源」
+   載全新 copy 寫進 res_cache,但 op_59 返回時從 call frame 還原(丟棄 res_cache 寫入)
+   → 動作記錄恆 0x0b(預設 advance),非 0x00(attack)→ 黨側不打怪。**修**:op_58 跨資源
+   call 時把「被暫停的當前資源」live bytes 種進 res_cache;op_59 跨資源返回時優先從 res_cache
+   還原(含子資源期間的 op_17 寫入)。
+3. **op_58 葉子自改不可污染上層**:上述 res_cache 機制**僅對「跨資源」**生效;同資源葉子
+   子程式(骰子 0x06EC、徒手/武器傷害 0x06EC 自改)維持「框內有效、返回丟棄」(§11 語意),
+   否則 verify_combat_script 回歸。op_59 以 `cross_res = (child_res != parent_res)` 區分。
+
+### 補實作 4 個 opcode(opendw 有 oracle,逐指令對齊)
+抵達 actor 迴圈與回合清理過程依序撞到(皆 opendw engine.c 已實作、非 NULL):
+- **op_91**(@engine.c:5934)`draw_player_status_panel()` — 純渲染 leaf,headless no-op。
+- **op_92**(@5940)`draw_player_status_panel + ui_draw_string + 延遲計時輪詢` — UI/timer leaf;
+  斷言 gs[0xDC]==0(對齊 oracle,否則 opendw 亦 abort),headless 取「無輸入」確定性分支 → no-op。
+- **op_97**(@6051)`load_char_data`:r2 = char_data[base + operand + r4](base=selector<<8;
+  = op_5D 同定址多加 r4)。**關鍵**:這個 opcode 之前未實作,使武器傷害 byte[2] 路徑在
+  0x0D7B 早停 → 造成 §13「byte2!=0=定值」的**假象**(見下)。
+- **op_98**(@6082)`store_char_data`:op_97 寫孿生 + `gs[gs[6]+0x18]=0`。
+
+### 閉環證據(verify_combat_round,固定 seed,headless)
+```
+抵達 res3 actor 迴圈 0x0075;怪物群 count(byte0a&0x1f)=1
+to-hit(0x0F73)=5 徒手傷害(0x0D54)=5 怪物HP扣減(0x07C7)=5 黨側攻擊(0x0AFA)=12
+怪物 byte[0x09] @0x03df: 0x03 -> 0x02   ← 怪物 HP 群緩衝 byte 實扣
+兩次固定 seed 軌跡 byte-identical(確定性)；全程 last_unimpl=0
+```
+- **怪物 HP 欄 = 群緩衝 data[0x03D6] 記錄 byte[0x09]**(扣減經 0x07C7 路徑;另有 HP 工作陣列
+  data[0x0278+idx*2],由 0x07D3 `op_0D 0x0278`/`op_15 0x0278` 讀寫)。
+- **不對拍具體 HP 數值**:opendw 無可獨立執行的完整戰鬥 oracle 逐回合 byte-diff(§9 限制);
+  verify_combat_round 守護「閉環跑通 + 核心公式路徑被執行 + 怪物 HP 變化 + 確定性」,
+  **不謊稱數值對拍**。公式數值真值由 verify_combat_script(隔離子程式對拍)守護(不變)。
+
+### 武器 STR bonus 定論(受阻序列 B — 已解)
+§13「byte[2]&0x1f != 0 → 傷害=定值」是 **op_97 未實作的假象**:武器路徑 0x0D7B `load_char_data`
+(op_97)未實作 → 腳本早停,gs[0x5d] 停在 byte2 設定值 → 看似「定值」。實作 op_97 後端到端重跑:
+- **武器純骰路徑(byte[2]&0x1f==0):無 STR bonus**。武器 1d4,STR5/STR25 端到端皆 [1,4];
+  即使把 0x0DAE(STR-add 自改 immediate)pre-patch 成 5,結果仍 [1,4](**每次攻擊前被重設、
+  非殘留**)。根因:0x0D73 `jz 0x0D81` 對 byte2==0 **跳過** op_36(÷STR)。
+- **byte[2]&0x1f != 0:非定值**(byte2 作起始值疊加 STR/骰修正;端到端 byte2=5/2d6/STR20→[5,15]、
+  byte2=2/1d4/STR10→[2,5])。verify_combat_script 的兩條 byte2 斷言已更正為此真值範圍。
+- → **combat.cpp 標示升級**:武器傷害 `dmg_bonus = 0`(無 +floor(STR/5));徒手仍 `+floor(STR/5)`。
+  取代第七輪「self-modifying-code 殘留不確定、保留 best-fit」的受阻標示。
+
+### 本輪交付
+- 收斂鏈逆向(gs[0x67] 逐角色計數 + `Y` 確認)→ headless 驅動到 actor 迴圈。
+- 修 3 個資源持久性 bug(run_script 同資源自改 / op_58·op_59 跨資源 op_17 可見性 / 葉子隔離)。
+- 補 op_91/92/97/98(逐指令對齊 opendw)。
+- combat.cpp:武器 STR bonus 定論為**無**(端到端驗)→ 標示升級。
+- 新增 `verify_combat_round` ctest(閉環守護);verify_combat_script byte2 斷言更正。
+- **ctest 31/31 全綠**(原 30 + verify_combat_round)。
+
+### 至此戰鬥結算 oracle 狀態(更新)
+| 項目 | 狀態 |
+|---|---|
+| RNG(op_4D) | bytecode 移植,對拍 oracle 演算法 |
+| to-hit(1d16+3,門檻 13+AV−def) | bytecode 反推 + 端到端驗證 ✅ |
+| 徒手傷害(dice + floor(STR/5)) | bytecode 反推 + 端到端驗證 ✅ |
+| 武器主傷害骰來源/解碼(op_68 0x08=byte[8]) | bytecode 反推 + 端到端驗證 ✅ |
+| **武器 STR bonus = 無**(byte2==0 跳過 op_36) | **bytecode 端到端驗證 ✅(本輪定論,受阻序列 B 解)** |
+| **全戰鬥閉環(actor 迴圈 → to-hit → 傷害 → 怪物 HP 實扣)** | **跑通 + 確定性守護 ✅(本輪)** |
+| 怪物 HP 逐回合「具體數值」對拍 opendw | 受限:opendw 無可獨立執行完整戰鬥 oracle(§9)⚠ |
