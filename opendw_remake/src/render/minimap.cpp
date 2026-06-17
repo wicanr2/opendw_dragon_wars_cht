@@ -389,6 +389,8 @@ struct MinimapComposer {
   }
 
   // engine.c:3204 第一次完整 sweep (byte_1964 == 0)。
+  // 注意:這只組「最頂一帶」的 9×N 格(對齊 golden_minimap.c 的 leaf-level dump)。
+  //   真正的 `?` 平面地圖在原版是 8 趟(byte_1964 0..7)的捲動疊圖——見 draw_minimap_full。
   void draw_minimap_first_pass() {
     byte_1964 = 0;
     ctx.byte_104E = 0;
@@ -400,7 +402,31 @@ struct MinimapComposer {
       al++;
     } while (al < 9);
   }
+
+  // 單趟組圖(指定 byte_1964 帶)→ 把 9 格 row 解到 ctx.viewport_memory。
+  //   呼叫端負責先清 viewport_memory(每趟獨立組),再從 ypos 0x18 區取結果。
+  void draw_minimap_pass(std::uint8_t pass) {
+    byte_1964 = pass;
+    ctx.byte_104E = 0;
+    std::uint8_t al = 0;
+    do {
+      byte_1962 = al;
+      draw_minimap_row(al);
+      al = byte_1962;
+      al++;
+    } while (al < 9);
+  }
 };
+
+// engine.c:3204/3118 — 完整 8 趟平面地圖的螢幕疊圖映射。
+//   每趟 byte_1964=bx 讀不同 map row 帶(calc_minimap_position: bl=3-byte_1964+byte_1960),
+//   set_viewport_size(bx) 把該趟 viewport_memory 的 src row(data_19B7[bx]/2)起、
+//   高度 (data_19A7-data_1997)[bx] 的帶,blit 到螢幕 row data_1997[bx]。
+//   原版以 ui_viewport_reset memmove 捲動呈現;這裡直接把每趟結果疊進 out_mem 對應螢幕列,
+//   使 to_framebuffer 取到的就是完整鋪滿的平面地圖(修稽核 #1:只畫一帶 → 鋪滿)。
+const std::uint16_t kVpDst[8]  = {0x0000,0x0010,0x0028,0x0040,0x0058,0x0070,0x0088,0x00A0};
+const std::uint16_t kVpDstE[8] = {0x0010,0x0028,0x0040,0x0058,0x0070,0x0088,0x00A0,0x00A8};
+const std::uint16_t kVpSrc[8]  = {0x0030,0x0020,0x0020,0x0020,0x0020,0x0020,0x0020,0x0020};
 
 }  // namespace
 
@@ -456,6 +482,59 @@ void Minimap::render(const res::Level& level, int px, int py,
       make_composer(level, px, py, lc, comps, ctx, minimap_template_, player_template_);
   mc.seed_explored(seed);
   mc.draw_minimap_first_pass();
+}
+
+namespace {
+// 跑一趟 pass 的共用核心:清 ctx.viewport_memory、組 9×N 帶、把 src row 起的帶
+//   複製到 out_mem 的螢幕列(stride 0x90)。seed 已在 composer 建立時套用,故每趟共用
+//   同一 composer(map[] 的 seen 旗標跨趟保留)。
+void blit_pass(MinimapComposer& mc, DecodeCtx& ctx, std::uint8_t pass,
+               std::array<std::uint8_t, Minimap::kMemSize>& out_mem) {
+  std::memset(ctx.viewport_memory, 0, (std::size_t)Minimap::kMemSize);
+  mc.draw_minimap_pass(pass);
+  int dst0 = kVpDst[pass];
+  int h = kVpDstE[pass] - kVpDst[pass];
+  int src_row = kVpSrc[pass] >> 1;  // get_offset(di/2) → di/2 列
+  for (int r = 0; r < h; ++r) {
+    int sr = src_row + r, dr = dst0 + r;
+    if (sr >= Minimap::kRows || dr >= Minimap::kRows) break;
+    std::memcpy(out_mem.data() + (std::size_t)dr * Minimap::kStride,
+                ctx.viewport_memory + (std::size_t)sr * Minimap::kStride,
+                Minimap::kStride);
+  }
+}
+}  // namespace
+
+void Minimap::render_full(const res::Level& level, int px, int py,
+                          const ComponentStore& comps, Seed seed) {
+  reset();
+  LevelComponents lc = parse_level_components(level);
+  // 暫存 viewport_memory(每趟獨立組);out = this->mem(疊好的螢幕鏡像)。
+  std::vector<std::uint8_t> scratch((std::size_t)kMemSize, 0);
+  DecodeCtx ctx;
+  ctx.viewport_memory = scratch.data();
+  ctx.init_offsets(0x90);
+  ctx.byte_104E = 0;
+  MinimapComposer mc =
+      make_composer(level, px, py, lc, comps, ctx, minimap_template_, player_template_);
+  mc.seed_explored(seed);
+  for (std::uint8_t pass = 0; pass < 8; ++pass) blit_pass(mc, ctx, pass, mem);
+}
+
+void Minimap::render_full_with_seen(const res::Level& level, int px, int py,
+                                    const ComponentStore& comps,
+                                    const std::uint8_t* seen, int seen_w, int seen_h) {
+  reset();
+  LevelComponents lc = parse_level_components(level);
+  std::vector<std::uint8_t> scratch((std::size_t)kMemSize, 0);
+  DecodeCtx ctx;
+  ctx.viewport_memory = scratch.data();
+  ctx.init_offsets(0x90);
+  ctx.byte_104E = 0;
+  MinimapComposer mc =
+      make_composer(level, px, py, lc, comps, ctx, minimap_template_, player_template_);
+  mc.seed_from_bitmap(seen, seen_w, seen_h);
+  for (std::uint8_t pass = 0; pass < 8; ++pass) blit_pass(mc, ctx, pass, mem);
 }
 
 void Minimap::render_with_seen(const res::Level& level, int px, int py,

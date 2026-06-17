@@ -85,11 +85,14 @@ DOS 截圖**全部為真 DOSBox 擷取**,非替代基準。流程:
 
 ---
 
-## 真缺口清單(建議追蹤)
+## 真缺口清單(已修;`fix/dos-audit-gaps`)
 
-1. **[中] 世界區 automap 全圖渲染殘缺**:`--map 0 --automap 0 --mm-seed 0` 只畫一條水平帶,未鋪滿世界網格(對照 `--map 0` viewport 俯視可畫完整密格)。懷疑 area 0(大型 wraparound overworld)在 minimap 覆蓋 / stride 計算有 bug。建議以 area 0 為對象補一條 `verify_automap` golden(目前 ctest 只驗 area 1 Purgatory)。
-2. **[低-中] 主選單語意不對齊**:DOS 主選單同屏顯示「目前隊伍清單 + Begin the game」並整合隊伍管理(建 / 刪 / 改名 / 查看);remake 主選單只有「開始新遊戲 / 繼續舊遊戲」。建角與角色管理已實作但散在他處。若追求選單級保真,可考慮在主選單疊上隊伍清單。
-3. **[低 / 測試入口]`--char-sheet` headless 旗標失效**:冷啟動 → 落到主選單;配 `--map 1` → 落到 automap,皆打不開狀態欄。角色狀態欄渲染本身正常(`screenshots/grow_sheet.png`)。屬 headless 入口 / 旗標解析問題,建議修旗標讓稽核可重現,並更新 `docs/CONTROLS.md`(該檔目前未列 `--automap` / `--mm-seed` / `--newgame` / `--scene` 等實際存在的旗標)。
+1. **[中] 世界區 automap 全圖渲染殘缺** — **已修**。
+   根因:remake `Minimap::render` 與 golden 產生器都只跑 `draw_minimap` 的**第一趟**(`byte_1964 == 0`),只組出最頂一帶 9×N 格。原版 `draw_minimap`(engine.c:3204)是 **8 趟**捲動疊圖:每趟 `byte_1964 = 0..7` 經 `calc_minimap_position`(`bl = 3 - byte_1964 + byte_1960`)讀**不同 map row 帶**,再由 `set_viewport_size(byte_1964)` 用 `data_1997 / data_19A7 / data_19B7` 表把該帶 blit 到螢幕對應列。缺後 7 趟 → 只剩一帶(area 0 / area 1 同症,非 area 0 專屬;area 1「看似鋪滿」是因 golden 也只驗第一趟,自洽但不完整)。
+   修法:新增 `Minimap::render_full` / `render_full_with_seen`,跑完整 8 趟並依 `data_1997/19A7/19B7` 把各帶疊進 `mem` 的對應螢幕列;`draw_automap` 改呼叫 full 版本。`render()` 單趟保留供既有 golden 對拍(leaf-level viewport_memory)。headless dump(`--map 0/1 --automap 0/1 --mm-seed 0`)目視確認兩區皆鋪滿整個視窗(玩家標記 / 牆 / 水域 / 樹叢可見)。
+   回歸鎖:補 `verify_automap_l0`(area 0 Dilmun,47×32 wraparound),3 case byte-for-byte;ctest 32/32。
+2. **[低-中] 主選單語意不對齊** — **已修**。`draw_menu` 在標題下、選項上疊出「目前隊伍...」+ 編號隊伍清單(`1) Muskels … 4) Cheetah`,昏倒成員標 `(昏倒)`),貼近 DOS「Current party… + Begin the game」整合樣貌;三語(繁中 / EN / 日)在地化,`Current party...` / `unconscious` 走 i18n。headless dump 確認版面。建角 / 刪 / 改名 / 查看仍由既有入口提供(本項聚焦選單同屏呈現隊伍)。
+3. **[低 / 測試入口] `--char-sheet` headless 旗標失效** — **已修**。根因:`--char-sheet` 配 `--automap` 時,automap 區塊(main.cpp ~1145)無條件把 `state` 設為 `S_MAP`,壓過 `--char-sheet` 在 S_GAME 的消費點(~2761)→ 落到 automap。修法:automap 區塊偵測到 `char_sheet >= 1` 時 `enter_map` 後 state 留在 `S_GAME`,讓屬性表優先(冷啟動 / 配 `--map` 原本已正常,此修補上 automap 互斥案)。三案(冷啟動 / `--map` / `--automap`)皆可靠開狀態欄。`docs/CONTROLS.md` 補列 `--automap` / `--mm-seed` / `--newgame` / `--scene`。
 
 ---
 

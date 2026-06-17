@@ -72,6 +72,10 @@
 | 旗標 | 用途 |
 |---|---|
 | `--map <area>` | 直接載入某區關卡(0..39),進 S_GAME |
+| `--automap <area>` | headless 直接進第 N 區俯視平面地圖(`?` 鍵功能);配 `--mm-seed` 控制 fog;同時帶 `--char-sheet` 時讓位給屬性表 |
+| `--mm-seed <N>` | 探索 / minimap fog seeding;`0` = 全圖揭露(automap dump 對拍用) |
+| `--newgame` | 啟動即進建角畫面(互動建角流程 S_CREATE) |
+| `--scene <name>` | 直接渲染指定場景圖(scene 模式,不進選單 / 遊戲) |
 | `--fp` | S_GAME 用第一人稱 viewport(取代俯視彩格) |
 | `--at <x> <y>` | 把玩家放到指定格;若為事件格立刻跑事件腳本(headless 驗證) |
 | `--frames N` | 跑 N 幀後結束(`0` = 只 dump 不開窗) |
