@@ -325,6 +325,10 @@ add_test(NAME verify_recruit
 add_executable(probe_combat_script tools/verify/probe_combat_script.cpp)
 target_link_libraries(probe_combat_script PRIVATE dwr_vm dwr_game)
 
+# probe_combat_round:驅動 res18/res4 動作指派狀態機,抵達 res3 actor 迴圈,觀察怪物 HP 結算。
+add_executable(probe_combat_round tools/verify/probe_combat_round.cpp)
+target_link_libraries(probe_combat_round PRIVATE dwr_vm dwr_game)
+
 # probe_monster_stats:跑 res3 戰鬥 setup,dump 怪物群緩衝 + setup driver 算出的 AV/AC。
 add_executable(probe_monster_stats tools/verify/probe_monster_stats.cpp)
 target_link_libraries(probe_monster_stats PRIVATE dwr_vm dwr_game)
@@ -335,6 +339,12 @@ add_executable(verify_combat_script tools/verify/verify_combat_script.cpp)
 target_link_libraries(verify_combat_script PRIVATE dwr_vm dwr_game)
 add_test(NAME verify_combat_script
          COMMAND verify_combat_script ${CMAKE_SOURCE_DIR}/assets/bundle)
+
+# verify_combat_round:res3 全戰鬥閉環守護(actor 迴圈 → to-hit → 傷害 → 怪物 HP 扣減 + 確定性)。
+add_executable(verify_combat_round tools/verify/verify_combat_round.cpp)
+target_link_libraries(verify_combat_round PRIVATE dwr_vm dwr_game)
+add_test(NAME verify_combat_round
+         COMMAND verify_combat_round ${CMAKE_SOURCE_DIR}/assets/bundle)
 
 # tools/verify:怪物圖區渲染 vs oracle golden(byte-for-byte;sprite 渲染管線無漂移)。
 add_executable(verify_encounter_golden tools/verify/verify_encounter_golden.cpp)

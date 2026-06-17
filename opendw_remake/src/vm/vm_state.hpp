@@ -140,6 +140,13 @@ struct VmState {
   std::vector<std::uint8_t> headless_keys;
   std::size_t headless_key_idx = 0;
 
+  // op_89 鍵提供者(調查/驅動用)。非空時 op_89 優先呼叫此函式,傳入
+  //   (script_res, 表起點 pc) → 回傳要注入的鍵(0 = 沿用 headless_keys/headless_key 既有邏輯)。
+  //   讓 probe 能依「當前選單是哪個資源/位址」自適應餵鍵(戰鬥逐角色動作指派 + 目標選擇),
+  //   不污染既有 headless_keys 行為(預設 nullptr,完全等同舊版)。
+  using KeyProvider = std::function<std::uint8_t(int script_res, std::size_t pc)>;
+  KeyProvider key_provider;
+
   // 寫入「資料資源」(word_3ADF->bytes)的一個 byte。
   //   忠實對照 opendw:running_script 與 word_3ADF 都來自 resource_get_by_index,
   //   當 word_3AE8 == word_3AEA(script_res == data_res)時是**同一份 bytes**,
