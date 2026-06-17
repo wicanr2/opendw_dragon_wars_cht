@@ -1677,6 +1677,81 @@ void Interpreter::op69_set_char_ext() {
   }
 }
 
+// adjust_position(@0x45D0,opendw engine.c:2915):依方向把隊伍座標 ±1。
+//   gs[0](X)/gs[1](Y);DIRECTION_NORTH=0:X+1、EAST=1:Y+1、SOUTH=2:X−1、WEST=3:Y−1。
+//   (對照 disasm:al==0→inc[0x3860];1→inc[0x3861];2→dec[0x3860];default(3)→dec[0x3861]。)
+void Interpreter::adjust_position(std::uint8_t direction) {
+  switch (direction & 0x03) {
+    case 0: s_.game_state[0] = (std::uint8_t)(s_.game_state[0] + 1); break;  // NORTH
+    case 1: s_.game_state[1] = (std::uint8_t)(s_.game_state[1] + 1); break;  // EAST
+    case 2: s_.game_state[0] = (std::uint8_t)(s_.game_state[0] - 1); break;  // SOUTH
+    case 3: s_.game_state[1] = (std::uint8_t)(s_.game_state[1] - 1); break;  // WEST
+  }
+}
+
+// op_6B(@0x45A1,原始 DRAGON.COM 反組譯 — opendw targets[] 標 NULL,無 oracle handler):
+//   dispatch 表 [0x3960+0x6B*2]=0x45A1。反組譯(file offset 0x44A1,COM @CS:0x100):
+//     45A1  al=[0x3863]           ; al = gs[3](當前面向 facing)
+//     45A4  xor al,0x2            ; al ^= 2(N↔S、E↔W:反向)
+//     45A6  jmp 0x45AB            ; (與 op_6C@0x45A8「al=gs[3]」共用後段,差在這步反向)
+//     45AB  push si
+//     45AC  call 0x45D0           ; adjust_position(al):依方向改 gs[0]/gs[1] ±1
+//     45AF  test byte [0x3883],2  ; gs[0x23] & 0x2(worldmap 模式旗標)
+//     45B4  jz   0x45CC           ; 非 worldmap → 略過邊界 wrap
+//     45B6  ...call 0x5559/0x5523 ; worldmap 邊界 wrap(opendw check_map_boundary_x/y,
+//                                 ;   其 worldmap 分支標 unimplemented/exit)
+//     45CC  pop si; jmp 0x3ACB    ; 不消耗任何 operand;回 dispatch 迴圈
+//   語意:**move_party_reverse** —— 把隊伍往「面向的反方向」移動一格(= 後退一步)。
+//   op_6C(0x45A8)是同段但不反向(前進一步)。
+//   反組譯佐證 = opendw op_6C(engine.c:2937)body 完全一致(adjust_position(gs[3]) +
+//     gs[0x23]&2 判定),只差 op_6B 多一步 `xor al,2`。
+//   ── headless ──:dungeon/area 事件格(area 18 tile 0x0D 等)gs[0x23]&2==0 → 純座標
+//     mutation、無 operand、不 halt → gate「選 Yes」分支可走完。worldmap 模式
+//     (area 0,gs[0x23]&2!=0)opendw 自身即 exit/unimplemented 且 app 走獨立 worldmap_dest
+//     進城(docs/54);此處標 last_unimpl 0x6B(不臆造邊界 wrap 數值),但**不 halt 座標
+//     mutation**(座標仍 ±1,與非 worldmap 路徑同),以記錄「worldmap wrap 未復刻」。
+void Interpreter::op6B_move_reverse() {
+  std::uint8_t al = (std::uint8_t)(s_.game_state[3] ^ 0x02);  // 反向 facing
+  s_.ax = (s_.ax & 0xFF00) | al;
+  adjust_position(al);                                        // gs[0]/gs[1] ±1
+  if (s_.game_state[0x23] & 0x02) {
+    // worldmap 模式:opendw 邊界 wrap(0x5559/0x5523 的 worldmap 分支)未復刻。
+    //   不臆造 wrap 後的座標;記錄受阻碼。座標 mutation 已套用(與 dungeon 路徑同)。
+    last_unimpl_ = 0x6B;
+  }
+}
+
+// op_8D(read_string_input @0x49D3,opendw engine.c:4945 → read_string_input @0x1E54):
+//   玩家文字輸入常式。opendw 流程:
+//     - draw_input_box;byte_1F07=0(目前長度);byte_1F08=輸入框寬上限(cap 0x10)。
+//     - 迴圈 wait_for_event(ALLOW_ANY_CASE)取鍵 al:
+//         '/'(0xAF)、'\'(0xDC)→ 丟棄;Backspace(0x88)→ 長度−1;
+//         Enter(0x8D)→ 結束;ESC(0x9B)→ 長度歸 0 結束;
+//         長度已達 byte_1F08 → 丟棄;al<0xA0(控制鍵)→ 丟棄;
+//         al==0xA0(空白)且開頭 → 丟棄;否則 set_game_state(0xC6+len, al);len++。
+//     - 結束時 set_game_state(0xC6+len, 0)(NUL 終止)。
+//   buffer 寫到 game_state[0xC6 + i],字元為「0xA0-based DOS 字集」:空白=0xA0、
+//   '0'..'9'=0xB0..0xB9、'A'..'Z'=0xC1..0xDA、'a'..'z'=0xE1..0xFA(= ASCII | 0x80)。
+//   無 operand(handler 不從 script 讀 byte)。
+//   ── headless ──:無鍵盤。headless_text 非空時取其字元(ASCII)逐一編碼(c|0x80)
+//     寫入 gs[0xC6 + i],上限 0x10(對照 byte_1F08 cap);尾端補 NUL。空字串 = 玩家
+//     直接按 Enter(gs[0xC6]=0)。讓「說暗語」puzzle(area 33 tile 0x14)say-word
+//     分支不卡 prompt → 後續 script 可比對 gs[0xC6..] 與正解。不 halt。
+void Interpreter::op8D_read_string() {
+  constexpr std::size_t kInputBase = 0xC6;
+  constexpr std::size_t kMaxLen = 0x10;  // byte_1F08 cap(engine.c:4899)
+  std::size_t len = 0;
+  for (char ch : s_.headless_text) {
+    if (len >= kMaxLen) break;
+    std::uint8_t enc = (std::uint8_t)((std::uint8_t)ch | 0x80);  // ASCII → 0xA0-based
+    s_.game_state[(kInputBase + len) & 0xFF] = enc;
+    ++len;
+  }
+  // NUL 終止(對照 0x1E99:set_game_state(0xC6+len, 0))。
+  s_.game_state[(kInputBase + len) & 0xFF] = 0;
+  // word_3AE2 不變;handle_byte_callback(0x8D) 為渲染副作用(送 newline),VM 狀態不依賴。
+}
+
 // op_16:bx = gs[op] | gs[op+1]<<8 + r4;data[bx] = r2(byte;word 模式再寫 +1)。
 void Interpreter::op16_data_gsoff_from_r2() {
   std::uint8_t al = s_.fetch8();
@@ -1993,6 +2068,8 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x63] = &Interpreter::op63_set_char_ext_word;
   t[0x68] = &Interpreter::op68_get_char_ext;
   t[0x69] = &Interpreter::op69_set_char_ext;
+  t[0x6B] = &Interpreter::op6B_move_reverse;  // DRAGON.COM 0x45A1:move_party_reverse
+  t[0x8D] = &Interpreter::op8D_read_string;   // opendw 0x49D3:read_string_input
   return t;
 }();
 #undef OP
