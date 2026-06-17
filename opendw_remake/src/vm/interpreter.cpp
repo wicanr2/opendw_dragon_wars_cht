@@ -1403,6 +1403,7 @@ std::uint16_t Interpreter::char_record_base() {
 //   注意:oracle 高位來自 cx,而 cx 只讀了 1 byte → 高位實為 cx 原值高位(此處 cx=單 byte
 //   讀取後高位為 0;word 模式時 word_3AE2 高位 = 0)。忠實對齊:cx 僅取 char_data[addr] 單 byte。
 void Interpreter::op5D_get_char_data() {
+  std::uint16_t op_pc = (std::uint16_t)(s_.pc - 1);  // op_5D 指令本身的 pc(operand 前)
   std::uint16_t base = char_record_base();
   std::uint8_t al = s_.fetch8();            // property offset
   s_.ax = (s_.ax & 0xFF00) | al;
@@ -1413,6 +1414,7 @@ void Interpreter::op5D_get_char_data() {
   if (s_.mode != 0) {                        // byte_3AE1 != 0 → word 模式
     s_.r2 = (std::uint16_t)((s_.cx & 0xFF00) | (s_.r2 & 0xFF));
   }
+  if (char_read_obs_) char_read_obs_(al, cl, op_pc);  // 純診斷觀測(技能檢定掃描)
 }
 
 // op_5E(set_character_data @0x4322):把 word_3AE2 寫回當前角色屬性。

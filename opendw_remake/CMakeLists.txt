@@ -401,6 +401,11 @@ target_link_libraries(render_fp_cell PRIVATE dwr_render dwr_resource)
 add_executable(detect_traps tools/verify/detect_traps.cpp)
 target_link_libraries(detect_traps PRIVATE dwr_vm)
 
+# tools/verify:路徑 B(技能版)—— 逐關逐事件格跑 VM,攔截 op_5D 角色屬性讀取,
+# 偵測讀取 skill 欄(0x20-0x3A)的事件格 → 技能檢定觸發點。非 ctest gate。
+add_executable(detect_skill_checks tools/verify/detect_skill_checks.cpp)
+target_link_libraries(detect_skill_checks PRIVATE dwr_vm)
+
 # tools/verify:非世界圖子區入口探測(跑母區事件 script,觀測 gs 寫入 / op58 tag /
 # halt opcode)。用於判定 Phoebus(6)/Byzanople(9) 等子區是否卡在未實作 opcode。
 add_executable(probe_subarea_entry tools/verify/probe_subarea_entry.cpp)
