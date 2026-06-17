@@ -11,8 +11,12 @@
 //   5 個 sprite tag、無專屬門 tag → K 開門「開/鎖/阻擋/開後可走」語意完全在消費
 //   gs[0x26] 的未反編主迴圈,靜態無法乾淨逆出;連 move walkability(tile!=0)亦然。
 //   故以下 tile 型→語意為 **remake 設計約定**(grounded 手冊 K=開門/破密門、
-//   Disarm/Sense Trap/Soften Stone 法術),非 oracle 真值。真實 .lvl 目前未含這些
-//   保留值(0x30..0x34),故不影響既有關卡;機制以 remake 測試關 headless 驗證。
+//   Disarm/Sense Trap/Soften Stone 法術),非 oracle 真值。
+//
+//   2026-06-17 更新:**真實 .lvl 陷阱格已由路徑 B 識別**(`real_terrain.hpp`:逐事件格
+//   跑 VM,傷害訊息語意類 → 原版真座標,3 關 111 格)。本檔 0x30..0x34 改為 remake 測試關
+//   保留約定(真實 .lvl 不含),與真陷阱機制相容並存(真陷阱優先)。門真實格仍受阻
+//   (牆 sprite 無專屬門 tag;見 docs/57 §路徑 A + render_fp_cell 證據)。
 // ──────────────────────────────────────────────────────────────────────
 #pragma once
 
@@ -89,24 +93,30 @@ enum class TerrainSpellResult : std::uint8_t {
 //   • Disarm Trap:若前方/當前是未解除陷阱 → 標 TF_TrapDisarmed。
 //   • Soften Stone:若前方是石牆(TT_Stone)未軟化 → 標 TF_SecretBroken(可走)。
 // fwd_tile / cur_tile = Level::tile(前方)/(當前)。回傳結果語意。
+//   fwd_real_trap / cur_real_trap:前方/當前格是否為「真實陷阱格」(路徑 B 識別,原版
+//     座標;見 real_terrain.hpp)。為 true 時等同 0x33 陷阱(供 Sense/Disarm 對真陷阱生效)。
 inline TerrainSpellResult apply_terrain_spell(TerrainState& ts, std::uint8_t spell_id,
                                               int area, int fx, int fy,
                                               std::uint8_t fwd_tile, int cx, int cy,
-                                              std::uint8_t cur_tile) {
+                                              std::uint8_t cur_tile,
+                                              bool fwd_real_trap = false,
+                                              bool cur_real_trap = false) {
+  const bool fwd_trap = (fwd_tile == TT_Trap) || fwd_real_trap;
+  const bool cur_trap = (cur_tile == TT_Trap) || cur_real_trap;
   switch (spell_id) {
     case SP_SenseTraps: {
       bool any = false;
-      if (fwd_tile == TT_Trap) { ts.set(area, fx, fy, TF_TrapSensed); any = true; }
-      if (cur_tile == TT_Trap) { ts.set(area, cx, cy, TF_TrapSensed); any = true; }
+      if (fwd_trap) { ts.set(area, fx, fy, TF_TrapSensed); any = true; }
+      if (cur_trap) { ts.set(area, cx, cy, TF_TrapSensed); any = true; }
       return any ? TerrainSpellResult::TrapsSensed : TerrainSpellResult::NoEffect;
     }
     case SP_DisarmTrap: {
       // 前方優先,其次當前格。
-      if (fwd_tile == TT_Trap && !ts.has(area, fx, fy, TF_TrapDisarmed)) {
+      if (fwd_trap && !ts.has(area, fx, fy, TF_TrapDisarmed)) {
         ts.set(area, fx, fy, TF_TrapDisarmed);
         return TerrainSpellResult::TrapDisarmed;
       }
-      if (cur_tile == TT_Trap && !ts.has(area, cx, cy, TF_TrapDisarmed)) {
+      if (cur_trap && !ts.has(area, cx, cy, TF_TrapDisarmed)) {
         ts.set(area, cx, cy, TF_TrapDisarmed);
         return TerrainSpellResult::TrapDisarmed;
       }

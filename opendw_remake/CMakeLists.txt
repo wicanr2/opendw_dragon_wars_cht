@@ -49,9 +49,9 @@ target_include_directories(dwr_i18n PUBLIC src)
 target_include_directories(dwr_render PUBLIC src)
 
 # --- game 模組(隊伍角色資料 + 右側狀態面板渲染 + 戰鬥結算)---
-add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/combat_loop.cpp src/game/spells.cpp src/game/seen_map.cpp src/game/terrain_state.cpp src/game/chargen.cpp src/game/progression.cpp src/game/shop.cpp src/game/recruit.cpp)
+add_library(dwr_game STATIC src/game/party.cpp src/game/equipment.cpp src/game/combat.cpp src/game/combat_loop.cpp src/game/spells.cpp src/game/seen_map.cpp src/game/terrain_state.cpp src/game/real_terrain.cpp src/game/chargen.cpp src/game/progression.cpp src/game/shop.cpp src/game/recruit.cpp)
 target_include_directories(dwr_game PUBLIC src)
-target_link_libraries(dwr_game PUBLIC dwr_render)
+target_link_libraries(dwr_game PUBLIC dwr_render dwr_vm)
 
 # --- save 模組(存檔/讀檔;自包含,無 render/SDL 相依,可獨立測試)---
 add_library(dwr_save STATIC src/game/savegame.cpp)
@@ -65,7 +65,7 @@ add_test(NAME verify_save COMMAND verify_save)
 # 探索互動(門/密門/陷阱/地形法術)機制自測(不需 SDL;印 PASS/FAIL)。
 add_executable(verify_terrain tools/verify/verify_terrain.cpp)
 target_link_libraries(verify_terrain PRIVATE dwr_game)
-add_test(NAME verify_terrain COMMAND verify_terrain)
+add_test(NAME verify_terrain COMMAND verify_terrain ${CMAKE_SOURCE_DIR}/assets/bundle)
 
 # golden 測試:remake 渲染 title,與 golden 對拍(見 tools_build/render_golden.sh)。
 add_executable(render_title tools/verify/render_title.cpp)
@@ -388,6 +388,18 @@ add_executable(dump_door_table tools/verify/dump_door_table.cpp)
 target_link_libraries(dump_door_table PRIVATE dwr_resource dwr_render)
 add_executable(dump_door_cells tools/verify/dump_door_cells.cpp)
 target_link_libraries(dump_door_cells PRIVATE dwr_resource dwr_render)
+
+# tools/verify:渲染 19 個元件 sprite frame(路徑 A:視覺分類門 vs 牆/岩),非 ctest gate。
+add_executable(render_components tools/verify/render_components.cpp)
+target_link_libraries(render_components PRIVATE dwr_render)
+
+# tools/verify:第一人稱 viewport 單格組景(路徑 A:目視門牆候選 vs 一般牆),非 ctest gate。
+add_executable(render_fp_cell tools/verify/render_fp_cell.cpp)
+target_link_libraries(render_fp_cell PRIVATE dwr_render dwr_resource)
+
+# tools/verify:路徑 B —— 逐關逐事件格跑 VM,偵測扣 HP/Stun 行為 → 真實陷阱格,非 ctest gate。
+add_executable(detect_traps tools/verify/detect_traps.cpp)
+target_link_libraries(detect_traps PRIVATE dwr_vm)
 
 # tools/verify:非世界圖子區入口探測(跑母區事件 script,觀測 gs 寫入 / op58 tag /
 # halt opcode)。用於判定 Phoebus(6)/Byzanople(9) 等子區是否卡在未實作 opcode。

@@ -1,6 +1,53 @@
 # 探索互動深度第二類:開門 / 破密門 / 陷阱 / 戰鬥外地形法術
 
-逆向結論與真值層級。對應 remake 程式:`src/game/terrain.{hpp,cpp}`、`src/main.cpp`(K / C 鍵段)、`src/game/spells.cpp`(地形法術效果)。
+逆向結論與真值層級。對應 remake 程式:`src/game/terrain.{hpp,cpp}`、`src/game/real_terrain.{hpp,cpp}`、`src/main.cpp`(K / C 鍵段 + 真陷阱接線)、`src/game/spells.cpp`(地形法術效果)。
+
+## 更新(2026-06-17):真實 .lvl 陷阱格已識別,座標來自原版
+
+> 取代舊結論「真實 .lvl 未含這些保留值 → 不影響既有關卡 / 未觸發」。
+> **陷阱已逐關掃出原版真實座標並接線**;門的真實格仍受阻(無乾淨識別管道)。
+
+| 項目 | 結果 | 真值層級 |
+|---|---|---|
+| **陷阱位置** | 路徑 B 逐關跑 VM 識別出 **3 關共 111 個真實陷阱格**(area 16 矮人鑄爐 1、area 27 尼塞山腹 109、area 31 魔法學院 tripwire 1) | **可識別(byte 真值)**:tile→script_pc→VM emit 字串已逐指令對拍 opendw |
+| **陷阱觸發 / 傷害結算** | 踩格觸發(`trigger_trap_here`)、Sense / Disarm 對真陷阱生效 | 位置=真值;**傷害數值=remake 設計**(扣減走 op_58 + 未反編 settlement,受阻) |
+| **門位置** | 牆 sprite 路徑(路徑 A)無法乾淨識別門格 | **受阻**:全 40 關牆 nibble 只選 5 個牆/岩 sprite tag,無專屬門 tag;`hilo` 是重載牆變體碼 |
+
+### 路徑 A(門 = 門 sprite):受阻(已用渲染證據確認)
+
+- `tools/verify/dump_door_table` 全 40 關 dump:牆面 nibble → `data_56C6` → `data_59E4` 只選到
+  **tag 110 / 115 / 122 / 125 / 126**(+ 0x7F 透明)五種 sprite,**無專屬「門」sprite tag**。
+- 牆型碼 `hilo`(高半 byte 低 nibble)**不能判定門**:area 34「Lanac'toor's Lab」整間實驗室
+  內牆 64 格 `hilo=1` 是該關標準牆;area 27 主牆 `hilo=0`,門牆候選 rare。`hilo` 是**重載的
+  牆變體碼**,非門標記。
+- `tools/verify/render_fp_cell` 對 area 33「門牆候選」(hilo!=0)與一般牆組第一人稱 viewport:
+  兩者**目視皆為相同磚牆造型**,無門框 / 門板。
+- 結論:**門的真實格無法由牆資料乾淨識別**。原版真正的「門」多以**特殊事件格**(換區 / 對話
+  gate,如拜占儂城門、單向西門)承載 —— 那些已由 `Level::worldmap_dest` / `subarea_relocs` /
+  `area_entry_relocs` 機制處理;通用「K 對牆開門」的引擎級動作仍在未反編主迴圈(見 §1)。
+
+### 路徑 B(陷阱 = 事件格 script 行為):可行(已接線)
+
+- `src/game/real_terrain.cpp` `RealTraps::identify`:對每個特殊事件格(word_11C8≥2)的 tile →
+  `script_pc` → 在 VM 跑該關 bytecode,攔截 emit 字串。字串屬「對隊伍即時傷害 / 敵意環境」
+  語意類(攻略 docs/38 描述的陷阱)→ 該格 = 原版真陷阱格。
+- **與攻略抽樣吻合**:
+  - area 27 尼塞山腹 tile 0x1A 四角 `(14,10)(24,10)(14,21)(24,21)` emit「The floor moved!」
+    = 攻略「the floor is moving 訊息時回原位」陷阱;tile 0x04/0x05 emit「icy winds of despair
+    tear at your soul」、tile 0x11 emit「fury of the sun … burn in this corridor」(灼燒走廊)。
+  - area 31 魔法學院 tile 0x10 emit「tripwire … granite block smashs the party」= 攻略測驗五陷阱。
+  - area 16 矮人城 tile 0x06 emit「dwarven forge … saps your very life essence」= 鑄爐耗命格。
+- **誠實標示**:傷害結算 HP/Stun 實際扣減走 op_58 跨資源呼叫 + 未反編 settlement
+  (已實測 area27 trap script 走 op_52 跳轉而非 op_5E 寫 Health)→ **傷害數值 remake 設計**;
+  本路徑只給**位置真值**。逐關掃描工具 `tools/verify/detect_traps`(`--list` 列座標)。
+
+### 接線與驗證
+
+- `src/main.cpp` `enter_map` 進關即 `RealTraps::identify` 重算本關真陷阱;`trigger_trap_here`
+  / `resolve_explore_cast`(Sense / Disarm)優先吃真陷阱座標(相容保留 0x33 測試關 tile)。
+- headless 驗證:`verify_terrain <bundle>` §4 斷言 area 27 識別 >50 格 + floor-moved 四角座標 +
+  Sense/Disarm 對真陷阱生效 + area 0 世界圖 0 誤報;app `--map 27 --trap-probe` 整合測:踩真
+  陷阱格 HP 下降。ctest 30 項全綠。
 
 ## 真值層級總表
 
@@ -79,7 +126,9 @@ remake 以 word_11C8 tile 型的一段**保留值**作門 / 密門 / 陷阱標�
 | `0x33` | 陷阱格 | 踩到(未解除/未觸發)→ 觸發傷害;Sense Traps 標記可見;Disarm Trap 解除(`TrapDisarmed`) |
 | `0x34` | 石牆障礙(Soften Stone 目標) | 視為牆;Soften Stone 軟化後可走(`SecretBroken` 重用) |
 
-注:真實 .lvl 目前未含這些保留值(見 dump),故預設不影響既有關卡行為;機制以 remake 測試關(headless)驗證。日後若逐格逆出某關真實門 / 陷阱 tile,只需在此表登錄對映,機制不動。
+注:**0x30..0x34 為 remake 測試關保留約定**(真實 .lvl 不含這些值)。**真實 .lvl 的陷阱格改由
+路徑 B(`RealTraps`,見上節 + `real_terrain.hpp`)以「事件格 script 行為」識別 → 原版真座標**;
+此 0x30..0x34 表僅供 remake 測試關與 #135 機制相容並存(真陷阱優先)。門的真實格仍受阻(路徑 A)。
 
 ### 地形法術(戰鬥外)
 

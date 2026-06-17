@@ -10,9 +10,12 @@
 //   3) TerrainState 序列化 → 反序列化 round-trip,旗標逐格一致。
 #include <cstdint>
 #include <cstdio>
+#include <string>
 
+#include "game/real_terrain.hpp"
 #include "game/terrain.hpp"
 #include "game/terrain_state.hpp"
+#include "resource/level.hpp"
 
 using namespace dw::game;
 
@@ -24,8 +27,9 @@ void check(bool cond, const char* what) {
 }
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
   const int A = 7;  // 任意 area id
+  const char* bundle = (argc >= 2) ? argv[1] : nullptr;
 
   std::printf("== 1) terrain_walkable 閘 ==\n");
   {
@@ -130,6 +134,50 @@ int main() {
     // 截斷檔 → 反序列化拒絕。
     TerrainState ts3;
     check(blob.size() < 2 || !ts3.deserialize(blob.data(), 3), "truncated blob rejected");
+  }
+
+  // 4) 真實陷阱格識別(路徑 B):需 bundle 才跑;驗證「位置=原版真值」+ 機制接線。
+  if (bundle) {
+    std::printf("== 4) 真實陷阱格(路徑 B;原版座標)==\n");
+    std::string dir = bundle;
+    // area 27 Depths of Nisir:攻略「the floor is moving」陷阱 + icy winds + 灼燒走廊。
+    auto lv27 = dw::res::Level::load_file(dir + "/maps/27.lvl");
+    check((bool)lv27, "load area 27 .lvl");
+    if (lv27) {
+      RealTraps rt = RealTraps::identify(*lv27, 27);
+      check(rt.count() > 50, "area 27 識別出大量陷阱格(>50)");
+      // 「floor moved」四角陷阱座標(detect_traps 實測):(14,10)(24,10)(14,21)(24,21)。
+      check(rt.is_trap(14, 10) && rt.is_trap(24, 10) && rt.is_trap(14, 21) && rt.is_trap(24, 21),
+            "area 27「floor moved」四角陷阱座標命中(原版真值)");
+      // icy winds 區一格(15,6)= tile 0x04。
+      check(rt.is_trap(15, 6), "area 27 icy-winds 陷阱格 (15,6) 命中");
+      // 非陷阱格(起點附近一般地面)不應誤報。
+      check(!rt.is_trap(0, 0), "(0,0) 非陷阱(無誤報)");
+
+      // Sense/Disarm 對真實陷阱格生效(fwd_real_trap=true 路徑)。
+      TerrainState ts;
+      auto r = apply_terrain_spell(ts, SP_SenseTraps, 27, 14, 10, /*fwd_tile*/0x01,
+                                   13, 10, /*cur_tile*/0x01, /*fwd_real*/true, /*cur_real*/false);
+      check(r == TerrainSpellResult::TrapsSensed && ts.has(27, 14, 10, TF_TrapSensed),
+            "Sense Traps 對真實陷阱格 (14,10) 生效");
+      r = apply_terrain_spell(ts, SP_DisarmTrap, 27, 14, 10, 0x01, 13, 10, 0x01, true, false);
+      check(r == TerrainSpellResult::TrapDisarmed && ts.has(27, 14, 10, TF_TrapDisarmed),
+            "Disarm Trap 對真實陷阱格 (14,10) 生效");
+    }
+    // area 31 Magic College:tripwire 巨石陷阱(測驗五);area16 矮人鑄爐耗命。
+    auto lv31 = dw::res::Level::load_file(dir + "/maps/31.lvl");
+    if (lv31) {
+      RealTraps rt = RealTraps::identify(*lv31, 31);
+      check(rt.count() >= 1, "area 31 識別出 tripwire 陷阱格");
+    }
+    // 非陷阱關(area 0 Dilmun 世界圖)應 0 陷阱(避免把劇情/換區格誤判)。
+    auto lv0 = dw::res::Level::load_file(dir + "/maps/0.lvl");
+    if (lv0) {
+      RealTraps rt = RealTraps::identify(*lv0, 0);
+      check(rt.count() == 0, "area 0 世界圖無陷阱誤報");
+    }
+  } else {
+    std::printf("== 4) 真實陷阱格:略過(未給 bundle 路徑)==\n");
   }
 
   std::printf(g_fail ? "\nFAIL: %d check(s) failed\n" : "\nPASS: all terrain checks ok\n",
