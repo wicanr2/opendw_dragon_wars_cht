@@ -76,6 +76,37 @@ int main(int argc, char** argv) {
   check(fwd_to_6 == 0, "Phoebus 6 無任何正向入口邊(誠實鐵則:逆不出 → 不臆造)");
   check(rev_33_to_6 == 1, "唯一含 6 的邊 = area 33(Phoeban Dungeon)→ 6 的 1A 45 06");
 
+  // (4) 新 opcode 集重跑補強(2026-06-17):op_6B/op_8D/op_91/92/97/98 實作後,
+  //   先前因未實作 opcode halt 的 script 已全部跑完(halt_unimpl 全 0x00)。為防
+  //   「計算式目的地」漏網,額外鎖「set_r2 imm=6(09 06)→ 12 byte 內 gs[2]=r2(12 02)」
+  //   這類算出 area 6 的路徑:全 40 關須為 0(三套 immediate 機制外的最後一個換區角度)。
+  int computed_to_6 = 0;
+  for (int a = 0; a <= 39; ++a) {
+    auto lvl = res::Level::load_file(bundle + "/maps/" + std::to_string(a) + ".lvl");
+    if (!lvl) continue;
+    const auto& b = lvl->data();
+    for (std::size_t i = 0; i + 1 < b.size(); ++i) {
+      if (b[i] == 0x09 && b[i + 1] == 0x06) {  // set_r2 imm = 6
+        for (std::size_t j = i + 2; j + 1 < b.size() && j < i + 12; ++j)
+          if (b[j] == 0x12 && b[j + 1] == 0x02) { ++computed_to_6; break; }  // gs[2]=r2
+      }
+    }
+  }
+  std::printf("    計算式(09 06..12 02)算出 gs[2]=6 的路徑數 = %d(期望 0)\n", computed_to_6);
+  check(computed_to_6 == 0, "無任何計算式路徑算出 area 6(新 opcode 集重跑後仍無)");
+
+  // (5) area 8(Mud Toad,攻略稱菲巴斯母區)對 area 6 零引用 — 動態 trace
+  //   (含注入 'Y'/op_8C、op_6B/op_8D 已實作)全 tile 不換到 6 之靜態對應守門。
+  auto a8 = res::Level::load_file(bundle + "/maps/8.lvl");
+  check(a8.has_value(), "area 8 (Mud Toad 黃泥蟾蜍) 載入");
+  if (a8) {
+    int a8_to_6 = 0;
+    for (auto& e : a8->area_entry_relocs()) if (e.area == 6) ++a8_to_6;
+    for (auto& r : a8->subarea_relocs()) if (r.area == 6) ++a8_to_6;
+    std::printf("    area 8 → 6 的換區邊數 = %d(期望 0)\n", a8_to_6);
+    check(a8_to_6 == 0, "area 8 Mud Toad 對 Phoebus 6 零引用(攻略『母區進入』為敘事順序非地圖鄰接)");
+  }
+
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);
   return fails ? 1 : 0;
 }
