@@ -236,6 +236,9 @@ private:
                                 //      檢查 char_ext[sel<<8 + u4456[0]];=0 → clc(本切片路徑)
   void op68_get_char_ext();    // 0x68  r2 = char_ext[sel<<8 + u4456[gs[7]] + op](byte/word);讀裝備記錄欄位
   void op69_set_char_ext();    // 0x69  char_ext[sel<<8 + u4456[gs[7]] + op] = r2(byte/word)
+  void op6B_move_reverse();    // 0x6B  move_party_reverse(0x45A1):adjust_position(gs[3]^2)
+  void op8D_read_string();     // 0x8D  read_string_input(0x49D3):玩家文字輸入 → gs[0xC6..]
+  void adjust_position(std::uint8_t direction);  // 0x45D0:依方向 ±1 改 gs[0](X)/gs[1](Y)
   // 角色資料定址輔助:回傳「當前角色 record 的頁高位(selector=gs[idx+0x0A])」。
   std::uint16_t char_record_base();  // = selector << 8(char_data 內的 record 起點)
 

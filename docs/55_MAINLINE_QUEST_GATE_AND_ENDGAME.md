@@ -9,10 +9,11 @@
 >   (結局/gate 事件 → VM → 繁中 → PPM 截圖)。
 >
 > **誠實標示**:gate 邏輯(op_9b/9d/50 旗標、op_8c 確認、op_61 角色屬性)**全部跑得動、零卡點**
->   (事件 emit 路徑);唯二未實作 opcode(op_6B、op_8D)只擋「同意付命/說暗語」的選擇分支,
->   有合法繞道。**終戰 Namtar 是 combat encounter(op_8A),卡在全戰鬥閉環的遊戲層 context
->   (已知 docs/42,非 opcode 缺失 last_unimpl=0);結局訊息不在任何 level script 中**(= 勝利
->   後由戰鬥流程觸發,逆不出獨立結局事件)。
+>   (事件 emit 路徑)。**op_6B、op_8D 已於 `feat/quest-gate-opcodes` 實作(2026-06-17)**:全 40 關
+>   事件格動態 trace **零 halt**;area 18 tile 0x0D 付命門「選 Yes」分支、area 33 tile 0x14 說暗語
+>   say-word 分支皆能走完。詳見 §2.4。**終戰 Namtar 是 combat encounter(op_8A),卡在全戰鬥閉環的
+>   遊戲層 context(已知 docs/42,非 opcode 缺失 last_unimpl=0);結局訊息不在任何 level script 中**
+>   (= 勝利後由戰鬥流程觸發,逆不出獨立結局事件)。
 
 ---
 
@@ -23,11 +24,11 @@
 | 主線勝利條件鏈(攻略真值) | 已串清:鑄自由之劍 + Irkalla/永恆神祝福 + Dragon Gem 召龍后×3 → area 27 決戰 Namtar → 屍體送靈魂之泉 → 納達之坑 |
 | quest gate 系統(bytecode) | **逆出**:level script 用 **game_state bit 旗標**(op_9b 設 / op_9d,op_50 測 → jnz/jz 分支)做進度 gate。共 **135 個唯一 flag、313 次操作**。 |
 | 角色祝福旗標(flags[85]) | char_data byte 0x55:`0x80` Irkalla 祝福、`0x10` 永恆之神(+3 全屬性)、`0x20` Enkidu(德魯伊)。由 op_5F 設 / op_61 測(戰鬥/共享 script,非 level event)。 |
-| gate 事件能跑嗎 | **能**。全 40 關事件格動態 trace:**唯二 halt = op_6B(area 18 tile 0x0D + area 0 世界圖 26 格)、op_8D(area 33 tile 0x14)**,皆 opendw `targets[]`=NULL 無 oracle,且只擋「選 Yes」後分支(有繞道)。 |
+| gate 事件能跑嗎 | **能,且唯二 halt 已解除**。op_6B(DRAGON.COM 0x45A1 反組譯)、op_8D(opendw 0x49D3 read_string_input)已實作(`feat/quest-gate-opcodes`,2026-06-17)→ 全 40 關事件格動態 trace **零 halt**;付命門/說暗語 gate「選 Yes」分支跑通。詳見 §2.4。 |
 | 結局事件能觸發+跑完嗎 | **事件文字全部能觸發+跑+繁中顯示**(area 27 尼塞山腹 29 條 emit 零 halt;area 18 瑪根納達之坑/靈魂之泉/Irkalla 亦跑通)。**但決戰 Namtar 是戰鬥(op_8A),卡全戰鬥閉環(docs/42);勝利後的結局畫面不在 level script 中 → 逆不出獨立結局事件 script。** |
 | 在地化 | events.tsv +20 條(area 18 瑪根全段 + area 33 菲巴斯地牢 + area 26/32 結局相關);area 27 結局段先前已譯齊。 |
 | 截圖驗證 | `render_endgame` headless 跑事件 → 繁中渲染 6 張(`docs/screenshots/endgame/`)。 |
-| 回歸 | ctest **21/21**;未改 VM source(interpreter/vm_state),diff_trace 邏輯不受影響。 |
+| 回歸 | ctest **31/31**(本輪改 VM source:interpreter/vm_state,新增 op_6B/op_8D + 6 項 vm_selftest 逐指令對照,全綠)。 |
 
 ---
 
@@ -107,21 +108,73 @@
 >   **結構性逆出**(知道是什麼旗標、誰設誰測),**精確語意**(「這個 bit = 拿到自由之劍?」)
 >   需端到端跑完整主線才能釘死,目前未做;不臆造單一 flag 的劇情語意。
 
-### 2.3 gate 邏輯跑得動嗎 → 跑得動(零卡點,唯二 NULL opcode 有繞道)
+### 2.3 gate 邏輯跑得動嗎 → 跑得動(零卡點;op_6B/op_8D 已實作,全 40 關零 halt)
 
-`mainline_events assets/bundle`(全 40 關每事件格跑 VM):
+`mainline_events assets/bundle`(全 40 關每事件格跑 VM)= **halt opcode 分佈空、卡住格清單空**。
 
-| halt opcode | 格數 | 位置 | opendw oracle | 主線影響 |
-|---|---|---|---|---|
-| op_6B | 26 | area 0 世界圖格 | NULL | app 走獨立 worldmap_dest 進城,非主線阻斷(docs/54) |
-| op_6B | 1 | **area 18 tile 0x0D** | NULL | 「同意付命為代價」**Yes 分支**才撞;tile 0x10 Irkalla 信徒門是另一條合法通道 → 有繞道 |
-| op_8D | 1 | **area 33 tile 0x14** | NULL | 「說暗語」puzzle 的 say-word 分支;area 33 本身為隔離 {6,33} 分量(docs/54) |
+實作前(歷史)halt 點(已全部解除):
+
+| halt opcode | 格數 | 位置 | 解除方式 |
+|---|---|---|---|
+| op_6B | 26 | area 0 世界圖格 | dungeon 路徑(gs[0x23]&2==0)純座標 mutation、不 halt;worldmap 模式標 last_unimpl 但座標仍 ±1(wrap 未復刻,記錄不臆造)。app 進城走獨立 worldmap_dest(docs/54)。 |
+| op_6B | 1 | **area 18 tile 0x0D** | adjust_position(gs[3]^2)→ 不 halt;Yes 分支跑通(§2.4)。 |
+| op_8D | 1 | **area 33 tile 0x14** | read_string_input headless 文字注入 → gs[0xC6..];say-word 比對鏈接通(§2.4)。 |
 
 - **所有 op_9b/9d/50/8c/61 gate 邏輯全部執行、分支正確**(op_8c「Do you wish…?」headless
-  預設 No → 不換區;注入 'Y' 可走 Yes 分支,見 trace_subarea_dyn)。
+  預設 No → 不換區;注入 'Y' 可走 Yes 分支,見 trace_subarea_dyn `--yes`)。
 - **分支正確性實證**(area 27 tile 0x22 Buck Ironhead):`9d test_gs_bit(gsA7.1) → 45 jnz`。
   旗標未設(首見)→ zf=1 → jnz 不跳 → emit「鐵頭巴克…」;旗標已設(重訪)→ 跳過 emit。
   = 標準「已見抑制」gate,**邏輯正確**。
+
+### 2.4 op_6B / op_8D 實作(2026-06-17,`feat/quest-gate-opcodes`)
+
+#### op_8D = read_string_input(opendw 0x49D3 → engine.c:4945,有 oracle)
+
+opendw 有 handler:玩家文字輸入常式。流程:畫輸入框 → 迴圈 `wait_for_event(ALLOW_ANY_CASE)`
+取鍵 → 過濾('/'`0xAF`、'\'`0xDC`、控制鍵 `<0xA0`、開頭空白)→ 合法字元 `set_game_state(0xC6+len, al)`、
+len++ → Enter(`0x8D`)/ESC(`0x9B`)結束 → 尾端補 NUL(`set_game_state(0xC6+len, 0)`)。
+buffer 寫到 `game_state[0xC6 + i]`,字元為「0xA0-based DOS 字集」:空白=0xA0、`0`-`9`=0xB0-0xB9、
+`A`-`Z`=0xC1-0xDA、`a`-`z`=0xE1-0xFA(= **ASCII | 0x80**)。max len cap 0x10(byte_1F08)。
+
+**remake headless 移植**:新增 `VmState::headless_text`(注入的玩家輸入,ASCII);op_8D 取其字元
+逐一編碼(`c|0x80`)寫入 `gs[0xC6 + i]`(上限 0x10)、尾端補 NUL。空字串 = 玩家直接 Enter。
+無 operand、不 halt。vm_selftest 3 項(編碼/空輸入/cap)逐指令對照通過。
+
+#### op_6B = move_party_reverse(DRAGON.COM 0x45A1,opendw `targets[]`=NULL,反組譯)
+
+dispatch 表 `[0x3960+0x6B*2]=0x45A1`(ndisasm DRAGON.COM,file offset 0x44A1)。反組譯:
+
+```
+45A1  al = gs[3]            ; 當前面向 facing
+45A4  al ^= 2              ; N↔S、E↔W:反向
+45A6  jmp 0x45AB           ; 與 op_6C(0x45A8「al=gs[3]」)共用後段,差在這步反向
+45AB  push si
+45AC  call 0x45D0          ; adjust_position(al):依方向改 gs[0](X)/gs[1](Y) ±1
+45AF  test byte[0x3883],2  ; gs[0x23] & 0x2(worldmap 模式)
+45B4  jz 0x45CC            ; 非 worldmap → 略過邊界 wrap
+45B6  ... 0x5559/0x5523    ; worldmap 邊界 wrap(opendw check_map_boundary 的 worldmap 分支標 unimplemented/exit)
+45CC  pop si; jmp 0x3ACB   ; 不消耗任何 operand;回 dispatch 迴圈
+```
+
+`adjust_position`(0x45D0,= opendw engine.c:2915):dir 0(N)gs[0]+1、1(E)gs[1]+1、2(S)gs[0]−1、
+3(W)gs[1]−1。
+
+**語意 = 把隊伍往「面向的反方向」移動一格(後退一步)**。op_6C(0x45A8)是同段但不反向(前進一步)。
+**佐證**:opendw `op_6C`(engine.c:2937)body 與此完全一致(`adjust_position(gs[3])` + `gs[0x23]&2` 判定),
+只差 op_6B 多一步 `xor al,2`,**高信心**。
+
+**remake headless 移植**:dungeon/area 路徑(gs[0x23]&2==0)→ `adjust_position(gs[3]^2)` 純座標
+mutation、無 operand、不 halt。worldmap 模式(area 0,gs[0x23]&2!=0)→ opendw 自身即 exit/unimplemented
+且 app 走獨立 worldmap_dest 進城(docs/54);此處座標仍 ±1 但標 `last_unimpl=0x6B`(wrap 數值不臆造)。
+vm_selftest 3 項(facing N/E 反向、worldmap 標記)通過。
+
+#### gate Yes 分支跑通實證(trace_subarea_dyn `--yes`)
+
+- **area 18 tile 0x0D 付命門**:op_8c 注入 'Y' → jnz 走 Yes 分支 → `party_loop` → `set_gs_bit`(設 gsB9.6,
+  gs writes `[B9]=40`)→ `draw_set_str` → `wait_escape`,**halt_unimpl=0x00**,進度旗標推進。
+- **area 33 tile 0x14 說暗語**:op_8D 寫 gs[0xC6..] → `gs_imm`/`call 0x0684`(`r2_from_gs_off` 讀輸入
+  buffer → `test_r2` → `jz`)比對暗語 → `jnc` 依比對結果分支 → emit。**halt_unimpl=0x00**,
+  **物品/暗語 gate 判定鏈接通**(空輸入走「不允許進入」分支,注入正解則走成功分支)。
 
 ---
 
@@ -229,10 +282,11 @@ tile 0x10「唯有 Irkalla 信徒方可通行」、tile 0x12「黑暗中你發�
 
 ### 5.2 回歸
 
-- **ctest 21/21 PASS**(含 vm_selftest、render_sweep 154-case、verify_combat*、verify_areaswitch、
+- **ctest 31/31 PASS**(含 vm_selftest、render_sweep、verify_combat*、verify_areaswitch、
   verify_city_entry、verify_i18n、smoke_app)。無回歸。
-- **未改 VM source**(`src/vm/interpreter.{hpp,cpp}`、`vm_state.hpp`)→ diff_trace 逐指令對拍
-  邏輯不受影響(本輪只加 2 個 standalone 觀測工具 + 渲染資產 + 資料檔)。
+- **本輪改 VM source**(`src/vm/interpreter.{hpp,cpp}`、`vm_state.hpp`):新增 op_6B/op_8D handler +
+  `adjust_position` + `VmState::headless_text`,並加 6 項 vm_selftest 逐指令對照(op_6B 反向/worldmap、
+  op_8D 編碼/空輸入/cap)。既有 opcode 行為與 diff_trace 路徑未動。
 
 ---
 
@@ -248,8 +302,13 @@ tile 0x10「唯有 Irkalla 信徒方可通行」、tile 0x12「黑暗中你發�
     + area 26/32 結局相關;area 27 結局段先前已譯齊)。
   - `opendw_remake/assets/fonts/cjk24.atlas`:重生(1878→2017 glyph,補新譯文 18 字:伊爾庫…)。
   - `opendw_remake/docs/screenshots/endgame/*.png`:6 張結局/gate 繁中截圖。
+- **VM source(本輪)**:
+  - `opendw_remake/src/vm/interpreter.{hpp,cpp}`:op_6B(`op6B_move_reverse` + `adjust_position`)、
+    op_8D(`op8D_read_string`)handler + dispatch 表註冊。
+  - `opendw_remake/src/vm/vm_state.hpp`:新增 `headless_text`(op_8D 文字注入)。
+  - `opendw_remake/tests/vm_selftest.cpp`:+6 項(op_6B/op_8D 逐指令對照)。
 - **docs**:本檔(docs/55)。
-- **未改 opendw;未改 VM source;DRAGON.COM / 圖檔未入庫。**
+- **未改 opendw;DRAGON.COM / 圖檔未入庫**(op_6B 反組譯從 /tmp 取磁碟 + docker ndisasm,原檔不入庫)。
 
 ## 7. 卡點清單(精確,不臆造)
 
@@ -259,6 +318,9 @@ tile 0x10「唯有 Irkalla 信徒方可通行」、tile 0x12「黑暗中你發�
    獨立 script**;與卡點 1 綁定。攻略結局亦無獨立段落編號。
 3. **物品 gate set 來源**:市民證/朝聖者袍/眼鏡/龍寶石等 flag 被 op_9d 測得到,但 **set 點
    不在 level event script**(在 inventory/共享 resource)→ 逆不出 set,**記錄不臆造**。
-4. **op_6B(area 18 tile 0x0D 付命門 Yes 分支)/ op_8D(area 33 暗語)**:opendw NULL,無 oracle;
-   有合法繞道(tile 0x10 Irkalla 門)/ area 33 為隔離分量。**未硬補(屬另案)**。
+4. ~~op_6B / op_8D~~ **已解除(2026-06-17,`feat/quest-gate-opcodes`)**:op_6B 反組譯 DRAGON.COM
+   0x45A1(move_party_reverse)、op_8D 移植 opendw 0x49D3(read_string_input + headless 文字注入);
+   全 40 關零 halt,付命門 Yes 分支 + 說暗語 say-word 分支跑通(§2.4)。**唯一剩餘標記**:op_6B
+   worldmap 模式(area 0,gs[0x23]&2)的邊界 wrap 數值未復刻(opendw 自身亦 unimplemented;app 走
+   獨立 worldmap_dest 進城),座標 mutation 已套用,wrap 後座標不臆造。
 5. **area 6/33 隔離分量**:docs/54 已記,與本任務正交。

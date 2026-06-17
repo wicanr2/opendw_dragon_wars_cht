@@ -1,5 +1,30 @@
 # 54 — 世界圖逐地點可達性盤點(權威 Dilmun 圖 × remake)
 
+> **更新 3(2026-06-17,新完整 opcode 集重跑 Phoebus 6 — 仍逆不出,守門強化)**:
+> op_6B/op_8D/op_91/92/97/98 實作 + 資源 buffer 持久性修復後,**公平重跑全 40 關**
+> 換區/事件 trace(動態注入 'Y' + 靜態 raw 掃描 + quest-flag 盤點),覆蓋先前因未實作
+> opcode 而 halt 的 script。結論:**Phoebus 6 仍無任何正向入邊 → 不補邊**。
+> - **先前 halt 全消**:area 8(Mud Toad)/ area 33(Phoeban Dungeon)及全 40 關動態
+>   trace,`halt_unimpl` 全 **0x00**(op_6B 在 dungeon 模式純座標 mutation 不 halt、
+>   op_8D say-word 輸入框實作)。先前卡未實作 opcode 在「算出目的地前 halt」的疑慮
+>   **被排除** —— script 現在全部跑到底,**仍未在更深處算出指向 6 的 gs[2]**。
+> - **area 8 全 tile 動態 driven(--yes 注入)**:零 AREA CHANGE,全 `gs2:8->8`,從不換到 6
+>   (tile 0x12 跑 2320 步深仍 8→8)。
+> - **area 33 say-word puzzle(tile 0x14,op_8D 新解鎖)深追**:`8d read_string` → `call`
+>   比對暗語 → 答對分支 @0x0667「You may pass.」**只做 op_73(清事件格)**,**不寫 gs[2]**;
+>   答錯 @0x064B「You are not allowed to enter.」+ op_6B(後退)。即說對暗語是「解鎖
+>   33 內部通道」**非「傳送到 area 6」**(6/33 同隔離分量,33 內走動不換 area)。
+> - **全 40 關 raw 掃指向 6 的所有樣式(`1A 02 06` 直接 / `1A 45 06` 子區 / `09 06..12 02`
+>   計算式)**:唯一命中 = **area 33 @0x0389 `1A 45 06`**(33→6 反向/內部)。
+>   area 0 worldmap 雖有 `60 06 @script-off 0x1297`,但 **0x1297 非任何地圖 tile 的 script
+>   入口(落在 tile 0x02 腳本中段資料)→ 資料區假命中,非可踩格**(`dump_worldmap_tiles`
+>   列出的真 tile 27 格 dest 集合不含 6)。
+> - **quest flag 盤點(`trace_quest_gates`)**:area 6 自身測 gs06.5/6/7(area 6 **內部**
+>   gate,且全 `SET={}`,無 area 設定),**無任何 flag 門控會改變指向 6 的目的地**。
+> - **守門強化**:`verify_city_entry` 新增 (4) 計算式 `09 06..12 02` 算出 area 6 路徑數 = 0、
+>   (5) area 8 Mud Toad 對 6 零引用,兩條回歸鎖。**ctest 31/31**(本輪未新增 ctest 項,
+>   既有 `verify_city_entry` 內擴充斷言)。詳見 §2.4。
+>
 > **更新 2(2026-06-16,動態 trace 逆出進城第三機制後 — 33/40 → 38/40)**:
 > 改用**動態逆向**(remake VM 實機執行 + 注入鍵盤 'Y' 通過 op_8C/op_89,逐指令 trace
 > 跨資源 call)攻克 Byzanople(9)/Phoebus(6) 缺口。工具:`tools/verify/trace_subarea_dyn.cpp`
@@ -251,6 +276,33 @@ area 14→18(奈羅波裡→瑪根)、area 25→36(京雄→京雄地牢)、area
   條件控制,甚至原版設計即「需先到 33 再到 6」)在可解碼的 level/shared-resource bytecode
   中**找不到正向入邊**;opendw 對相關 op_68/70/6B 亦標 NULL。**逆不出 → 不臆造 8→6 邊**。
   `verify_city_entry` 測試把「無任何正向邊指向 6」鎖成回歸守門。
+
+#### 2.4.1 新完整 opcode 集重跑(2026-06-17)— 公平再驗,結論不變
+
+先前窮舉(更新 2)時 op_6B/op_8D 仍標 NULL,存在「script 在算出指向 6 的 gs[2] 之前
+卡未實作 opcode 而 halt」的疑慮。本輪 op_6B/op_8D/op_91/92/97/98 已實作 + 資源 buffer
+持久性修復,**公平重跑**,逐項驗證該疑慮:
+
+| 驗證角度 | 工具/方法 | 觀測 | 是否現出 area 6 邊 |
+|---|---|---|:---:|
+| 先前 halt 是否消失 | `trace_subarea_dyn` area 8 / 33 / 全 40 關 `--yes` | `halt_unimpl` 全 **0x00**(先前 op_6B/op_8D/op_79 halt 全消) | **否**(跑到底仍不指 6) |
+| Mud Toad(8)母區全 tile | area 8 全 tile `--yes` 注入 | 零 AREA CHANGE,全 `gs2:8->8`(含 tile 0x12 跑 2320 步) | **否** |
+| 全 40 關動態換區 | 全 40 關 `--yes`,列所有 AREA CHANGE | 53 條 AREA CHANGE,目的地集合不含 6 | **否** |
+| area 33 say-word puzzle | tile 0x14(`8d read_string` 新解鎖)反組譯 + trace | 答對暗語分支 @0x0667「You may pass.」**只 op_73 清事件格,不寫 gs[2]**;答錯 @0x064B + op_6B | **否**(解鎖內部通道,非傳送) |
+| 計算式目的地 | 全 40 關 raw 掃 `09 06`(set_r2=6)→ `12 02`(gs[2]=r2) | 0 命中 | **否** |
+| 直接/子區 immediate | 全 40 關 raw 掃 `1A 02 06` / `1A 45 06` | 唯 area 33 @0x0389 `1A 45 06`(33→6 反向) | **否(正向)** |
+| worldmap bit7 變體 | area 0 全 `58 08 06 00 .. 60/68/70 <IDX>` 的 IDX&0x7F | 真 tile dest 集合不含 6;`60 06 @0x1297` 為**資料區假命中**(非 tile script 入口) | **否** |
+| story-flag 門控目的地 | `trace_quest_gates` 全 40 關 flag SET/TEST 圖 | area 6 測 gs06.5/6/7(**內部** gate,全 SET={});無 flag 改變指向 6 的目的地 | **否** |
+
+- **story-flag 門控結論**:幾乎所有 quest flag 都是「TEST 但 level tile 不 SET」(由戰鬥 /
+  NPC 對話 / 道具等 resource 層事件設定)。即使如此,**動態全掃已證實無任何 tile(無論
+  flag 狀態)寫 gs[2]=6** —— 沒有「設了某前置旗標後世界圖某格才指向 6」的路徑存在於
+  可解碼的 level bytecode。
+- **C 最終結論**:用最新完整 opcode 集重跑,**Phoebus(6)正向入口不在可解碼的 bytecode**
+  (level + shared resource 5/8)。{6,33} 仍是與其餘圖完全隔離的分量(6→29、6→33、
+  33→6;無外部入邊)。原版設計上 Phoebus 入城可能經 area 33(Phoeban Dungeon)/ 劇情旗標 /
+  外部機制(resource 層 runtime 控制流非 tile-script 可解碼),**逆不出 → 不補邊**,保留並
+  **強化** `verify_city_entry` 守門(新增計算式 `09 06..12 02`→6 = 0、area 8→6 = 0 兩鎖)。
 
 ---
 

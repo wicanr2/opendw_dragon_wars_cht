@@ -1,6 +1,7 @@
 // vm_selftest — R1 batch 1 VM 核心自測:手工 bytecode 驗證模式/暫存器/旗標/jmp/call-ret。
 // (差異測試對拍 opendw 於後續 batch 加入。)
 #include <cstdio>
+#include <string>
 #include <vector>
 #include "../src/vm/interpreter.hpp"
 
@@ -326,6 +327,63 @@ int main() {
     check("op5B:dx低=gs[1]=3、bx低=gs[0]=7、清 carry",
           (s.dx & 0xFF)==0x03 && (s.bx & 0xFF)==0x07 &&
           (s.flags & kCarry)==0);
+  }
+
+  // --- batch 16:quest gate 解除 opcode(op_6B 反組譯 DRAGON.COM 0x45A1 / op_8D opendw 0x49D3)---
+
+  // GG: op_6B(move_party_reverse @0x45A1):adjust_position(gs[3]^2)。
+  //   facing=0(NORTH)→ ^2 = 2(SOUTH)→ gs[0](X)−1。dungeon 路徑(gs[0x23]&2==0)不 halt。
+  {
+    VmState s; s.game_state[0]=10; s.game_state[1]=20; s.game_state[3]=0;  // facing NORTH
+    s.game_state[0x23]=0;            // 非 worldmap
+    s.script = {0x6B};
+    Interpreter ip(s); ip.run();
+    check("op6B facing N → 反向 S → gs[0](X)−1=9、gs[1]不變、不 halt(last_unimpl=0)",
+          s.game_state[0]==9 && s.game_state[1]==20 && ip.last_unimpl()==0);
+  }
+  // GG2: facing=1(EAST)→ ^2 = 3(WEST)→ gs[1](Y)−1。
+  {
+    VmState s; s.game_state[0]=10; s.game_state[1]=20; s.game_state[3]=1;  // facing EAST
+    s.game_state[0x23]=0;
+    s.script = {0x6B};
+    Interpreter(s).run();
+    check("op6B facing E → 反向 W → gs[1](Y)−1=19、gs[0]不變",
+          s.game_state[0]==10 && s.game_state[1]==19);
+  }
+  // GG3: worldmap 模式(gs[0x23]&2)→ 座標仍 mutation,但標 last_unimpl=0x6B(wrap 未復刻)。
+  {
+    VmState s; s.game_state[0]=5; s.game_state[1]=5; s.game_state[3]=2;  // facing SOUTH
+    s.game_state[0x23]=0x02;         // worldmap 模式
+    s.script = {0x6B};
+    Interpreter ip(s); ip.run();
+    check("op6B worldmap:gs[0](X)+1=6(facing S^2=N)、last_unimpl=0x6B",
+          s.game_state[0]==6 && ip.last_unimpl()==0x6B);
+  }
+
+  // HH: op_8D(read_string_input @0x49D3):headless_text → gs[0xC6..],ASCII|0x80 編碼 + NUL。
+  {
+    VmState s; s.headless_text = "OPEN";  // 'O'=0x4F→0xCF、'P'=0x50→0xD0、'E'=0x45→0xC5、'N'=0x4E→0xCE
+    s.script = {0x8D};
+    Interpreter ip(s); ip.run();
+    check("op8D 'OPEN' → gs[0xC6..]=CF D0 C5 CE 00、不 halt(last_unimpl=0)",
+          s.game_state[0xC6]==0xCF && s.game_state[0xC7]==0xD0 &&
+          s.game_state[0xC8]==0xC5 && s.game_state[0xC9]==0xCE &&
+          s.game_state[0xCA]==0x00 && ip.last_unimpl()==0);
+  }
+  // HH2: 空字串(玩家直接 Enter)→ gs[0xC6]=NUL。
+  {
+    VmState s; s.headless_text = "";
+    s.script = {0x8D};
+    Interpreter(s).run();
+    check("op8D 空輸入 → gs[0xC6]=0(NUL)", s.game_state[0xC6]==0x00);
+  }
+  // HH3: 上限 0x10:17 字元只寫 16 + NUL@0xC6+16。
+  {
+    VmState s; s.headless_text = std::string(17, 'A');  // 'A'=0x41→0xC1
+    s.script = {0x8D};
+    Interpreter(s).run();
+    check("op8D cap 0x10:第16字=0xC1、第17位(0xC6+16)=NUL",
+          s.game_state[0xC6+15]==0xC1 && s.game_state[(0xC6+16)&0xFF]==0x00);
   }
 
   std::printf(fails ? "\n%d 項失敗\n" : "\n全部通過\n", fails);

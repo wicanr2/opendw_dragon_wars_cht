@@ -9,6 +9,7 @@
 #include <functional>
 #include <map>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace dw::vm {
@@ -146,6 +147,17 @@ struct VmState {
   //   不污染既有 headless_keys 行為(預設 nullptr,完全等同舊版)。
   using KeyProvider = std::function<std::uint8_t(int script_res, std::size_t pc)>;
   KeyProvider key_provider;
+
+  // op_8D(read_string_input @0x49D3)的 headless 文字注入。
+  //   opendw read_string_input 等玩家逐字鍵入,寫到 game_state[0xC6 + i],按 Enter 結束,
+  //   並在尾端補 0(NUL)。DOS 內部 buffer 編碼為「大寫字母 | 0x80」(對照
+  //   get_key_from_buffer 的大寫化 + draw 用的 0xA0-based 字元集:'A'=0xC1…'Z'=0xDA、
+  //   空白=0xA0、'0'..'9'=0xB0..0xB9)。
+  //   headless 下無鍵盤;headless_text 非空時 op_8D 取其字元(ASCII)逐一編碼寫入
+  //   game_state[0xC6..],上限 0x10(對照 byte_1F08 cap);空字串 → 立即 NUL 終止
+  //   (= 玩家直接按 Enter)。讓「說暗語」puzzle(area 33 tile 0x14)的 say-word
+  //   分支不卡 prompt。
+  std::string headless_text;
 
   // 寫入「資料資源」(word_3ADF->bytes)的一個 byte。
   //   忠實對照 opendw:running_script 與 word_3ADF 都來自 resource_get_by_index,
