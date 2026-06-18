@@ -42,7 +42,7 @@ add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
-add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp src/render/viewport_compose.cpp src/render/minimap.cpp src/render/ui_pieces.cpp)
+add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp src/render/viewport_compose.cpp src/render/minimap.cpp src/render/ui_pieces.cpp src/render/worldmap.cpp)
 target_link_libraries(dwr_render PUBLIC dwr_resource)
 add_library(dwr_i18n STATIC src/i18n/strings.cpp src/i18n/string_table.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
@@ -74,6 +74,10 @@ target_link_libraries(render_title PRIVATE dwr_render dwr_resource)
 # 8×8 字渲染樣本(視覺驗證)。
 add_executable(render_text tools/verify/render_text.cpp)
 target_link_libraries(render_text PRIVATE dwr_render)
+
+# area 0 美化世界地圖 headless dump(像素層 PPM + 標籤錨點;目視驗證,非 ctest gate)。
+add_executable(render_worldmap tools/verify/render_worldmap.cpp)
+target_link_libraries(render_worldmap PRIVATE dwr_render dwr_resource)
 
 # CJK 混排 demo(8×8 ASCII + 24×24 中文)。
 add_executable(render_cjk_demo tools/verify/render_cjk_demo.cpp)

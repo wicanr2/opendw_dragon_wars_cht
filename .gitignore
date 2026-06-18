@@ -41,3 +41,6 @@ tools_build/__pycache__/
 *.pkh
 DRAGON.X
 *.raw
+
+# Claude Code session / worktree(不入庫)
+.claude/

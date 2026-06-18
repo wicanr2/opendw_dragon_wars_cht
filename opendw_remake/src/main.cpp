@@ -37,6 +37,7 @@
 #include "render/viewport.hpp"
 #include "render/viewport_compose.hpp"
 #include "render/minimap.hpp"
+#include "render/worldmap.hpp"
 #include "render/ui_pieces.hpp"
 #include "render/ui_theme.hpp"
 #include "render/sdl_video.hpp"
@@ -1367,6 +1368,9 @@ int main(int argc, char** argv) {
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
   render::ComponentStore comps(bundle + "/components");
 
+  // area 0(Dilmun)專屬美化世界地圖 view(旋轉 90° landscape + 地形美化 + 地點標記)。
+  //   與 oracle automap(下方 minimap)分工:area 0 走美化版、其餘 39 關走 oracle automap。
+  render::WorldMap worldmap;
   // 俯視平面地圖(`?` 鍵 → S_MAP)。與第一人稱共用 comps;載 minimap/玩家標記模板。
   render::Minimap minimap;
   bool minimap_ok = minimap.load_templates(bundle + "/viewport/minimap.bin",
@@ -3069,6 +3073,22 @@ int main(int argc, char** argv) {
   auto draw_automap = [&]() {
     fb.clear(0);
     if (!level) return;
+    // area 0(Dilmun)→ 美化世界地圖(旋轉 90° landscape + 地形美化 + 繁中地點標記)。
+    //   像素層由 WorldMap::render 畫(地形 + 圖示),繁中地點名由文字層 tl 繪製(銳利)。
+    //   其餘 39 關落到下方 oracle automap(Minimap),保真資產不動。
+    if (current_area == 0) {
+      auto labels = worldmap.render(fb, *level, px, py);
+      if (!para.active) {
+        tl.add(8, 2, "Dilmun  迪瑪", 14, PX_UI);           // 標題:行星名(原文 + 繁中)
+        for (auto& lb : labels) {
+          int tw = lb.right_align ? tl.measure_vwidth(lb.name, PX_UI * 3 / 4) : 0;
+          tl.add(lb.x - tw, lb.y, lb.name, 15, PX_UI * 3 / 4);  // 地點名(較小字,白)
+        }
+      }
+      add_lang_badge();
+      tl.add(8, 190, tr.tr("Map  -  Esc: back"), 7, PX_UI);
+      return;
+    }
     if (minimap_ok && minimap_dirty) {
       // --mm-seed 顯式給值(測試/展示)→ 用 Seed 模式;否則用遊戲內真實 fog of war。
       //   用 render_full(8 趟疊圖)鋪滿整個視窗(修稽核 #1:單趟 render 只畫最頂一帶)。
