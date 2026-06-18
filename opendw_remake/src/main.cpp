@@ -3098,10 +3098,10 @@ int main(int argc, char** argv) {
     if (!level) return;
     // ── theme=Amiga:地牢牆面走 Amiga 美術(render_first_person_amiga;不經 DOS golden)──
     //   元件選擇/落點仍用 DOS golden compose_draw_sequence(read-only);只換像素來源 +
-    //   套 viewport stone 盤。Amiga 元件缺失時誠實回退下方 DOS 路徑。
+    //   套原生 viewport 盤(dw CLUT)。Amiga 元件缺失時誠實回退下方 DOS 路徑。
     if (!theme.component_dir.empty() &&
         render::amiga_viewport_available(amiga_comps)) {
-      if (auto sp = amiga_comps.stone_palette()) vid.set_palette(*sp);
+      if (auto sp = amiga_comps.viewport_palette()) vid.set_palette(*sp);
       bool ok = render::render_first_person_amiga(*level, px, py, dir, fb, comps,
                                                   amiga_comps);
       if (ok) {
@@ -3110,7 +3110,7 @@ int main(int argc, char** argv) {
           render::ViewportDecoder fdec;
           fdec.reset(0);
           fdec.compose_frame(vpt[0].data(), vpt[1].data(), vpt[2].data(), vpt[3].data());
-          // 框線非零處疊白(stone 盤 index 1 = 白),勾出透視邊。
+          // 框線非零處疊白(viewport 盤 index 1 = 白),勾出透視邊。
           const std::uint8_t* m = fdec.mem.data();
           for (int yy = 0; yy < 136; ++yy)
             for (int bx2 = 0; bx2 < 80; ++bx2) {

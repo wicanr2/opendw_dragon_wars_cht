@@ -144,11 +144,17 @@ blit、非 chunky、而是 plane-sequential 4-bitplane;width/height 由 header w
 - 回歸保護:`verify_theme`(ctest)新增 6 隻 Amiga sprite 載入 + 尺寸 + 自帶盤 + sprite 接線斷言。
 
 ### 受阻 / TODO
-- 多動畫格:目前每隻只切**主格**(自動分隔)。逐 frame 動畫(攻擊/受擊)未切,需逆向
-  frame 表細節(各資源含 2–3 格水平並排)。
+- **多動畫格:2026-06-18 重查,判定受阻(不做)**。逐字解 header(@32)= word[0]=顯示寬 W、
+  word[1]=H、word[2]=bpr(plane 寬=bpr*8)、word[3]=H 重複;**無 frame offset 表**(word[4..7]
+  已是像素資料)。實測:
+  - Spider(196):plane 寬 96 ≈ 顯示寬 92,solid 欄僅右緣 padding(94/95)→ **乾淨單格**。
+  - Pikeman(210):plane 寬 128、顯示寬 125,但畫面右側已出現**第二個人形局部**(非固定偏移)→
+    同一資源確實塞了不只一格,但邊界**非確定性可偵測**(無分隔表、separator 規則不一致)。
+  - 結論:frame 邊界無可靠演算法切分,逐格切會產生不可靠 crop(風險非低)→ **保留主格,不切動畫格**。
+    要做需更深逆向 dw 的 sprite 播放常式(哪個欄位 / 外部表決定第 N 格起點),本次未做。
 - 196/152/210 主格右緣偶留 1–2 px 黑分隔條(crop 邊界);200_innocent_man 自動裁切只取到單格,
   品質次於其餘 5 隻。
-- header word[0]、word[3] 等其餘欄位語意未全解(已知 word[1]=H、word[2]=bpr 足以正確渲染)。
+- header 欄位語意已大致解出(word[0]=W、word[1]=H、word[2]=bpr、word[3]=H);frame 計數 / 起點欄位未明。
 
 ---
 
@@ -173,15 +179,29 @@ viewport 元件主力在 **data3(res 110–135)**,與 DOS `bundle/components/<ta
 ```
 目視確認:110 解出完整城堡牆面(不規則石塊 + 灰泥縫 + 頂部裝飾條 + 透視側牆)。
 
-### palette（受阻 → 相容色）
-Amiga viewport **原生 16 色盤未從程式抽出**(在 `dw` 主程式 / data1-2 的 CLUT 載入,本次未 trace)。
-目前用**逆向 + 目視調校的 stone palette**(灰石 + 棕灰泥),內嵌進各 `.spr`。屬色彩精修 TODO,
-不影響「牆面為 Amiga 美術、結構可辨識」。
+### palette（2026-06-18 已從 dw 抽出原生盤,取代 stone 近似色）
+
+> **更新**:viewport 原生 16 色盤 **已找到並接上**。先前用的 stone 相容近似色已退役。
+
+- **來源**:`dw` 主程式(75404 B)內 16-word CLUT,出現於 **@0x0fdf4 / @0x0fe34 / @0x10d34**
+  (同一份盤多處引用 = 預設世界盤)。格式同 title.pic:16 個 BE word `0x0RGB`,每 nibble ×17 → 8-bit。
+- **盤值**(hex 0RGB):`000 fff 640 666 970 070 444 289 090 1cc 860 888 167 2ac 000 000`
+  - index0=黑、index1=白(同 title.pic 起手);牆面石塊用 `640`/`970`/`444`/`666`/`888`(棕/灰),
+    mortar/距景偏冷 `289`/`1cc`/`2ac`(青藍),頂部裝飾 `070`/`090`(綠)。
+- **判別方法**:docker 掃 `dw` 全檔,找連續 16 個 `≤0x0FFF` 的 BE word(0x0RGB 特徵),
+  以「index0 暗 + index1 亮」評分。全檔僅此一份符合世界盤特徵的 16 色塊;與 title.pic 的金龍盤
+  (`f59 f28 d15…`)明顯不同 → 確認是獨立的 viewport/世界盤,非標題盤。
+- **目視對照**:F8 Amiga `--fp --map 1` dump(`dwshot_amiga_native_fp.ppm`)。原生盤 vs 舊 stone
+  近似色明顯有別:原生為青藍石塊 + 棕側牆 + 綠頂條(真實 Amiga 觀感),近似色為暖灰石。
+  原生盤為遊戲實際資料,採用之(正確性 > 美觀)。
+- **逆不出的部分**:`dw` 內只找到這一份世界盤;若不同區域/地城有切換盤,其載入邏輯(哪個 area
+  對應哪份 CLUT)未 trace —— 但全檔無第二份候選,推定為單一全域世界盤。
 
 ### 工具
-- `tools_build/amiga_viewport_extract.py <res.bin> <tag> <out_dir>`:offset 表 → 逐子圖塊
-  4-bitplane 解碼 → `<tag>_<blockidx>.spr`(indexed + 內嵌 stone palette)。
-- 入庫:`assets/bundle/themes/amiga/components/`(19 個 tag,共 60 個子圖塊 .spr)。
+- `tools_build/amiga_viewport_extract.py <res.bin> <tag> <out_dir> [--legacy-stone]`:offset 表 →
+  逐子圖塊 4-bitplane 解碼 → `<tag>_<blockidx>.spr`(indexed + 內嵌**原生 viewport palette**;
+  `NATIVE` 常數即上述 dw CLUT)。傳 `--legacy-stone` 可改回舊 stone 近似色對照。
+- 入庫:`assets/bundle/themes/amiga/components/`(15 個 tag,共 60 個子圖塊 .spr;已以原生盤重生)。
 
 ### 接進 Amiga 第一人稱（theme-aware viewport;DOS golden 不破）
 - `UiTheme` 新增 `component_dir`;Amiga = `themes/amiga/components`,DOS 為空(走原 golden 路徑)。
@@ -189,8 +209,9 @@ Amiga viewport **原生 16 色盤未從程式抽出**(在 `dw` 主程式 / data1
   `compose_draw_sequence`(read-only,不改一字)**,只把「像素來源」換成 Amiga 子圖塊 ——
   以 DOS template header(runlen→寬、numruns→高)做**維度匹配**挑該 tag 尺寸最接近的子圖塊,
   blit 到 DOS DrawCmd 的 (xpos,ypos)。
-- `main.cpp` `draw_game_fp`:theme.component_dir 非空且 Amiga 元件可用 → 套 stone 盤 +
-  `render_first_person_amiga`(疊 DOS 透視框線維持景深);**否則回退 DOS `render_first_person`**。
+- `main.cpp` `draw_game_fp`:theme.component_dir 非空且 Amiga 元件可用 → 套**原生 viewport 盤**
+  (`AmigaComponentStore::viewport_palette()`)+ `render_first_person_amiga`(疊 DOS 透視框線維持
+  景深);**否則回退 DOS `render_first_person`**。
 - **F8 切 Amiga + `--fp` → 地牢牆面變 Amiga 石牆美術**(headless `--fp --theme amiga --map 1`
   dump 目視確認:石塊牆面 + 側牆 trapezoid + water tile)。
 - **DOS theme 完全不經此模組** → verify_fp / verify_compose / render_sweep golden 全綠(未破)。
@@ -199,9 +220,44 @@ Amiga viewport **原生 16 色盤未從程式抽出**(在 `dw` 主程式 / data1
 - **透視非 byte-faithful**:DOS 用精確 perspective decode(填滿天花/地板、側牆完美收斂);
   Amiga 路徑用維度匹配 + DOS 落點近似,牆面為 Amiga 美術且結構可辨,但中央遠景/收斂不如 DOS 精準。
   要完全對位需替 Amiga 子圖塊重寫 DOS perspective placement(本次未做,風險為動到 golden 幾何)。
-- **viewport 原生 palette 未抽**(用 stone 相容色)。
+- ~~**viewport 原生 palette 未抽**(用 stone 相容色)~~ → **2026-06-18 已抽出並接上**(見上 palette 節)。
 - Sky(111)/120/128/133 等 tag 非 offset-表結構(0 子圖塊),Amiga 路徑跳過留底色(天空走 DOS
   `fill_sky_flat` 同義的留空)。
+
+---
+
+## 1.7 Amiga data5 / data6（res 257–266）= 音訊資產（已檢視,非美術）
+
+2026-06-18 檢視 data5(res 257/259–265,共 8 個)+ data6(res 266,共 1 個)。**結論:全部為
+Amiga 音效 / 音樂取樣(8-bit signed PCM,delta 風格編碼),非視覺美術 → 不入 themes/amiga/。**
+
+### 判別過程(docker,可重現)
+- 用 `amiga_res_extract`(連 decompress.cpp)解壓全 9 個資源(同 Huffman codec,解壓成功)。
+- 結構:每個資源共用 **16-byte header** `[8×00][01 00 00 00][LE32 payload_size][...]`,接著常數
+  `20 06 00 00`(0x620=1568)、`3c 00 00 00`(0x3c=60)—— 像 sample-rate / block 參數。
+- body **無 offset 表、無 4-bitplane sprite header、無 0x0RGB palette 起手**(逐項排除美術格式)。
+- byte 分佈:集中在 `00/01/ff/fe/fd/02`(signed −3..+3 小幅振盪)+ 單值長 run(`5d`/`ff`/`03`/`22`
+  = 靜音 / 持續段);熵 0.26–6.41。
+- **決定性驗證**:把 payload 當 8-bit signed PCM 畫波形 → 標準音訊包絡(attack → noisy body →
+  decay → 靜音)。`d5_264`/`d6_266` 為密集音效 / 較長持續音(疑音樂 / 環境音),`d5_259`/`d5_265`
+  幾近靜音 / 單純音。波形圖證實為 sound。
+
+### 受阻 / 未做
+- **Amiga 音訊播放格式未完整逆向**(sample rate、loop point、與 remake 既有音訊系統的接法)——
+  本次任務為「美術精修」,音訊接線超出範圍,僅**檢視確認=非美術**並記錄。後續若做 Amiga 原音,
+  從此處 `[16B header][PCM body]` + `0x620`/`0x3c` 參數續查。
+
+| 資源 | 解壓後大小 | 熵 | 內容 |
+|---|---|---|---|
+| data5 res 257 | 42513 B | 1.07 | PCM(大量 `5d` run = 靜音/持續) |
+| data5 res 259 | 53764 B | 0.26 | PCM(幾近靜音) |
+| data5 res 260 | 26123 B | 1.29 | PCM |
+| data5 res 261 | 29449 B | 1.05 | PCM |
+| data5 res 262 | 30765 B | 2.91 | PCM |
+| data5 res 263 | 48969 B | 2.44 | PCM |
+| data5 res 264 |  9757 B | 6.15 | PCM(密集音效;波形含 attack/decay) |
+| data5 res 265 | 50437 B | 0.33 | PCM(幾近靜音) |
+| data6 res 266 | 16458 B | 6.41 | PCM(較長持續音,疑音樂/環境音) |
 
 ---
 
@@ -288,7 +344,8 @@ themes/x68000/tiles/icon_sheet_w32.png         icon 原寬(32px)直條版
 | Amiga 怪物 sprite (data4 4-bitplane) | ✅ **50 隻**(全偶數資源)+ 權威 sprite_res() 對映接進戰鬥(F8;見 §1.5) |
 | Amiga viewport 牆面 (data3 4-bitplane) | ✅ 19 tag / 60 子圖塊已切 + 接進 Amiga 第一人稱(F8 `--fp`;見 §1.6) |
 | Amiga viewport 透視對位 | ⚠️ 近似(維度匹配;非 DOS byte-faithful perspective) |
-| Amiga viewport 原生 palette | ⚠️ TODO(用 stone 相容色) |
+| Amiga viewport 原生 palette | ✅ 從 dw CLUT(@0x0fdf4/0x10d34)抽出並接上(取代 stone 近似色;見 §1.6 palette 節) |
+| Amiga data5/6(res 257–266) | ✅ 已檢視 = **音訊取樣(8-bit PCM)**,非美術 → 不入庫(見 §1.7) |
 | Amiga picparts(過場圖元件) | ⚠️ 部分 |
 | X68000 怪物 (MON.PIX) | ✅ contact sheet(EGA placeholder palette) |
 | X68000 場景 (PIC.PIX) | ✅ contact sheet |

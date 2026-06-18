@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
     check(loaded >= 8, "amiga castle-wall (tag 110) has >= 8 viewport blocks");
     check(has_front, "amiga castle-wall has a front-wall block (>=90x90)");
     check(has_side, "amiga castle-wall has a tall side-wall block (h>=120)");
-    check(pal16, "amiga viewport blocks carry 16-colour stone palette");
+    check(pal16, "amiga viewport blocks carry 16-colour native viewport palette");
   }
 
   std::fprintf(stderr, "verify_theme: %s (%d failure(s))\n", fails ? "FAIL" : "PASS", fails);
