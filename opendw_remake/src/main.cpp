@@ -1655,21 +1655,21 @@ int main(int argc, char** argv) {
     //   「頂端襯底條」,提示放「底部襯底條」,中段龍圖 + 原版 logo 完整不被蓋(可讀性優先)。
     const std::string zh_title = tr.tr("Dragon Wars");   // zh-TW→火龍之戰 / ja→ドラゴンウォーズ / en→Dragon Wars
     const std::string prompt = tr.tr("Press any key");
-    // 半透明壓暗襯底條(棋盤式 dither,讓龍圖隱約透出仍保 CJK 對比)。
-    auto dim_band = [&](int y0, int y1) {
+    // 只壓暗「文字後方的小框」(棋盤式 dither,置中),避免整條 band 蓋住原版底部金色 logo。
+    auto dim_box = [&](int cx, int y0, int y1, int half_w) {
       for (int y = y0; y < y1 && y < render::kH; ++y)
-        for (int x = 0; x < render::kW; ++x)
-          if (((x + y) & 1) == 0) fb.put(x, y, 0);   // 棋盤壓暗(半透明黑網點)
+        for (int x = cx - half_w; x < cx + half_w; ++x)
+          if (x >= 0 && x < render::kW && ((x + y) & 1) == 0) fb.put(x, y, 0);
     };
-    // 頂端標題條(y 2..30):en 主題 art 已有英文 logo → 此處放在地化標題(zh/ja)。
-    dim_band(2, 30);
+    // 頂端在地化標題(zh/ja;en 主題 art 已有英文 logo):只壓暗標題字後方小框。
     int title_px = PX_BODY * 5 / 4;
     int tw = tl.measure_vwidth(zh_title, title_px);
+    dim_box(render::kW / 2, 3, 28, tw / 2 + 8);
     tl.add((render::kW - tw) / 2, 5, zh_title, 14, title_px);     // 金色在地化標題(頂端置中)
-    // 底部提示條(y 182..200):閃爍「按任意鍵」(約 36 幀週期)。
-    dim_band(182, render::kH);
+    // 底部閃爍「按任意鍵」(約 36 幀週期):只壓暗提示字後方小框,不蓋 logo。
     if ((title_blink / 18) % 2 == 0) {
       int pw = tl.measure_vwidth(prompt, PX_UI);
+      dim_box(render::kW / 2, 184, 198, pw / 2 + 8);
       tl.add((render::kW - pw) / 2, 186, prompt, 15, PX_UI);
     }
     add_lang_badge();
