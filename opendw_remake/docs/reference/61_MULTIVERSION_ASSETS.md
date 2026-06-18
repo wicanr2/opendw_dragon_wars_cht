@@ -11,7 +11,7 @@
 
 | 版本 | 磁碟形式 | 標題畫面 | 怪物 sprite | 場景/過場 | UI 圖示 | 狀態 |
 |---|---|---|---|---|---|---|
-| **Amiga** | .adf + WHDLoad HD(`data/`) | ✅ title.pic | ✅ data4 4-bitplane(**50 隻已切**，見 §1.5） | ✅ endgame、**viewport 牆面 data3(已逆 + 接 §1.6)** | ✅ cursors | **大部分成功** |
+| **Amiga** | .adf + WHDLoad HD(`data/`) | ✅ title.pic | ✅ data4 4-bitplane(**50 隻已切**，見 §1.5） | ✅ endgame、**第一人稱 viewport 牆面 data3 + 原生盤(已逆 + 接 §1.6)** | ✅ cursors | **接近完整**（標題+結局+50 怪物+第一人稱地牢牆面;data5/6=音訊非美術,見 §1.7） |
 | **X68000** | .DIM(Human68k FAT12) | ❌ TITLE.PKH(壓縮) | ✅ MON.PIX | ✅ PIC.PIX、❌ 3D/END(壓縮) | ✅ ICON.PIX | **未壓縮 .PIX 成功,.PKH 受阻** |
 | **PC-98** | — | — | — | — | — | **素材不存在(見 §3)** |
 
@@ -215,6 +215,10 @@ viewport 元件主力在 **data3(res 110–135)**,與 DOS `bundle/components/<ta
 - **F8 切 Amiga + `--fp` → 地牢牆面變 Amiga 石牆美術**(headless `--fp --theme amiga --map 1`
   dump 目視確認:石塊牆面 + 側牆 trapezoid + water tile)。
 - **DOS theme 完全不經此模組** → verify_fp / verify_compose / render_sweep golden 全綠(未破)。
+
+![amiga-fp-dungeon](../media/showcase/themes/amiga_fp_dungeon.png)
+
+`--theme amiga --fp --map 1` dump:原生 viewport 盤的青藍石塊正面牆 + 棕側牆 trapezoid + 綠頂裝飾條 + 青藍 water tile。
 
 ### 受阻 / TODO
 - **透視非 byte-faithful**:DOS 用精確 perspective decode(填滿天花/地板、側牆完美收斂);
