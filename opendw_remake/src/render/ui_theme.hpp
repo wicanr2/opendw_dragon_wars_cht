@@ -87,6 +87,11 @@ struct UiTheme {
   bool sprite_own_palette = false;
   // 此 sprite 來源的透明色索引(blit 時跳過)。DOS=6(encounter 棕);Amiga=8(紅底)。
   int sprite_transparent = 6;
+  // 第一人稱 viewport 牆面元件來源(theme-aware dungeon art)。空 = 用 DOS bundle/components
+  //   (走 render_first_person + golden 對拍路徑);非空 = bundle 下相對路徑(如
+  //   "themes/amiga/components"),Amiga 地牢牆面由此載(走 render_first_person_amiga;
+  //   DOS golden 不經此路徑、不破)。各 viewport 圖塊共用內嵌 stone palette。
+  std::string component_dir;
   // 誠實標示:partial=true 表示此主題未完整(palette placeholder / 無原生標題 / sprite 未切)。
   //   note 為簡短英文說明(toast 顯示用,經 tr() 在地化)。
   bool partial = false;
@@ -164,6 +169,9 @@ inline const std::vector<UiTheme>& theme_list() {
     amiga.sprite_dir = "themes/amiga/sprites";
     amiga.sprite_own_palette = true;
     amiga.sprite_transparent = 8;
+    // Amiga 第一人稱地牢牆面(data3 viewport 圖塊逆向 → .spr;見 viewport_amiga.hpp）。
+    //   F8 切 Amiga 走 render_first_person_amiga;DOS 仍走 golden 路徑(不破對拍)。
+    amiga.component_dir = "themes/amiga/components";
     v.push_back(amiga);
 
     // [2] X68000(部分):無原生標題 → 回退 DOS res29;palette 暫用 DOS placeholder;
