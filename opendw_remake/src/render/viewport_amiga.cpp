@@ -21,8 +21,8 @@ const std::vector<Sprite>& AmigaComponentStore::blocks(int tag) const {
   return slot;
 }
 
-std::optional<std::array<Rgb, 16>> AmigaComponentStore::stone_palette() const {
-  // 任一 tag 的第一個圖塊即帶共用 stone 盤;110 = Castle wall 最穩定。
+std::optional<std::array<Rgb, 16>> AmigaComponentStore::viewport_palette() const {
+  // 任一 tag 的第一個圖塊即帶共用原生 viewport 盤(dw CLUT);110 = Castle wall 最穩定。
   for (int tag : {110, 115, 122, 125, 126, 112, 116}) {
     const auto& b = blocks(tag);
     if (!b.empty() && b[0].palette.size() >= 16) {

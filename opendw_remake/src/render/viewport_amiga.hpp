@@ -22,8 +22,9 @@
 //     (近/中/遠 牆面 + 側牆 trapezoid)。
 //   • DOS template 的 sprite_offset slot 對映到 Amiga 子圖塊:以 DOS template header
 //     (runlen→寬、numruns→高)取目標尺寸,挑該 tag 尺寸最接近的 Amiga 子圖塊(維度匹配)。
-//   • 全部 viewport 圖塊共用一份 stone palette(內嵌於各 .spr;Amiga 原盤未自程式抽出,
-//     此為相容色)。呼叫端在 Amiga FP 期間 set_palette(該盤)。
+//   • 全部 viewport 圖塊共用一份原生 viewport palette(內嵌於各 .spr;從 dw 主程式
+//     @0x0fdf4/0x10d34 的 16-word CLUT 抽出,取代舊 stone 近似色)。呼叫端在 Amiga FP
+//     期間 set_palette(該盤)。
 //
 // DOS theme 完全不經過本模組(走原 render_first_person + ComponentStore)→ golden 不破。
 
@@ -37,8 +38,8 @@ class AmigaComponentStore {
   // tag 對應的全部子圖塊(依 blockidx 排序);找不到回空 vector。
   const std::vector<Sprite>& blocks(int tag) const;
 
-  // 任一圖塊的 palette(全 viewport 共用 stone 盤);無圖塊回 nullopt。
-  std::optional<std::array<Rgb, 16>> stone_palette() const;
+  // 任一圖塊的 palette(全 viewport 共用原生 dw CLUT 盤);無圖塊回 nullopt。
+  std::optional<std::array<Rgb, 16>> viewport_palette() const;
 
  private:
   std::string dir_;
