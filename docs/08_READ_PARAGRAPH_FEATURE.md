@@ -12,8 +12,8 @@
 > TextLayer wrap 多行、↑↓ 逐行 / PgUp PgDn / Space 逐頁、Esc 關閉、底部「▲▼ 行範圍/總行數」。
 > headless:`--read-para N`(可加 `--para-scroll P` 逐頁下捲 + `--frames`)dump 全文分頁;
 > 段落僅 zh-TW 有資料,en/ja 回退 zh-TW 全文 + 標題 i18n。ctest 8/8 不破。
-> 截圖:`opendw_remake/docs/screenshots/r8_read_paragraph_zh.png`(Magic College + 段落 146);
-> 捲動 demo:`opendw_remake/docs/paragraph_demo/`(段落 88 頂/底頁 + en 回退 + 遊戲內段落 94)。
+> 截圖:`opendw_remake/docs/media/screenshots/r8_read_paragraph_zh.png`(Magic College + 段落 146);
+> 捲動 demo:`opendw_remake/docs/media/paragraph_demo/`(段落 88 頂/底頁 + en 回退 + 遊戲內段落 94)。
 
 ---
 

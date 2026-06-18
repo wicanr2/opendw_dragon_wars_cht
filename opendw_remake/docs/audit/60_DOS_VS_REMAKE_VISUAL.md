@@ -92,16 +92,16 @@ DOS 截圖**全部為真 DOSBox 擷取**,非替代基準。流程:
    修法:新增 `Minimap::render_full` / `render_full_with_seen`,跑完整 8 趟並依 `data_1997/19A7/19B7` 把各帶疊進 `mem` 的對應螢幕列;`draw_automap` 改呼叫 full 版本。`render()` 單趟保留供既有 golden 對拍(leaf-level viewport_memory)。headless dump(`--map 0/1 --automap 0/1 --mm-seed 0`)目視確認兩區皆鋪滿整個視窗(玩家標記 / 牆 / 水域 / 樹叢可見)。
    回歸鎖:補 `verify_automap_l0`(area 0 Dilmun,47×32 wraparound),3 case byte-for-byte;ctest 32/32。
 2. **[低-中] 主選單語意不對齊** — **已修**。`draw_menu` 在標題下、選項上疊出「目前隊伍...」+ 編號隊伍清單(`1) Muskels … 4) Cheetah`,昏倒成員標 `(昏倒)`),貼近 DOS「Current party… + Begin the game」整合樣貌;三語(繁中 / EN / 日)在地化,`Current party...` / `unconscious` 走 i18n。headless dump 確認版面。建角 / 刪 / 改名 / 查看仍由既有入口提供(本項聚焦選單同屏呈現隊伍)。
-3. **[低 / 測試入口] `--char-sheet` headless 旗標失效** — **已修**。根因:`--char-sheet` 配 `--automap` 時,automap 區塊(main.cpp ~1145)無條件把 `state` 設為 `S_MAP`,壓過 `--char-sheet` 在 S_GAME 的消費點(~2761)→ 落到 automap。修法:automap 區塊偵測到 `char_sheet >= 1` 時 `enter_map` 後 state 留在 `S_GAME`,讓屬性表優先(冷啟動 / 配 `--map` 原本已正常,此修補上 automap 互斥案)。三案(冷啟動 / `--map` / `--automap`)皆可靠開狀態欄。`docs/CONTROLS.md` 補列 `--automap` / `--mm-seed` / `--newgame` / `--scene`。
+3. **[低 / 測試入口] `--char-sheet` headless 旗標失效** — **已修**。根因:`--char-sheet` 配 `--automap` 時,automap 區塊(main.cpp ~1145)無條件把 `state` 設為 `S_MAP`,壓過 `--char-sheet` 在 S_GAME 的消費點(~2761)→ 落到 automap。修法:automap 區塊偵測到 `char_sheet >= 1` 時 `enter_map` 後 state 留在 `S_GAME`,讓屬性表優先(冷啟動 / 配 `--map` 原本已正常,此修補上 automap 互斥案)。三案(冷啟動 / `--map` / `--automap`)皆可靠開狀態欄。`docs/engine/CONTROLS.md` 補列 `--automap` / `--mm-seed` / `--newgame` / `--scene`。
 
 ---
 
 ## 附:檔案
 
-- 報告:本檔 `docs/60_DOS_VS_REMAKE_VISUAL.md`
-- 並排比對圖:`docs/dos_compare/sidebyside/cmp_*.png`
-- DOS 基準縮圖(真擷取,來源 Interplay 1989/90):`docs/dos_compare/dos/*.png`
-- Remake 對應圖:`docs/dos_compare/remake/*.png`
-- 世界圖三方:`docs/dos_compare/sidebyside/cmp_08_worldmap_3way.png`
+- 報告:本檔 `docs/audit/60_DOS_VS_REMAKE_VISUAL.md`
+- 並排比對圖:`docs/audit/dos_compare/sidebyside/cmp_*.png`
+- DOS 基準縮圖(真擷取,來源 Interplay 1989/90):`docs/audit/dos_compare/dos/*.png`
+- Remake 對應圖:`docs/audit/dos_compare/remake/*.png`
+- 世界圖三方:`docs/audit/dos_compare/sidebyside/cmp_08_worldmap_3way.png`
 
 擷取與比對全程於 `dwdos` / `dwsdl` / `dwimg` docker 容器執行,未污染系統環境;原始遊戲檔(`DRAGON.COM` / `DATA1` / `DATA2`)未入庫。

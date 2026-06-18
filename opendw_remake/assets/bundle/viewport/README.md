@@ -2,7 +2,7 @@
 
 從 DRAGON.COM 抽出的 viewport run-length 模板(對拍 opendw `ui_load`,ui.c:785)。
 這是讓「進入遊戲後畫面與原版一致」的資料層;描線核心(`decode_viewport_data` +
-`process_quadrant` + 4× `draw_viewport_*`)的 port 計畫見 [`../../docs/VIEWPORT.md`](../../docs/VIEWPORT.md)。
+`process_quadrant` + 4× `draw_viewport_*`)的 port 計畫見 [`../../../docs/engine/VIEWPORT.md`](../../../docs/engine/VIEWPORT.md)。
 
 | 檔案 | DRAGON.COM 位址 | 大小 | 用途(opendw) |
 |------|----------------|------|---------------|
@@ -24,7 +24,7 @@
   - `minimap.bin`(com 0x695C)= minimap 每格空地磚模板,`draw_minimap_segment` 用。
   - `data6820.bin`(com 0x6820)= 玩家位置標記,`draw_minimap_from_data6820` 用。
   - 實作 `src/render/minimap.{hpp,cpp}`;golden `tools_build/minimap_golden/`;
-    ctest `verify_automap_l1`(area 1 三點 PASS);截圖 `docs/automap_demo/`。
+    ctest `verify_automap_l1`(area 1 三點 PASS);截圖 `docs/media/automap_demo/`。
 - ✅ **UI 框件(com 0x6AE0,`ui_pieces`)已抽出 + chrome 升級為真值**:
   - `ui_pieces.bin`(magic `DWUIP`)= 43 片 chrome 框件,**byte-for-byte 同 DRAGON.COM
     com 0x6AE0**(對拍 opendw `ui_load` ui.c:785;extract 校驗第一筆偏移 == 表尾 0x6B36)。

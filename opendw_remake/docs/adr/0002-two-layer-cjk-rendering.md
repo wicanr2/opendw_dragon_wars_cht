@@ -71,9 +71,9 @@
 ## 驗證
 
 - 重生展示(960×600 PNG,headless 合成):
-  - `docs/screenshots/r9_menu_twolayer.png`(在地化選單 + 大標題)
-  - `docs/screenshots/r9_fp_event_twolayer.png`(`--map 1 --fp` 第一人稱 + 事件文字)
-  - `docs/screenshots/r9_paragraph146_twolayer.png`(`--map 31 --fp --at 6 5` 段落 146 內嵌全文)
+  - `docs/media/screenshots/r9_menu_twolayer.png`(在地化選單 + 大標題)
+  - `docs/media/screenshots/r9_fp_event_twolayer.png`(`--map 1 --fp` 第一人稱 + 事件文字)
+  - `docs/media/screenshots/r9_paragraph146_twolayer.png`(`--map 31 --fp --at 6 5` 段落 146 內嵌全文)
   → 中文銳利、抗鋸齒、24px、排版落在畫面內;像素 viewport 仍為 nearest 放大的銳利方塊。
 - 像素層回歸(docker dwsdl):vm_selftest、verify_viewport 3/3、verify_fov/compose/fp(area1)4/4、
   全 40 關 sweep 子集 **154/154 byte-for-byte PASS**。

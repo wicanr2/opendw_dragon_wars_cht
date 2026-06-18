@@ -66,7 +66,7 @@ cd build && ctest --output-on-failure          # 回歸測試:32 項
 
 ### headless 開發旗標
 
-remake 支援大量 headless dump 旗標(配 `SDL_VIDEODRIVER=dummy` 與 `--frames 0` 只 dump 不開窗),用於對拍與驗證。完整旗標表見 [`docs/CONTROLS.md`](docs/CONTROLS.md)。常用:
+remake 支援大量 headless dump 旗標(配 `SDL_VIDEODRIVER=dummy` 與 `--frames 0` 只 dump 不開窗),用於對拍與驗證。完整旗標表見 [`docs/engine/CONTROLS.md`](docs/engine/CONTROLS.md)。常用:
 
 ```bash
 SDL_VIDEODRIVER=dummy ./build/opendw_remake --map 1 --fp --frames 0 --dump /tmp/fp.ppm
@@ -74,7 +74,7 @@ SDL_VIDEODRIVER=dummy ./build/opendw_remake --map 1 --read-para 88 --frames 0 --
 SDL_VIDEODRIVER=dummy ./build/opendw_remake --encounter 5 --combat-seed 1 --frames 0 --dump /tmp/c.ppm
 ```
 
-互動執行(玩家向)的選單 / 鍵位 / 三語切換在[根 README](../README.md);完整鍵表見 [`docs/CONTROLS.md`](docs/CONTROLS.md)。
+互動執行(玩家向)的選單 / 鍵位 / 三語切換在[根 README](../README.md);完整鍵表見 [`docs/engine/CONTROLS.md`](docs/engine/CONTROLS.md)。
 
 ---
 
@@ -162,15 +162,17 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 | 樹 | 範圍 | 編號 |
 |----|------|------|
 | **根 [`../docs/`](../docs/README.md)** | **專案級**:逆向工程史 + 資料格式 + 攻略整合 + 翻譯資料 + PM / 稽核評估 | 00 / 01–08 / 10–14 / 20–26 / 30–40 / 41–61 / 99 |
-| **[`docs/`](docs/README.md)(本目錄)** | **remake 級**:引擎規格 + 玩法系統實作文件 + 圖 demo | 56–60 / CONTROLS / VIEWPORT / REWRITE_READINESS / adr |
+| **[`docs/`](docs/README.md)(本目錄)** | **remake 級**:引擎規格 + 玩法系統實作文件 + 圖 demo | gameplay / engine / audit / reference / media / adr(原 56–61 / CONTROLS / VIEWPORT / REWRITE_READINESS)|
 
-> **編號碰撞提醒**:根 `docs/` 與本 `docs/` 都有 57/58/59/60,**同號不同樹、不同內容**(例:本樹 `57_DOORS_TRAPS_TERRAIN` vs 根樹 `57_PM_REVIEW`)。引用時務必帶完整路徑(`opendw_remake/docs/…` 或 `../docs/…`)。本目錄索引 [`docs/README.md`](docs/README.md) 有完整清單與分工說明。
+> **編號碰撞提醒**:本目錄已改以**子目錄分類**(gameplay / engine / audit / reference / media / adr),原扁平編號檔(56–61)分入對應子目錄。根 `docs/` 仍為扁平編號,與本樹同號(57/58/59/60)屬不同樹、不同內容(例:本樹 `gameplay/57_DOORS_TRAPS_TERRAIN` vs 根樹 `57_PM_REVIEW`)。引用時務必帶完整路徑(`opendw_remake/docs/…` 或 `../docs/…`)。本目錄索引 [`docs/README.md`](docs/README.md) 有完整清單與分工說明。
 
 remake 級系統文件分類:
 
-- **玩法系統實作**:[`docs/56_PLAYABLE_ENDING_CHAIN.md`](docs/56_PLAYABLE_ENDING_CHAIN.md)(可通關結局鏈)、[`docs/57_DOORS_TRAPS_TERRAIN.md`](docs/57_DOORS_TRAPS_TERRAIN.md)(開門 / 陷阱 / 地形法術)、[`docs/58_MAGIC_REFERENCE.md`](docs/58_MAGIC_REFERENCE.md)(法術參考表)、[`docs/59_SKILL_CHECK_TRIGGERS.md`](docs/59_SKILL_CHECK_TRIGGERS.md)(技能檢定觸發點)
-- **引擎規格 / 渲染**:[`docs/VIEWPORT.md`](docs/VIEWPORT.md)、[`docs/VIEWPORT_COMPOSE.md`](docs/VIEWPORT_COMPOSE.md)(第一人稱 viewport 逆向)、[`docs/60_DOS_VS_REMAKE_VISUAL.md`](docs/60_DOS_VS_REMAKE_VISUAL.md)(視覺差異稽核)、[`docs/CONTROLS.md`](docs/CONTROLS.md)(操作 + headless 旗標)
-- **評估 / ADR**:[`docs/REWRITE_READINESS.md`](docs/REWRITE_READINESS.md)、[`docs/adr/0002-two-layer-cjk-rendering.md`](docs/adr/0002-two-layer-cjk-rendering.md)(雙層 CJK 渲染決策)
+- **玩法系統實作 `gameplay/`**:[`docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md`](docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md)(可通關結局鏈)、[`docs/gameplay/57_DOORS_TRAPS_TERRAIN.md`](docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)(開門 / 陷阱 / 地形法術)、[`docs/gameplay/58_MAGIC_REFERENCE.md`](docs/gameplay/58_MAGIC_REFERENCE.md)(法術參考表)、[`docs/gameplay/59_SKILL_CHECK_TRIGGERS.md`](docs/gameplay/59_SKILL_CHECK_TRIGGERS.md)(技能檢定觸發點)
+- **引擎規格 / 渲染 `engine/`**:[`docs/engine/VIEWPORT.md`](docs/engine/VIEWPORT.md)、[`docs/engine/VIEWPORT_COMPOSE.md`](docs/engine/VIEWPORT_COMPOSE.md)(第一人稱 viewport 逆向)、[`docs/engine/CONTROLS.md`](docs/engine/CONTROLS.md)(操作 + headless 旗標)、[`docs/engine/REWRITE_READINESS.md`](docs/engine/REWRITE_READINESS.md)(重寫就緒度評估)
+- **視覺稽核 `audit/`**:[`docs/audit/60_DOS_VS_REMAKE_VISUAL.md`](docs/audit/60_DOS_VS_REMAKE_VISUAL.md)(DOS vs remake 逐畫面稽核 + `dos_compare/` 對照圖)
+- **多版本素材 `reference/`**:[`docs/reference/61_MULTIVERSION_ASSETS.md`](docs/reference/61_MULTIVERSION_ASSETS.md)(Amiga / X68000 素材抽取)
+- **ADR**:[`docs/adr/0002-two-layer-cjk-rendering.md`](docs/adr/0002-two-layer-cjk-rendering.md)(雙層 CJK 渲染決策)
 
 延伸閱讀(根 docs 的核心逆向):[`../docs/42_COMBAT_BYTECODE.md`](../docs/42_COMBAT_BYTECODE.md)(戰鬥公式真值推導)、[`../CONTEXT.md`](../CONTEXT.md)(術語表)。
 

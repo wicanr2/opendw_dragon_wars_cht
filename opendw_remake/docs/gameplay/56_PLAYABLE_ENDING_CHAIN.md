@@ -118,7 +118,7 @@
 ./opendw_remake --ending --para-scroll N --frames 1 --dump out.ppm
 ```
 
-### 3.3 截圖(`docs/screenshots/endgame/`)
+### 3.3 截圖(`docs/media/screenshots/endgame/`)
 
 | 檔 | 內容 |
 |---|---|
@@ -157,8 +157,8 @@
 - **`assets/fonts/cjk24.atlas`**:重生(2017→2026 glyph,補新譯文字形)。
 - **`tools/verify/verify_ending.cpp`**(ctest)+ `probe_encounter_id.cpp` / `probe_namtar_balance.cpp`
   (grounding 觀測);`CMakeLists.txt` 註冊。
-- **`docs/screenshots/endgame/`**:+4 張截圖(namtar_combat / ending_page0/2/4)。
-- **`docs/56`**:本檔。**未改 opendw;未改 VM source(interpreter/vm_state);DRAGON.COM/圖檔未入庫。**
+- **`docs/media/screenshots/endgame/`**:+4 張截圖(namtar_combat / ending_page0/2/4)。
+- **`docs/gameplay/56`**:本檔。**未改 opendw;未改 VM source(interpreter/vm_state);DRAGON.COM/圖檔未入庫。**
 
 ## 6. 卡點與限制(精確,不臆造)
 

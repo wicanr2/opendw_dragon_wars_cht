@@ -4,7 +4,7 @@
 The Sharp X68000 (Starcraft/Hudson) Dragon Wars stores its UNCOMPRESSED art as
 .PIX files: a flat stream of 4-bit pixels, 2 px/byte, high nibble first, indexed
 into a 16-colour CLUT. Geometry was recovered by byte-autocorrelation of the row
-stride (see docs/61):
+stride (see docs/reference/61_MULTIVERSION_ASSETS.md):
 
   ICON.PIX  16640 B  stride 16 B  -> 32 px wide   (UI / viewport icons)
   MON.PIX  810000 B  stride 24 B  -> 48 px wide   (monster sprites, ~48x48 cells)

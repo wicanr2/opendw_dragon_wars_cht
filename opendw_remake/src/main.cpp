@@ -10,7 +10,7 @@
 //   B  bundle bytecode → VM op_78 → i18n 繁中 → 文字層 → SDL 顯示(在地化選單)
 //   A  --sprite NAME:從 bundle 載 .spr 美術顯示在視窗(不碰 DATA1)
 //   C  互動骨架:poll() → Input 事件
-//   D  快捷字母選單 + 狀態分支,操作與說明書一致(見 docs/CONTROLS.md):
+//   D  快捷字母選單 + 狀態分支,操作與說明書一致(見 docs/engine/CONTROLS.md):
 //      B=開始新遊戲、C=繼續舊遊戲;↑↓/Enter 為輔助;Esc 返回 / Q 離開。
 //
 // 像素資產來自 bundle(自包含:dw8x8.bin + sprites/scenes/maps);文字字型用 host TTF。
@@ -18,7 +18,7 @@
 // 用法:opendw_remake [--bundle DIR] [--font RAW] [--menu TSV] [--scale N]
 //                     [--font-ttf PATH] [--pc N] [--sprite NAME] [--frames N]
 //                     [--dump PPM] [--press CH] [--map N] [--fp] [--at X Y]
-//                     [--title] [--no-splash]   開機 title splash(火龍之戰 art);詳見 docs/CONTROLS.md
+//                     [--title] [--no-splash]   開機 title splash(火龍之戰 art);詳見 docs/engine/CONTROLS.md
 #include <algorithm>
 #include <array>
 #include <cstdio>
@@ -299,7 +299,7 @@ struct ReorderUi {
 //   castable_spells)。地形法術(Soften Stone / Disarm Trap / Sense Traps)的效果
 //   委派 game::apply_terrain_spell(terrain.hpp);其餘法術(戰鬥傷害/治療類)在
 //   探索時施放只扣 Power(無探索效果,提示「沒有任何效果」)。誠實標示:探索施法
-//   結算為 remake 設計(opendw 探索施法 op 未反編;見 docs/57)。
+//   結算為 remake 設計(opendw 探索施法 op 未反編;見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)。
 struct ExploreCast {
   bool active = false;
   int cursor = 0;
@@ -690,7 +690,7 @@ int main(int argc, char** argv) {
   // opendw refresh_viewport,engine.c:5688)。存檔保存;換 area 各關獨立。
   game::SeenMap seen;
   // 探索互動狀態(門開啟/密門粉碎/陷阱解除·觸發/陷阱感知);per-area(x,y)旗標。
-  // 存檔保存;.lvl 只讀,不就地改 byte(同 SeenMap;見 docs/57)。
+  // 存檔保存;.lvl 只讀,不就地改 byte(同 SeenMap;見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)。
   game::TerrainState terrain;
   // 真實陷阱格(per-area;路徑 B:VM 跑事件格 script→傷害訊息語意類 → 原版真陷阱座標)。
   //   每次進關由 enter_map 以當前 .lvl 重算(位置=原版真值,見 real_terrain.hpp)。
@@ -745,7 +745,7 @@ int main(int argc, char** argv) {
     // hero 對應隊伍第 0 名;施法需 Power/STR/已習得法術 → 由該角色 record 帶入。
     int hero_power = 0;                    // 施法者當前法力(扣 Power 後寫回此處)
     int hero_str = 0;                      // 施法者 STR(PowerScaled/buff 結算)
-    int hero_int = 0;                      // 施法者 INT(Zap 攻擊判定;docs/58 門檻 12+ranks+INT−DV)
+    int hero_int = 0;                      // 施法者 INT(Zap 攻擊判定;docs/gameplay/58_MAGIC_REFERENCE.md 門檻 12+ranks+INT−DV)
     int hero_ranks = 0;                    // 魔法技能 ranks 估計(Zap 判定 + var. 上限 2×ranks)
                                            //   受阻:技能槽→法術系對映未反編出,以 level 為保守 proxy(誠實標示)
     std::vector<std::uint8_t> spellbook;   // 已習得且當前可施法的法術 id(castable_spells)
@@ -881,7 +881,7 @@ int main(int argc, char** argv) {
     // 進場即把起始格標記 seen(對齊 opendw:進關後第一次 refresh_viewport 標記玩家格)。
     if (level) seen.mark(current_area, px, py, level->w, level->h);
     // 識別本關真實陷阱格(路徑 B:逐事件格跑 VM,傷害訊息語意類 → 原版真陷阱座標)。
-    //   位置=原版真值;觸發傷害=remake 設計(見 real_terrain.hpp / docs/57)。
+    //   位置=原版真值;觸發傷害=remake 設計(見 real_terrain.hpp / docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)。
     real_traps = game::RealTraps::identify(*level, area);
     if (real_traps.count() > 0)
       std::fprintf(stderr, "real traps: area %d -> %zu cell(s)\n", area, real_traps.count());
@@ -1011,7 +1011,7 @@ int main(int argc, char** argv) {
     return apply_state(s);
   };
 
-  // ── 探索互動:門 / 密門 / 陷阱 / 地形法術(remake 設計,grounded 手冊;見 docs/57)──
+  // ── 探索互動:門 / 密門 / 陷阱 / 地形法術(remake 設計,grounded 手冊;見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)──
   // 確定性 RNG(供 Lockpick 檢定 / 陷阱傷害擲骰;可 seed,headless 可重現)。
   game::CombatRng terrain_rng{0x5117};
   // 隊伍最高 Lockpick 技能等級(0 = 無人會開鎖)。
@@ -1797,7 +1797,7 @@ int main(int argc, char** argv) {
   };
 
   // ── F1 Help 覆蓋層:半透明優雅框 + 操作鍵清單(i18n 三語)──
-  //   精要整理自 docs/CONTROLS.md;每幀重繪 → F4 切語系即時重排。Esc / F1 關閉。
+  //   精要整理自 docs/engine/CONTROLS.md;每幀重繪 → F4 切語系即時重排。Esc / F1 關閉。
   auto draw_help_overlay = [&]() {
     const int HX = 24, HW = render::kW - 48, HY = 18, HH = render::kH - 36;
     draw_overlay_box(HX, HY, HW, HH, theme.overlay);
@@ -2574,7 +2574,7 @@ int main(int argc, char** argv) {
       enc.hero = game::Combatant::from_player(c0);
       enc.hero_power = (int)c0.power;        // 施法者法力池(record Power[28-31])
       enc.hero_str = (int)c0.strength;       // PowerScaled / +STR 結算用
-      enc.hero_int = (int)c0.intel;          // Zap 攻擊判定(docs/58 門檻含 INT)
+      enc.hero_int = (int)c0.intel;          // Zap 攻擊判定(docs/gameplay/58_MAGIC_REFERENCE.md 門檻含 INT)
       // 魔法技能 ranks:技能槽→法術系對映未反編出(受阻)→ 以角色等級當保守 proxy(誠實標示)。
       enc.hero_ranks = (int)c0.level;
       enc.spellbook = game::castable_spells(c0, enc.hero_power);  // 已習得且可施法
@@ -2816,7 +2816,7 @@ int main(int argc, char** argv) {
     } else if (sp->effect == game::SpellEffect::Heal) {
       std::snprintf(buf, sizeof buf, "%s casts %s heals %d", caster.c_str(),
                     sp->name_key, cr.amount);
-    } else if (cr.handled && cr.is_zap && !cr.zap_hit) {  // Zap miss:仍吃半傷(docs/58)
+    } else if (cr.handled && cr.is_zap && !cr.zap_hit) {  // Zap miss:仍吃半傷(docs/gameplay/58_MAGIC_REFERENCE.md)
       std::snprintf(buf, sizeof buf, "%s casts %s on %s grazes %d damage", caster.c_str(),
                     sp->name_key, tr.tr(enc.mon_name_en).c_str(), cr.amount);
     } else if (cr.handled && cr.amount > 0) {  // 傷害類(命中)
@@ -2942,7 +2942,7 @@ int main(int argc, char** argv) {
       vid.set_palette(theme.palette);
     }
     // ── viewport backdrop(theme-aware;取代純黑)──
-    //   對齊 DOS 戰鬥畫面(docs/dos_compare/06_combat_encounter.png):viewport 內
+    //   對齊 DOS 戰鬥畫面(docs/audit/dos_compare/06_combat_encounter.png):viewport 內
     //   上半天空 + 下半地面(石礫質感),讓怪物立繪站在場景中而非浮在純黑上。
     //   只填 viewport 內部 [16,176)×[8,144);四周 UI chrome 由 draw_explore_chrome 補。
     {
@@ -3912,7 +3912,7 @@ int main(int argc, char** argv) {
           bool moved = false;
           if (level && level->walkable_wrap(nx, ny)) {
             if (level->wraps()) { nx = level->wrap_x(nx); ny = level->wrap_y(ny); }
-            // 探索互動門/密門/石牆閘(remake 設計;見 docs/57):關門/鎖門未開、
+            // 探索互動門/密門/石牆閘(remake 設計;見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md):關門/鎖門未開、
             //   密門未破、石牆未軟化 → 仍擋路(像牆)。陷阱可走(踩格才結算)。
             std::uint8_t nt = level->tile(nx, ny);
             if (game::terrain_walkable(terrain, current_area, nx, ny, nt)) {
@@ -3942,7 +3942,7 @@ int main(int argc, char** argv) {
           if (key) { open_msg(tr.tr(key)); last_event_tile = -1; }
         }
         // C:施法(手冊;S_GAME 探索施法)。開法術選單(隊伍第 0 名可施法清單)。
-        //   opendw 探索施法 op 未反編 → 結算為 remake 設計(見 docs/57)。
+        //   opendw 探索施法 op 未反編 → 結算為 remake 設計(見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)。
         if (in.key == 'C' && party.size() > 0) {
           cast_ui.spellbook = game::castable_spells(party.at(0), (int)party.at(0).power);
           if (cast_ui.spellbook.empty()) {

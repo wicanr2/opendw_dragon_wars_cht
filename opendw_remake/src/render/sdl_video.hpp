@@ -20,7 +20,7 @@ struct SDL_Texture;
 
 namespace dw::render {
 
-// 一幀內收到的輸入事件(互動骨架用;鍵位對齊說明書,見 docs/CONTROLS.md)。
+// 一幀內收到的輸入事件(互動骨架用;鍵位對齊說明書,見 docs/engine/CONTROLS.md)。
 struct Input {
   bool quit = false;     // 關窗 / Q(離開遊戲)
   bool back = false;     // Esc(離開子畫面 / 繼續訊息)

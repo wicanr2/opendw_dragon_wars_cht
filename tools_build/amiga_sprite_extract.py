@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amiga Dragon Wars 怪物 sprite → remake .spr(indexed + 自帶 Amiga palette)。
 
-格式(本工具逆向確認,見 docs/61):Amiga data4 怪物資源解壓後 =
+格式(本工具逆向確認,見 docs/reference/61_MULTIVERSION_ASSETS.md):Amiga data4 怪物資源解壓後 =
   [32B palette: 16 個 BE word 0x0RGB] [8-word sprite header @ off32] [4-bitplane data]
   - palette: 每 word nibble ×17 還原 8-bit RGB(同 title.pic)。
   - header word[1] = 高度(px);word[2] = 每 plane 每列 bytes(bpr)→ 寬 = bpr*8。
