@@ -11,7 +11,7 @@
 
 | 版本 | 磁碟形式 | 標題畫面 | 怪物 sprite | 場景/過場 | UI 圖示 | 狀態 |
 |---|---|---|---|---|---|---|
-| **Amiga** | .adf + WHDLoad HD(`data/`) | ✅ title.pic | (待查) | ✅ endgame、picparts(部分) | ✅ cursors | **大部分成功** |
+| **Amiga** | .adf + WHDLoad HD(`data/`) | ✅ title.pic | ✅ data4 4-bitplane(6 隻已切，見 §1.5） | ✅ endgame、picparts(部分) | ✅ cursors | **大部分成功** |
 | **X68000** | .DIM(Human68k FAT12) | ❌ TITLE.PKH(壓縮) | ✅ MON.PIX | ✅ PIC.PIX、❌ 3D/END(壓縮) | ✅ ICON.PIX | **未壓縮 .PIX 成功,.PKH 受阻** |
 | **PC-98** | — | — | — | — | — | **素材不存在(見 §3)** |
 
@@ -65,6 +65,68 @@ title.pic (21805B, 壓縮)
   的 buffer,依 `[32B palette][320×200×4 seq planes]` 佈局渲染成 PNG。
 - 解壓用既有 DOS Huffman 解壓器(`src/resource/decompress.cpp` 同演算法;tools_build/scratch
   亦有可移植版本)。
+
+---
+
+## 1.5 Amiga 怪物 sprite（data4，已逆向 + 接進戰鬥）
+
+### archive 結構（已驗證）
+Amiga `data1`–`data6` 與 DOS opendw archive **同格式、同 codec、同資源編號**:每檔 768B
+header(384 個 LE16 size,≥0xFF00 = 資源不在此檔)+ 串接 Huffman 壓縮資源。怪物 sprite 主力
+在 **data4(res 140–255)**。各檔自帶 header,offset = 768 + 該檔內前序 present 資源 size 總和。
+
+- 抽取工具:`tools_build/amiga_res_extract.cpp`(連結既有 `src/resource/decompress.cpp`,
+  不重寫 Huffman)。`amiga_res_extract <datafile> <res_id> <out.bin>`。
+
+### sprite 格式（本次逆向確認）
+怪物資源解壓後佈局:
+```
+[0..31]   16 個 BE word palette(0x0RGB,每 nibble ×17 → 8-bit;同 title.pic）
+[32..]    8-word sprite header:
+            word[1] = 高度 H(px)
+            word[2] = 每 plane 每列 bytes(bpr）→ 寬 W = bpr*8
+          影像資料即自 offset 32 起(header 與 plane0 前幾列共用前 16 bytes)：
+          4 bitplanes、**plane-sequential**（plane0 整張→plane1 整張→…）、MSB-first。
+解碼:val = Σ plane_p[y][x] << p（p=0..3）→ palette index 0..15
+```
+逆向過程(由結構分析 + 目視比對 DOS contact sheet 收斂):確認非 DOS encounter XOR-delta
+blit、非 chunky、而是 plane-sequential 4-bitplane;width/height 由 header word[2]/word[1] 取得。
+
+### 已切 sprite（6 隻，目視確認）
+背景紅(palette index 8 = 0xF00,各怪物自帶盤一致)→ 戰鬥用 index 8 為透明色。
+多動畫格資源以「整列同色 solid bar」自動分隔取主格(`--auto-crop`)。
+
+| 資源 | 怪物 | 尺寸(px) | 備註 |
+|---|---|---|---|
+| 196 | Spider | 94×63 | 藍蜘蛛,乾淨 |
+| 168 | Wolf | 83×112 | 棕狼,乾淨 |
+| 222 | Fanatic | 67×132 | 白髮藍衣人,乾淨 |
+| 152 | Guard/Soldier | 88×112 | 持斧戰士,乾淨 |
+| 210 | Pikeman | 93×137 | 持矛裝甲兵,乾淨 |
+| 200 | Innocent Man | 33×104 | ⚠️ 自帶盤 bg=黑、多格自動裁切只取單格;品質次於上列 5 隻 |
+
+- 轉檔工具:`tools_build/amiga_sprite_extract.py <res.bin> <name> <out_dir> --auto-crop`
+  → remake `.spr`(indexed + 自帶 16 色 Amiga palette)+ `.png`(目視)。
+- 入庫:`assets/bundle/themes/amiga/sprites/`(原始遊戲檔不入庫)。
+
+### 接進 Amiga 主題戰鬥（theme-aware combat art）
+- `UiTheme` 新增 `sprite_dir` / `sprite_own_palette` / `sprite_transparent`;Amiga theme =
+  `themes/amiga/sprites` / true / 8。`main.cpp` `sprite_for_monster()` 依當前 theme 選來源
+  (Amiga 缺檔回退 DOS bundle,誠實降級)。
+- 各 Amiga 怪物自帶 palette(蜘蛛綠金 / 狼棕 / 狂信者藍紅各異)→ combat 渲染前
+  `set_palette(sprite.palette)`(index 0=黑 1=白 8=紅 各盤一致,UI/backdrop 仍可讀);
+  探索/地圖等非戰鬥畫面於 `draw_base` 還原 `theme.palette`,避免色盤殘留。
+- **F8 切 Amiga → 戰鬥怪物圖即時換成 Amiga 美術**(戰鬥中 F8 會 reload `enc.sprite`)。
+- headless 驗證:`--theme amiga --encounter <id>`;dump 已目視確認 Spider/Wolf/Fanatic/Pikeman
+  皆為 Amiga 原生立繪。DOS theme combat 像素 dump 與改動前 **byte-identical**(golden 未破)。
+- 回歸保護:`verify_theme`(ctest)新增 6 隻 Amiga sprite 載入 + 尺寸 + 自帶盤 + sprite 接線斷言。
+
+### 受阻 / TODO
+- 多動畫格:目前每隻只切**主格**(自動分隔)。逐 frame 動畫(攻擊/受擊)未切,需逆向
+  frame 表細節(各資源含 2–3 格水平並排)。
+- 196/152/210 主格右緣偶留 1–2 px 黑分隔條(crop 邊界);200_innocent_man 自動裁切只取到單格,
+  品質次於其餘 5 隻。
+- header word[0]、word[3] 等其餘欄位語意未全解(已知 word[1]=H、word[2]=bpr 足以正確渲染)。
 
 ---
 
@@ -148,6 +210,7 @@ themes/x68000/tiles/icon_sheet_w32.png         icon 原寬(32px)直條版
 |---|---|
 | Amiga 標題畫面 (title.pic) | ✅ 完整彩色 PNG |
 | Amiga 結局 (endgame) | ✅ |
+| Amiga 怪物 sprite (data4 4-bitplane) | ✅ 6 隻已切 + 接進 Amiga 戰鬥(F8;見 §1.5) |
 | Amiga picparts | ⚠️ 部分 |
 | X68000 怪物 (MON.PIX) | ✅ contact sheet(EGA placeholder palette) |
 | X68000 場景 (PIC.PIX) | ✅ contact sheet |
