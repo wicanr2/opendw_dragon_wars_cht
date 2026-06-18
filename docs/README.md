@@ -5,6 +5,10 @@
 
 > 📋 完整狀態索引見 [99_INDEX.md](99_INDEX.md);全 docs 審查與待裁決見 [00_DOC_AUDIT.md](00_DOC_AUDIT.md)。
 > 狀態圖例:✅ 現行 ｜ ⚠️ 作廢/結論錯誤(已加註) ｜ ✏️ 部分修正(已加註)
+>
+> 🌳 **兩棵 docs 樹**:本目錄是**專案級**(逆向工程史 + 資料格式 + 攻略整合 + 翻譯資料 + PM / 稽核評估);
+> remake 引擎規格 / 玩法系統實作文件在 **remake 級** [`../opendw_remake/docs/`](../opendw_remake/docs/README.md)。
+> ⚠️ 兩樹都有編號 **57 / 58 / 59 / 60**,**同號不同樹、不同內容**(本樹 57 = `57_PM_REVIEW`,remake 樹 57 = `57_DOORS_TRAPS_TERRAIN`…);引用務必帶完整路徑。分工與對照表見 [`../opendw_remake/docs/README.md`](../opendw_remake/docs/README.md)。
 
 ---
 
