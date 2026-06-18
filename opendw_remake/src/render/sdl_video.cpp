@@ -6,14 +6,19 @@
 
 namespace dw::render {
 
-std::vector<std::uint8_t> SdlVideo::to_rgb(const Framebuffer& fb) {
+std::vector<std::uint8_t> SdlVideo::to_rgb(const Framebuffer& fb,
+                                           const std::array<Rgb, 16>& pal) {
   std::vector<std::uint8_t> out(static_cast<std::size_t>(kW) * kH * 3);
   std::size_t o = 0;
   for (std::uint8_t i : fb.idx) {
-    const Rgb& c = kDosPalette[i & 0x0F];
+    const Rgb& c = pal[i & 0x0F];
     out[o++] = c.r; out[o++] = c.g; out[o++] = c.b;
   }
   return out;
+}
+
+std::vector<std::uint8_t> SdlVideo::to_rgb(const Framebuffer& fb) {
+  return to_rgb(fb, kDosPalette);   // 不帶 palette:維持 DOS 盤(golden 對拍 / 既有呼叫端不變)
 }
 
 SdlVideo::~SdlVideo() { close(); }
@@ -69,7 +74,7 @@ void SdlVideo::compose(const Framebuffer& fb) {
   // 1) 像素層:framebuffer → 320×200 texture → nearest 整數放大。
   //    一般模式:放大填滿全視窗(320*scale × 200*scale)。
   //    640 模式:×2 = 640×400,垂直置中於 640×480(上下各 40px 黑邊;絕不拉伸)。
-  auto rgb = to_rgb(fb);
+  auto rgb = to_rgb(fb, active_palette_);   // per-theme palette(set_palette;預設 DOS 盤)
   SDL_UpdateTexture(tex_, nullptr, rgb.data(), kW * 3);
   SDL_RenderClear(ren_);   // 預設黑底 → letterbox 黑邊
   if (mode640_) {
