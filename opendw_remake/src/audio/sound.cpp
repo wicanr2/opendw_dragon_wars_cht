@@ -8,7 +8,9 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <memory>
 #include <mutex>
+#include <string>
 #include <vector>
 
 namespace dw::audio {
@@ -79,10 +81,47 @@ struct Voice {
   bool active = false;
 };
 
+// 一個進行中的 PCM 取樣播放(SDL callback 線程消費)。指向全域 sample bank 的 float 緩衝。
+struct SampleVoice {
+  const std::vector<float>* data = nullptr;  // 取樣資料(22050Hz mono float -1..1)
+  std::size_t pos = 0;
+  bool active = false;
+};
+
+// ── 真實 PCM 取樣 bank(remake 載入原版平台音效;見 bundle/audio/README.md)──
+//
+// 對映(remake 設計;來源檔/格式為觀測真值,事件↔樣本對映非 oracle 真值):
+//   DoorOpen → amiga_data5.wav(較長、較亮,作開門/移動感)
+//   WallBump → amiga_data6.wav(較短,作撞牆衝擊)
+//   Hit      → amiga_data6.wav(短促衝擊,複用撞牆樣本)
+//   Cast     → x68k_dwsnd.wav(前段強擊 + 衰減尾,作施法)
+//   Pcm0..6  → x68k_dwsnd.wav(op_90 idx>=4 的泛用真實 PCM;原版未播放)
+//   EffectB2/Effect88 → 無對映(退回方波;effect_88 為 grounded dx/bx)
+struct SampleMapEntry { SoundId id; const char* file; };
+const SampleMapEntry kSampleMap[] = {
+    {SoundId::DoorOpen, "amiga_data5.wav"},
+    {SoundId::WallBump, "amiga_data6.wav"},
+    {SoundId::Hit,      "amiga_data6.wav"},
+    {SoundId::Cast,     "x68k_dwsnd.wav"},
+    {SoundId::Pcm0,     "x68k_dwsnd.wav"},
+    {SoundId::Pcm1,     "x68k_dwsnd.wav"},
+    {SoundId::Pcm2,     "x68k_dwsnd.wav"},
+    {SoundId::Pcm3,     "x68k_dwsnd.wav"},
+    {SoundId::Pcm4,     "x68k_dwsnd.wav"},
+    {SoundId::Pcm5,     "x68k_dwsnd.wav"},
+    {SoundId::Pcm6,     "x68k_dwsnd.wav"},
+};
+
 // 全域混音狀態:單一 audio device 服務整個程式(音效屬全域副作用)。
 constexpr int kMaxVoices = 8;
+constexpr int kMaxSampleVoices = 4;
+constexpr float kSampleGain = 0.7f;   // PCM 取樣播放增益(避免過大;原始已 8-bit)
 std::mutex g_mtx;
 Voice g_voices[kMaxVoices];
+SampleVoice g_sample_voices[kMaxSampleVoices];
+
+// 每個 SoundId 的取樣資料(空 = 無樣本,該 id 退回方波)。共享於整個程式。
+std::shared_ptr<std::vector<float>> g_samples[(int)SoundId::Count];
 
 void audio_callback(void* /*userdata*/, std::uint8_t* stream, int len) {
   float* out = reinterpret_cast<float*>(stream);
@@ -97,6 +136,13 @@ void audio_callback(void* /*userdata*/, std::uint8_t* stream, int len) {
       v.phase += v.phase_inc;
       if (v.phase >= 1.0) v.phase -= 1.0;
       if (--v.remaining <= 0) v.active = false;
+    }
+    // PCM 取樣:逐樣本讀出(取樣率已對齊 kSampleRate,不需 runtime resample)。
+    for (auto& sv : g_sample_voices) {
+      if (!sv.active || sv.data == nullptr) continue;
+      if (sv.pos >= sv.data->size()) { sv.active = false; continue; }
+      sample += (*sv.data)[sv.pos] * kSampleGain;
+      if (++sv.pos >= sv.data->size()) sv.active = false;
     }
     // 軟性夾限,避免多聲疊加爆音。
     if (sample > 1.0f) sample = 1.0f;
@@ -119,6 +165,83 @@ void start_voice(int freq, int dur_ms) {
   // 聲部已滿 → 丟棄(PC speaker 本來也只有單音;這裡寬容到 8 聲)。
 }
 
+// 啟動一個 PCM 取樣聲部(指向共享 sample bank)。聲部滿 → 覆蓋最舊(最大 pos)。
+void start_sample(const std::shared_ptr<std::vector<float>>& data) {
+  if (!data || data->empty()) return;
+  std::lock_guard<std::mutex> lk(g_mtx);
+  SampleVoice* slot = nullptr;
+  for (auto& sv : g_sample_voices) {
+    if (!sv.active) { slot = &sv; break; }
+  }
+  if (slot == nullptr) {
+    // 全忙 → 挑進度最深(最接近結束)的覆蓋。
+    std::size_t best = 0;
+    for (auto& sv : g_sample_voices) {
+      if (sv.pos >= best) { best = sv.pos; slot = &sv; }
+    }
+  }
+  slot->data = data.get();
+  slot->pos = 0;
+  slot->active = true;
+}
+
+// 極簡 WAV 載入器:只接受 mono / 16-bit signed PCM / kSampleRate(22050)。
+//   不支援的格式 / 讀檔失敗 → 回 nullptr(該音效退回方波,不視為錯誤)。
+//   (assets 由 tools_build/audio_extract.py 產生,保證上述規格;此處仍做完整檢查。)
+std::shared_ptr<std::vector<float>> load_wav_mono16(const std::string& path) {
+  FILE* f = std::fopen(path.c_str(), "rb");
+  if (!f) return nullptr;
+  auto fail = [&]() -> std::shared_ptr<std::vector<float>> { std::fclose(f); return nullptr; };
+
+  std::uint8_t hdr[12];
+  if (std::fread(hdr, 1, 12, f) != 12) return fail();
+  if (std::memcmp(hdr, "RIFF", 4) != 0 || std::memcmp(hdr + 8, "WAVE", 4) != 0) return fail();
+
+  std::uint16_t fmt = 0, channels = 0, bits = 0;
+  std::uint32_t rate = 0;
+  std::vector<float> samples;
+  bool have_fmt = false, have_data = false;
+
+  // 逐 chunk 掃描(fmt / data;其餘略過)。
+  for (;;) {
+    std::uint8_t ch[8];
+    if (std::fread(ch, 1, 8, f) != 8) break;
+    std::uint32_t sz = ch[4] | (ch[5] << 8) | (ch[6] << 16) | ((std::uint32_t)ch[7] << 24);
+    if (std::memcmp(ch, "fmt ", 4) == 0) {
+      std::uint8_t fb[16];
+      std::uint32_t n = sz < 16 ? sz : 16;
+      if (std::fread(fb, 1, n, f) != n) return fail();
+      fmt = fb[0] | (fb[1] << 8);
+      channels = fb[2] | (fb[3] << 8);
+      rate = fb[4] | (fb[5] << 8) | (fb[6] << 16) | ((std::uint32_t)fb[7] << 24);
+      bits = fb[14] | (fb[15] << 8);
+      if (sz > n) std::fseek(f, (long)(sz - n), SEEK_CUR);
+      have_fmt = true;
+    } else if (std::memcmp(ch, "data", 4) == 0) {
+      if (!have_fmt || fmt != 1 || channels != 1 || bits != 16 ||
+          rate != (std::uint32_t)kSampleRate) {
+        return fail();  // 非預期格式 → 放棄此檔(退回方波)
+      }
+      std::size_t count = sz / 2;
+      samples.reserve(count);
+      std::vector<std::uint8_t> raw(sz);
+      if (std::fread(raw.data(), 1, sz, f) != sz) return fail();
+      for (std::size_t i = 0; i + 1 < sz; i += 2) {
+        std::int16_t v = (std::int16_t)(raw[i] | (raw[i + 1] << 8));
+        samples.push_back((float)v / 32768.0f);
+      }
+      have_data = true;
+      break;
+    } else {
+      // 略過未知 chunk(含 word 對齊)。
+      std::fseek(f, (long)(sz + (sz & 1)), SEEK_CUR);
+    }
+  }
+  std::fclose(f);
+  if (!have_data || samples.empty()) return nullptr;
+  return std::make_shared<std::vector<float>>(std::move(samples));
+}
+
 }  // namespace
 
 bool dispatch_index_to_sound(int idx, SoundId& out) {
@@ -134,14 +257,32 @@ SoundParams params_of(SoundId id) {
 
 Sound::~Sound() { close(); }
 
-bool Sound::open(bool muted) {
+bool Sound::open(bool muted, const std::string& audio_dir) {
   if (opened_) return true;
   muted_ = muted;
 
-  // 靜音模式:不碰 SDL audio 子系統(headless / CI 不依賴裝置)。仍算初始化成功。
+  // 靜音模式:不碰 SDL audio 子系統,也不載樣本(play 為 no-op,不需要)。仍算初始化成功。
   if (muted_) {
     opened_ = true;
     return true;
+  }
+
+  // 載入真實 PCM 取樣(缺檔不視為失敗;同檔只載一次共享)。
+  if (!audio_dir.empty()) {
+    for (const auto& m : kSampleMap) {
+      int slot = (int)m.id;
+      if (g_samples[slot]) continue;  // 已載(本次或前次 open)
+      // 同檔去重:先找已載入同名檔的 SoundId 共享。
+      std::shared_ptr<std::vector<float>> shared;
+      for (const auto& m2 : kSampleMap) {
+        if (g_samples[(int)m2.id] && std::strcmp(m2.file, m.file) == 0) {
+          shared = g_samples[(int)m2.id];
+          break;
+        }
+      }
+      if (!shared) shared = load_wav_mono16(audio_dir + "/" + m.file);
+      g_samples[slot] = shared;  // 可能為 nullptr(缺檔 → 退回方波)
+    }
   }
 
   if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
@@ -185,18 +326,29 @@ void Sound::close() {
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
     dev_handle_ = nullptr;
   }
-  // 清空聲部。
+  // 清空聲部(方波 + PCM 取樣)。樣本資料保留於 g_samples,下次 open() 不必重載。
   {
     std::lock_guard<std::mutex> lk(g_mtx);
     for (auto& v : g_voices) v.active = false;
+    for (auto& sv : g_sample_voices) { sv.active = false; sv.data = nullptr; }
   }
   opened_ = false;
+}
+
+bool Sound::has_sample(SoundId id) const {
+  if ((int)id >= (int)SoundId::Count) return false;
+  return g_samples[(int)id] && !g_samples[(int)id]->empty();
 }
 
 bool Sound::play(SoundId id) {
   if (!opened_) return false;
   if ((int)id >= (int)SoundId::Count) return false;
   if (muted_ || dev_handle_ == nullptr) return false;  // 合法 no-op(已派發但不出聲)
+  // 有真實 PCM 取樣 → 播放取樣;否則退回方波合成。
+  if (g_samples[(int)id] && !g_samples[(int)id]->empty()) {
+    start_sample(g_samples[(int)id]);
+    return true;
+  }
   const Entry& e = entry_of(id);
   start_voice(e.freq, e.dur);
   return true;

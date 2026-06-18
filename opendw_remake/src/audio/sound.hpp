@@ -15,15 +15,22 @@
 //   - func_5060 表的「索引 → 語意對映」與每個音效的 dx/bx 常數 = opendw 反組譯真值。
 //   - 把 dx/bx 換算成實際 Hz/ms 的公式、方波合成本身的取樣參數
 //     = remake 設計(grounded 音效語意);DOS 原版逐 tick 的精確波形未逐位元逆出。
-//   - PCM 音效(snd_pcm_resource,idx>=4)opendw 本身未實作播放,remake 暫以
-//     方波近似(標 remake 設計),不謊稱為原版 PCM 真值。
+//   - PCM 音效(snd_pcm_resource,idx>=4)opendw 本身未實作播放。remake 改載入原版平台
+//     真實 8-bit PCM 取樣播放(見下);缺檔時退回方波近似。
+//
+// 真實 PCM 取樣(R8 擴充):
+//   open() 可從 bundle/audio 載入原版平台的 8-bit PCM 音效(已轉 22050Hz 16-bit WAV;
+//   來源 Amiga data5/data6、X68000 DW.SND,見 assets/bundle/audio/README.md)。
+//   部分 SoundId 經 kSampleMap(remake 設計對映;來源/格式為觀測真值)對映到真實取樣播放,
+//   缺檔則自動退回方波合成(door/wall/effect_88 方波頻率由 opendw dx/bx 推導)。
 //
 // Deep module:對外只有 open/play/close/is_open + SoundId 列舉;
-//   內部隱藏 SDL2 audio device、方波合成、ring buffer、靜音旗標。
-//   無 SDL audio 裝置 / 靜音 / dummy driver 時,play() 仍為合法 no-op(回報已派發),
-//   絕不導致 init 失敗或卡住(headless / CI 不依賴音效裝置)。
+//   內部隱藏 SDL2 audio device、方波合成、PCM 取樣混音、ring buffer、靜音旗標。
+//   無 SDL audio 裝置 / 靜音 / dummy driver / 取樣缺檔時,play() 仍為合法 no-op 或退回方波
+//   (回報已派發),絕不導致 init 失敗或卡住(headless / CI 不依賴音效裝置)。
 #pragma once
 #include <cstdint>
+#include <string>
 
 namespace dw::audio {
 
@@ -73,15 +80,21 @@ public:
   Sound& operator=(const Sound&) = delete;
 
   // 開啟音效裝置。muted=true 或無可用 audio 裝置 → 進靜音模式(play 仍合法 no-op)。
-  // 回傳 true 表示「子系統初始化成功」(含靜音模式也算成功;絕不因無裝置而失敗)。
-  bool open(bool muted = false);
+  // audio_dir 指向 bundle/audio(例:assets/bundle/audio);非空時嘗試載入真實 PCM 取樣
+  //   (缺檔不視為失敗,該音效退回方波)。靜音模式不載樣本(no-op 不需要)。
+  // 回傳 true 表示「子系統初始化成功」(含靜音模式也算成功;絕不因無裝置 / 缺檔而失敗)。
+  bool open(bool muted = false, const std::string& audio_dir = "");
   void close();
   bool is_open() const { return opened_; }
   bool is_muted() const { return muted_; }
 
   // 播放一個音效(非阻塞;混入輸出 ring buffer)。
-  // 靜音 / 未開啟時為合法 no-op。回傳是否實際送進合成佇列(供測試斷言派發路徑)。
+  // 有對映且已載入的真實 PCM 取樣 → 播放取樣;否則退回方波合成。
+  // 靜音 / 未開啟時為合法 no-op。回傳是否實際送進混音佇列(供測試斷言派發路徑)。
   bool play(SoundId id);
+
+  // 該 id 是否已有真實 PCM 取樣可播(供測試 / 診斷)。
+  bool has_sample(SoundId id) const;
 
 private:
   void* dev_handle_ = nullptr;   // SDL_AudioDeviceID(以 void* 隱藏 SDL 型別)
