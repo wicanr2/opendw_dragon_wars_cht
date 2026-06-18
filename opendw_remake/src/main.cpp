@@ -456,6 +456,7 @@ int main(int argc, char** argv) {
     else if (eq("--locale") && i + 1 < argc) locale = argv[++i];   // 切語系(zh-TW / ja / …)
     else if (eq("--pc") && i + 1 < argc) start_pc = std::atoi(argv[++i]);
     else if (eq("--frames") && i + 1 < argc) max_frames = std::atoi(argv[++i]);
+    else if (eq("--max-frames") && i + 1 < argc) max_frames = std::atoi(argv[++i]);  // --frames 別名(防誤用無限空轉)
     else if (eq("--dump") && i + 1 < argc) dump = argv[++i];
     else if (eq("--sprite") && i + 1 < argc) sprite_name = argv[++i];
     else if (eq("--scene") && i + 1 < argc) scene_name = argv[++i];
@@ -502,6 +503,12 @@ int main(int argc, char** argv) {
     else if (eq("--no-splash")) no_splash = true;         // 略過 splash 直接進主選單
   }
   if (scale < 1) scale = 1;
+  // 安全保險:給了 --dump 卻沒給 frame 限制(--frames/--max-frames)時,headless 會在
+  //   dummy SDL 下無限 poll 空轉(曾造成多個 70% CPU 殭屍程序)。預設只跑到 dump 幀 +1 就退。
+  if (!dump.empty() && max_frames < 0) {
+    max_frames = (dump_frame >= 0 ? dump_frame + 1 : 2);
+    std::fprintf(stderr, "note: --dump without --frames → 自動設 max_frames=%d(防無限空轉)\n", max_frames);
+  }
 
   // 音效子系統:RAII 開啟(靜音模式不碰實體裝置)。play() 在任何情況皆安全 no-op,
   //   絕不導致初始化失敗或卡住(headless / CI 不依賴音效裝置)。
