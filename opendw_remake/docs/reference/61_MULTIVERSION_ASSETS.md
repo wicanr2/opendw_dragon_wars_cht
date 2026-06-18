@@ -144,11 +144,17 @@ blit、非 chunky、而是 plane-sequential 4-bitplane;width/height 由 header w
 - 回歸保護:`verify_theme`(ctest)新增 6 隻 Amiga sprite 載入 + 尺寸 + 自帶盤 + sprite 接線斷言。
 
 ### 受阻 / TODO
-- 多動畫格:目前每隻只切**主格**(自動分隔)。逐 frame 動畫(攻擊/受擊)未切,需逆向
-  frame 表細節(各資源含 2–3 格水平並排)。
+- **多動畫格:2026-06-18 重查,判定受阻(不做)**。逐字解 header(@32)= word[0]=顯示寬 W、
+  word[1]=H、word[2]=bpr(plane 寬=bpr*8)、word[3]=H 重複;**無 frame offset 表**(word[4..7]
+  已是像素資料)。實測:
+  - Spider(196):plane 寬 96 ≈ 顯示寬 92,solid 欄僅右緣 padding(94/95)→ **乾淨單格**。
+  - Pikeman(210):plane 寬 128、顯示寬 125,但畫面右側已出現**第二個人形局部**(非固定偏移)→
+    同一資源確實塞了不只一格,但邊界**非確定性可偵測**(無分隔表、separator 規則不一致)。
+  - 結論:frame 邊界無可靠演算法切分,逐格切會產生不可靠 crop(風險非低)→ **保留主格,不切動畫格**。
+    要做需更深逆向 dw 的 sprite 播放常式(哪個欄位 / 外部表決定第 N 格起點),本次未做。
 - 196/152/210 主格右緣偶留 1–2 px 黑分隔條(crop 邊界);200_innocent_man 自動裁切只取到單格,
   品質次於其餘 5 隻。
-- header word[0]、word[3] 等其餘欄位語意未全解(已知 word[1]=H、word[2]=bpr 足以正確渲染)。
+- header 欄位語意已大致解出(word[0]=W、word[1]=H、word[2]=bpr、word[3]=H);frame 計數 / 起點欄位未明。
 
 ---
 
