@@ -18,6 +18,7 @@
 // 用法:opendw_remake [--bundle DIR] [--font RAW] [--menu TSV] [--scale N]
 //                     [--font-ttf PATH] [--pc N] [--sprite NAME] [--frames N]
 //                     [--dump PPM] [--press CH] [--map N] [--fp] [--at X Y]
+//                     [--title] [--no-splash]   開機 title splash(火龍之戰 art);詳見 docs/CONTROLS.md
 #include <algorithm>
 #include <array>
 #include <cstdio>
@@ -37,6 +38,7 @@
 #include "render/viewport_compose.hpp"
 #include "render/minimap.hpp"
 #include "render/ui_pieces.hpp"
+#include "render/ui_theme.hpp"
 #include "render/sdl_video.hpp"
 #include "audio/sound.hpp"
 #include "resource/level.hpp"
@@ -424,6 +426,9 @@ int main(int argc, char** argv) {
   bool mute = (std::getenv("DWR_MUTE") != nullptr);
   // ── 建角流程(新遊戲 / 建立人物;手冊選單 B)──
   bool newgame = false;         // --newgame:啟動直接進建角畫面(S_CREATE)
+  // ── 開機 title splash(顯示火龍之戰 dragon art → 按任意鍵進主選單;對齊 DOS「先 art 後選單」)──
+  bool want_title = false;      // --title:強制顯示 title splash(即使其他旗標想跳過)
+  bool no_splash = false;       // --no-splash:略過 splash 直接進主選單(headless / 自動化)
   std::string newgame_demo;     // --newgame-demo SPEC:headless 腳本化建角 + 出圖/驗證(見下方解析)
   std::string newgame_screen;   // --newgame-screen SPEC:停在配點畫面供截圖(同 SPEC 格式,只取第一員)
   for (int i = 1; i < argc; ++i) {
@@ -481,6 +486,8 @@ int main(int argc, char** argv) {
     else if (eq("--ending")) show_ending = true;          // 直接進結局序列(demo)
     else if (eq("--no-bless")) namtar_blessed = false;    // 關閉自由之劍祝福加成
     else if (eq("--mute")) mute = true;                   // 靜音(關音效;CI/headless 安全)
+    else if (eq("--title")) want_title = true;            // 強制顯示開機 title splash(火龍之戰 art)
+    else if (eq("--no-splash")) no_splash = true;         // 略過 splash 直接進主選單
   }
   if (scale < 1) scale = 1;
 
@@ -556,7 +563,34 @@ int main(int argc, char** argv) {
   std::string header, header_en;   // header_en = 提示英文源(F4 重譯)
   std::vector<Opt> opts;
   int sel = 0;
-  enum { S_MENU, S_BRANCH, S_GAME, S_COMBAT, S_MAP, S_CREATE, S_ENDING } state = S_MENU;
+  enum { S_TITLE, S_MENU, S_BRANCH, S_GAME, S_COMBAT, S_MAP, S_CREATE, S_ENDING } state = S_MENU;
+
+  // ── UI 主題(theme-aware presentation;見 render/ui_theme.hpp)──
+  //   title art / 戰鬥 backdrop / 訊息框配色等隨主題切換。目前 DOS 唯一主題;
+  //   未來 PC-98 / Amiga / X68000 各自一個主題實例 + 對應資產,呼叫端不需改。
+  const render::UiTheme& theme = render::default_theme();
+  // 開機 title splash 用的 dragon art(theme.title_scene → bundle/scenes/<scene>.pic)。
+  //   啟動載一次到獨立 framebuffer,splash 期間每幀 blit(不重解碼)。載失敗則 splash
+  //   退回藍底 + 標題字(不阻擋進主選單)。
+  render::Framebuffer title_fb;
+  bool title_art_ok = false;
+  {
+    std::string tpath = bundle + "/scenes/" + theme.title_scene + ".pic";
+    std::FILE* tf = std::fopen(tpath.c_str(), "rb");
+    if (tf) {
+      std::vector<std::uint8_t> tdata(32000);
+      std::size_t tn = std::fread(tdata.data(), 1, tdata.size(), tf);
+      std::fclose(tf);
+      if (tn == tdata.size()) {
+        render::decode_fullscreen(title_fb, tdata);
+        title_art_ok = true;
+      } else {
+        std::fprintf(stderr, "title art size %zu != 32000: %s\n", tn, tpath.c_str());
+      }
+    } else {
+      std::fprintf(stderr, "title art open failed: %s (splash uses fallback)\n", tpath.c_str());
+    }
+  }
   std::string branch_label, branch_label_en;   // branch 英文源(F4 重譯)
 
   // F4 切語系後,用各 widget 暫存的英文源重新 tr() 在地化(選單/branch/事件)。
@@ -1309,6 +1343,18 @@ int main(int argc, char** argv) {
     }
   }
 
+  // ── 開機 title splash 進入點(對齊 DOS「先 dragon art 標題畫面 → 按鍵 → 主選單」)──
+  //   只在「一般選單流程」(menu_mode)且 state 仍停在 S_MENU(沒有 --load/--newgame/
+  //   headless 子畫面旗標把我們帶離選單)時生效。--no-splash 略過;--title 強制。
+  //   headless(--press / --frames 自動化)走 --no-splash 即可直達選單,不影響既有測試。
+  //   顯式 --menu(menu_tsv 指定)= 針對主選單的呼叫,直接進選單(splash 由 --title 才補)。
+  if (menu_mode && state == S_MENU && !no_splash &&
+      (want_title || (press == 0 && !newgame && menu_tsv.empty()))) {
+    state = S_TITLE;
+    std::fprintf(stderr, "title splash: showing dragon art (theme=%s scene=%s art_ok=%d)\n",
+                 theme.name.c_str(), theme.title_scene.c_str(), (int)title_art_ok);
+  }
+
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
   render::ComponentStore comps(bundle + "/components");
 
@@ -1487,6 +1533,42 @@ int main(int argc, char** argv) {
     tl.add(render::kW - 78, 13, "F4:lang", 8, PX_UI * 3 / 4);
   };
 
+  // ── 開機 title splash(S_TITLE):dragon art 背景 + 在地化標題 +「按任意鍵」提示 ──
+  //   像素層:theme.title_scene 的 dragon art(res29;含原版金色 "Dragon Wars" 立繪)。
+  //   文字層:在地化標題「火龍之戰」(zh-TW/日)疊在下方 + 閃爍「按任意鍵」提示。
+  //   按任意鍵 → S_MENU(對齊 DOS「art 標題畫面 → 按鍵 → 主選單」)。art 載失敗則退回
+  //   藍底 + 標題字(仍可進選單)。frames 計數驅動提示閃爍(headless dump 為穩定相位)。
+  int title_blink = 0;   // splash 提示閃爍相位(每幀 +1)
+  auto draw_title = [&]() {
+    if (title_art_ok) {
+      fb = title_fb;     // 直接套用已解碼的 dragon art(像素層)
+    } else {
+      fb.clear(1);       // 退回深藍底
+    }
+    // 在地化標題:art 已含原版英文金色立繪 logo(畫面下方);在地化字(火龍之戰)放
+    //   「頂端襯底條」,提示放「底部襯底條」,中段龍圖 + 原版 logo 完整不被蓋(可讀性優先)。
+    const std::string zh_title = tr.tr("Dragon Wars");   // zh-TW→火龍之戰 / ja→ドラゴンウォーズ / en→Dragon Wars
+    const std::string prompt = tr.tr("Press any key");
+    // 半透明壓暗襯底條(棋盤式 dither,讓龍圖隱約透出仍保 CJK 對比)。
+    auto dim_band = [&](int y0, int y1) {
+      for (int y = y0; y < y1 && y < render::kH; ++y)
+        for (int x = 0; x < render::kW; ++x)
+          if (((x + y) & 1) == 0) fb.put(x, y, 0);   // 棋盤壓暗(半透明黑網點)
+    };
+    // 頂端標題條(y 2..30):en 主題 art 已有英文 logo → 此處放在地化標題(zh/ja)。
+    dim_band(2, 30);
+    int title_px = PX_BODY * 5 / 4;
+    int tw = tl.measure_vwidth(zh_title, title_px);
+    tl.add((render::kW - tw) / 2, 5, zh_title, 14, title_px);     // 金色在地化標題(頂端置中)
+    // 底部提示條(y 182..200):閃爍「按任意鍵」(約 36 幀週期)。
+    dim_band(182, render::kH);
+    if ((title_blink / 18) % 2 == 0) {
+      int pw = tl.measure_vwidth(prompt, PX_UI);
+      tl.add((render::kW - pw) / 2, 186, prompt, 15, PX_UI);
+    }
+    add_lang_badge();
+  };
+
   // ── 探索/戰鬥畫面 UI chrome(docs/59「該修」#1/#2/#3,往 1990 原版靠攏)───────────
   //
   // 誠實標示(grounding):原版的藍石磚邊框與金色「Dragon Wars」立繪 logo 是 DRAGON.COM
@@ -1558,17 +1640,39 @@ int main(int argc, char** argv) {
     msg.open(tl.wrap(z, MB_TEXT_W, PX_BODY), MB_LINES);
   };
 
-  // 框底實心 + 邊框(像素層);疊在 viewport/地圖之上。half=半透明感(暗藍底)。
+  // ── 半透明 + 優雅覆蓋框(theme-aware;見 render/ui_theme.hpp OverlayStyle)──
+  //   indexed framebuffer 無原生 alpha → 用「棋盤式 dithering」模擬半透明:
+  //     dither=true 時,只在 (x+y) 偶數格填 base 底色,奇數格保留底下遊戲畫面像素 →
+  //     形成「紗窗(screen-door)」半透明,viewport/地圖隱約透出;文字走 TTF 層後繪,恆銳利。
+  //   邊框:外白(border)+ 內亮藍(border2)雙線框 + 四角內縮一格(柔化/圓角感)。
+  //   dither=false 退回實心底(舊行為)。可讀性優先:文字底永遠夠暗(深藍/黑系 base)。
+  auto draw_overlay_box = [&](int bx, int by, int bw, int bh,
+                              const render::OverlayStyle& st) {
+    int x1 = bx + bw - 1, y1 = by + bh - 1;
+    // 1) 底:dither 半透明 或 實心。
+    //    透明採「3/4 覆蓋」格網(每 2×2 區塊只留 1 格透出底下畫面),比純棋盤(1/2)更
+    //    不透明 → 即使底下是亮色(cyan 天空)白字仍清楚(可讀性優先),同時保留透視感。
+    //    透出格選右下角((x&1)&&(y&1)),分布均勻不結塊。
+    for (int y = by; y <= y1 && y < render::kH; ++y)
+      for (int x = bx; x <= x1 && x < render::kW; ++x) {
+        bool show_through = st.dither && ((x & 1) && (y & 1));
+        if (!show_through) fb.put(x, y, st.base);
+        // show_through 格:不動 → 保留底下遊戲畫面像素(透出)。
+      }
+    // 2) 外框(白實線),四角內縮一格 → 柔角(避免硬直角,優雅感)。
+    for (int x = bx + 1; x <= x1 - 1; ++x) { fb.put(x, by, st.border); fb.put(x, y1, st.border); }
+    for (int y = by + 1; y <= y1 - 1; ++y) { fb.put(bx, y, st.border); fb.put(x1, y, st.border); }
+    // 3) 內框(亮藍雙線),內縮 2 格 → 雙線優雅邊。
+    int ix0 = bx + 2, iy0 = by + 2, ix1 = x1 - 2, iy1 = y1 - 2;
+    if (ix1 > ix0 && iy1 > iy0) {
+      for (int x = ix0; x <= ix1; ++x) { fb.put(x, iy0, st.border2); fb.put(x, iy1, st.border2); }
+      for (int y = iy0; y <= iy1; ++y) { fb.put(ix0, y, st.border2); fb.put(ix1, y, st.border2); }
+    }
+  };
+
+  // 訊息框底框 + 邊框(半透明 + 雙線優雅框;theme.overlay)。
   auto fill_msg_box = [&]() {
-    for (int y = MB_Y; y < MB_Y + MB_H && y < render::kH; ++y)
-      for (int x = MB_X; x < MB_X + MB_W && x < render::kW; ++x)
-        fb.put(x, y, 1);                              // 深藍實心底
-    for (int x = MB_X; x < MB_X + MB_W; ++x) {        // 上下邊框
-      fb.put(x, MB_Y, 15); fb.put(x, MB_Y + MB_H - 1, 15);
-    }
-    for (int y = MB_Y; y < MB_Y + MB_H; ++y) {        // 左右邊框
-      fb.put(MB_X, y, 15); fb.put(MB_X + MB_W - 1, y, 15);
-    }
+    draw_overlay_box(MB_X, MB_Y, MB_W, MB_H, theme.overlay);
   };
 
   // 畫訊息檢視器:底框(像素層)+ 當前頁文字行(文字層)+ ▼/提示。
@@ -1674,20 +1778,14 @@ int main(int argc, char** argv) {
                  para.total_lines(), para.page_count());
   };
 
-  // 段落 overlay 底框 + 邊框(像素層;深藍底 + 亮框,對齊既有 UI 風格)。
+  // 段落 overlay 底框 + 邊框(半透明 + 雙線優雅框;theme.overlay)。
+  //   段落檢視器近全螢幕、以長文閱讀為主 → dither 半透明讓底下畫面隱約透出,
+  //   同時 base 深藍/網點壓暗確保長文白字對比足夠(可讀性優先)。
   auto fill_para_box = [&]() {
-    for (int y = PB_Y; y < PB_Y + PB_H && y < render::kH; ++y)
-      for (int x = PB_X; x < PB_X + PB_W && x < render::kW; ++x)
-        fb.put(x, y, 1);                               // 深藍實心底
-    for (int x = PB_X; x < PB_X + PB_W; ++x) {          // 上下邊框
-      fb.put(x, PB_Y, 15); fb.put(x, PB_Y + PB_H - 1, 15);
-    }
-    for (int y = PB_Y; y < PB_Y + PB_H; ++y) {          // 左右邊框
-      fb.put(PB_X, y, 15); fb.put(PB_X + PB_W - 1, y, 15);
-    }
-    // 標題列下方一道分隔線(像素層),把標題與內文分開。
+    draw_overlay_box(PB_X, PB_Y, PB_W, PB_H, theme.overlay);
+    // 標題列下方一道分隔線(像素層;落在雙線內框內),把標題與內文分開。
     int sep_y = PB_TITLE_TOP + PB_LINE_H + 1;
-    for (int x = PB_X + 1; x < PB_X + PB_W - 1; ++x) fb.put(x, sep_y, 8);
+    for (int x = PB_X + 3; x < PB_X + PB_W - 3; ++x) fb.put(x, sep_y, theme.overlay.border2);
   };
 
   // 畫段落捲動 overlay:底框 + 標題「段落 N」+ 可見行切片 + 捲動位置提示(▲/▼/頁碼)。
@@ -2567,6 +2665,23 @@ int main(int argc, char** argv) {
   // 畫遭遇畫面:怪物 sprite(viewport 區 @16,8)+ 怪名 + 隊伍面板 + 戰/逃選單 + log。
   auto draw_encounter = [&]() {
     fb.clear(0);
+    // ── viewport backdrop(theme-aware;取代純黑)──
+    //   對齊 DOS 戰鬥畫面(docs/dos_compare/06_combat_encounter.png):viewport 內
+    //   上半天空 + 下半地面(石礫質感),讓怪物立繪站在場景中而非浮在純黑上。
+    //   只填 viewport 內部 [16,176)×[8,144);四周 UI chrome 由 draw_explore_chrome 補。
+    {
+      const auto& bd = theme.combat;
+      int hy = kVpY + bd.horizon;   // 天空/地面分界(絕對 y)
+      for (int y = kVpY; y < kVpY + kVpH; ++y) {
+        bool ground = (y >= hy);
+        for (int x = kVpX; x < kVpX + kVpW; ++x) {
+          std::uint8_t c = ground ? bd.ground : bd.sky;
+          // 地面:棋盤式點綴成石礫質感(對齊 DOS 紅磚地面網點);天空純色。
+          if (ground && (((x + y) & 1) == 0)) c = bd.ground_dot;
+          fb.put(x, y, c);
+        }
+      }
+    }
     // 怪物圖:畫進 framebuffer (16,8),裁切限制在 160×136 viewport 框內
     //   (docs/59 #4:避免立繪溢出蓋到右側面板)。clip = [16,176) × [8,144)。
     if (enc.sprite)
@@ -2736,6 +2851,7 @@ int main(int argc, char** argv) {
   };
   auto render_now = [&]() {
     tl.clear();                                      // 每幀重建文字層
+    if (state == S_TITLE) { draw_title(); return; }       // 開機 title splash(dragon art)
     if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面
     if (state == S_ENDING) {                              // 結局序列:黑底 + 結局捲動 overlay
       for (int y = 0; y < render::kH; ++y)
@@ -3412,6 +3528,14 @@ int main(int argc, char** argv) {
         }
       }
     } else if (!menu_mode) { if (in.back) break; }       // sprite/scene 檢視:Esc/Q 離開
+    else if (state == S_TITLE) {                          // 開機 splash:按任意鍵 → 主選單
+      ++title_blink;                                       // 提示閃爍相位推進
+      // 任意鍵(方向/Enter/Space/Esc/字母)→ 進主選單;F4 已於上方處理(切語系不離開 splash)。
+      if (in.up || in.down || in.left || in.right || in.select || in.back ||
+          in.key || in.pgup || in.pgdown)
+        state = S_MENU;
+      // in.quit(Q / 關窗)由迴圈尾端 in.quit 統一處理(離開遊戲)。
+    }
     else if (state == S_MENU) {
       if (in.back) break;                                // 選單按 Esc = 離開
       int n = (int)opts.size();
