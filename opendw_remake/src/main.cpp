@@ -755,6 +755,11 @@ int main(int argc, char** argv) {
     bool casting = false;                  // 施法選單開啟中(C 進;上下選;Enter 施放;Esc 取消)
     int cast_sel = 0;                      // 施法選單游標
     bool is_namtar = false;                // 終戰 Namtar:勝利時進結局序列(非一般遭遇)
+    // ── 怪物立繪動畫(idle 呼吸 + 受擊閃白)──
+    //   Amiga / DOS sprite 均為單格靜態立繪(data4 多格佈局逆向結論:每資源僅 1 frame 真資料,
+    //   其餘為 fill padding;見 docs/reference/61 §1.5)→ 無真動畫格可循環。
+    //   故以單格做程序化「活化」:idle 微幅上下浮動(呼吸),命中時短暫閃白(受擊)。不偽造假格。
+    int hit_flash = 0;                      // >0:受擊閃白剩餘幀數(每幀遞減;append 事件時設)
   } enc;
 
   // 事件腳本跨資源 call(op_58)的資源提供者:從 bundle 載(自包含,不需 DATA1)。
@@ -1664,6 +1669,7 @@ int main(int argc, char** argv) {
   //   按任意鍵 → S_MENU(對齊 DOS「art 標題畫面 → 按鍵 → 主選單」)。art 載失敗則退回
   //   藍底 + 標題字(仍可進選單)。frames 計數驅動提示閃爍(headless dump 為穩定相位)。
   int title_blink = 0;   // splash 提示閃爍相位(每幀 +1)
+  int anim_tick = 0;     // 全域動畫相位(每幀 +1;戰鬥怪物 idle 呼吸 / 受擊閃白用,headless dump 相位穩定)
   auto draw_title = [&]() {
     if (title_art_ok) {
       fb = title_fb;     // 直接套用已解碼的 dragon art(像素層)
@@ -2714,6 +2720,7 @@ int main(int argc, char** argv) {
       }
       if (e.hit) {
         g_sound.play(audio::SoundId::Hit);   // 命中音效(remake 設計;見 sound.hpp)
+        if (e.attacker_is_player) enc.hit_flash = 8;  // 我方命中怪物 → 怪物立繪閃白受擊(8 幀)
         // 模板鍵「combat.hit.fmt」帶 3 槽:%1$=攻擊者 %2$=目標 %3$=傷害值。
         //   zh-TW:「%s 攻擊 %s,命中 %d 點傷害」;en passthrough:「%s attacks %s for %d damage」。
         std::snprintf(buf, sizeof buf, tr.tr("%s attacks %s for %d damage").c_str(),
@@ -2979,9 +2986,33 @@ int main(int argc, char** argv) {
     }
     // 怪物圖:畫進 framebuffer (16,8),裁切限制在 160×136 viewport 框內
     //   (docs/59 #4:避免立繪溢出蓋到右側面板)。clip = [16,176) × [8,144)。
-    if (enc.sprite)
-      enc.sprite->blit_clipped(fb, 16, 8, theme.sprite_transparent,  // 透明色:DOS=6 棕 / Amiga=8 紅
-                               kVpX, kVpY, kVpX + kVpW, kVpY + kVpH);
+    // ── idle 呼吸 + 受擊閃白(單格程序化動畫;無真動畫格,見 EncounterState::hit_flash 註)──
+    //   呼吸:y 以三角波 ±1px 緩慢起伏(週期 ~48 幀);headless 同 anim_tick → dump 相位穩定。
+    //   受擊:hit_flash>0 期間立繪整體閃白(index 1),最後 1px 著地後回正常立繪。
+    if (enc.sprite) {
+      int ph = anim_tick % 48;
+      int bob = (ph < 24) ? (ph / 12) : ((47 - ph) / 12);   // 0,0..1,1..0 三角波(±1px)
+      int sy = 8 - bob;                                       // 上浮 = y 減
+      bool flash = (enc.hit_flash > 0) && ((enc.hit_flash / 2) % 2 == 0);  // 閃爍相位
+      if (flash) {
+        // 受擊閃白:非透明像素一律畫白(index 1),只蓋立繪輪廓(不動 backdrop / golden)。
+        const auto& s = *enc.sprite;
+        for (int y = 0; y < (int)s.h; ++y) {
+          int fy = sy + y;
+          if (fy < kVpY || fy >= kVpY + kVpH) continue;
+          for (int x = 0; x < (int)s.w; ++x) {
+            int fx = 16 + x;
+            if (fx < kVpX || fx >= kVpX + kVpW) continue;
+            std::uint8_t i = s.idx[(std::size_t)y * s.w + x];
+            if (theme.sprite_transparent >= 0 && i == (std::uint8_t)theme.sprite_transparent) continue;
+            fb.put(fx, fy, 1);                                // index 1 = 白(各盤一致)
+          }
+        }
+      } else {
+        enc.sprite->blit_clipped(fb, 16, sy, theme.sprite_transparent,  // 透明色:DOS=6 棕 / Amiga=8 紅
+                                 kVpX, kVpY, kVpX + kVpW, kVpY + kVpH);
+      }
+    }
     else { // 無 sprite → 畫空框(像素層),維持版面對齊。
       for (int x = 16; x < 16 + 160; ++x) { fb.put(x, 8, 8); fb.put(x, 8 + 135, 8); }
       for (int y = 8; y < 8 + 136; ++y) { fb.put(16, y, 8); fb.put(16 + 159, y, 8); }
@@ -3451,6 +3482,10 @@ int main(int argc, char** argv) {
     }
     render_now();
     vid.present(fb);
+    // 動畫相位推進(在 present 後、各輸入分支 continue 前 → 戰鬥怪物每幀皆呼吸/閃白倒數)。
+    //   與 frames 同步遞增 → headless --dump-frame N 的動畫相位確定可重現。
+    ++anim_tick;
+    if (enc.hit_flash > 0) --enc.hit_flash;
     // --dump-frame N:迴圈第 N 幀(此時已套用前面幀的輸入,如 F1/F10 覆蓋層)再 dump 一次。
     if (dump_frame >= 0 && frames == dump_frame && !dump.empty()) {
       if (vid.dump_ppm(fb, dump))
