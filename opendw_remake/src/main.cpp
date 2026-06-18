@@ -425,6 +425,7 @@ int main(int argc, char** argv) {
   // ── 終戰 Namtar + 結局序列(可通關收官)──
   bool fight_namtar = false;    // --fight-namtar:用(預設/讀檔)隊伍 vs Namtar Boss 戰鬥(combat_loop)
   bool show_ending = false;     // --ending:headless 直接進結局序列(demo / 截圖,不打 Namtar)
+  int ending_at = -1;           // --ending-idx N:結局序列直接從第 N 張過場場景起(截圖驗證每張)
   bool namtar_blessed = true;   // --no-bless:關閉「自由之劍受祝福」加成(預設套用,讓可勝)
   // ── 音效(PC speaker 風格方波;預設可關)──
   //   --mute 或環境變數 DWR_MUTE=1 → 靜音模式(CI/headless 不依賴音效裝置)。
@@ -491,6 +492,7 @@ int main(int argc, char** argv) {
     else if (eq("--newgame-screen") && i + 1 < argc) newgame_screen = argv[++i];  // 停在配點畫面截圖
     else if (eq("--fight-namtar")) fight_namtar = true;   // 終戰 Namtar(隊伍 vs Boss)
     else if (eq("--ending")) show_ending = true;          // 直接進結局序列(demo)
+    else if (eq("--ending-idx") && i + 1 < argc) { show_ending = true; ending_at = std::atoi(argv[++i]); }  // 結局從第 N 張過場起(截圖)
     else if (eq("--no-bless")) namtar_blessed = false;    // 關閉自由之劍祝福加成
     else if (eq("--mute")) mute = true;                   // 靜音(關音效;CI/headless 安全)
     else if (eq("--title")) want_title = true;            // 強制顯示開機 title splash(火龍之戰 art)
@@ -588,6 +590,15 @@ int main(int argc, char** argv) {
   //   F8 切主題時 reload(對應主題的 art + palette)。載失敗則 splash 退回藍底 + 標題字。
   render::Framebuffer title_fb;
   bool title_art_ok = false;
+  // ── 結局過場序列狀態(S_ENDING)──
+  //   結局先放主題的全螢幕過場場景(DOS res 24..28:Namtar 墜淵/慘叫/焚城/和平/The End),
+  //   每張配在地化敘事字(疊在壓暗襯底條);場景間插入 bundled 段落捲動(ParaViewer)。
+  //   ending_phase:0=場景過場、1=段落捲動、2=末張 The End。ending_idx=當前場景索引。
+  render::Framebuffer ending_fb;       // 當前結局場景已解碼的像素層(每次推進重解碼)
+  bool ending_fb_ok = false;           // 解碼成功(否則退黑底)
+  int ending_idx = 0;                  // 當前結局場景索引(0-based)
+  int ending_phase = 0;                // 0=場景過場,1=段落捲動,2=末張 The End
+  std::array<render::Rgb, 16> ending_pal = render::kDosPalette;  // 末次載入的場景 palette(Amiga 用檔頭盤)
   std::string branch_label, branch_label_en;   // branch 英文源(F4 重譯)
 
   // F4 切語系後,用各 widget 暫存的英文源重新 tr() 在地化(選單/branch/事件)。
@@ -1563,6 +1574,51 @@ int main(int argc, char** argv) {
   };
   load_title_art();   // 啟動載一次(當前主題;F8 後 reload)。
 
+  // ── 載入結局過場場景 idx 進 ending_fb(decode + 記下 palette)──
+  //   來源/解碼規則同 title art:kDosScene → bundle/scenes/<ref>.pic、decode_fullscreen、
+  //   套 theme.palette;kAmigaPic → bundle/themes/<ref>、decode_amiga_planar、palette 讀檔頭。
+  //   載失敗 → ending_fb_ok=false(該幀退黑底,敘事字仍可讀)。回傳是否成功。
+  auto load_ending_scene = [&](int idx) -> bool {
+    ending_fb_ok = false;
+    ending_pal = theme.palette;
+    const auto& seq = render::theme_ending_scenes(theme);
+    if (idx < 0 || idx >= (int)seq.size()) return false;
+    const render::EndingScene& sc = seq[idx];
+    const bool amiga = (sc.source == render::TitleSource::kAmigaPic);
+    std::string path = amiga ? bundle + "/themes/" + sc.ref
+                             : bundle + "/scenes/" + sc.ref + ".pic";
+    std::FILE* f = std::fopen(path.c_str(), "rb");
+    if (!f) {
+      std::fprintf(stderr, "ending scene open failed: %s\n", path.c_str());
+      return false;
+    }
+    std::vector<std::uint8_t> data;
+    std::uint8_t chunk[4096];
+    std::size_t n;
+    while ((n = std::fread(chunk, 1, sizeof chunk, f)) > 0)
+      data.insert(data.end(), chunk, chunk + n);
+    std::fclose(f);
+    ending_fb.clear(0);
+    if (amiga) {
+      if (data.size() < 32 + 32000) {
+        std::fprintf(stderr, "ending amiga scene short (%zu): %s\n", data.size(), path.c_str());
+        return false;
+      }
+      render::decode_amiga_planar(ending_fb, data);
+      ending_pal = render::read_amiga_palette(data);   // 檔頭 palette(權威)
+    } else {
+      if (data.size() < 32000) {
+        std::fprintf(stderr, "ending dos scene short (%zu): %s\n", data.size(), path.c_str());
+        return false;
+      }
+      render::decode_fullscreen(ending_fb, data);
+    }
+    ending_fb_ok = true;
+    std::fprintf(stderr, "ending scene %d loaded: %s (%s)\n",
+                 idx, path.c_str(), amiga ? "amiga-planar" : "dos-scene");
+    return true;
+  };
+
   // 640×480 模式:像素層固定 ×2(scale=2),故 scale 概念對文字層 = 2;字級「解綁」
   //   為固定原生 px(CJK 24 / UI 16 / 標題 48),不隨 scale 縮放(這正是 docs/47 方案 3 要點)。
   // 一般 scale 模式:原生字級隨 scale 等比(基準 scale=3)。
@@ -1883,13 +1939,84 @@ int main(int argc, char** argv) {
     return tr.tr("(remake-composed ending: bundled paragraphs + area27 narrative; "
                  "not a single original script)");
   };
-  // 進入結局序列:組合結局文件 → 開 ParaViewer(para_n=-1)→ state=S_ENDING。
-  auto enter_ending = [&]() {
+  // 開 bundled 段落捲動文件(結局過場場景之間的長文閱讀,沿用 ParaViewer/para_n=-1)。
+  auto open_ending_doc = [&]() {
     std::string doc = ending_disclaimer() + "\n\n" + build_ending_doc();
     para.open(-1, tl.wrap(doc, PB_TEXT_W, PX_BODY), PB_LINES);
-    state = S_ENDING;
-    std::fprintf(stderr, "ENTER ENDING (lines=%d, page_count=%d)\n",
+    std::fprintf(stderr, "ENDING doc opened (lines=%d, page_count=%d)\n",
                  para.total_lines(), para.page_count());
+  };
+  // 結局過場序列「最後一張」索引(The End / Amiga 單張結局):末張只疊收尾標題,無段落。
+  auto ending_last_idx = [&]() -> int {
+    return (int)render::theme_ending_scenes(theme).size() - 1;
+  };
+  // 進入結局序列:從第一張過場場景開始(phase 0)。流程:
+  //   phase 0(場景過場 24→倒數第二張,各配在地化敘事)→ phase 1(bundled 段落捲動)
+  //   → phase 2(末張 The End / Amiga 結局,收尾標題)。
+  auto enter_ending = [&]() {
+    ending_phase = 0;
+    ending_idx = 0;
+    load_ending_scene(ending_idx);
+    para.close();                       // 過場期間段落檢視器關閉(phase 1 才開)
+    state = S_ENDING;
+    int total = (int)render::theme_ending_scenes(theme).size();
+    std::fprintf(stderr, "ENTER ENDING (scenes=%d, theme=%s)\n", total, theme.name.c_str());
+  };
+
+  // ── 畫結局過場場景(像素層 = 已解碼場景 art;文字層 = 底部襯底條疊在地化敘事)──
+  //   作法對齊 title splash:保留原版場景 art(含烤進英文),在底部壓暗襯底條疊繁中敘事,
+  //   確保可讀且不破壞畫面其餘部分。末張(The End)無敘事 → 只置中疊「全劇終」收尾標題。
+  auto draw_ending_scene = [&]() {
+    // 像素層:套該場景的 palette(Amiga 用檔頭盤;DOS 用 theme 盤)後 blit 場景。
+    vid.set_palette(ending_fb_ok ? ending_pal : theme.palette);
+    if (ending_fb_ok) {
+      fb = ending_fb;
+    } else {
+      for (int y = 0; y < render::kH; ++y)
+        for (int x = 0; x < render::kW; ++x) fb.put(x, y, 0);   // 退黑底
+    }
+    // 棋盤式壓暗襯底條(半透明黑網點),讓底下 art 隱約透出仍保 CJK 對比。
+    auto dim_band = [&](int y0, int y1) {
+      for (int y = y0; y < y1 && y < render::kH; ++y)
+        for (int x = 0; x < render::kW; ++x)
+          if (((x + y) & 1) == 0) fb.put(x, y, 0);
+    };
+    const auto& seq = render::theme_ending_scenes(theme);
+    std::string narr;
+    if (ending_idx >= 0 && ending_idx < (int)seq.size() && !seq[ending_idx].narrative_en.empty())
+      narr = tr.tr(seq[ending_idx].narrative_en);   // 在地化敘事(查無回退英文)
+    const bool is_last = (ending_idx == (int)seq.size() - 1);
+    if (!narr.empty()) {
+      // 底部敘事條:換行後置於畫面下緣;條高隨行數動態(最多覆蓋下半 ~88px)。
+      const int band_top0 = 110;
+      std::vector<std::string> lines = tl.wrap(narr, render::kW - 16, PX_BODY);
+      int line_h = PX_BODY / eff_scale + 2;
+      int need = (int)lines.size() * line_h + 8;
+      int band_top = render::kH - need; if (band_top < band_top0) band_top = band_top0;
+      dim_band(band_top, render::kH);
+      int y = band_top + 4;
+      for (const std::string& ln : lines) {
+        int w = tl.measure_vwidth(ln, PX_BODY);
+        tl.add((render::kW - w) / 2, y, ln, 15, PX_BODY);   // 白字置中
+        y += line_h;
+      }
+    }
+    if (is_last) {
+      // 末張收尾標題「全劇終」+ 提示(置中,The End logo 上方留白區)。
+      const std::string the_end = tr.tr("THE END");
+      int tpx = PX_BODY * 5 / 4;
+      int w = tl.measure_vwidth(the_end, tpx);
+      dim_band(140, 174);
+      tl.add((render::kW - w) / 2, 146, the_end, 14, tpx);   // 金色「全劇終」
+      const std::string prompt = tr.tr("Press any key");
+      int pw = tl.measure_vwidth(prompt, PX_UI);
+      tl.add((render::kW - pw) / 2, 188, prompt, 8, PX_UI);
+    } else {
+      // 非末張:右下角推進提示(i18n)。
+      const std::string prompt = tr.tr("Press any key");
+      int pw = tl.measure_vwidth(prompt, PX_UI);
+      tl.add(render::kW - pw - 6, render::kH - 12, prompt, 8, PX_UI * 3 / 4);
+    }
   };
 
   // 段落 overlay 底框 + 邊框(半透明 + 雙線優雅框;theme.overlay)。
@@ -2967,10 +3094,16 @@ int main(int argc, char** argv) {
   auto draw_base = [&]() {
     if (state == S_TITLE) { draw_title(); return; }       // 開機 title splash(dragon art)
     if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面
-    if (state == S_ENDING) {                              // 結局序列:黑底 + 結局捲動 overlay
-      for (int y = 0; y < render::kH; ++y)
-        for (int x = 0; x < render::kW; ++x) fb.put(x, y, 0);  // 全黑底
-      if (para.active) draw_para_overlay();
+    if (state == S_ENDING) {                              // 結局序列
+      if (ending_phase == 1 && para.active) {
+        // phase 1:bundled 段落捲動(黑底 + 捲動 overlay,沿用既有 ParaViewer 呈現)。
+        for (int y = 0; y < render::kH; ++y)
+          for (int x = 0; x < render::kW; ++x) fb.put(x, y, 0);
+        draw_para_overlay();
+      } else {
+        // phase 0 / 2:全螢幕過場場景 art + 在地化敘事 / The End 收尾。
+        draw_ending_scene();
+      }
       return;
     }
     if (state == S_MAP) { draw_automap(); return; }       // 俯視平面地圖(`?`)
@@ -3118,7 +3251,17 @@ int main(int argc, char** argv) {
     }
   }
   // --ending:不打 Namtar,直接進結局序列(demo / 截圖)。
-  if (ending_mode) enter_ending();
+  if (ending_mode) {
+    enter_ending();
+    // --ending-idx N:截圖驗證用,直接跳到第 N 張過場場景(0-based;超界夾到末張)。
+    if (ending_at > 0) {
+      int last = (int)render::theme_ending_scenes(theme).size() - 1;
+      ending_idx = ending_at > last ? last : ending_at;
+      ending_phase = (ending_idx == last) ? 2 : 0;
+      load_ending_scene(ending_idx);
+      std::fprintf(stderr, "ENDING jump → idx=%d phase=%d\n", ending_idx, ending_phase);
+    }
+  }
   // 結局序列 headless:--para-scroll N 先下捲 N 頁(截圖後段內容用)。
   if (state == S_ENDING && para.active)
     for (int p = 0; p < para_scroll && !para.at_bottom(); ++p) para.scroll_page(1);
@@ -3557,18 +3700,44 @@ int main(int argc, char** argv) {
     // Read Paragraph 長段落捲動 overlay 啟用時:接管輸入,暫停移動。
     //   ↑↓:逐行捲動;PgUp/PgDn / Space / Enter / I / K:逐頁;Esc:關閉回遊戲。
     //   (放在 msg 之前;兩者互斥,paragraph 觸發時 msg 不會 active。)
-    if (para.active) {
-      // 結局序列(S_ENDING):捲到底再按 Esc/Enter → 結束(回標題選單或離開);
-      //   非到底時 Enter 仍逐頁下捲,Esc 提前結束。
-      if (state == S_ENDING) {
-        bool finish = in.back ||
-                      ((in.select || in.pgdown || in.key == 'I' || in.key == 'K') &&
-                       para.at_bottom());
-        if (finish) {
-          para.close();
-          std::fprintf(stderr, "ENDING done\n");
+    // 結局過場場景(phase 0 / 2):非段落捲動狀態。按鍵推進下一張;末張收尾。
+    if (state == S_ENDING && !para.active) {
+      bool advance = in.select || in.pgdown || in.key == 'I' || in.key == 'K' ||
+                     in.down || in.back;
+      if (advance) {
+        const int last = (int)render::theme_ending_scenes(theme).size() - 1;
+        if (ending_phase == 2 || ending_idx >= last) {
+          // 末張 The End:結束結局序列。
+          std::fprintf(stderr, "ENDING done (phase=%d, idx=%d)\n", ending_phase, ending_idx);
           if (menu_mode) { state = S_MENU; }   // 互動:回標題選單(可再開新局)
           else break;                          // headless --ending / --fight-namtar:結束
+        } else if (ending_idx == last - 1) {
+          // 倒數第二張看完 → phase 1:開 bundled 段落捲動文件。
+          ending_phase = 1;
+          open_ending_doc();
+          std::fprintf(stderr, "ENDING → phase 1 (paragraph scroll)\n");
+        } else {
+          // phase 0:推進下一張過場場景。
+          ++ending_idx;
+          load_ending_scene(ending_idx);
+        }
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;
+    }
+    if (para.active) {
+      // 結局序列段落捲動(phase 1):捲到底再按 Enter/Space → 進 phase 2(末張 The End)。
+      //   非到底時 Enter 仍逐頁下捲,Esc 提前跳到末張。
+      if (state == S_ENDING) {
+        bool to_last = in.back ||
+                       ((in.select || in.pgdown || in.key == 'I' || in.key == 'K') &&
+                        para.at_bottom());
+        if (to_last) {
+          para.close();
+          ending_phase = 2;
+          ending_idx = (int)render::theme_ending_scenes(theme).size() - 1;
+          load_ending_scene(ending_idx);       // 末張 The End / Amiga 結局
+          std::fprintf(stderr, "ENDING → phase 2 (final scene idx=%d)\n", ending_idx);
         } else if (in.up) para.scroll_line(-1);
         else if (in.down) para.scroll_line(1);
         else if (in.pgup) para.scroll_page(-1);

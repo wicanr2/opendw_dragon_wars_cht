@@ -50,6 +50,17 @@ enum class TitleSource {
   kAmigaPic,    // Amiga .pic:decode_amiga_planar,palette 讀自檔頭(覆蓋 theme.palette)
 };
 
+// 結局過場場景一張(全螢幕 .pic + 對應在地化敘事字)。
+//   - ref / source:同 title art 的載入規則(kDosScene = bundle/scenes/<ref>.pic、nibble 解碼套
+//     theme.palette;kAmigaPic = bundle/themes/<ref>、planar 解碼 + 檔頭 palette)。
+//   - narrative_en:疊在場景底部襯底條的英文敘事鍵(經 tr() 在地化為繁中/日)。空字串 =
+//     此場景無疊字(如「The End」logo 自帶字,只需收尾標題)。
+struct EndingScene {
+  std::string ref;          // kDosScene:場景名("24");kAmigaPic:themes/ 下相對路徑
+  TitleSource source = TitleSource::kDosScene;
+  std::string narrative_en; // 疊字英文鍵(tr 在地化);空 = 不疊敘事
+};
+
 // 一個完整 UI 主題:title art 來源 + per-theme 16 色 palette + 戰鬥 backdrop + 覆蓋框配色。
 struct UiTheme {
   std::string name = "dos";
@@ -58,6 +69,10 @@ struct UiTheme {
   //   (如 "amiga/title.pic")。
   std::string title_ref = "29";
   TitleSource title_source = TitleSource::kDosScene;
+  // 結局過場場景序列(依序顯示;每張全螢幕 art + 在地化敘事)。空 = 此主題無原生結局過場
+  //   → 呼叫端誠實回退 DOS 序列(見 ending_scenes() helper)。DOS = res 24..28(Namtar 墜淵/
+  //   慘叫/焚城/和平新時代/The End);Amiga = 單張 themes/amiga/scenes/endgame.pic(planar)。
+  std::vector<EndingScene> ending = {};
   // 像素層 indexed→RGB 用的 16 色盤。預設 DOS 標準盤;Amiga theme 帶自己的 palette
   //   (亦可由 kAmigaPic 檔頭覆蓋)。SdlVideo 切 theme 時套此盤(per-theme palette 打通點)。
   std::array<Rgb, 16> palette = kDosPalette;
@@ -68,6 +83,23 @@ struct UiTheme {
   bool partial = false;
   std::string note;
 };
+
+// 結局過場各場景的英文敘事鍵(經 tr() 在地化 → 繁中/日;查無回退英文)。
+//   鍵文字與原版場景烤進點陣圖的英文一致,已於 i18n events.tsv 提供繁中譯文。
+//   集中為具名常數供 theme 結局序列與測試共用,避免散落多處。
+inline constexpr const char* kEndingNarr24 =
+    "And with a mighty heave, Namtar is hurled back into the pit from whence he came...";
+inline constexpr const char* kEndingNarr25 =
+    "Namtar lets out a horrid scream as he falls into the deepest depths of the Magan "
+    "Underworld. His reign of terror is at an end!";
+inline constexpr const char* kEndingNarr26 =
+    "News of Namtar's destruction brings untold joy to the prisoners of the city of "
+    "Purgatory. The evil city is overrun and burned to the ground by its own citizens "
+    "as they once again possess the freedom that was taken from them by Namtar.";
+inline constexpr const char* kEndingNarr27 =
+    "A new age of peace begins, the land is reborn with life and beauty. The dragons "
+    "leave the cities and return to their mystic valley to await a time that they may be "
+    "needed again...";
 
 // 所有可循環的 UI 主題(F8 依序:DOS → Amiga → X68000 → DOS)。
 //   新增平台版本時在此追加一個 UiTheme(各自指定 title art / palette / backdrop / overlay),
@@ -84,8 +116,18 @@ inline const std::vector<UiTheme>& theme_list() {
 
   static const std::vector<UiTheme> ts = [] {
     std::vector<UiTheme> v;
-    // [0] DOS(預設;完整)。
-    v.push_back(UiTheme{});
+    // [0] DOS(預設;完整)。結局過場 = res 24..28 五張 DOS 全螢幕場景,各配在地化敘事。
+    //   敘事鍵與場景烤進的原版英文一致(已於 i18n events.tsv 在地化),底部襯底條疊繁中。
+    UiTheme dos;
+    dos.ending = {
+      {"24", TitleSource::kDosScene, kEndingNarr24},
+      {"25", TitleSource::kDosScene, kEndingNarr25},
+      {"26", TitleSource::kDosScene, kEndingNarr26},
+      {"27", TitleSource::kDosScene, kEndingNarr27},
+      // The End logo 自帶英文立繪;narrative 空 → 只疊在地化收尾標題(全劇終)。
+      {"28", TitleSource::kDosScene, ""},
+    };
+    v.push_back(dos);
 
     // [1] Amiga(完整):原生金龍標題 + 自己的 Amiga 16 色 palette。
     UiTheme amiga;
@@ -96,6 +138,12 @@ inline const std::vector<UiTheme>& theme_list() {
     // Amiga 色系下的戰鬥 backdrop / overlay(沿用結構,色索引仍 0–15,套 Amiga 盤後呈現 Amiga 色)。
     amiga.combat = CombatBackdrop{};
     amiga.overlay = OverlayStyle{};
+    // Amiga 結局過場:原生單張全螢幕 endgame(planar,自帶 palette)。Amiga 版把整段
+    //   結局繪成一張圖,故 ending 只一張;敘事字仍疊在地化收尾標題(narrative 沿用 24 鍵
+    //   給可讀的繁中導言,The End 感由 art 本身呈現)。
+    amiga.ending = {
+      {"amiga/scenes/endgame.pic", TitleSource::kAmigaPic, kEndingNarr24},
+    };
     v.push_back(amiga);
 
     // [2] X68000(部分):無原生標題 → 回退 DOS res29;palette 暫用 DOS placeholder;
@@ -132,6 +180,14 @@ inline const UiTheme& theme_by_name(const std::string& name) {
   for (const auto& t : theme_list())
     if (t.name == name) return t;
   return default_theme();
+}
+
+// 取一個主題的結局過場序列;此主題無原生結局(ending 空,如未來新平台)時
+//   誠實回退 DOS 完整 5 張序列(default_theme().ending)。narrow interface:呼叫端
+//   (main.cpp)只問「這主題的結局該放哪幾張」,不需理解回退從何而來。
+inline const std::vector<EndingScene>& theme_ending_scenes(const UiTheme& t) {
+  if (!t.ending.empty()) return t.ending;
+  return default_theme().ending;   // DOS 24..28 完整序列(回退)
 }
 
 }  // namespace dw::render
