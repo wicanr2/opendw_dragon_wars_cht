@@ -21,3 +21,23 @@ DATA2
 data1
 data2
 manual_page-*.png
+
+# Scratch / extraction workspace (raw original game files live here, never commit)
+.scratch/
+tools_build/__pycache__/
+
+# Original multi-version game files (extraction sources only, never commit)
+*.zip
+*.7z
+*.adf
+*.dim
+*.DIM
+*.d88
+*.fdi
+*.hdm
+*.PIX
+*.PKH
+*.pix
+*.pkh
+DRAGON.X
+*.raw
