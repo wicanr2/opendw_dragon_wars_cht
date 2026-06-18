@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace dw::render {
 
@@ -44,17 +45,36 @@ struct UiTheme {
   OverlayStyle overlay;
 };
 
-// 預設主題(DOS;目前唯一有資產者)。
-inline const UiTheme& default_theme() {
-  static const UiTheme t{};
-  return t;
+// 所有可循環的 UI 主題(F8 依序切換)。目前僅 DOS;未來新增平台版本時,在此追加
+//   一個 UiTheme 實例(各自指定 title_scene art / combat backdrop / overlay 配色),
+//   F8 循環機制與呼叫端皆不需改(narrow interface 不變)。
+inline const std::vector<UiTheme>& theme_list() {
+  static const std::vector<UiTheme> ts = {
+    UiTheme{},   // [0] DOS(預設)
+    // 未來:UiTheme{ "pc98", "pc98_title", {...}, {...} },
+    //       UiTheme{ "amiga", ... }, UiTheme{ "x68000", ... }
+  };
+  return ts;
 }
 
+// 主題總數(F8 循環用)。
+inline int theme_count() { return (int)theme_list().size(); }
+
+// 依索引取主題(自動 wrap 到合法範圍)。
+inline const UiTheme& theme_by_index(int idx) {
+  const auto& ts = theme_list();
+  int n = (int)ts.size();
+  if (n <= 0) { static const UiTheme fallback{}; return fallback; }
+  return ts[((idx % n) + n) % n];
+}
+
+// 預設主題(DOS;索引 0)。
+inline const UiTheme& default_theme() { return theme_by_index(0); }
+
 // 依名稱取主題;未知名稱回退 default_theme()。
-//   現只有 "dos";新增平台時在此擴充(narrow interface 不變)。
 inline const UiTheme& theme_by_name(const std::string& name) {
-  // 目前單一主題。保留 switch 點供未來擴充。
-  (void)name;
+  for (const auto& t : theme_list())
+    if (t.name == name) return t;
   return default_theme();
 }
 

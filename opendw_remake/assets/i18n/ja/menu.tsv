@@ -17,3 +17,19 @@ Up/Down scroll  Space page  Esc close	上下:スクロール  スペース:ペ�
 Map  -  Esc: back	地図  -  Esc:戻る
 unconscious	気絶
 Press any key	キーを押してください
+Controls	操作説明
+Esc: close	Esc:閉じる
+Game autosaved.	ゲームを自動保存しました。
+Quit the game? (Y/N)	ゲームを終了しますか?(Y/N)
+Theme	テーマ
+Move forward / turn left / turn right	前進 / 左回転 / 右回転
+Open / force door	扉を開く / こじ開ける
+Character sheet	キャラクターシート
+Cast spell (explore)	呪文を唱える(探索)
+Shop / Tavern	店 / 酒場
+Overhead map	俯瞰マップ
+Save game	セーブ
+This help	このヘルプ
+Cycle language	言語切替
+Cycle UI theme	UIテーマ切替
+Quit (autosave + confirm)	終了(自動保存+確認)

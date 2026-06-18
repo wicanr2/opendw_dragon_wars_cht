@@ -134,6 +134,9 @@ Input SdlVideo::poll() {
       case SDLK_PAGEUP:   in.pgup = true; break;     // PgUp = 段落上翻一頁
       case SDLK_PAGEDOWN: in.pgdown = true; break;   // PgDn = 段落下翻一頁
       case SDLK_F4:     in.cycle_lang = true; break;  // F4 = 循環切換語系
+      case SDLK_F1:     in.help = true; break;        // F1 = Help 覆蓋層
+      case SDLK_F8:     in.cycle_theme = true; break; // F8 = 循環切換 UI 主題
+      case SDLK_F10:    in.request_quit = true; break;// F10 = 請求離開(確認流程)
       default:
         // `?`(Shift+/ 或 SDLK_QUESTION)= 顯示俯視平面地圖(對齊原版手冊)。
         if (k == SDLK_QUESTION ||

@@ -89,6 +89,33 @@ else
   echo "  ❌ [640×480] 無 dump 輸出"; fail=1
 fi
 
+echo "== 全域熱鍵 / 離開確認流程(F1 Help / F8 主題 / F10·ESC 離開確認)=="
+# 跑 --keys 注入序列,斷言 stderr 含預期 log(行為驗證,非畫面對拍)。
+expect() {  # <說明> <stderr 應含字串> -- <args...>
+  local desc="$1"; local needle="$2"; shift 2
+  "$BIN" --scale 1 "$@" >/dev/null 2>"$TMP/e"
+  if grep -qF "$needle" "$TMP/e"; then echo "  ✅ [$desc]"
+  else echo "  ❌ [$desc] stderr 缺 \"$needle\""; sed 's/^/      /' "$TMP/e" | tail -4; fail=1; fi
+}
+# F8:循環切換主題(目前 1 個 → wrap 回 dos)。
+expect "F8 主題循環"      "theme: cycle"                    --no-splash --frames 3 --keys F8
+# F1:開 Help 覆蓋層 → ESC 關閉。
+expect "F1 Help 開啟"     "help: open (F1)"                 --map 1 --fp --frames 4 --keys F1
+expect "Help ESC 關閉"    "help: close"                     --map 1 --fp --frames 4 --keys F1,ESC
+# F10:自動存檔 → 離開確認視窗。
+expect "F10 自動存檔"     "request-quit (F10): autosaved=1" --map 1 --fp --frames 4 --keys F10
+# 確認 Y → 離開;N → 取消回遊戲。
+expect "確認 Y 離開"      "confirm-quit: Y → quit"          --map 1 --fp --frames 4 --keys F10,Y
+expect "確認 N 取消"      "confirm-quit: N → cancel"        --map 1 --fp --frames 4 --keys F10,N
+# 頂層(menu_mode 主選單)ESC → 離開確認(非直接退出)。
+expect "頂層 ESC 確認"    "request-quit (top-ESC)"          --no-splash --frames 4 --keys ESC
+# 子畫面 ESC 隔離:menu_mode S_GAME 且角色表開啟(--char-sheet 自動進 S_GAME),
+#   ESC 應關角色表、不觸發頂層離開確認(stderr 不應有 request-quit)。
+"$BIN" --scale 1 --char-sheet 1 --frames 4 --keys ESC >/dev/null 2>"$TMP/e"
+if grep -qF "request-quit" "$TMP/e"; then
+  echo "  ❌ [子畫面 ESC 隔離] 不應觸發離開確認"; fail=1
+else echo "  ✅ [子畫面 ESC 隔離]"; fi
+
 echo
 if [ $fail -eq 0 ]; then echo "PASS: app 整合 smoke 全綠"; exit 0
 else echo "FAIL: 見上"; exit 1; fi

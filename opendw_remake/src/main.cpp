@@ -387,6 +387,11 @@ int main(int argc, char** argv) {
   int scale = 3;                  // --scale N:視窗 = 320*N × 200*N(預設 3 → 960×600,CJK≈36px 原生)
   bool win640 = false;            // --win640 / --mode 640x480:640×480 letterbox 模式(像素層 320×200 ×2 置中,字級固定 CJK24/UI16/標題48)
   int start_pc = 20, max_frames = -1, press = 0, map_area = -1;
+  // --keys SEQ:headless 逐幀注入合成輸入序列(驗證 F1/F8/F10/ESC 確認流程等)。
+  //   token 以逗號分隔,每 token 注入一幀:F1 F4 F8 F10 ESC ENTER SPACE UP DOWN LEFT RIGHT
+  //   PGUP PGDN Y N 或單一字母(A-Z)。例:--keys F10,Y(請求離開→確認)。
+  std::string keys_seq;
+  int dump_frame = -1;            // --dump-frame N:在迴圈第 N 幀(--keys 處理後)再 dump 一次(驗證覆蓋層)
   int at_x = -1, at_y = -1;       // --at x y:把玩家放到指定格(headless 驗證事件文字)
   int msg_page = 0;               // --msg-page N:訊息檢視器先翻到第 N 頁再 dump(headless 驗證分頁)
   int read_para = -1;             // --read-para N:直接開段落 N 進捲動 overlay(headless 驗證長段落)
@@ -455,6 +460,8 @@ int main(int argc, char** argv) {
     else if (eq("--mm-seed") && i + 1 < argc) { mm_seed = std::atoi(argv[++i]); mm_seed_set = true; } // 探索旗標 seeding
     else if (eq("--at") && i + 2 < argc) { at_x = std::atoi(argv[++i]); at_y = std::atoi(argv[++i]); }  // 玩家落點(測試)
     else if (eq("--press") && i + 1 < argc) press = std::toupper((unsigned char)argv[++i][0]);  // 模擬按鍵(測試)
+    else if (eq("--keys") && i + 1 < argc) keys_seq = argv[++i];   // headless 逐幀注入輸入序列
+    else if (eq("--dump-frame") && i + 1 < argc) dump_frame = std::atoi(argv[++i]);  // 迴圈第 N 幀再 dump
     else if (eq("--msg-page") && i + 1 < argc) msg_page = std::atoi(argv[++i]);   // 訊息檢視先翻到第 N 頁再 dump
     else if (eq("--read-para") && i + 1 < argc) read_para = std::atoi(argv[++i]); // 直接開段落 N 進捲動 overlay
     else if (eq("--para-scroll") && i + 1 < argc) para_scroll = std::atoi(argv[++i]); // dump 前逐頁下捲 N 次
@@ -568,7 +575,14 @@ int main(int argc, char** argv) {
   // ── UI 主題(theme-aware presentation;見 render/ui_theme.hpp)──
   //   title art / 戰鬥 backdrop / 訊息框配色等隨主題切換。目前 DOS 唯一主題;
   //   未來 PC-98 / Amiga / X68000 各自一個主題實例 + 對應資產,呼叫端不需改。
-  const render::UiTheme& theme = render::default_theme();
+  //   theme 為**值複製**(非 const&),F8 重設 theme_idx 後 reseat,各 draw_* lambda
+  //   以 [&] 捕獲 theme 變數,reassign 即時生效(畫面下幀重繪自動套用)。
+  int theme_idx = 0;                                  // 當前主題索引(state 記住;F8 循環)
+  render::UiTheme theme = render::theme_by_index(theme_idx);
+  int theme_toast = 0;                                // F8 後短暫顯示主題名的剩餘幀數(0=不顯示)
+  // ── F1 Help 覆蓋層 / F10·ESC 離開確認 ──
+  bool help_active = false;                           // F1 開啟的 Help 覆蓋層
+  bool confirm_quit_active = false;                   // 離開確認視窗(F10 / 頂層 ESC 觸發,已自動存檔)
   // 開機 title splash 用的 dragon art(theme.title_scene → bundle/scenes/<scene>.pic)。
   //   啟動載一次到獨立 framebuffer,splash 期間每幀 blit(不重解碼)。載失敗則 splash
   //   退回藍底 + 標題字(不阻擋進主選單)。
@@ -1668,6 +1682,69 @@ int main(int argc, char** argv) {
       for (int x = ix0; x <= ix1; ++x) { fb.put(x, iy0, st.border2); fb.put(x, iy1, st.border2); }
       for (int y = iy0; y <= iy1; ++y) { fb.put(ix0, y, st.border2); fb.put(ix1, y, st.border2); }
     }
+  };
+
+  // 文字置中(虛擬座標):回傳讓 utf8 在 [x0,x1] 置中的 x。
+  auto center_x = [&](const std::string& s, int x0, int x1, int px) {
+    int w = tl.measure_vwidth(s, px);
+    return x0 + ((x1 - x0) - w) / 2;
+  };
+
+  // ── F1 Help 覆蓋層:半透明優雅框 + 操作鍵清單(i18n 三語)──
+  //   精要整理自 docs/CONTROLS.md;每幀重繪 → F4 切語系即時重排。Esc / F1 關閉。
+  auto draw_help_overlay = [&]() {
+    const int HX = 24, HW = render::kW - 48, HY = 18, HH = render::kH - 36;
+    draw_overlay_box(HX, HY, HW, HH, theme.overlay);
+    int tx = HX + 8, y = HY + 6;
+    std::string title = tr.tr("Controls");
+    tl.add(center_x(title, HX, HX + HW, PX_BODY), y, title, theme.overlay.accent, PX_BODY);
+    y += PX_BODY / eff_scale + 6;
+    // 操作鍵清單(英文鍵 + i18n 說明)。鍵碼原文不譯,說明走 tr()。
+    const std::pair<const char*, const char*> rows[] = {
+      {"I / J / L", "Move forward / turn left / turn right"},
+      {"K", "Open / force door"},
+      {"V  /  1-4", "Character sheet"},
+      {"C", "Cast spell (explore)"},
+      {"P  /  T", "Shop / Tavern"},
+      {"?", "Overhead map"},
+      {"S", "Save game"},
+      {"F1", "This help"},
+      {"F4", "Cycle language"},
+      {"F8", "Cycle UI theme"},
+      {"F10  /  Esc", "Quit (autosave + confirm)"},
+    };
+    int line_h = PX_UI / eff_scale + 4;
+    for (const auto& r : rows) {
+      tl.add(tx, y, r.first, 11, PX_UI);                 // 鍵(亮藍,原文)
+      tl.add(tx + 80, y, tr.tr(r.second), 15, PX_UI);    // 說明(白,i18n)
+      y += line_h;
+    }
+    std::string foot = tr.tr("Esc: close");
+    tl.add(center_x(foot, HX, HX + HW, PX_UI), HY + HH - line_h - 2, foot, 8, PX_UI);
+  };
+
+  // ── 離開確認視窗(F10 / 頂層 ESC 觸發;已自動存檔)──
+  //   半透明優雅框 + 兩行訊息(已自動存檔 / 確定離開?Y/N),i18n 三語。
+  auto draw_confirm_quit = [&]() {
+    const int CW = 230, CH = 70;
+    const int CXq = (render::kW - CW) / 2, CYq = (render::kH - CH) / 2;
+    draw_overlay_box(CXq, CYq, CW, CH, theme.overlay);
+    std::string l1 = tr.tr("Game autosaved.");
+    std::string l2 = tr.tr("Quit the game? (Y/N)");
+    int line_h = PX_UI / eff_scale + 5;
+    int y = CYq + 12;
+    tl.add(center_x(l1, CXq, CXq + CW, PX_UI), y, l1, 15, PX_UI); y += line_h;
+    tl.add(center_x(l2, CXq, CXq + CW, PX_UI), y, l2, theme.overlay.accent, PX_UI);
+  };
+
+  // ── F8 主題切換短暫提示(toast;畫面下緣,theme_toast 幀數倒數)──
+  auto draw_theme_toast = [&]() {
+    char buf[96];
+    std::snprintf(buf, sizeof buf, "%s: %s", tr.tr("Theme").c_str(), theme.name.c_str());
+    int tw = tl.measure_vwidth(buf, PX_UI);
+    int bx = (render::kW - tw) / 2 - 6, by = render::kH - 22, bw = tw + 12, bh = 16;
+    draw_overlay_box(bx, by, bw, bh, theme.overlay);
+    tl.add(bx + 6, by + 3, buf, theme.overlay.accent, PX_UI);
   };
 
   // 訊息框底框 + 邊框(半透明 + 雙線優雅框;theme.overlay)。
@@ -2849,8 +2926,8 @@ int main(int argc, char** argv) {
   auto draw_static_text = [&]() {
     if (sprite_mode) tl.add(8, 4, sprite_name, 15, PX_UI);
   };
-  auto render_now = [&]() {
-    tl.clear();                                      // 每幀重建文字層
+  // 各狀態的基礎畫面(不含頂層 Help / 離開確認 / theme toast)。
+  auto draw_base = [&]() {
     if (state == S_TITLE) { draw_title(); return; }       // 開機 title splash(dragon art)
     if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面
     if (state == S_ENDING) {                              // 結局序列:黑底 + 結局捲動 overlay
@@ -2878,6 +2955,14 @@ int main(int argc, char** argv) {
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
     if (state == S_MENU) draw_menu();
     else draw_branch();
+  };
+  auto render_now = [&]() {
+    tl.clear();                                      // 每幀重建文字層
+    draw_base();
+    // 頂層全域覆蓋層(任何狀態之上):theme toast → Help → 離開確認(確認最上)。
+    if (theme_toast > 0) draw_theme_toast();
+    if (help_active) draw_help_overlay();
+    if (confirm_quit_active) draw_confirm_quit();
   };
   // headless / 啟動即有訊息(--at 事件格 或 --read-para):進對應檢視器。
   //   段落事件(event_para_n>=0)→ 長段落捲動 overlay(--para-scroll N 先下捲 N 頁)。
@@ -3010,6 +3095,43 @@ int main(int argc, char** argv) {
   }
 
   int frames = 0;
+  // ── --keys 合成輸入序列(headless 逐幀注入)──
+  //   解析成 token 清單;每幀消耗一個 token 轉成 render::Input,覆蓋 poll() 結果。
+  std::vector<std::string> key_tokens;
+  if (!keys_seq.empty()) {
+    std::string cur;
+    for (char c : keys_seq) {
+      if (c == ',') { if (!cur.empty()) key_tokens.push_back(cur); cur.clear(); }
+      else cur.push_back(c);
+    }
+    if (!cur.empty()) key_tokens.push_back(cur);
+    std::fprintf(stderr, "keys: %zu synthetic token(s) queued\n", key_tokens.size());
+  }
+  std::size_t key_idx = 0;
+  // token → Input(headless 注入)。回傳 true 表示有注入(本幀用合成輸入)。
+  auto synth_input = [&](render::Input& in) -> bool {
+    if (key_idx >= key_tokens.size()) return false;
+    std::string t = key_tokens[key_idx++];
+    for (auto& ch : t) ch = (char)std::toupper((unsigned char)ch);
+    in = render::Input{};   // 清空,只帶本 token
+    if (t == "F1") in.help = true;
+    else if (t == "F4") in.cycle_lang = true;
+    else if (t == "F8") in.cycle_theme = true;
+    else if (t == "F10") in.request_quit = true;
+    else if (t == "ESC") in.back = true;
+    else if (t == "ENTER" || t == "RETURN") in.select = true;
+    else if (t == "SPACE") in.select = true;
+    else if (t == "UP") in.up = true;
+    else if (t == "DOWN") in.down = true;
+    else if (t == "LEFT") in.left = true;
+    else if (t == "RIGHT") in.right = true;
+    else if (t == "PGUP") in.pgup = true;
+    else if (t == "PGDN") in.pgdown = true;
+    else if (t.size() == 1 && std::isalpha((unsigned char)t[0])) in.key = t[0];
+    else std::fprintf(stderr, "keys: unknown token '%s' (skipped)\n", t.c_str());
+    std::fprintf(stderr, "keys: inject [%zu/%zu] %s\n", key_idx, key_tokens.size(), t.c_str());
+    return true;
+  };
   // --terrain-cast:headless 一次性套用(在 S_GAME、首幀對前方/當前格施地形法術後印結果)。
   bool terrain_cast_done = false;
   for (;;) {
@@ -3036,7 +3158,13 @@ int main(int argc, char** argv) {
     }
     render_now();
     vid.present(fb);
+    // --dump-frame N:迴圈第 N 幀(此時已套用前面幀的輸入,如 F1/F10 覆蓋層)再 dump 一次。
+    if (dump_frame >= 0 && frames == dump_frame && !dump.empty()) {
+      if (vid.dump_ppm(fb, dump))
+        std::fprintf(stderr, "dumped loop frame %d to %s\n", frames, dump.c_str());
+    }
     render::Input in = vid.poll();
+    synth_input(in);   // headless --keys:有排隊 token 則覆蓋本幀輸入(否則保留 poll 結果)
     // 建角命名階段:'q' 是合法名字字元(如 "Quinn"),不應觸發離開。
     //   poll 把 Q 同時設 quit 與 text_char='q'/'Q' → 命名時改當文字輸入,吃掉 quit。
     if (in.quit && state == S_CREATE && cg.active && cg.phase == CharGenUi::PhName &&
@@ -3044,6 +3172,69 @@ int main(int argc, char** argv) {
       in.quit = false;
     }
     if (in.quit) break;
+    if (theme_toast > 0) --theme_toast;   // F8 主題提示倒數(每幀)
+
+    // ── 離開確認視窗(最高優先;開啟時接管全部輸入)──
+    //   已於開啟時自動存檔。Y / Enter → 離開遊戲;N / Esc → 取消回遊戲。
+    if (confirm_quit_active) {
+      if (in.key == 'Y' || in.select) {
+        std::fprintf(stderr, "confirm-quit: Y → quit\n");
+        break;
+      }
+      if (in.key == 'N' || in.back) {
+        confirm_quit_active = false;
+        std::fprintf(stderr, "confirm-quit: N → cancel (back to game)\n");
+      }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;                                          // 確認期間不處理其他輸入
+    }
+
+    // ── F1 Help 覆蓋層(開啟時接管輸入;Esc / F1 關閉)──
+    if (help_active) {
+      if (in.back || in.help) { help_active = false; std::fprintf(stderr, "help: close\n"); }
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;                                          // Help 期間不處理其他輸入
+    }
+    if (in.help) {                                       // F1:開 Help
+      help_active = true;
+      std::fprintf(stderr, "help: open (F1)\n");
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;
+    }
+
+    // ── F8:循環切換 UI 主題(state 記住索引;畫面下幀重繪即時套用;短暫 toast 提示)──
+    if (in.cycle_theme) {
+      theme_idx = (theme_idx + 1) % render::theme_count();
+      theme = render::theme_by_index(theme_idx);
+      theme_toast = 90;                                  // 顯示約 90 幀(toast)
+      std::fprintf(stderr, "theme: cycle → [%d] %s (count=%d)\n",
+                   theme_idx, theme.name.c_str(), render::theme_count());
+      if (max_frames >= 0 && ++frames >= max_frames) break;
+      continue;
+    }
+
+    // ── 離開請求:F10(任何狀態) 或 頂層 ESC(主選單 / S_GAME 探索無子畫面)──
+    //   觸發:自動存檔(有隊伍時)→ 開離開確認視窗(Y/N)。避免不小心按 ESC 直接掉出遊戲。
+    {
+      // S_GAME 是否有子畫面正在用 ESC(訊息/段落/角色表/商店/酒館/施法/重排)→ 該 ESC 歸子畫面。
+      bool game_sub_overlay = state == S_GAME &&
+          (msg.active || para.active || sheet.active || shop_ui.active ||
+           tavern_ui.active || cast_ui.active || reorder_ui.active);
+      //   S_TITLE 的 ESC 維持「進主選單」(由下方 S_TITLE handler 處理),不觸發離開確認。
+      //   !menu_mode(sprite/scene/viewport/--map 直開 等 headless viewer)維持 ESC 直接離開。
+      bool top_level_esc = menu_mode && in.back && !game_sub_overlay &&
+          (state == S_MENU || (state == S_GAME && !game_sub_overlay));
+      if (in.request_quit || top_level_esc) {
+        bool saved = false;
+        if (party.size() > 0) saved = do_save();          // 自動存檔(既有 do_save;無隊伍則略過)
+        confirm_quit_active = true;
+        std::fprintf(stderr, "request-quit (%s): autosaved=%d → confirm window\n",
+                     in.request_quit ? "F10" : "top-ESC", (int)saved);
+        if (max_frames >= 0 && ++frames >= max_frames) break;
+        continue;
+      }
+    }
+
     // F4:即時循環切換語系 → 重載字串/段落書 → 重譯所有 widget。
     // 因每幀重繪(render_now),畫面立即變為新語言;事件文字重跑該關腳本重譯。
     if (in.cycle_lang && !locales.empty()) {

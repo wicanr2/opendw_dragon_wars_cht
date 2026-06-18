@@ -76,6 +76,12 @@
   - 閃避:本回合自身 DV +`kDodgeDvBonus`(被命中門檻下降),下回合輪到前清除。
   - headless `--combat-special <mighty|disarm|advance|quick|dodge>`(配 `--encounter`);ctest `verify_combat_special`。
 - **多語**:`F4` 循環 繁中 / EN / 日;`--locale <id>`。
+- **全域熱鍵(F1 / F8 / F10)+ 離開確認**:
+  - `F1` = **Help 覆蓋層**:半透明優雅框列目前操作鍵(移動 I/J/L、K 開門、V 角色表、C 施法、? 地圖、S 存檔、F4 語言、F8 主題、F10 離開…),i18n 三語;`Esc` 或再按 `F1` 關閉。
+  - `F8` = **循環切換 UI 主題**(`UiTheme`,見 `src/render/ui_theme.hpp`):畫面下幀即時重繪 + 短暫 toast 提示當前主題名;當前索引記在 state。目前僅 DOS 一個主題,未來 PC-98 / Amiga / X68000 加入後 F8 即可循環。
+  - `F10` = **離開遊戲**:先**自動存檔**(`do_save`)→ 彈半透明 yes/no 確認視窗「遊戲已自動存檔。確定離開遊戲?Y/N」(i18n)。`Y` / `Enter` → 離開;`N` / `Esc` → 回遊戲。
+  - **`Esc` 不再於頂層直接結束**:子畫面 `Esc` = 返回 / 關閉(維持現狀);**頂層(主選單 / S_GAME 探索,無子畫面)`Esc` = 觸發同一離開確認流程**(自動存檔 + yes/no),避免不小心按到 `Esc` 直接掉出遊戲。`Q` 仍為手冊的直接離開鍵。
+  - headless 驗證:`--keys <SEQ>` 逐幀注入合成輸入(token:F1 F4 F8 F10 ESC ENTER UP/DOWN Y N 字母…);`--dump-frame N` 在迴圈第 N 幀再 dump(看覆蓋層)。ctest `smoke_app` 含 8 項熱鍵 / 離開確認斷言。
 - **已接入指令**:`C` 探索施法、`K` 開門/破密門、`X` 配點(角色表內)、`U` 使用物品(角色表物品欄內 `V`→`E`→選格→`U`)、`E` 裝備穿脫、`P` 商店、`T` 招募、`O` 重排隊伍、`D`/`R` 刪除/改名(角色表內)、物品 `D` 丟棄 / `T` 轉移(物品欄內)。
 - **未實作指令**(`Ctrl+S` 聲音):待音訊子系統接入(目前 op_90 忠實 no-op)。
 
@@ -89,6 +95,8 @@
 | `--newgame` | 啟動即進建角畫面(互動建角流程 S_CREATE) |
 | `--title` | 強制顯示開機 title splash(火龍之戰 dragon art) |
 | `--no-splash` | 略過 title splash,直接進主選單(headless / 自動化) |
+| `--keys <SEQ>` | 逐幀注入合成輸入序列(token 逗號分隔:F1 F4 F8 F10 ESC ENTER SPACE UP/DOWN/LEFT/RIGHT PGUP/PGDN 或單一字母);驗證熱鍵 / 離開確認流程 |
+| `--dump-frame <N>` | 在互動迴圈第 N 幀(`--keys` 處理後)再 dump 一次(看 Help / 離開確認等覆蓋層) |
 | `--scene <name>` | 直接渲染指定場景圖(scene 模式,不進選單 / 遊戲) |
 | `--fp` | S_GAME 用第一人稱 viewport(取代俯視彩格) |
 | `--at <x> <y>` | 把玩家放到指定格;若為事件格立刻跑事件腳本(headless 驗證) |
