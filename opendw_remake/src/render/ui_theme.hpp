@@ -91,6 +91,12 @@ struct UiTheme {
   //   note 為簡短英文說明(toast 顯示用,經 tr() 在地化)。
   bool partial = false;
   std::string note;
+  // 「真 VGA」256 色增強(VGA-256 theme;remake 加值,原版無此版本)。
+  //   true 時呼叫端(main.cpp / SdlVideo)走 256 色路徑:framebuffer 仍由各渲染器以
+  //   16 色繪製,但 present/dump 前經 enhance_to_256(垂直漸層 + 邊緣壓暗)轉 256 色,
+  //   套 vga_palette() 256 色盤。DOS/Amiga/X68000 此旗標為 false → 16 色路徑不變
+  //   (golden 對拍不破)。palette 欄位仍保留 16 色(載 title art / set_palette 前置用)。
+  bool vga256 = false;
 };
 
 // 結局過場各場景的英文敘事鍵(經 tr() 在地化 → 繁中/日;查無回退英文)。
@@ -170,6 +176,24 @@ inline const std::vector<UiTheme>& theme_list() {
     x68000.partial = true;
     x68000.note = "partial: DOS-palette placeholder, DOS title fallback";
     v.push_back(x68000);
+
+    // [3] VGA-256(remake 加值;原版無此版本)。256 色「真 VGA」增強主題:
+    //   以 DOS EGA 16 色畫面為來源,present/dump 前經 enhance_to_256(垂直漸層 +
+    //   邊緣壓暗)演算法化擴成 256 色更精緻版本(見 render/vga256.hpp)。
+    //   - 16 色 base palette 仍用 DOS 盤(title art / set_palette 前置;實際畫面套 256 色盤)。
+    //   - title 沿用 DOS dragon art(無原生 VGA 標題,誠實回退)。
+    //   - 結局過場沿用 DOS 序列(theme_ending_scenes 回退),同樣經 256 色增強呈現。
+    //   - partial=false:此主題的「256 色增強」是完整、確定性的演算法 pass(非未完成移植);
+    //     但誠實標示為「演算法增強(漸層/色深擴展/柔邊),非逐像素手繪重畫」(見 vga256.hpp)。
+    UiTheme vga;
+    vga.name = "vga";
+    vga.title_ref = "29";                      // 回退 DOS dragon art(無原生 VGA 標題)
+    vga.title_source = TitleSource::kDosScene;
+    vga.palette = kDosPalette;                 // 16 色 base(實際畫面由 enhance_to_256 → 256 色)
+    vga.vga256 = true;                         // 開啟 256 色增強路徑
+    vga.combat = CombatBackdrop{};
+    vga.overlay = OverlayStyle{};
+    v.push_back(vga);
     return v;
   }();
   return ts;

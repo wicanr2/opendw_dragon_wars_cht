@@ -65,8 +65,16 @@ public:
 
   // per-theme palette:切 UI 主題(F8)時呼叫,之後 present/dump 用此盤把 indexed→RGB。
   //   預設 DOS 盤;DOS 主題 set DOS 盤(回歸不變)、Amiga 主題 set Amiga 盤。
-  void set_palette(const std::array<Rgb, 16>& pal) { active_palette_ = pal; }
+  //   set_palette() 同時關閉 256 色增強(切回 16 色路徑),確保 DOS/Amiga/X68000
+  //   永遠走原本 16 色 to_rgb(golden 對拍不破)。
+  void set_palette(const std::array<Rgb, 16>& pal) { active_palette_ = pal; vga256_ = false; }
   const std::array<Rgb, 16>& palette() const { return active_palette_; }
+
+  // 「真 VGA」256 色增強模式(VGA-256 theme 專用;remake 加值)。開啟後 present/dump
+  //   先把 16 色 framebuffer 經 enhance_to_256(垂直漸層 + 邊緣壓暗)轉 256 色索引,
+  //   再用 vga_palette() 256 色盤 to_rgb。DOS/Amiga/X68000 不呼叫此函式 → 16 色路徑不變。
+  void set_vga256(bool on) { vga256_ = on; }
+  bool is_vga256() const { return vga256_; }
 
   void present(const Framebuffer& fb);   // 像素層放大 + 文字層合成 → 顯示
   Input poll();                          // 收集本幀事件(in.quit=true 表示要結束)
@@ -108,6 +116,7 @@ private:
   bool headless_ = false;
   bool mode640_ = false;         // true = 640×480 letterbox 模式
   std::array<Rgb, 16> active_palette_ = kDosPalette;  // 目前生效的 16 色盤(per-theme;set_palette)
+  bool vga256_ = false;                              // true = 256 色增強路徑(VGA-256 theme)
   TextLayer text_;
 };
 

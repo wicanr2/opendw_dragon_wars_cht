@@ -31,23 +31,30 @@ static void check(bool ok, const char* what) {
 int main(int argc, char** argv) {
   const std::string bundle = (argc > 1) ? argv[1] : "assets/bundle";
 
-  // 1) 三主題 + F8 循環。
-  check(theme_count() == 3, "theme_count == 3 (dos/amiga/x68000)");
+  // 1) 四主題 + F8 循環(dos / amiga / x68000 / vga)。
+  check(theme_count() == 4, "theme_count == 4 (dos/amiga/x68000/vga)");
   check(theme_by_index(0).name == "dos", "theme[0] == dos");
   check(theme_by_index(1).name == "amiga", "theme[1] == amiga");
   check(theme_by_index(2).name == "x68000", "theme[2] == x68000");
-  check(theme_by_index(3).name == "dos", "F8 wrap: index 3 -> dos");
-  check(theme_by_index(-1).name == "x68000", "negative wrap: index -1 -> x68000");
+  check(theme_by_index(3).name == "vga", "theme[3] == vga");
+  check(theme_by_index(4).name == "dos", "F8 wrap: index 4 -> dos");
+  check(theme_by_index(-1).name == "vga", "negative wrap: index -1 -> vga");
 
   // 2) per-theme palette。
   check(theme_by_index(0).palette == kDosPalette, "dos palette == kDosPalette");
   check(theme_by_index(1).palette != kDosPalette, "amiga palette != DOS (own 16-colour set)");
   check(theme_by_index(2).palette == kDosPalette, "x68000 palette == DOS placeholder");
+  check(theme_by_index(3).palette == kDosPalette, "vga 16-colour base == DOS (256 色由 enhance pass 生成)");
 
-  // 3) 誠實標示。
+  // 3) 誠實標示 + VGA-256 旗標。
   check(theme_by_index(1).partial == false, "amiga is full (partial == false)");
   check(theme_by_index(2).partial == true, "x68000 is partial (partial == true)");
   check(!theme_by_index(2).note.empty(), "x68000 has honest note");
+  check(theme_by_index(0).vga256 == false, "dos vga256 == false (16-colour path)");
+  check(theme_by_index(1).vga256 == false, "amiga vga256 == false (16-colour path)");
+  check(theme_by_index(2).vga256 == false, "x68000 vga256 == false (16-colour path)");
+  check(theme_by_index(3).vga256 == true,  "vga vga256 == true (256-colour enhance path)");
+  check(theme_by_index(3).partial == false, "vga not partial (deterministic algorithmic enhancement)");
 
   // 4) Amiga title.pic 解碼。
   const std::string tpath = bundle + "/themes/amiga/title.pic";

@@ -1847,9 +1847,13 @@ int main(int argc, char** argv) {
   auto draw_theme_toast = [&]() {
     char buf[128];
     // 誠實標示:partial 主題在名稱後加「(partial)」(對齊 ui_theme.hpp note;非完整移植)。
+    //   VGA-256 主題在名稱後加「(256色)」標示為 256 色增強版(remake 加值)。
     if (theme.partial)
       std::snprintf(buf, sizeof buf, "%s: %s (%s)", tr.tr("Theme").c_str(),
                     theme.name.c_str(), tr.tr("partial").c_str());
+    else if (theme.vga256)
+      std::snprintf(buf, sizeof buf, "%s: %s (%s)", tr.tr("Theme").c_str(),
+                    theme.name.c_str(), tr.tr("256 colours").c_str());
     else
       std::snprintf(buf, sizeof buf, "%s: %s", tr.tr("Theme").c_str(), theme.name.c_str());
     int tw = tl.measure_vwidth(buf, PX_UI);
@@ -3187,6 +3191,10 @@ int main(int argc, char** argv) {
     if (theme_toast > 0) draw_theme_toast();
     if (help_active) draw_help_overlay();
     if (confirm_quit_active) draw_confirm_quit();
+    // ── VGA-256 主題:統一在 present/dump 前打開 256 色增強路徑 ──
+    //   draw_base 內各狀態會呼叫 set_palette(會 reset vga256_),故在此最後一步依當前
+    //   theme.vga256 重新設定;DOS/Amiga/X68000 → false(16 色路徑不變,golden 不破)。
+    vid.set_vga256(theme.vga256);
   };
   // headless / 啟動即有訊息(--at 事件格 或 --read-para):進對應檢視器。
   //   段落事件(event_para_n>=0)→ 長段落捲動 overlay(--para-scroll N 先下捲 N 頁)。
