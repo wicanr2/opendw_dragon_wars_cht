@@ -88,8 +88,9 @@ title.pic (21805B, 壓縮)
 >   Humbaba(218)為原生 Amiga 美術。
 > - **工具**:`tools_build/amiga_res_extract`(C++,連 decompress.cpp)批次抽 data4 →
 >   `amiga_sprite_extract.py --auto-crop` 逐隻轉 .spr。
-> - **受阻**:仍只切主格(多動畫格未逐格切);200/242/244 等少數自帶盤 bg=黑(非紅),
->   自動裁切只取單格,品質次於紅底主流。
+> - **多動畫格已定論(2026-06-18 深逆向)**:**資源本身即單格,無多格可切**(逐字測量 9 隻,真資料皆
+>   = 1.00 格,單格後全是 fill padding;見下「多動畫格定論」節)。改以單格做程序化 idle 呼吸 + 受擊閃白,
+>   讓戰鬥怪物會動(不偽造假格);200/242/244 等少數自帶盤 bg=黑,裁切品質次於紅底主流。
 
 
 ### archive 結構（已驗證）
@@ -143,18 +144,52 @@ blit、非 chunky、而是 plane-sequential 4-bitplane;width/height 由 header w
   皆為 Amiga 原生立繪。DOS theme combat 像素 dump 與改動前 **byte-identical**(golden 未破)。
 - 回歸保護:`verify_theme`(ctest)新增 6 隻 Amiga sprite 載入 + 尺寸 + 自帶盤 + sprite 接線斷言。
 
-### 受阻 / TODO
-- **多動畫格:2026-06-18 重查,判定受阻(不做)**。逐字解 header(@32)= word[0]=顯示寬 W、
-  word[1]=H、word[2]=bpr(plane 寬=bpr*8)、word[3]=H 重複;**無 frame offset 表**(word[4..7]
-  已是像素資料)。實測:
-  - Spider(196):plane 寬 96 ≈ 顯示寬 92,solid 欄僅右緣 padding(94/95)→ **乾淨單格**。
-  - Pikeman(210):plane 寬 128、顯示寬 125,但畫面右側已出現**第二個人形局部**(非固定偏移)→
-    同一資源確實塞了不只一格,但邊界**非確定性可偵測**(無分隔表、separator 規則不一致)。
-  - 結論:frame 邊界無可靠演算法切分,逐格切會產生不可靠 crop(風險非低)→ **保留主格,不切動畫格**。
-    要做需更深逆向 dw 的 sprite 播放常式(哪個欄位 / 外部表決定第 N 格起點),本次未做。
-- 196/152/210 主格右緣偶留 1–2 px 黑分隔條(crop 邊界);200_innocent_man 自動裁切只取到單格,
-  品質次於其餘 5 隻。
-- header 欄位語意已大致解出(word[0]=W、word[1]=H、word[2]=bpr、word[3]=H);frame 計數 / 起點欄位未明。
+### 多動畫格:2026-06-18 深逆向定論 = **資源本身就是單格**(非「切不出」,是「沒有多格可切」)
+
+> 先前(#161)記為「多格邊界非確定性可偵測 → 保留主格」。本次**逐字測量解壓後完整 byte 結構**,
+> 推翻「Pikeman 塞了第二個人形」的判讀:那其實是**單格真資料與 fill padding 的邊界被誤讀成第二格**。
+> 結論升級為**確定性**:Amiga 怪物 sprite 每資源只含 1 個 frame 的真實像素,**無動畫格存在**。
+
+**測量方法(docker,可重現;工具見 `tools_build/amiga_res_extract` + scratch 分析腳本)**:
+1. 解壓後 buffer 遠大於單格(Spider 196 解出 64523 B,單格僅 3024 B;= 21 倍)。先前只解單格、
+   把其餘當噪音。
+2. 量「真資料結束點」= 從尾端往前找第一個 ≠ 主導 fill byte 的位置:
+
+   | 資源 | H | bpr | 單格大小(B) | fill byte | 真資料(去 pal 後) | = 幾格 |
+   |---|---|---|---|---|---|---|
+   | 152 Guard | 112 | 14 | 6272 | 0x86 | 6284 | **1.00** |
+   | 166 K.Guard | 120 | 16 | 7680 | 0x70 | 7692 | **1.00** |
+   | 168 Wolf | 112 | 14 | 6272 | 0xf8 | 6284 | **1.00** |
+   | 196 Spider | 63 | 12 | 3024 | 0x00 | 3036 | **1.00** |
+   | 200 Innocent | 104 | 8 | 3328 | 0xd0 | 3340 | **1.00** |
+   | 202 Gladiator | 131 | 16 | 8384 | 0xff | 8396 | **1.00** |
+   | 210 Pikeman | 137 | 16 | 8768 | 0xfb | 8780 | **1.00** |
+   | 218 Humbaba | 112 | 16 | 7168 | 0xf3 | 7180 | **1.00** |
+   | 222 Fanatic | 132 | 10 | 5280 | 0x00 | 5291 | **1.00** |
+
+   9/9 隻真資料皆 = 1.00 格;單格後**整段是同一 fill byte**(tail 熵 ≈ 0.00:Wolf 尾端 37740 B 全 `0xf8`、
+   Spider 尾端 61455/61467 B 全 `0x00`)。fill 是 Huffman 解壓器把畫布補滿背景的產物,非動畫資料。
+3. 視覺反證:把單格後資料當「frame 1」以 plane-sequential 解碼 → 第一格乾淨、第二格只是 padding 邊界錯位的
+   殘影、第三格起全是縱條噪音(`/tmp` dump 已目視)。interleaved 解碼整張即垃圾 → 確認單格為 plane-sequential。
+4. 排除「奇數資源 = 另一格」:140–254 偶數=怪物 sprite;相鄰奇數資源(167/169/197/211)header 解出
+   H=354/476/1054 等不合理值,以怪物幾何解碼為純噪音 → **不是同怪的別格**。
+- **header 欄位全解**:@32 word[0]=顯示寬 W、word[1]=H、word[2]=bpr(plane 寬=bpr*8)、word[3]=H 重複;
+  word[4..] 即像素資料。**無 frame 計數欄、無 frame offset 表、無 separator** —— 因為根本沒有多格需要索引。
+- 結論:**沒有可切的動畫格**(不是切不乾淨,是資料裡只有一格)。維持每怪單格立繪。
+
+### 戰鬥怪物會動(單格程序化動畫;不偽造假格)
+既然無真動畫格,改用單格做程序化「活化」,讓戰鬥怪物不再是死圖:
+- **idle 呼吸**:`main.cpp draw_encounter` 依全域 `anim_tick`(每幀 +1)以三角波讓立繪 y ±1px 緩慢起伏
+  (週期 48 幀)。headless 與 anim_tick 同步 → `--dump-frame N` 相位確定可重現。
+- **受擊閃白**:我方命中怪物時(`append_group_events` 見 `e.hit && e.attacker_is_player`)設
+  `enc.hit_flash=8`;閃白期間怪物立繪非透明像素改畫 index 1(白)的剪影,**只蓋立繪輪廓、不動 backdrop**。
+- **DOS golden 不破**:呼吸在 anim_tick=0(每場戰鬥起手 frame 0)bob=0 → 與改動前位置一致;
+  `verify_encounter_golden_wolf` 走獨立 blit 路徑(不經主迴圈動畫),未受影響。ctest 34 全綠。
+- 目視:`--theme amiga --encounter 4 --combat-rounds 1 --dump-frame 0`(Pikeman 受擊閃白剪影)、
+  `--dump-frame 1/13`(呼吸 ±1px)已 dump 確認。
+
+### 殘留
+- 200_innocent_man 自帶盤 bg=黑(非紅),自動裁切品質次於其餘隻(屬裁切邊界,非動畫問題)。
 
 ---
 
