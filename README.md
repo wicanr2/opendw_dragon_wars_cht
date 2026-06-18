@@ -4,7 +4,7 @@
 > C++20 + SDL2 乾淨重寫 ✦ 以 opendw（C 反組譯）為逐位元正確性 oracle ✦ 24px 銳利 CJK ✦ 繁中／英文／日文三語
 
 [![CI](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml/badge.svg)](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml)
-![ctest](https://img.shields.io/badge/ctest-33%2F33-success)
+![ctest](https://img.shields.io/badge/ctest-34%2F34-success)
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![SDL2](https://img.shields.io/badge/SDL2-ttf-blue)
 ![license](https://img.shields.io/badge/code-BSD-green)
@@ -87,7 +87,7 @@ cmake -S . -B build && cmake --build build --target opendw_remake
 ./build/opendw_remake --win640        # 640×480 視窗（固定 24/16px CJK）
 ./build/opendw_remake --read-para 88  # Read Paragraph 段落檢視器
 ./build/opendw_remake --fight-namtar  # 終戰 Namtar → 結局
-cd build && ctest                     # 回歸測試（33/33；CI 亦跑）
+cd build && ctest                     # 回歸測試（34/34；CI 亦跑）
 ```
 
 預設繁體中文，遊戲中 `F4` 循環切 繁中 / EN / 日。
@@ -197,7 +197,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 第一人稱 viewport 全 40 關逐像素對拍 opendw（`render_sweep` 154 case byte-for-byte）。整體版面、配色貼著原版 DOS，標題畫面幾乎逐像素還原（刻意保留英文 logo）。詳見[下節對照](#fidelity)與 [docs/60](opendw_remake/docs/audit/60_DOS_VS_REMAKE_VISUAL.md)。
 
 **自包含，工程化**
-資產萃取成 `assets/bundle/`，執行期不依賴原始磁碟檔；docker-first 建置；ctest **33/33**；GitHub Actions CI；Linux 可攜包已實機驗證，Windows / macOS CI 設定已備。
+資產萃取成 `assets/bundle/`，執行期不依賴原始磁碟檔；docker-first 建置；ctest **34/34**；GitHub Actions CI；Linux 可攜包已實機驗證，Windows / macOS CI 設定已備。
 
 ---
 
@@ -258,7 +258,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 2. **手寫 script VM**。目前實作 **126/256 opcode**（模式 / 算術 / 旗標 / 邏輯 / 比較 / 跳轉 / loop / game_state / bit / 字串輸出）。差異測試 harness（`diff_trace`）逐指令比對 remake VM trace 與 opendw oracle trace。
 3. **補出 opendw 從未逆向的 opcode**。op_43/5F/60/63、op_68/79/5B 等在 opendw 標 NULL 或無 C oracle 的指令，直接從原始 DRAGON.COM ASM 反組譯補出並驗。
 4. **資產脫離磁碟**。ResourceProvider 抽象（oracle 用 Data1Provider / 執行期用 BundleProvider），BundleProvider 載入 == DATA1 byte-for-byte，但執行期不依賴原始檔——換檔即換美術（未來 X68000 / PC-9801 素材）。
-5. **每個宣稱都可驗證**。`tools/verify/` 下 33 個 ctest 對拍渲染、存讀檔、戰鬥、連通、i18n…，全綠才算數。
+5. **每個宣稱都可驗證**。`tools/verify/` 下 34 個 ctest 對拍渲染、存讀檔、戰鬥、連通、i18n…，全綠才算數。
 
 延伸閱讀：
 - 🏗️ [opendw_remake/ARCHITECTURE.md](opendw_remake/ARCHITECTURE.md) — VM / 渲染 / 資產層設計與階段表
@@ -296,7 +296,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 
 | 平台 | 取得 SDL2 | 狀態 |
 |---|---|---|
-| Linux (x86_64) | apt `libsdl2-dev` `libsdl2-ttf-dev` | ✅ docker 實機驗證：build + ctest 33/33 + 產包 + headless 執行 |
+| Linux (x86_64) | apt `libsdl2-dev` `libsdl2-ttf-dev` | ✅ docker 實機驗證：build + ctest 34/34 + 產包 + headless 執行 |
 | Windows (x64) | vcpkg `sdl2` `sdl2-ttf`（MSVC） | ⏳ CI 設定已備，未在本環境實機驗證 |
 | macOS | Homebrew `sdl2` `sdl2_ttf` | ⏳ CI 設定已備，未在本環境實機驗證 |
 
@@ -309,7 +309,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 opendw_dragon_wars_cht/
 ├── opendw_remake/         # ★ 主產物：C++20 + SDL2 乾淨重寫的 runtime（可玩）
 │   ├── src/               #   resource / vm / render / game / i18n
-│   ├── tools/verify/      #   對拍 / 驗證工具（ctest 33 項）
+│   ├── tools/verify/      #   對拍 / 驗證工具（ctest 34 項）
 │   ├── tools/extract/     #   DATA1/DATA2 → 自包含 bundle 萃取
 │   ├── assets/bundle/     #   自包含資產（maps/sprites/scenes/scripts/monsters/items/…）
 │   ├── assets/i18n/       #   zh-TW / en / ja 在地化 TSV
