@@ -37,7 +37,7 @@
 
 這個專案做兩件事：
 
-- **乾淨室重製**。不是把組合語言再翻一次，而是理解後的現代重寫——手寫的 script VM + 渲染器 + 資產層，**執行原始（已萃取並驗證）的 bytecode**。正確性靠 [opendw](https://github.com/dswban/opendw)（Rebecca Heineman 路線的 C 反組譯）當 **oracle**：每個模組以「與 opendw 逐位元 / 逐指令一致」為驗收。
+- **乾淨室重製**。不是把組合語言再翻一次，而是理解後的現代重寫——手寫的 script VM + 渲染器 + 資產層，**執行原始（已萃取並驗證）的 bytecode**。正確性靠 [opendw](https://github.com/dswban/opendw)（Devin Smith 的 C 反組譯，對應 Rebecca Heineman 1989 原版引擎）當 **oracle**：每個模組以「與 opendw 逐位元 / 逐指令一致」為驗收。
 - **繁體中文化**。menu、角色、戰鬥、法術、物品全繁中，主線事件 200+ 鍵 + 147 段落 + 結局譯成繁中；遊戲中 `F4` 可即時切 繁中 / EN / 日，24×24 點陣與 SDL2_ttf 雙層渲染讓 CJK 永遠銳利。
 
 成果：`opendw_remake/`（C++20 + SDL2）現在能跑出**完整一輪**——**建立人物 → 探索 38/40 連通世界 → 主線繁中事件 → 終戰 Namtar → 結局 → 全劇終**。資產已萃取成自包含 bundle（`assets/bundle/`），**執行期不需要原始 `DRAGON.COM` / `DATA1` / `DATA2`**。
@@ -273,14 +273,15 @@ opendw_dragon_wars_cht/
 
 **重寫程式碼**（`opendw_remake/`）為原創，採 **BSD** 授權。
 
-**原始 OpenDW** 採 BSD 授權；engine 出自 [Rebecca Ann Heineman](https://www.burgerbecky.com/) 的反組譯工作。
+**opendw**（C 反組譯，本專案的正確性 oracle）由 **Devin Smith** 製作、採 BSD 授權；它反組譯的**原版遊戲引擎**出自 [Rebecca Ann Heineman](https://www.burgerbecky.com/)（1989 原作程式）。
 
 **《火龍之戰》(Dragon Wars)** 是 **Interplay** 的商標與著作。本專案的執行所需資產衍生自原版（1989/90），屬保存 / 中文化範疇——**本 repo 不散布任何原始遊戲檔**（`DRAGON.COM` / `DATA1` / `DATA2`）。請於 [GOG](https://www.gog.com/game/dragon_wars) 取得合法原版。
 
 | 致謝 | 貢獻 |
 |---|---|
 | **Interplay** | 《火龍之戰》原作（1989/90） |
-| **Rebecca Ann Heineman / opendw** | C 反組譯——本專案的正確性 oracle |
+| **Rebecca Ann Heineman** | 原版遊戲引擎程式（1989） |
+| **Devin Smith / opendw** | C 反組譯——本專案的正確性 oracle |
 | **WenQuanYi 文泉驛 / Noto CJK** | 中日文字型 |
 | **Chun-Yu Wang**（wicanr2） | 本專案發起人 |
 
