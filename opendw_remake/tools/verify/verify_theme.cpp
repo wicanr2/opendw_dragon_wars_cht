@@ -17,6 +17,7 @@
 
 #include "render/framebuffer.hpp"
 #include "render/picture.hpp"
+#include "render/sprite.hpp"
 #include "render/ui_theme.hpp"
 
 using namespace dw::render;
@@ -76,6 +77,41 @@ int main(int argc, char** argv) {
     for (bool s : seen) if (s) ++used;
     check(used >= 4, "amiga title decode uses >= 4 colour indices (non-blank art)");
     check(seen[2], "amiga title uses index 2 (golden dragon present)");
+  }
+
+  // 5) Amiga theme 戰鬥 sprite 接線(theme-aware combat art)。
+  const auto& am = theme_by_index(1);
+  check(am.sprite_dir == "themes/amiga/sprites", "amiga sprite_dir == themes/amiga/sprites");
+  check(am.sprite_own_palette == true, "amiga sprite_own_palette == true");
+  check(am.sprite_transparent == 8, "amiga sprite transparent index == 8 (red bg)");
+  check(theme_by_index(0).sprite_dir.empty(), "dos sprite_dir empty (= bundle/sprites)");
+  check(theme_by_index(0).sprite_transparent == 6, "dos transparent index == 6 (brown bg)");
+
+  // 6) Amiga 怪物 sprite(逆向 data4 4-bitplane → .spr,各帶自帶 16 色 Amiga palette)。
+  //    驗:可載、寬高合理、自帶 16 色盤(且 ≠ DOS,= 各怪物自有色系)。
+  //    red_bg=true 的 5 隻為標準紅底 sprite(pal[8]=紅=透明色 8);200_innocent_man 為
+  //    例外(自帶盤 bg=黑、自動裁切只取到單一動畫格,誠實標示 partial,不驗 pal[8])。
+  struct { const char* file; int w; int h; bool red_bg; } amspr[] = {
+      {"196_spider", 94, 63, true}, {"168_wolf", 83, 112, true},
+      {"222_fanatic", 67, 132, true}, {"152_guard", 88, 112, true},
+      {"210_pikeman", 93, 137, true}, {"200_innocent_man", 33, 104, false},
+  };
+  for (auto& s : amspr) {
+    const std::string p = bundle + "/themes/amiga/sprites/" + s.file + ".spr";
+    auto sp = Sprite::load(p);
+    char msg[128];
+    std::snprintf(msg, sizeof msg, "amiga sprite %s loads", s.file);
+    check(sp.has_value(), msg);
+    if (sp) {
+      std::snprintf(msg, sizeof msg, "amiga sprite %s dims %dx%d", s.file, s.w, s.h);
+      check(sp->w == s.w && sp->h == s.h, msg);
+      std::snprintf(msg, sizeof msg, "amiga sprite %s has 16-colour self palette", s.file);
+      check(sp->palette.size() == 16, msg);
+      if (s.red_bg) {  // 標準紅底:index 8 = 紅(透明色)。
+        std::snprintf(msg, sizeof msg, "amiga sprite %s pal[8] == red (0xF00)", s.file);
+        check(sp->palette[8].r == 255 && sp->palette[8].g == 0 && sp->palette[8].b == 0, msg);
+      }
+    }
   }
 
   std::fprintf(stderr, "verify_theme: %s (%d failure(s))\n", fails ? "FAIL" : "PASS", fails);

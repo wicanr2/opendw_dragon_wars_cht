@@ -377,6 +377,7 @@ static std::uint8_t tile_color(std::uint8_t t) {
 
 int main(int argc, char** argv) {
   std::string bundle = "assets/bundle";
+  std::string start_theme;   // --theme NAME:啟動即套指定 UI 主題(dos/amiga/x68000;headless 驗證用)
   std::string font_raw = "assets/fonts/dw8x8.bin";
   // 多國語系:F4 即時循環切換。清單固定 {zh-TW, en, ja};--locale 設定起始語系。
   // 加語言 = 在此清單加一項 + 加 assets/i18n/<locale>/ 資料夾,不改邏輯。
@@ -441,6 +442,7 @@ int main(int argc, char** argv) {
   for (int i = 1; i < argc; ++i) {
     auto eq = [&](const char* f) { return !std::strcmp(argv[i], f); };
     if (eq("--bundle") && i + 1 < argc) bundle = argv[++i];
+    else if (eq("--theme") && i + 1 < argc) start_theme = argv[++i];
     else if (eq("--font") && i + 1 < argc) font_raw = argv[++i];
     else if (eq("--font-ttf") && i + 1 < argc) font_ttf = argv[++i];   // 文字層 host TTF
     else if (eq("--scale") && i + 1 < argc) scale = std::atoi(argv[++i]);  // 視窗整數倍率
@@ -581,6 +583,11 @@ int main(int argc, char** argv) {
   //   theme 為**值複製**(非 const&),F8 重設 theme_idx 後 reseat,各 draw_* lambda
   //   以 [&] 捕獲 theme 變數,reassign 即時生效(畫面下幀重繪自動套用)。
   int theme_idx = 0;                                  // 當前主題索引(state 記住;F8 循環)
+  // --theme NAME:啟動即選定主題索引(否則預設 DOS=0)。供 headless 直接 dump Amiga 戰鬥等。
+  if (!start_theme.empty()) {
+    for (int ti = 0; ti < render::theme_count(); ++ti)
+      if (render::theme_by_index(ti).name == start_theme) { theme_idx = ti; break; }
+  }
   render::UiTheme theme = render::theme_by_index(theme_idx);
   int theme_toast = 0;                                // F8 後短暫顯示主題名的剩餘幀數(0=不顯示)
   // ── F1 Help 覆蓋層 / F10·ESC 離開確認 ──
@@ -2520,8 +2527,14 @@ int main(int argc, char** argv) {
   //    視覺核對過的 bundle sprite」對照表;查無則回退第一個 spider/wolf,再無則畫空框。
   //   sprite 圖渲染路徑本身(.spr indexed blit)已由 sprite_dump golden 對拍 oracle。
   auto sprite_for_monster = [&](const std::string& name) -> std::optional<render::Sprite> {
-    auto load = [&](const char* file) {
-      return render::Sprite::load(bundle + "/sprites/" + file + ".spr");
+    // theme-aware 來源:Amiga theme → themes/amiga/sprites(自帶 palette);否則 DOS bundle/sprites。
+    //   檔名沿用 DOS 命名(152_guard / 196_spider …);Amiga 缺檔時回退 DOS bundle(誠實降級)。
+    const std::string dir = theme.sprite_dir.empty()
+                                ? (bundle + "/sprites/")
+                                : (bundle + "/" + theme.sprite_dir + "/");
+    auto load = [&](const char* file) -> std::optional<render::Sprite> {
+      if (auto s = render::Sprite::load(dir + file + ".spr")) return s;
+      return render::Sprite::load(bundle + "/sprites/" + file + ".spr");  // 回退 DOS
     };
     // 名稱關鍵字 → 已核對 sprite 檔(視覺核對來源:docs/26 contact sheet)。
     if (name.find("Spider") != std::string::npos) return load("196_spider");
@@ -2910,6 +2923,17 @@ int main(int argc, char** argv) {
   // 畫遭遇畫面:怪物 sprite(viewport 區 @16,8)+ 怪名 + 隊伍面板 + 戰/逃選單 + log。
   auto draw_encounter = [&]() {
     fb.clear(0);
+    // ── Amiga theme:套當前怪物 sprite 自帶 16 色盤(各怪物色系不同)──
+    //   Amiga 怪物 sprite 每隻自帶 palette(spider 綠金 / wolf 棕 / fanatic 藍紅),
+    //   故 combat 整畫面以此 sprite 盤呈現(index 0=黑 1=白 8=紅 各盤一致,UI/backdrop
+    //   仍可讀)。無 Amiga sprite 時維持 theme.palette(F8 切回時亦由下方 set_palette 還原)。
+    if (theme.sprite_own_palette && enc.sprite && enc.sprite->palette.size() >= 16) {
+      std::array<render::Rgb, 16> sp{};
+      for (int i = 0; i < 16; ++i) sp[i] = enc.sprite->palette[(std::size_t)i];
+      vid.set_palette(sp);
+    } else {
+      vid.set_palette(theme.palette);
+    }
     // ── viewport backdrop(theme-aware;取代純黑)──
     //   對齊 DOS 戰鬥畫面(docs/dos_compare/06_combat_encounter.png):viewport 內
     //   上半天空 + 下半地面(石礫質感),讓怪物立繪站在場景中而非浮在純黑上。
@@ -2930,7 +2954,7 @@ int main(int argc, char** argv) {
     // 怪物圖:畫進 framebuffer (16,8),裁切限制在 160×136 viewport 框內
     //   (docs/59 #4:避免立繪溢出蓋到右側面板)。clip = [16,176) × [8,144)。
     if (enc.sprite)
-      enc.sprite->blit_clipped(fb, 16, 8, 6,                  // 6 = encounter 棕色背景透明
+      enc.sprite->blit_clipped(fb, 16, 8, theme.sprite_transparent,  // 透明色:DOS=6 棕 / Amiga=8 紅
                                kVpX, kVpY, kVpX + kVpW, kVpY + kVpH);
     else { // 無 sprite → 畫空框(像素層),維持版面對齊。
       for (int x = 16; x < 16 + 160; ++x) { fb.put(x, 8, 8); fb.put(x, 8 + 135, 8); }
@@ -3113,7 +3137,10 @@ int main(int argc, char** argv) {
   // 各狀態的基礎畫面(不含頂層 Help / 離開確認 / theme toast)。
   auto draw_base = [&]() {
     if (state == S_TITLE) { draw_title(); return; }       // 開機 title splash(dragon art)
-    if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面
+    if (state == S_COMBAT) { draw_encounter(); return; }  // 遭遇 / 戰鬥畫面(內部自套 sprite/theme 盤)
+    // 探索 / 地圖 / 選單 / 建角:一律套當前 theme 預設盤。
+    //   (避免上一幀 combat 套了 Amiga sprite 自帶盤後殘留到探索畫面;art 狀態各自於下方套盤。)
+    vid.set_palette(theme.palette);
     if (state == S_ENDING) {                              // 結局序列
       if (ending_phase == 1 && para.active) {
         // phase 1:bundled 段落捲動(黑底 + 捲動 overlay,沿用既有 ParaViewer 呈現)。
@@ -3407,6 +3434,10 @@ int main(int argc, char** argv) {
       theme_idx = (theme_idx + 1) % render::theme_count();
       theme = render::theme_by_index(theme_idx);
       load_title_art();   // reload 對應主題的 title art + 套該主題 palette(per-theme palette 切換)
+      // 戰鬥中切 theme:重載當前怪物 sprite(改用新 theme 的 sprite 來源 + 自帶盤)。
+      //   F8 → Amiga 時戰鬥怪物圖即時換成 Amiga 美術(否則沿用進場時載的 DOS sprite)。
+      if (state == S_COMBAT && enc.active)
+        enc.sprite = sprite_for_monster(enc.mon_name_en);
       theme_toast = 90;                                  // 顯示約 90 幀(toast)
       std::fprintf(stderr, "theme: cycle → [%d] %s (count=%d, partial=%d)\n",
                    theme_idx, theme.name.c_str(), render::theme_count(), (int)theme.partial);

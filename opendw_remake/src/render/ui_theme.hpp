@@ -78,6 +78,15 @@ struct UiTheme {
   std::array<Rgb, 16> palette = kDosPalette;
   CombatBackdrop combat;
   OverlayStyle overlay;
+  // 戰鬥怪物 sprite 來源(theme-aware combat art)。空 = 用預設 DOS bundle/sprites;
+  //   非空 = bundle 下相對路徑(如 "themes/amiga/sprites"),Amiga 怪物立繪由此載。
+  //   檔名沿用 DOS 命名(152_guard / 196_spider …),呼叫端只換目錄不換名。
+  std::string sprite_dir;
+  // Amiga sprite 自帶 16 色 palette(各怪物不同色系)→ 戰鬥載此 sprite 時須套其自帶盤
+  //   (Sprite::palette),而非 theme.palette。true 時 combat 渲染前 set_palette(sprite.palette)。
+  bool sprite_own_palette = false;
+  // 此 sprite 來源的透明色索引(blit 時跳過)。DOS=6(encounter 棕);Amiga=8(紅底)。
+  int sprite_transparent = 6;
   // 誠實標示:partial=true 表示此主題未完整(palette placeholder / 無原生標題 / sprite 未切)。
   //   note 為簡短英文說明(toast 顯示用,經 tr() 在地化)。
   bool partial = false;
@@ -144,6 +153,11 @@ inline const std::vector<UiTheme>& theme_list() {
     amiga.ending = {
       {"amiga/scenes/endgame.pic", TitleSource::kAmigaPic, kEndingNarr24},
     };
+    // Amiga 原生怪物 sprite(data4 4-bitplane 逆向 → .spr,各帶自帶 Amiga palette)。
+    //   戰鬥載 themes/amiga/sprites/<name>.spr,套 sprite 自帶盤,透明色 = 8(紅底)。
+    amiga.sprite_dir = "themes/amiga/sprites";
+    amiga.sprite_own_palette = true;
+    amiga.sprite_transparent = 8;
     v.push_back(amiga);
 
     // [2] X68000(部分):無原生標題 → 回退 DOS res29;palette 暫用 DOS placeholder;
