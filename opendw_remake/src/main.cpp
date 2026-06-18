@@ -583,28 +583,11 @@ int main(int argc, char** argv) {
   // ── F1 Help 覆蓋層 / F10·ESC 離開確認 ──
   bool help_active = false;                           // F1 開啟的 Help 覆蓋層
   bool confirm_quit_active = false;                   // 離開確認視窗(F10 / 頂層 ESC 觸發,已自動存檔)
-  // 開機 title splash 用的 dragon art(theme.title_scene → bundle/scenes/<scene>.pic)。
-  //   啟動載一次到獨立 framebuffer,splash 期間每幀 blit(不重解碼)。載失敗則 splash
-  //   退回藍底 + 標題字(不阻擋進主選單)。
+  // 開機 title splash 用的 dragon art。實際載入見下方 load_title_art lambda(需 vid.set_palette,
+  //   故定義在 vid 建立後)。啟動載一次到獨立 framebuffer,splash 期間每幀 blit(不重解碼);
+  //   F8 切主題時 reload(對應主題的 art + palette)。載失敗則 splash 退回藍底 + 標題字。
   render::Framebuffer title_fb;
   bool title_art_ok = false;
-  {
-    std::string tpath = bundle + "/scenes/" + theme.title_scene + ".pic";
-    std::FILE* tf = std::fopen(tpath.c_str(), "rb");
-    if (tf) {
-      std::vector<std::uint8_t> tdata(32000);
-      std::size_t tn = std::fread(tdata.data(), 1, tdata.size(), tf);
-      std::fclose(tf);
-      if (tn == tdata.size()) {
-        render::decode_fullscreen(title_fb, tdata);
-        title_art_ok = true;
-      } else {
-        std::fprintf(stderr, "title art size %zu != 32000: %s\n", tn, tpath.c_str());
-      }
-    } else {
-      std::fprintf(stderr, "title art open failed: %s (splash uses fallback)\n", tpath.c_str());
-    }
-  }
   std::string branch_label, branch_label_en;   // branch 英文源(F4 重譯)
 
   // F4 切語系後,用各 widget 暫存的英文源重新 tr() 在地化(選單/branch/事件)。
@@ -1365,8 +1348,9 @@ int main(int argc, char** argv) {
   if (menu_mode && state == S_MENU && !no_splash &&
       (want_title || (press == 0 && !newgame && menu_tsv.empty()))) {
     state = S_TITLE;
-    std::fprintf(stderr, "title splash: showing dragon art (theme=%s scene=%s art_ok=%d)\n",
-                 theme.name.c_str(), theme.title_scene.c_str(), (int)title_art_ok);
+    // art_ok 由 load_title_art(vid 建立後)決定,此處只報進入 S_TITLE(art 狀態見 "title art loaded" log)。
+    std::fprintf(stderr, "title splash: enter S_TITLE (theme=%s title_ref=%s)\n",
+                 theme.name.c_str(), theme.title_ref.c_str());
   }
 
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
@@ -1531,6 +1515,54 @@ int main(int argc, char** argv) {
     std::fprintf(stderr, "SDL open failed\n"); return 1;
   }
   render::TextLayer& tl = vid.text();
+
+  // ── 依當前主題載 title splash art + 套用該主題 palette(per-theme palette 打通點)──
+  //   DOS / X68000(kDosScene):bundle/scenes/<title_ref>.pic → decode_fullscreen,套 theme.palette(DOS 盤)。
+  //   Amiga(kAmigaPic):themes/<title_ref> → decode_amiga_planar,palette 讀檔頭覆蓋 theme.palette。
+  //   啟動呼叫一次;F8 切主題時 reload。載失敗 → title_art_ok=false(splash 退回藍底),
+  //   但 palette 仍套(theme 預設盤),確保整體色系隨主題切換。
+  auto load_title_art = [&]() {
+    vid.set_palette(theme.palette);   // 先套主題預設盤(art 載失敗時整畫面仍呈現該主題色系)
+    title_art_ok = false;
+    const bool amiga = (theme.title_source == render::TitleSource::kAmigaPic);
+    std::string tpath = amiga
+        ? bundle + "/themes/" + theme.title_ref                 // themes/amiga/title.pic
+        : bundle + "/scenes/" + theme.title_ref + ".pic";       // scenes/29.pic
+    std::FILE* tf = std::fopen(tpath.c_str(), "rb");
+    if (!tf) {
+      std::fprintf(stderr, "title art open failed: %s (splash uses fallback)\n", tpath.c_str());
+      return;
+    }
+    // 讀整檔(DOS = 32000B nibble;Amiga = 35996B = 32B palette + 4-plane planar)。
+    std::vector<std::uint8_t> tdata;
+    std::uint8_t chunk[4096];
+    std::size_t n;
+    while ((n = std::fread(chunk, 1, sizeof chunk, tf)) > 0)
+      tdata.insert(tdata.end(), chunk, chunk + n);
+    std::fclose(tf);
+    title_fb.clear(0);
+    if (amiga) {
+      if (tdata.size() < 32 + 32000) {
+        std::fprintf(stderr, "amiga title art short (%zu < 32032): %s\n", tdata.size(), tpath.c_str());
+        return;
+      }
+      render::decode_amiga_planar(title_fb, tdata);
+      vid.set_palette(render::read_amiga_palette(tdata));  // 用檔頭 palette(權威)覆蓋預設盤
+      title_art_ok = true;
+    } else {
+      if (tdata.size() < 32000) {
+        std::fprintf(stderr, "dos title art short (%zu < 32000): %s\n", tdata.size(), tpath.c_str());
+        return;
+      }
+      render::decode_fullscreen(title_fb, tdata);
+      title_art_ok = true;
+    }
+    std::fprintf(stderr, "title art loaded: theme=%s src=%s path=%s ok=%d\n",
+                 theme.name.c_str(), amiga ? "amiga-planar" : "dos-scene",
+                 tpath.c_str(), (int)title_art_ok);
+  };
+  load_title_art();   // 啟動載一次(當前主題;F8 後 reload)。
+
   // 640×480 模式:像素層固定 ×2(scale=2),故 scale 概念對文字層 = 2;字級「解綁」
   //   為固定原生 px(CJK 24 / UI 16 / 標題 48),不隨 scale 縮放(這正是 docs/47 方案 3 要點)。
   // 一般 scale 模式:原生字級隨 scale 等比(基準 scale=3)。
@@ -1739,8 +1771,13 @@ int main(int argc, char** argv) {
 
   // ── F8 主題切換短暫提示(toast;畫面下緣,theme_toast 幀數倒數)──
   auto draw_theme_toast = [&]() {
-    char buf[96];
-    std::snprintf(buf, sizeof buf, "%s: %s", tr.tr("Theme").c_str(), theme.name.c_str());
+    char buf[128];
+    // 誠實標示:partial 主題在名稱後加「(partial)」(對齊 ui_theme.hpp note;非完整移植)。
+    if (theme.partial)
+      std::snprintf(buf, sizeof buf, "%s: %s (%s)", tr.tr("Theme").c_str(),
+                    theme.name.c_str(), tr.tr("partial").c_str());
+    else
+      std::snprintf(buf, sizeof buf, "%s: %s", tr.tr("Theme").c_str(), theme.name.c_str());
     int tw = tl.measure_vwidth(buf, PX_UI);
     int bx = (render::kW - tw) / 2 - 6, by = render::kH - 22, bw = tw + 12, bh = 16;
     draw_overlay_box(bx, by, bw, bh, theme.overlay);
@@ -3206,9 +3243,10 @@ int main(int argc, char** argv) {
     if (in.cycle_theme) {
       theme_idx = (theme_idx + 1) % render::theme_count();
       theme = render::theme_by_index(theme_idx);
+      load_title_art();   // reload 對應主題的 title art + 套該主題 palette(per-theme palette 切換)
       theme_toast = 90;                                  // 顯示約 90 幀(toast)
-      std::fprintf(stderr, "theme: cycle → [%d] %s (count=%d)\n",
-                   theme_idx, theme.name.c_str(), render::theme_count());
+      std::fprintf(stderr, "theme: cycle → [%d] %s (count=%d, partial=%d)\n",
+                   theme_idx, theme.name.c_str(), render::theme_count(), (int)theme.partial);
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;
     }

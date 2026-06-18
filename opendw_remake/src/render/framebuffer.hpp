@@ -12,7 +12,10 @@ namespace dw::render {
 inline constexpr int kW = 320;
 inline constexpr int kH = 200;
 
-struct Rgb { std::uint8_t r, g, b; };
+struct Rgb {
+  std::uint8_t r, g, b;
+  constexpr bool operator==(const Rgb& o) const { return r == o.r && g == o.g && b == o.b; }
+};
 
 // DOS 16 色標準調色盤。
 inline constexpr std::array<Rgb, 16> kDosPalette = {{

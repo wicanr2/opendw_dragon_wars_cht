@@ -7,6 +7,7 @@
 // Deep module:對外 open/present/dump/poll/close + 取 TextLayer&;
 //   內部隱藏 SDL window/renderer/texture、palette→RGB、整數放大、文字層合成、headless 讀回。
 #pragma once
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -62,6 +63,11 @@ public:
 
   TextLayer& text() { return text_; }   // 每幀:text().clear() → add(...) → present()
 
+  // per-theme palette:切 UI 主題(F8)時呼叫,之後 present/dump 用此盤把 indexed→RGB。
+  //   預設 DOS 盤;DOS 主題 set DOS 盤(回歸不變)、Amiga 主題 set Amiga 盤。
+  void set_palette(const std::array<Rgb, 16>& pal) { active_palette_ = pal; }
+  const std::array<Rgb, 16>& palette() const { return active_palette_; }
+
   void present(const Framebuffer& fb);   // 像素層放大 + 文字層合成 → 顯示
   Input poll();                          // 收集本幀事件(in.quit=true 表示要結束)
   void close();
@@ -76,7 +82,10 @@ public:
   bool is_640x480() const { return mode640_; }
 
   // 驗證用:把 320×200 framebuffer→RGB(不含文字層,純像素層)讀回。
+  //   不帶 palette 的多載維持 DOS 盤(既有 golden 對拍 / 呼叫端不變);帶 palette 多載供 per-theme。
   static std::vector<std::uint8_t> to_rgb(const Framebuffer& fb);
+  static std::vector<std::uint8_t> to_rgb(const Framebuffer& fb,
+                                          const std::array<Rgb, 16>& pal);
 
 private:
   // 把像素層(framebuffer)+ 文字層合成到目前 renderer 目標(不 present)。
@@ -98,6 +107,7 @@ private:
   int scale_ = 3;
   bool headless_ = false;
   bool mode640_ = false;         // true = 640×480 letterbox 模式
+  std::array<Rgb, 16> active_palette_ = kDosPalette;  // 目前生效的 16 色盤(per-theme;set_palette)
   TextLayer text_;
 };
 

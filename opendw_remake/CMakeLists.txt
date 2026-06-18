@@ -257,6 +257,14 @@ add_executable(verify_combat_special tools/verify/verify_combat_special.cpp)
 target_link_libraries(verify_combat_special PRIVATE dwr_game)
 add_test(NAME verify_combat_special COMMAND verify_combat_special)
 
+# tools/verify:UI 主題接線(theme wiring)——
+#   驗:三主題(dos/amiga/x68000)+ F8 循環 wrap;per-theme palette(amiga 自帶盤);
+#   誠實標示(amiga 完整 / x68000 partial);Amiga title.pic planar 解碼 + 檔頭 palette(金龍金)。
+add_executable(verify_theme tools/verify/verify_theme.cpp)
+target_link_libraries(verify_theme PRIVATE dwr_render)
+add_test(NAME verify_theme
+         COMMAND verify_theme ${CMAKE_SOURCE_DIR}/assets/bundle)
+
 # tools/verify:可通關收官 —— 終戰 Namtar 可勝 + 確定性(combat_loop)。
 #   驗:預設隊伍(第 0 名持受祝福自由之劍)vs Namtar Boss,多 seed 皆 Victory + 隊伍存活;
 #   同 seed 兩次執行一致(確定性)。Boss 屬性/祝福加成 = remake 平衡設計(誠實標示,
