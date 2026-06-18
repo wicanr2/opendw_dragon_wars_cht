@@ -31,6 +31,9 @@ struct Input {
   bool pgup = false;     // PgUp(段落檢視器上翻一頁)
   bool pgdown = false;   // PgDn(段落檢視器下翻一頁)
   bool cycle_lang = false; // F4:即時循環切換語系(zh-TW → en → ja → …)
+  bool help = false;       // F1:開 Help 覆蓋層(列操作鍵)
+  bool cycle_theme = false;// F8:循環切換 UI 主題(UiTheme)
+  bool request_quit = false;// F10:請求離開(觸發離開確認流程;非立即 quit)
   int  key = 0;          // 本幀按下的字母鍵(大寫 ASCII,如 'B'/'C'/'I'/'U'…),供快捷字母
   // ── 文字輸入(建角命名等)。一般狀態不讀這兩欄,行為不變。──
   int  text_char = 0;    // 本幀輸入的可列印字元(含小寫 / 空白,保留原始大小寫)

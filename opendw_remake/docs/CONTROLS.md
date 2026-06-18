@@ -3,6 +3,18 @@
 > 來源:臺灣中文版《火龍之戰》操作手冊(轉寫見 `../../docs/33_MANUAL_TRANSCRIPTION.md`)。
 > remake 的輸入處理**以本表為準**,確保操作與原版說明書一致。
 
+## 開機 title splash
+
+啟動先顯示**火龍之戰 dragon art 標題畫面**(原版 res29;含金色「Dragon Wars」立繪 + 在地化標題「火龍之戰」+ 閃爍「按任意鍵」提示),對齊原版「dragon art 標題畫面 → 按鍵 → 主選單」流程。
+
+| 鍵 | 動作 |
+|---|---|
+| 任意鍵(方向 / Enter / Space / Esc / 字母) | 進入主選單 |
+| `F4` | 切語系(splash 不離開,就地重排在地化標題) |
+| `Q` / 關窗 | 離開遊戲 |
+
+> headless / 自動化:`--no-splash` 直接進主選單(既有測試流不受影響);`--title` 強制顯示 splash。`--menu <tsv>` / `--newgame` / `--load` 等指定入口時自動略過 splash。title art 來源 theme-aware(預設 DOS res29;未來各平台版本各自 title)。
+
 ## 選單 / 角色
 
 | 鍵 | 動作 | 出處 |
@@ -51,7 +63,7 @@
 - **戰鬥外施法(`C`)/ 陷阱**:`C` 開探索施法選單(隊伍第 0 名 castable);Soften Stone(0x22)軟化前方石牆、Disarm Trap(0x36)解除陷阱、Sense Traps(0x14)標記陷阱可見。陷阱踩中扣血(remake 1d8)。headless `--terrain-cast <id>`。**真值層級:remake 設計**。
 - **第一人稱 viewport**:`--fp` → S_GAME 透視牆面 viewport(對拍 opendw;ctest `verify_fp_l1` 4/4、`render_sweep` 全 40 關 154 case byte-for-byte)。
 - **地圖區域切換**:踩到出入口/階梯事件 → 換 area + 入口位置(對齊 opendw poll 重載;ctest `verify_areaswitch` 8/8)。wrap 邊界關卡(opendw 自身未實作)跳過。
-- **事件文字(訊息檢視器)**:踩事件格(tile>1,對拍 op_71)→ 跑該關事件 script(VM op_58 跨資源 call,自包含)→ i18n 在地化 → 畫面下半訊息框(深藍底+白邊,文字層 24px CJK,自動換行 + 依框高分頁約 7 行)。翻頁 `Space`/`Enter`/`↓`/`I`,末頁再按關閉;`Esc` 直接關;多頁左下 `▼ 頁碼/總頁數`。檢視期間暫停移動,`F4` 切語系就地重排。
+- **事件文字(訊息檢視器)**:踩事件格(tile>1,對拍 op_71)→ 跑該關事件 script(VM op_58 跨資源 call,自包含)→ i18n 在地化 → 畫面下半**半透明訊息框**(深藍底 dither 半透明,底下 viewport / 地圖隱約透出 + 白外框 + 亮藍內框雙線優雅邊;文字層 24px CJK 恆銳利,自動換行 + 依框高分頁約 7 行)。翻頁 `Space`/`Enter`/`↓`/`I`,末頁再按關閉;`Esc` 直接關;多頁左下 `▼ 頁碼/總頁數`。檢視期間暫停移動,`F4` 切語系就地重排。半透明採 3/4 覆蓋 dither(可讀性優先;theme-aware,見 `src/render/ui_theme.hpp`)。
 - **Read Paragraph 段落捲動檢視器(ParaViewer)**:Read Paragraph N → 近全螢幕 overlay 顯示**完整**繁中譯文(不截斷、不切字)。標題「段落 N」(i18n);捲動 `↑↓` 逐行、`PgUp`/`PgDn`/`Space`/`Enter`/`I`/`K` 逐頁、`Esc` 關閉;底部 `▲▼ 行範圍/總行數`。長段落跨頁可完整閱讀。
 - **角色屬性表(CharSheet)**:`V` 或 `1`-`4` → 顯示選定角色完整屬性(力量/敏捷/智力/精神/生命/暈眩值/法力/等級/金幣/狀態/性別),`↑↓`/`1`-`4` 切換、`Esc` 關;i18n 三語、`F4` 即時重排。
 - **存檔 / 讀檔**:`S` 存檔(訊息提示);選單 `C` 或 `--load` 讀檔還原 area/位置/朝向/game_state/隊伍。round-trip byte-for-byte(ctest `verify_save`)。
@@ -64,6 +76,12 @@
   - 閃避:本回合自身 DV +`kDodgeDvBonus`(被命中門檻下降),下回合輪到前清除。
   - headless `--combat-special <mighty|disarm|advance|quick|dodge>`(配 `--encounter`);ctest `verify_combat_special`。
 - **多語**:`F4` 循環 繁中 / EN / 日;`--locale <id>`。
+- **全域熱鍵(F1 / F8 / F10)+ 離開確認**:
+  - `F1` = **Help 覆蓋層**:半透明優雅框列目前操作鍵(移動 I/J/L、K 開門、V 角色表、C 施法、? 地圖、S 存檔、F4 語言、F8 主題、F10 離開…),i18n 三語;`Esc` 或再按 `F1` 關閉。
+  - `F8` = **循環切換 UI 主題**(`UiTheme`,見 `src/render/ui_theme.hpp`):畫面下幀即時重繪 + 短暫 toast 提示當前主題名;當前索引記在 state。目前僅 DOS 一個主題,未來 PC-98 / Amiga / X68000 加入後 F8 即可循環。
+  - `F10` = **離開遊戲**:先**自動存檔**(`do_save`)→ 彈半透明 yes/no 確認視窗「遊戲已自動存檔。確定離開遊戲?Y/N」(i18n)。`Y` / `Enter` → 離開;`N` / `Esc` → 回遊戲。
+  - **`Esc` 不再於頂層直接結束**:子畫面 `Esc` = 返回 / 關閉(維持現狀);**頂層(主選單 / S_GAME 探索,無子畫面)`Esc` = 觸發同一離開確認流程**(自動存檔 + yes/no),避免不小心按到 `Esc` 直接掉出遊戲。`Q` 仍為手冊的直接離開鍵。
+  - headless 驗證:`--keys <SEQ>` 逐幀注入合成輸入(token:F1 F4 F8 F10 ESC ENTER UP/DOWN Y N 字母…);`--dump-frame N` 在迴圈第 N 幀再 dump(看覆蓋層)。ctest `smoke_app` 含 8 項熱鍵 / 離開確認斷言。
 - **已接入指令**:`C` 探索施法、`K` 開門/破密門、`X` 配點(角色表內)、`U` 使用物品(角色表物品欄內 `V`→`E`→選格→`U`)、`E` 裝備穿脫、`P` 商店、`T` 招募、`O` 重排隊伍、`D`/`R` 刪除/改名(角色表內)、物品 `D` 丟棄 / `T` 轉移(物品欄內)。
 - **未實作指令**(`Ctrl+S` 聲音):待音訊子系統接入(目前 op_90 忠實 no-op)。
 
@@ -75,6 +93,10 @@
 | `--automap <area>` | headless 直接進第 N 區俯視平面地圖(`?` 鍵功能);配 `--mm-seed` 控制 fog;同時帶 `--char-sheet` 時讓位給屬性表 |
 | `--mm-seed <N>` | 探索 / minimap fog seeding;`0` = 全圖揭露(automap dump 對拍用) |
 | `--newgame` | 啟動即進建角畫面(互動建角流程 S_CREATE) |
+| `--title` | 強制顯示開機 title splash(火龍之戰 dragon art) |
+| `--no-splash` | 略過 title splash,直接進主選單(headless / 自動化) |
+| `--keys <SEQ>` | 逐幀注入合成輸入序列(token 逗號分隔:F1 F4 F8 F10 ESC ENTER SPACE UP/DOWN/LEFT/RIGHT PGUP/PGDN 或單一字母);驗證熱鍵 / 離開確認流程 |
+| `--dump-frame <N>` | 在互動迴圈第 N 幀(`--keys` 處理後)再 dump 一次(看 Help / 離開確認等覆蓋層) |
 | `--scene <name>` | 直接渲染指定場景圖(scene 模式,不進選單 / 遊戲) |
 | `--fp` | S_GAME 用第一人稱 viewport(取代俯視彩格) |
 | `--at <x> <y>` | 把玩家放到指定格;若為事件格立刻跑事件腳本(headless 驗證) |
