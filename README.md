@@ -4,7 +4,7 @@
 > C++20 + SDL2 乾淨重寫 ✦ 以 opendw（C 反組譯）為逐位元正確性 oracle ✦ 24px 銳利 CJK ✦ 繁中／英文／日文三語
 
 [![CI](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml/badge.svg)](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml)
-![ctest](https://img.shields.io/badge/ctest-32%2F32-success)
+![ctest](https://img.shields.io/badge/ctest-33%2F33-success)
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![SDL2](https://img.shields.io/badge/SDL2-ttf-blue)
 ![license](https://img.shields.io/badge/code-BSD-green)
@@ -20,13 +20,15 @@
 1. [這是什麼](#what)
 2. [快速開始](#quick-start)
 3. [實機畫面](#screenshots)
-4. [亮點](#highlights)
-5. [DOS 原版 vs Remake — 視覺保真](#fidelity)
-6. [操作](#controls)
-7. [方法論：反組譯當 oracle，乾淨室重寫](#method)
-8. [誠實邊界：真值 vs 受阻](#honesty)
-9. [專案結構](#layout)
-10. [授權與致謝](#credits)
+4. [多版本美術主題（F8 切換）](#themes)
+5. [世界地圖與結局](#world-ending)
+6. [亮點](#highlights)
+7. [DOS 原版 vs Remake — 視覺保真](#fidelity)
+8. [操作](#controls)
+9. [方法論：反組譯當 oracle，乾淨室重寫](#method)
+10. [誠實邊界：真值 vs 受阻](#honesty)
+11. [專案結構](#layout)
+12. [授權與致謝](#credits)
 
 ---
 
@@ -85,7 +87,7 @@ cmake -S . -B build && cmake --build build --target opendw_remake
 ./build/opendw_remake --win640        # 640×480 視窗（固定 24/16px CJK）
 ./build/opendw_remake --read-para 88  # Read Paragraph 段落檢視器
 ./build/opendw_remake --fight-namtar  # 終戰 Namtar → 結局
-cd build && ctest                     # 回歸測試（32/32；CI 亦跑）
+cd build && ctest                     # 回歸測試（33/33；CI 亦跑）
 ```
 
 預設繁體中文，遊戲中 `F4` 循環切 繁中 / EN / 日。
@@ -129,6 +131,50 @@ tar xzf opendw-remake-*.tar.gz
 | ![zh](opendw_remake/docs/screenshots/r10_event_zh-TW.png) | ![en](opendw_remake/docs/screenshots/r10_event_en.png) | ![ja](opendw_remake/docs/screenshots/r10_event_ja.png) |
 | 主線事件繁中 | 原文英文 | events 212/283 採 X68000 原版日文原文（破解 nibble-swap SJIS） |
 
+### 半透明對話框（踩格事件訊息）
+
+![dialog](opendw_remake/docs/showcase/themes/dialog_intro.png)
+
+*踩到事件格 → 跑該關事件 script → 畫面下半彈出**半透明訊息框**（深藍 dither 半透明，底下地圖隱約透出 + 白外框 + 亮藍內框雙線；文字層 24px CJK 恆銳利，自動換行分頁）。配色 theme-aware。*
+
+---
+
+<a name="themes"></a>
+## 🎨 多版本美術主題（F8 切換）
+
+《火龍之戰》在不同平台用了不同的美術。本 remake 把「介面外觀隨平台版本而不同」收斂成一組可循環的 UI 主題，遊戲中按 `F8` 即可即時切換、畫面下幀重繪並彈出主題名 toast。同一隻引擎、同一份在地化文字，換的是 title 立繪、16 色調色盤、戰鬥背景與對話框配色。
+
+| DOS（綠龍） | Amiga（金龍） |
+|:---:|:---:|
+| ![title-dos](opendw_remake/docs/showcase/themes/title_dos.png) | ![title-amiga](opendw_remake/docs/showcase/themes/title_amiga.png) |
+| 預設主題：原生 dragon art（res29）+ DOS 16 色標準盤 | `F8` 切到 Amiga：原生金龍標題 + Amiga 自己的 16 色 palette（讀自 `themes/amiga/title.pic` 檔頭） |
+
+F8 循環順序為 **DOS → Amiga → X68000 → DOS**，三套主題：
+
+| 主題 | 完整度 | 內容 |
+|---|---|---|
+| **DOS** | 完整 | 原生綠龍標題（res29）、DOS 16 色標準盤、res 24–28 結局五場景 |
+| **Amiga** | 完整 | 原生金龍標題、Amiga 16 色 palette（planar 解碼，檔頭帶盤）、單張全螢幕結局圖 |
+| **X68000** | **partial** | 目前只有怪物 / 場景 contact sheet（未切圖），**無原生標題 → 回退 DOS res29**，**palette 為 DOS placeholder**（原生 X68000 盤尚未萃取）。誠實標示，toast 也標 partial |
+
+> 誠實邊界：X68000 是 partial（無原生標題、palette 為 placeholder、sprite 未切）。日版《火龍之戰》當年只在 **X68000** 發行，**沒有 PC-98 版本**——本專案不會憑空生出一套不存在的 PC-98 美術。
+
+---
+
+<a name="world-ending"></a>
+## 🗺️ 世界地圖與結局
+
+**Dilmun 世界地圖**（按 `?` 開平面地圖）。area 0 是 wrap 樞紐世界區，重畫成橫向美化圖，**24 個地點全繁中標記**（拜占庭、京雄城、凌火魔城、救贖之山、自由港、波卡城、石橋、奴隸莊園…）；走到城鎮格即切入該城 area。
+
+![worldmap](opendw_remake/docs/dos_compare/wm_app_a0.png)
+
+**結局過場：Namtar 被擲回深淵。** 戰勝終戰 Boss 後跑結局序列——DOS 主題為 res **24–28** 五張全螢幕場景（Namtar 墜淵 → 慘叫 → 焚城 → 和平新時代 → 全劇終），每張底部疊一條半透明襯底條承載**繁中敘事**（場景烤進的原版英文立繪保留，下方壓繁中譯文，兩層並陳）。
+
+| Namtar 墜淵（結局首場） |
+|:---:|
+| ![ending](opendw_remake/docs/showcase/themes/ending_namtar_pit.png) |
+| 「你們奮力一擲，將納達擲回他當初竄出的那座深淵……」原版英文立繪 + 繁中襯底敘事 |
+
 ---
 
 <a name="highlights"></a>
@@ -151,7 +197,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 第一人稱 viewport 全 40 關逐像素對拍 opendw（`render_sweep` 154 case byte-for-byte）。整體版面、配色貼著原版 DOS，標題畫面幾乎逐像素還原（刻意保留英文 logo）。詳見[下節對照](#fidelity)與 [docs/60](opendw_remake/docs/60_DOS_VS_REMAKE_VISUAL.md)。
 
 **自包含，工程化**
-資產萃取成 `assets/bundle/`，執行期不依賴原始磁碟檔；docker-first 建置；ctest **32/32**；GitHub Actions CI；Linux 可攜包已實機驗證，Windows / macOS CI 設定已備。
+資產萃取成 `assets/bundle/`，執行期不依賴原始磁碟檔；docker-first 建置；ctest **33/33**；GitHub Actions CI；Linux 可攜包已實機驗證，Windows / macOS CI 設定已備。
 
 ---
 
@@ -177,7 +223,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 <a name="controls"></a>
 ## 🎮 操作
 
-操作以臺灣中文版《火龍之戰》操作手冊為準（[CONTROLS.md](opendw_remake/docs/CONTROLS.md)）。
+操作以臺灣中文版《火龍之戰》操作手冊為準（[CONTROLS.md](opendw_remake/docs/CONTROLS.md)）。啟動先顯示**火龍之戰 dragon art 標題畫面**（金色「Dragon Wars」立繪 + 在地化標題「火龍之戰」+ 閃爍「按任意鍵」），按任意鍵進主選單。
 
 | 鍵 | 動作 | | 鍵 | 動作 |
 |---|---|-|---|---|
@@ -189,6 +235,15 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 | `K` | 開門 / 破密門 | | `T` | 招募隊員 |
 | `V` | 查看人物 | | `?` | 平面地圖 |
 | `S` | 儲存遊戲 | | `F4` | 切語言（繁／英／日） |
+
+**全域熱鍵**（任意畫面）：
+
+| 鍵 | 動作 |
+|---|---|
+| `F1` | Help 覆蓋層：半透明框列目前可用操作鍵（i18n 三語）；`Esc` 或再按 `F1` 關閉 |
+| `F8` | 循環切換 UI 主題（DOS → Amiga → X68000），即時重繪 + 主題名 toast |
+| `F10` | 離開遊戲：先**自動存檔**，再彈 yes/no 確認視窗（`Y`/`Enter` 離開、`N`/`Esc` 回遊戲） |
+| `Esc` | 子畫面 = 返回 / 關閉；頂層（選單 / 探索）= 觸發同一離開確認流程（自動存檔 + yes/no），避免誤觸直接掉出 |
 
 > 選單採快捷字母（與手冊一致），remake 額外提供 ↑↓ + Enter 作為現代輔助。完整鍵表與 headless 測試旗標見 [CONTROLS.md](opendw_remake/docs/CONTROLS.md)。
 
@@ -203,7 +258,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 2. **手寫 script VM**。目前實作 **126/256 opcode**（模式 / 算術 / 旗標 / 邏輯 / 比較 / 跳轉 / loop / game_state / bit / 字串輸出）。差異測試 harness（`diff_trace`）逐指令比對 remake VM trace 與 opendw oracle trace。
 3. **補出 opendw 從未逆向的 opcode**。op_43/5F/60/63、op_68/79/5B 等在 opendw 標 NULL 或無 C oracle 的指令，直接從原始 DRAGON.COM ASM 反組譯補出並驗。
 4. **資產脫離磁碟**。ResourceProvider 抽象（oracle 用 Data1Provider / 執行期用 BundleProvider），BundleProvider 載入 == DATA1 byte-for-byte，但執行期不依賴原始檔——換檔即換美術（未來 X68000 / PC-9801 素材）。
-5. **每個宣稱都可驗證**。`tools/verify/` 下 32 個 ctest 對拍渲染、存讀檔、戰鬥、連通、i18n…，全綠才算數。
+5. **每個宣稱都可驗證**。`tools/verify/` 下 33 個 ctest 對拍渲染、存讀檔、戰鬥、連通、i18n…，全綠才算數。
 
 延伸閱讀：
 - 🏗️ [opendw_remake/ARCHITECTURE.md](opendw_remake/ARCHITECTURE.md) — VM / 渲染 / 資產層設計與階段表
@@ -241,7 +296,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 
 | 平台 | 取得 SDL2 | 狀態 |
 |---|---|---|
-| Linux (x86_64) | apt `libsdl2-dev` `libsdl2-ttf-dev` | ✅ docker 實機驗證：build + ctest 32/32 + 產包 + headless 執行 |
+| Linux (x86_64) | apt `libsdl2-dev` `libsdl2-ttf-dev` | ✅ docker 實機驗證：build + ctest 33/33 + 產包 + headless 執行 |
 | Windows (x64) | vcpkg `sdl2` `sdl2-ttf`（MSVC） | ⏳ CI 設定已備，未在本環境實機驗證 |
 | macOS | Homebrew `sdl2` `sdl2_ttf` | ⏳ CI 設定已備，未在本環境實機驗證 |
 
@@ -254,7 +309,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 opendw_dragon_wars_cht/
 ├── opendw_remake/         # ★ 主產物：C++20 + SDL2 乾淨重寫的 runtime（可玩）
 │   ├── src/               #   resource / vm / render / game / i18n
-│   ├── tools/verify/      #   對拍 / 驗證工具（ctest 32 項）
+│   ├── tools/verify/      #   對拍 / 驗證工具（ctest 33 項）
 │   ├── tools/extract/     #   DATA1/DATA2 → 自包含 bundle 萃取
 │   ├── assets/bundle/     #   自包含資產（maps/sprites/scenes/scripts/monsters/items/…）
 │   ├── assets/i18n/       #   zh-TW / en / ja 在地化 TSV
