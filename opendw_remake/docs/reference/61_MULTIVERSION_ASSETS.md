@@ -11,7 +11,7 @@
 
 | 版本 | 磁碟形式 | 標題畫面 | 怪物 sprite | 場景/過場 | UI 圖示 | 狀態 |
 |---|---|---|---|---|---|---|
-| **Amiga** | .adf + WHDLoad HD(`data/`) | ✅ title.pic | ✅ data4 4-bitplane(6 隻已切，見 §1.5） | ✅ endgame、picparts(部分) | ✅ cursors | **大部分成功** |
+| **Amiga** | .adf + WHDLoad HD(`data/`) | ✅ title.pic | ✅ data4 4-bitplane(**50 隻已切**，見 §1.5） | ✅ endgame、**viewport 牆面 data3(已逆 + 接 §1.6)** | ✅ cursors | **大部分成功** |
 | **X68000** | .DIM(Human68k FAT12) | ❌ TITLE.PKH(壓縮) | ✅ MON.PIX | ✅ PIC.PIX、❌ 3D/END(壓縮) | ✅ ICON.PIX | **未壓縮 .PIX 成功,.PKH 受阻** |
 | **PC-98** | — | — | — | — | — | **素材不存在(見 §3)** |
 
@@ -70,6 +70,28 @@ title.pic (21805B, 壓縮)
 
 ## 1.5 Amiga 怪物 sprite（data4，已逆向 + 接進戰鬥）
 
+> **2026-06-18 更新（全套抽取 + 權威對映）**:由 6 隻擴到 **50 隻**(data4 全部偶數資源)。
+>
+> - **格式關鍵更正**:data4 怪物資源 = **偶數 res ID**(140/144/146/152/…/254)為怪物 sprite,
+>   奇數 res ID 解出垃圾尺寸(非 sprite,語意未明)。50 個偶數資源全部解碼成合理尺寸的立繪
+>   (目視 contact sheet 確認:人類/野獸/惡魔/龍/騎士/巨人…完整圖鑑)。
+> - **權威 name→sprite 對映(本次確立)**:`MonsterRecord::sprite_res() = (attr[0x0B]<<1)+0x8A`
+>   **正確**(舊 docs/26 §二「+0x8A 有偏差」的疑慮為誤判)。monsters.bin 全 25 隻記錄的
+>   `sprite_res()` 皆落在已抽的偶數資源(Spider→196、Wolf→168、Pikeman→210、Fanatic→222、
+>   Innocent Man→200、King's Guard/Soldier→166、Humbaba→218、Gladiator→202…)。
+> - **入庫命名**:全套以 `<res>.spr` 命名(`themes/amiga/sprites/166.spr` …);原 6 隻具名檔
+>   (`196_spider.spr` 等)保留(verify_theme 既有斷言用)。
+> - **接線改用權威對映**:`main.cpp` `sprite_for_monster(name, sprite_res)` 在 Amiga theme 下
+>   **優先**載 `<sprite_res>.spr`(全套命中),名稱關鍵字降為次選、DOS bundle 為末選回退。
+>   F8 切 Amiga → 每隻怪物呈現自己的 Amiga 立繪(不再只有名稱命中的 6 隻;含 Humbaba/Gladiator
+>   等先前缺的)。headless `--theme amiga --encounter <idx>` dump 目視確認 Gladiator(202)、
+>   Humbaba(218)為原生 Amiga 美術。
+> - **工具**:`tools_build/amiga_res_extract`(C++,連 decompress.cpp)批次抽 data4 →
+>   `amiga_sprite_extract.py --auto-crop` 逐隻轉 .spr。
+> - **受阻**:仍只切主格(多動畫格未逐格切);200/242/244 等少數自帶盤 bg=黑(非紅),
+>   自動裁切只取單格,品質次於紅底主流。
+
+
 ### archive 結構（已驗證）
 Amiga `data1`–`data6` 與 DOS opendw archive **同格式、同 codec、同資源編號**:每檔 768B
 header(384 個 LE16 size,≥0xFF00 = 資源不在此檔)+ 串接 Huffman 壓縮資源。怪物 sprite 主力
@@ -127,6 +149,59 @@ blit、非 chunky、而是 plane-sequential 4-bitplane;width/height 由 header w
 - 196/152/210 主格右緣偶留 1–2 px 黑分隔條(crop 邊界);200_innocent_man 自動裁切只取到單格,
   品質次於其餘 5 隻。
 - header word[0]、word[3] 等其餘欄位語意未全解(已知 word[1]=H、word[2]=bpr 足以正確渲染)。
+
+---
+
+## 1.6 Amiga 第一人稱 viewport 牆面（data3，已逆向 + 接進 Amiga 第一人稱）
+
+對應舊「picparts ⚠️ 部分/受阻」與 docs/26 §七「viewport 場景組譯器」待辦 —— **本次逆出格式並接進
+Amiga 第一人稱**。
+
+### archive 結構（已驗證）
+viewport 元件主力在 **data3(res 110–135)**,與 DOS `bundle/components/<tag>.bin` **同資源編號**
+(110=Castle wall、111=Sky、112=Road、116=Water…;DOS 用到的 19 個 tag 在 data3 全present)。
+
+### Amiga viewport 圖塊格式（本次逆向確認）
+與怪物 sprite **不同**(怪物是單一帶 palette 的 sprite;viewport 是「多子圖塊容器」):
+```
+[BE word offset 表]  N 個遞增 BE-u16,各指向一個子圖塊。Castle wall(110)= 10 個子圖塊
+                     (正面牆 96×96 + 近/中/遠 側牆 trapezoid + 距景小牆面);單純 tile
+                     (Road 112 / Water 116)= 1 個子圖塊。
+各子圖塊 @off:       word[1]=高度 H、word[2]=每 plane 每列 bytes bpr → 寬 W=bpr*8;
+                     影像自 off 起 4-bitplane plane-sequential MSB-first(同 sprite,
+                     **惟無自帶 palette** → 共用 viewport 全域盤)。
+```
+目視確認:110 解出完整城堡牆面(不規則石塊 + 灰泥縫 + 頂部裝飾條 + 透視側牆)。
+
+### palette（受阻 → 相容色）
+Amiga viewport **原生 16 色盤未從程式抽出**(在 `dw` 主程式 / data1-2 的 CLUT 載入,本次未 trace)。
+目前用**逆向 + 目視調校的 stone palette**(灰石 + 棕灰泥),內嵌進各 `.spr`。屬色彩精修 TODO,
+不影響「牆面為 Amiga 美術、結構可辨識」。
+
+### 工具
+- `tools_build/amiga_viewport_extract.py <res.bin> <tag> <out_dir>`:offset 表 → 逐子圖塊
+  4-bitplane 解碼 → `<tag>_<blockidx>.spr`(indexed + 內嵌 stone palette)。
+- 入庫:`assets/bundle/themes/amiga/components/`(19 個 tag,共 60 個子圖塊 .spr)。
+
+### 接進 Amiga 第一人稱（theme-aware viewport;DOS golden 不破）
+- `UiTheme` 新增 `component_dir`;Amiga = `themes/amiga/components`,DOS 為空(走原 golden 路徑)。
+- 新模組 `render/viewport_amiga.{hpp,cpp}`:**元件選擇/落點沿用 DOS golden
+  `compose_draw_sequence`(read-only,不改一字)**,只把「像素來源」換成 Amiga 子圖塊 ——
+  以 DOS template header(runlen→寬、numruns→高)做**維度匹配**挑該 tag 尺寸最接近的子圖塊,
+  blit 到 DOS DrawCmd 的 (xpos,ypos)。
+- `main.cpp` `draw_game_fp`:theme.component_dir 非空且 Amiga 元件可用 → 套 stone 盤 +
+  `render_first_person_amiga`(疊 DOS 透視框線維持景深);**否則回退 DOS `render_first_person`**。
+- **F8 切 Amiga + `--fp` → 地牢牆面變 Amiga 石牆美術**(headless `--fp --theme amiga --map 1`
+  dump 目視確認:石塊牆面 + 側牆 trapezoid + water tile)。
+- **DOS theme 完全不經此模組** → verify_fp / verify_compose / render_sweep golden 全綠(未破)。
+
+### 受阻 / TODO
+- **透視非 byte-faithful**:DOS 用精確 perspective decode(填滿天花/地板、側牆完美收斂);
+  Amiga 路徑用維度匹配 + DOS 落點近似,牆面為 Amiga 美術且結構可辨,但中央遠景/收斂不如 DOS 精準。
+  要完全對位需替 Amiga 子圖塊重寫 DOS perspective placement(本次未做,風險為動到 golden 幾何)。
+- **viewport 原生 palette 未抽**(用 stone 相容色)。
+- Sky(111)/120/128/133 等 tag 非 offset-表結構(0 子圖塊),Amiga 路徑跳過留底色(天空走 DOS
+  `fill_sky_flat` 同義的留空)。
 
 ---
 
@@ -210,8 +285,11 @@ themes/x68000/tiles/icon_sheet_w32.png         icon 原寬(32px)直條版
 |---|---|
 | Amiga 標題畫面 (title.pic) | ✅ 完整彩色 PNG |
 | Amiga 結局 (endgame) | ✅ |
-| Amiga 怪物 sprite (data4 4-bitplane) | ✅ 6 隻已切 + 接進 Amiga 戰鬥(F8;見 §1.5) |
-| Amiga picparts | ⚠️ 部分 |
+| Amiga 怪物 sprite (data4 4-bitplane) | ✅ **50 隻**(全偶數資源)+ 權威 sprite_res() 對映接進戰鬥(F8;見 §1.5) |
+| Amiga viewport 牆面 (data3 4-bitplane) | ✅ 19 tag / 60 子圖塊已切 + 接進 Amiga 第一人稱(F8 `--fp`;見 §1.6) |
+| Amiga viewport 透視對位 | ⚠️ 近似(維度匹配;非 DOS byte-faithful perspective) |
+| Amiga viewport 原生 palette | ⚠️ TODO(用 stone 相容色) |
+| Amiga picparts(過場圖元件) | ⚠️ 部分 |
 | X68000 怪物 (MON.PIX) | ✅ contact sheet(EGA placeholder palette) |
 | X68000 場景 (PIC.PIX) | ✅ contact sheet |
 | X68000 UI 圖示 (ICON.PIX) | ✅ |

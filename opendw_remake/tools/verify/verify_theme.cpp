@@ -121,6 +121,47 @@ int main(int argc, char** argv) {
     }
   }
 
+  // 6b) Amiga 怪物 sprite 全套(res-ID 命名;MonsterRecord::sprite_res() 對映)。
+  //     驗:全 25 隻 monsters.bin 的 sprite_res() 偶數資源在 Amiga 都有對應 <res>.spr,
+  //     抽樣含先前缺的 Humbaba(218)/Gladiator(202)/King's Guard(166)。
+  for (int res : {166, 202, 218, 196, 168, 222}) {
+    const std::string p = bundle + "/themes/amiga/sprites/" + std::to_string(res) + ".spr";
+    auto sp = Sprite::load(p);
+    char msg[96];
+    std::snprintf(msg, sizeof msg, "amiga monster sprite res %d loads", res);
+    check(sp.has_value(), msg);
+    if (sp) {
+      std::snprintf(msg, sizeof msg, "amiga monster res %d has 16-colour self palette", res);
+      check(sp->palette.size() == 16, msg);
+    }
+  }
+
+  // 7) Amiga 第一人稱 viewport 牆面元件(theme-aware dungeon art;data3 viewport 圖塊逆向)。
+  //    驗:theme.component_dir 已接;Castle wall(tag 110)有多個子圖塊(近/中/遠 + 側牆),
+  //    各帶共用 stone palette(16 色),DOS theme component_dir 為空(走 golden 路徑)。
+  check(am.component_dir == "themes/amiga/components",
+        "amiga component_dir == themes/amiga/components");
+  check(theme_by_index(0).component_dir.empty(),
+        "dos component_dir empty (= bundle/components, golden path)");
+  {
+    // Castle wall(tag 110)= 10 子圖塊(offset 表);至少含 96px 寬的正面牆與高 >120px 的側牆。
+    int loaded = 0; bool has_front = false, has_side = false; bool pal16 = true;
+    for (int bi = 0; bi < 16; ++bi) {
+      const std::string p = bundle + "/themes/amiga/components/110_" +
+                            std::to_string(bi) + ".spr";
+      auto sp = Sprite::load(p);
+      if (!sp) break;
+      ++loaded;
+      if (sp->w >= 90 && sp->h >= 90) has_front = true;      // 正面牆 96×96
+      if (sp->h >= 120) has_side = true;                      // 近側牆 32×137
+      if (sp->palette.size() != 16) pal16 = false;
+    }
+    check(loaded >= 8, "amiga castle-wall (tag 110) has >= 8 viewport blocks");
+    check(has_front, "amiga castle-wall has a front-wall block (>=90x90)");
+    check(has_side, "amiga castle-wall has a tall side-wall block (h>=120)");
+    check(pal16, "amiga viewport blocks carry 16-colour stone palette");
+  }
+
   std::fprintf(stderr, "verify_theme: %s (%d failure(s))\n", fails ? "FAIL" : "PASS", fails);
   return fails ? 1 : 0;
 }

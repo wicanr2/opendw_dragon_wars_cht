@@ -35,6 +35,7 @@
 #include "render/sprite.hpp"
 #include "render/picture.hpp"
 #include "render/viewport.hpp"
+#include "render/viewport_amiga.hpp"
 #include "render/viewport_compose.hpp"
 #include "render/minimap.hpp"
 #include "render/worldmap.hpp"
@@ -727,6 +728,7 @@ int main(int argc, char** argv) {
     int monster_idx = -1;                 // monsters[] index
     std::optional<render::Sprite> sprite;  // 怪物圖(bundle .spr;無則畫空框)
     std::string mon_name_en;               // 怪物名英文原文(i18n 鍵)
+    int sprite_res = -1;                    // 怪物 sprite 資源編號(MonsterRecord::sprite_res();F8 reload 用)
     game::Combatant hero, mon;             // 結算單位(hero=隊伍第 0 名)— 施法(C)路徑沿用
     game::CombatRng rng{0x1234};
     std::vector<std::string> log;          // 逐回合戰鬥訊息(英文鍵化;tr 在地化)
@@ -1381,6 +1383,8 @@ int main(int argc, char** argv) {
 
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
   render::ComponentStore comps(bundle + "/components");
+  // Amiga 地牢牆面元件(theme=Amiga 第一人稱走此;見 render/viewport_amiga.hpp)。
+  render::AmigaComponentStore amiga_comps(bundle + "/themes/amiga/components");
 
   // area 0(Dilmun)專屬美化世界地圖 view(旋轉 90° landscape + 地形美化 + 地點標記)。
   //   與 oracle automap(下方 minimap)分工:area 0 走美化版、其餘 39 關走 oracle automap。
@@ -2537,7 +2541,8 @@ int main(int argc, char** argv) {
   //   (docs/26_MONSTERS_AND_SPRITES.md 已記:需逐一視覺核對),故此處用「怪物名 → 已
   //    視覺核對過的 bundle sprite」對照表;查無則回退第一個 spider/wolf,再無則畫空框。
   //   sprite 圖渲染路徑本身(.spr indexed blit)已由 sprite_dump golden 對拍 oracle。
-  auto sprite_for_monster = [&](const std::string& name) -> std::optional<render::Sprite> {
+  auto sprite_for_monster = [&](const std::string& name,
+                                int sprite_res = -1) -> std::optional<render::Sprite> {
     // theme-aware 來源:Amiga theme → themes/amiga/sprites(自帶 palette);否則 DOS bundle/sprites。
     //   檔名沿用 DOS 命名(152_guard / 196_spider …);Amiga 缺檔時回退 DOS bundle(誠實降級)。
     const std::string dir = theme.sprite_dir.empty()
@@ -2547,7 +2552,14 @@ int main(int argc, char** argv) {
       if (auto s = render::Sprite::load(dir + file + ".spr")) return s;
       return render::Sprite::load(bundle + "/sprites/" + file + ".spr");  // 回退 DOS
     };
-    // 名稱關鍵字 → 已核對 sprite 檔(視覺核對來源:docs/26 contact sheet)。
+    // 1) 權威對映:MonsterRecord::sprite_res() = (attr[0x0B]<<1)+0x8A 指向 data4 怪物 sprite
+    //    資源編號(逐記錄精確;25 隻 monsters.bin 全落在已抽的偶數資源)。Amiga theme 下
+    //    優先載 themes/amiga/sprites/<res>.spr(全套 50 隻 Amiga 立繪);命中即用,確保
+    //    F8 切 Amiga 時各怪物呈現自己的 Amiga 美術(不再只有名稱關鍵字命中的 6 隻)。
+    if (sprite_res > 0 && !theme.sprite_dir.empty()) {
+      if (auto s = render::Sprite::load(dir + std::to_string(sprite_res) + ".spr")) return s;
+    }
+    // 2) 名稱關鍵字 → 已核對 sprite 檔(視覺核對來源:docs/26 contact sheet;DOS / Amiga 缺檔回退)。
     if (name.find("Spider") != std::string::npos) return load("196_spider");
     if (name.find("Wolf") != std::string::npos)   return load("168_wolf");
     if (name.find("Dog") != std::string::npos || name.find("hound") != std::string::npos)
@@ -2571,7 +2583,8 @@ int main(int argc, char** argv) {
     enc.active = true;
     enc.monster_idx = idx;
     enc.mon_name_en = monsters[idx].name;
-    enc.sprite = sprite_for_monster(monsters[idx].name);
+    enc.sprite_res = (int)monsters[idx].sprite_res();
+    enc.sprite = sprite_for_monster(monsters[idx].name, enc.sprite_res);
     enc.rng = game::CombatRng((std::uint16_t)combat_seed);
     if (party.size() > 0) {
       const auto& c0 = party.at(0);
@@ -2617,7 +2630,8 @@ int main(int argc, char** argv) {
     enc.active = true;
     enc.is_namtar = true;
     enc.mon_name_en = "Namtar";
-    enc.sprite = sprite_for_monster("Humbaba");  // 占位立繪(無 Namtar 專屬 sprite;誠實:借胡姆巴巴像)
+    enc.sprite_res = 218;                         // Humbaba sprite 資源(Amiga 全套含此隻)
+    enc.sprite = sprite_for_monster("Humbaba", enc.sprite_res);  // 占位立繪(無 Namtar 專屬 sprite;誠實:借胡姆巴巴像)
     std::vector<game::Combatant> party_units;
     if (party.size() > 0) {
       for (std::size_t i = 0; i < party.size(); ++i) {
@@ -3082,6 +3096,42 @@ int main(int argc, char** argv) {
   auto draw_game_fp = [&]() {
     fb.clear(0);
     if (!level) return;
+    // ── theme=Amiga:地牢牆面走 Amiga 美術(render_first_person_amiga;不經 DOS golden)──
+    //   元件選擇/落點仍用 DOS golden compose_draw_sequence(read-only);只換像素來源 +
+    //   套 viewport stone 盤。Amiga 元件缺失時誠實回退下方 DOS 路徑。
+    if (!theme.component_dir.empty() &&
+        render::amiga_viewport_available(amiga_comps)) {
+      if (auto sp = amiga_comps.stone_palette()) vid.set_palette(*sp);
+      bool ok = render::render_first_person_amiga(*level, px, py, dir, fb, comps,
+                                                  amiga_comps);
+      if (ok) {
+        // 透視框線(perspective frame)仍以 DOS 模板畫在 Amiga 牆面上,維持景深結構。
+        if (vpt_ok) {
+          render::ViewportDecoder fdec;
+          fdec.reset(0);
+          fdec.compose_frame(vpt[0].data(), vpt[1].data(), vpt[2].data(), vpt[3].data());
+          // 框線非零處疊白(stone 盤 index 1 = 白),勾出透視邊。
+          const std::uint8_t* m = fdec.mem.data();
+          for (int yy = 0; yy < 136; ++yy)
+            for (int bx2 = 0; bx2 < 80; ++bx2) {
+              std::uint8_t b = m[yy * 80 + bx2];
+              if ((b >> 4) & 0xF) fb.put(16 + bx2 * 2, 8 + yy, 1);
+              if (b & 0xF) fb.put(16 + bx2 * 2 + 1, 8 + yy, 1);
+            }
+        }
+        // 右側面板/關卡名等仍照 DOS 流程畫(下方共用)。
+        if (!para.active) {
+          draw_explore_chrome();
+          party.draw_status_panel(fb, tl, PX_UI);
+          tl.add(8, 2, level->name, 15, PX_UI);
+        }
+        add_lang_badge();
+        if (!para.active && !msg.active && !sheet.active)
+          draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7);
+        return;
+      }
+      vid.set_palette(theme.palette);  // Amiga 元件不可用 → 還原 theme 盤,回退 DOS 路徑
+    }
     render::ViewportDecoder dec;
     // 牆面/地面/天空 sprite blit 進 viewport_memory(已對拍 golden 10880B)。
     render::render_first_person(*level, px, py, dir, dec, comps);
@@ -3452,7 +3502,7 @@ int main(int argc, char** argv) {
       // 戰鬥中切 theme:重載當前怪物 sprite(改用新 theme 的 sprite 來源 + 自帶盤)。
       //   F8 → Amiga 時戰鬥怪物圖即時換成 Amiga 美術(否則沿用進場時載的 DOS sprite)。
       if (state == S_COMBAT && enc.active)
-        enc.sprite = sprite_for_monster(enc.mon_name_en);
+        enc.sprite = sprite_for_monster(enc.mon_name_en, enc.sprite_res);
       theme_toast = 90;                                  // 顯示約 90 幀(toast)
       std::fprintf(stderr, "theme: cycle → [%d] %s (count=%d, partial=%d)\n",
                    theme_idx, theme.name.c_str(), render::theme_count(), (int)theme.partial);
