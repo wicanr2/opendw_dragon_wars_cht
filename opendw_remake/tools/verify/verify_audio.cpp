@@ -15,6 +15,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <string>
 #include <vector>
 
 using namespace dw;
@@ -26,10 +27,13 @@ static int g_fail = 0;
     else { std::printf("ok: %s\n", msg); }                               \
   } while (0)
 
-int main() {
+int main(int argc, char** argv) {
   // dummy audio driver(headless / CI:不需真實裝置)。
   ::setenv("SDL_AUDIODRIVER", "dummy", 1);
   ::setenv("SDL_VIDEODRIVER", "dummy", 1);
+
+  // argv[1] = bundle 目錄(載 <bundle>/audio 真實 PCM 取樣);未給則只驗方波路徑。
+  const std::string audio_dir = (argc > 1) ? std::string(argv[1]) + "/audio" : std::string();
 
   // 1) init OK(非靜音:dummy driver 下仍應成功開啟或自動退靜音,皆 is_open）。
   {
@@ -105,6 +109,28 @@ int main() {
     CHECK(dispatched.size() == 2 && dispatched[0] == 2 && dispatched[1] == 3,
           "VM op_90 → sound sink 派發索引正確(2=door, 3=wall)");
     snd.close();
+  }
+
+  // 6) 真實 PCM 取樣載入 + 播放(R8;需 bundle/audio 路徑)。
+  if (!audio_dir.empty()) {
+    audio::Sound snd;
+    bool ok = snd.open(/*muted=*/false, audio_dir);
+    CHECK(ok && snd.is_open(), "音效子系統 init OK(載 bundle/audio 真實取樣)");
+    // 對映到真實取樣的 SoundId 應有樣本可播(來源:Amiga data5/6、X68000 DW.SND)。
+    CHECK(snd.has_sample(audio::SoundId::DoorOpen), "DoorOpen 有真實 PCM 取樣(amiga_data5)");
+    CHECK(snd.has_sample(audio::SoundId::WallBump), "WallBump 有真實 PCM 取樣(amiga_data6)");
+    CHECK(snd.has_sample(audio::SoundId::Cast),     "Cast 有真實 PCM 取樣(x68k_dwsnd)");
+    CHECK(snd.has_sample(audio::SoundId::Pcm0),     "Pcm0(op_90 idx4)有真實 PCM 取樣");
+    // 無對映者退回方波(無樣本)。
+    CHECK(!snd.has_sample(audio::SoundId::EffectB2), "EffectB2 無取樣(退回方波)");
+    CHECK(!snd.has_sample(audio::SoundId::Effect88), "Effect88 無取樣(grounded 方波)");
+    // play() 在 dummy device 下對取樣 / 方波皆回報已派發,且不崩。
+    CHECK(snd.play(audio::SoundId::DoorOpen), "play(DoorOpen) 派發真實取樣");
+    CHECK(snd.play(audio::SoundId::EffectB2), "play(EffectB2) 派發方波(退回)");
+    snd.close();
+    CHECK(!snd.is_open(), "載取樣後 close() 乾淨退出");
+  } else {
+    std::printf("(skip PCM 取樣測試:未給 bundle 路徑)\n");
   }
 
   if (g_fail == 0) {

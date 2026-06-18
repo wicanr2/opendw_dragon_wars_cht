@@ -513,9 +513,10 @@ int main(int argc, char** argv) {
 
   // 音效子系統:RAII 開啟(靜音模式不碰實體裝置)。play() 在任何情況皆安全 no-op,
   //   絕不導致初始化失敗或卡住(headless / CI 不依賴音效裝置)。
-  //   真值層級見 src/audio/sound.hpp 檔頭(func_5060 索引/dx/bx = oracle 真值)。
+  //   非靜音時從 bundle/audio 載真實 PCM 取樣(Amiga data5/6、X68000 DW.SND);缺檔退回方波。
+  //   真值層級見 src/audio/sound.hpp 檔頭(func_5060 索引/dx/bx = oracle 真值;事件↔樣本對映 = remake 設計)。
   audio::Sound g_sound;
-  g_sound.open(mute);
+  g_sound.open(mute, bundle + "/audio");
 
   auto font = render::Font8x8::load_table(font_raw);
   if (!font) { std::fprintf(stderr, "font load failed: %s\n", font_raw.c_str()); return 1; }

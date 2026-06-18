@@ -18,9 +18,27 @@
     "scripts/19.bin",
     "scripts/22.bin"
   ],
-  "event_script_tags": [0, 1, 3, 5, 8, 9, 10, 11, 17, 19],
+  "event_script_tags": [
+    0,
+    1,
+    3,
+    5,
+    8,
+    9,
+    10,
+    11,
+    17,
+    19
+  ],
   "event_script_note": "全 40 關事件 script 經 op_58 跨資源 call 載入的 tag 聯集(< RESOURCE_MAX 0x107)。由 extract_eventscripts 掃描得出,供 app run_event 的 BundleProvider-based resource_provider 使用,執行不需 DATA1。",
-  "combat_script_tags": [2, 3, 4, 6, 18, 22],
+  "combat_script_tags": [
+    2,
+    3,
+    4,
+    6,
+    18,
+    22
+  ],
   "combat_script_note": "戰鬥腳本(res 3)經 op_58 跨資源 call 用到的資源:0x02、0x03(自身)、0x04(攻擊分支)、0x06(戰鬥訊息)、0x12=18(戰鬥選單,1375B)、0x16=22。供 probe_combat_script / 未來戰鬥 bytecode 執行使用。見 docs/42_COMBAT_BYTECODE.md。",
   "strings": [
     "strings/0.tsv",
@@ -30,5 +48,49 @@
   "sprites": "sprites/manifest.json",
   "party": "party/default_party.bin",
   "party_note": "進遊戲預設 4 人隊伍(Muskels/Theb/Elendil/Cheetah),抽自 DATA1 @ 0x2E26 起 4×512B player_record(opendw player.c 佈局)。slot 4-6 為 0xFF 空槽未含入。供右側狀態面板(game::Party)載入,不需 DATA1。",
-  "note": "remake 執行期讀此 bundle,不需原始磁碟檔。對話改 strings/*.tsv,sprite 改 sprites/*.png(轉回 .spr)。"
+  "note": "remake 執行期讀此 bundle,不需原始磁碟檔。對話改 strings/*.tsv,sprite 改 sprites/*.png(轉回 .spr)。",
+  "audio": {
+    "note": "真實 PCM 音效取樣(R8)。WAV(mono/16-bit/22050Hz)由 tools_build/audio_extract.py 從原版平台素材轉出;素材本身不入庫。事件↔樣本對映為 remake 設計(見 src/audio/sound.cpp kSampleMap),來源檔/格式為觀測真值。詳見 bundle/audio/README.md。",
+    "samples": {
+      "amiga_data5.wav": {
+        "source": "Amiga data/data5",
+        "format": "8-bit signed mono PCM",
+        "native_rate_hz": 11025,
+        "rate_note": "原生取樣率為 remake 設計值(原版未標)",
+        "mapped_to": [
+          "DoorOpen"
+        ]
+      },
+      "amiga_data6.wav": {
+        "source": "Amiga data/data6",
+        "format": "8-bit signed mono PCM",
+        "native_rate_hz": 11025,
+        "rate_note": "原生取樣率為 remake 設計值(原版未標)",
+        "mapped_to": [
+          "WallBump",
+          "Hit"
+        ]
+      },
+      "x68k_dwsnd.wav": {
+        "source": "X68000 Disk1 DW.SND",
+        "format": "8-bit signed mono PCM",
+        "native_rate_hz": 8000,
+        "rate_note": "原生取樣率為 remake 設計值(原版未標)",
+        "mapped_to": [
+          "Cast",
+          "Pcm0",
+          "Pcm1",
+          "Pcm2",
+          "Pcm3",
+          "Pcm4",
+          "Pcm5",
+          "Pcm6"
+        ]
+      }
+    },
+    "deferred": {
+      "amiga_tunes": "title/game/combat/end.tune 為 68000 機械碼播放器(Music by MANIACS of NOISE),非 raw PCM;需 68k 模擬器執行才能還原,本輪未做。",
+      "dos_pcspk_music": "DRAGON.COM 0x5C3B-0x5D1D PIT 方波音符序列(非 PCM),需另解音符表,本輪未納入。"
+    }
+  }
 }

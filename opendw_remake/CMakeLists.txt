@@ -116,7 +116,9 @@ if(SDL2_FOUND)
   #   grounded dx/bx 真值(door/wall/effect_88)+ VM sound sink 派發路徑 + 乾淨退出。
   add_executable(verify_audio tools/verify/verify_audio.cpp)
   target_link_libraries(verify_audio PRIVATE dwr_audio dwr_vm)
-  add_test(NAME verify_audio COMMAND verify_audio)
+  # argv[1] = bundle 目錄(載 <bundle>/audio 真實 PCM 取樣)。
+  add_test(NAME verify_audio
+           COMMAND verify_audio ${CMAKE_CURRENT_SOURCE_DIR}/assets/bundle)
   set_tests_properties(verify_audio PROPERTIES
     ENVIRONMENT "SDL_AUDIODRIVER=dummy;SDL_VIDEODRIVER=dummy")
 
