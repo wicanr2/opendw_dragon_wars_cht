@@ -96,8 +96,8 @@ class CombatLoop {
   // 每個受影響對象套效果並追加 CombatEvent;最後 recompute_outcome(控制清場可提早結束)。
   // 回傳「對主要對象」的 CastResult(power_spent 為單次施放消耗,呼叫端據此扣 Power)。
   // 確定性:RNG 副作用順序 = 依對象 index 升序逐一 cast_spell。
-  //   caster_int / magic_ranks:Zap 攻擊判定用(docs/58 門檻 12+ranks+INT−DV);預設 0 相容。
-  //   power_points:variable_power 法術投入點數(docs/58「N hp/pt」),上限由 cast_spell 依
+  //   caster_int / magic_ranks:Zap 攻擊判定用(docs/gameplay/58_MAGIC_REFERENCE.md 門檻 12+ranks+INT−DV);預設 0 相容。
+  //   power_points:variable_power 法術投入點數(docs/gameplay/58_MAGIC_REFERENCE.md「N hp/pt」),上限由 cast_spell 依
   //     2×magic_ranks 夾;固定 power 法術忽略。
   CastResult cast(std::uint8_t spell_id, int caster_power, int caster_str,
                   bool caster_is_player = true, int caster_int = 0,

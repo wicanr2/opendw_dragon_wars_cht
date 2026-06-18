@@ -400,12 +400,12 @@ add_executable(dump_worldmap_tiles tools/verify/dump_worldmap_tiles.cpp)
 target_link_libraries(dump_worldmap_tiles PRIVATE dwr_resource)
 
 # tools/verify:逐 area dump 牆屬性 word_11C6 nibble + tile 型分佈(門/陷阱逆向 grounding;
-# docs/57 §2 結論來源),非 ctest gate。
+# docs/gameplay/57_DOORS_TRAPS_TERRAIN.md §2 結論來源),非 ctest gate。
 add_executable(dump_wall_attr tools/verify/dump_wall_attr.cpp)
 target_link_libraries(dump_wall_attr PRIVATE dwr_resource)
 
 # tools/verify:逐 area dump data_56C6 牆/門型表(兩半)+ 牆 nibble→tag + hilo 牆型碼
-# (門牆識別深掘;docs/57 §2「可識別前方牆型 byte、門語意受阻」結論來源),非 ctest gate。
+# (門牆識別深掘;docs/gameplay/57_DOORS_TRAPS_TERRAIN.md §2「可識別前方牆型 byte、門語意受阻」結論來源),非 ctest gate。
 add_executable(dump_door_table tools/verify/dump_door_table.cpp)
 target_link_libraries(dump_door_table PRIVATE dwr_resource dwr_render)
 add_executable(dump_door_cells tools/verify/dump_door_cells.cpp)

@@ -1,17 +1,17 @@
 // verify_spells — 法術系統的確定性 PASS/FAIL 驗證(ctest)。
 //
-// 數值權威依據 = **docs/58_MAGIC_REFERENCE.md(fraterrisus 攻略 v3.0)**;真值層級
+// 數值權威依據 = **docs/gameplay/58_MAGIC_REFERENCE.md(fraterrisus 攻略 v3.0)**;真值層級
 //   = remake 設計(grounded 攻略),非 opendw bytecode oracle(見 spells.hpp 檔頭)。
 //
 // 對拍:
 //  A.  法術表規模/覆蓋:筆數 == 預期、id 連續無洞、五大 school 皆有。
-//  B.  抽樣效果值對拍 docs/58:Mage Fire 1d8、Lesser Heal 1d4、Fire Light 1d6/pt(PerPoint)、
+//  B.  抽樣效果值對拍 docs/gameplay/58_MAGIC_REFERENCE.md:Mage Fire 1d8、Lesser Heal 1d4、Fire Light 1d6/pt(PerPoint)、
 //        Healing 1d6、Insect Plague −2 AV/DV、Sun Stroke 1d8/pt、Battle Power +10 STR、
 //        Kill Ray 10–80、Zak's Speed +15 DEX、Fire Storm 6d6、Inferno 1d4/pt、
 //        Sala's Swift POW 8、Heal(Sun) 1d8、Armor of Light = +2 DV(非 AC)。
 //  C.  bitfield 走訪:character_knows_spell 對拍人工設定 bit。
 //  D.  施法結算:扣 Power 正確、傷害(命中)落範圍、致死、buff/debuff 方向、控制、工具。
-//  E.  Zap 攻擊判定(docs/58):命中吃全傷、miss 吃半傷;高 INT/ranks → 必中,負門檻 → 必失。
+//  E.  Zap 攻擊判定(docs/gameplay/58_MAGIC_REFERENCE.md):命中吃全傷、miss 吃半傷;高 INT/ranks → 必中,負門檻 → 必失。
 //  F.  PerPoint 每點骰式 + 2×ranks 上限。
 //  G.  確定性:固定 seed 兩次施法序列逐筆一致。
 //
@@ -78,8 +78,8 @@ int main(int argc, char** argv) {
     check(L&&H&&D&&Sn&&M, "all 5 schools present (L/H/D/S/M)");
   }
 
-  // ── B. 抽樣效果值對拍 docs/58 ─────────────────────────────────────────
-  std::printf("== B. sampled effect values vs docs/58 ==\n");
+  // ── B. 抽樣效果值對拍 docs/gameplay/58_MAGIC_REFERENCE.md ─────────────────────────────────────────
+  std::printf("== B. sampled effect values vs docs/gameplay/58_MAGIC_REFERENCE.md ==\n");
   if (auto* s = sp(0x00))
     check(s->dice_count==1 && s->dice_sides==8 && s->power_cost==2 && s->zap &&
               s->effect==SpellEffect::Damage && s->target==SpellTarget::OneEnemy,
@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
     cast_spell(0x2C, 10, 20, ally, rng);   // 聖戰光輝 +2 AV
     check(ally.av==7, "Holy Aim +2 AV applied");
     Combatant ally2; ally2.is_player=true; ally2.dv=5;
-    cast_spell(0x31, 10, 20, ally2, rng);  // 光的武裝 +2 DV(docs/58:非 AC)
+    cast_spell(0x31, 10, 20, ally2, rng);  // 光的武裝 +2 DV(docs/gameplay/58_MAGIC_REFERENCE.md:非 AC)
     check(ally2.dv==7 && ally2.ac==0, "Armor of Light +2 DV (not AC)");
     // 蟲害 -2 AV/DV(必中)。
     Combatant enemy; enemy.av=5; enemy.dv=5;
@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
           "Reveal Glamour = Dispel (N/A in combat)");
   }
 
-  // ── E. Zap 攻擊判定(docs/58:1d16+2 roll-under,門檻 12+ranks+INT−DV,miss 半傷)──
+  // ── E. Zap 攻擊判定(docs/gameplay/58_MAGIC_REFERENCE.md:1d16+2 roll-under,門檻 12+ranks+INT−DV,miss 半傷)──
   std::printf("== E. zap attack judgement ==\n");
   {
     // 高門檻(INT 99/ranks 99)→ 必中,全傷。
@@ -325,8 +325,8 @@ int main(int argc, char** argv) {
     check(ok, "Inferno 1 pt hit within [1,4]");
   }
 
-  // ── H. 召喚屬性對拍 docs/58 召喚表 ───────────────────────────────────
-  std::printf("== H. summon stats vs docs/58 ==\n");
+  // ── H. 召喚屬性對拍 docs/gameplay/58_MAGIC_REFERENCE.md 召喚表 ───────────────────────────────────
+  std::printf("== H. summon stats vs docs/gameplay/58_MAGIC_REFERENCE.md ==\n");
   {
     // AV/DV = Dex/4;HP/AC/骰照表。caster_str=0 → dmg_bonus = str_damage_bonus(0)。
     Combatant air = make_summon(SummonKind::AirElemental, 0);

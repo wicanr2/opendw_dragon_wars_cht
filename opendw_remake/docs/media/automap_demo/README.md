@@ -71,7 +71,7 @@ gcc -O0 -std=c11 -o golden_minimap tools_build/minimap_golden/golden_minimap.c
 
 # remake app headless 截圖 (docker dwsdl, SDL_VIDEODRIVER=dummy)
 ./opendw_remake --bundle assets/bundle --font assets/fonts/dw8x8.bin \
-  --automap 1 --mm-seed 0 --frames 1 --dump docs/automap_demo/automap_area1.ppm
+  --automap 1 --mm-seed 0 --frames 1 --dump docs/media/automap_demo/automap_area1.ppm
 
 # 對拍 (ctest)
 ctest -R verify_automap_l1

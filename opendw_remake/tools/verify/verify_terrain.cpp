@@ -1,6 +1,6 @@
 // verify_terrain — 探索互動(門/密門/陷阱/地形法術)機制確定性自測(不需 SDL,印 PASS/FAIL)。
 //
-// 真值層級:機制為 remake 設計(opendw 主遊戲 K 開門 / 陷阱 / 探索施法未反編;見 docs/57)。
+// 真值層級:機制為 remake 設計(opendw 主遊戲 K 開門 / 陷阱 / 探索施法未反編;見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)。
 //   本測試驗證 remake 機制邏輯(walkability 閘、門狀態轉移、陷阱解除/感知、地形法術效果、
 //   TerrainState 序列化 round-trip)的確定性與正確性,非對拍 oracle。
 //

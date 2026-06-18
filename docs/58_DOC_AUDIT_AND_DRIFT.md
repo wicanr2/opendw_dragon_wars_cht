@@ -120,7 +120,7 @@
 | `53_EVENTS_TRANSLATION_REVIEW.md` | ✅ 現行有效 | 翻譯待審清單 | 保留 |
 | `54_WORLDMAP_REACHABILITY_AUDIT.md` | ✅ 現行有效(連通真值來源) | Update 2 = 38/40 的最終結論;誠實標示 Phoebus(6)逆不出 | 保留 |
 | `55_MAINLINE_QUEST_GATE_AND_ENDGAME.md` | ✅ 現行有效 | quest gate 系統 + 結局可觸發;ctest 21/21(該輪) | 保留;ctest 現 22/22(56 後) |
-| `opendw_remake/docs/56_PLAYABLE_ENDING_CHAIN.md` | ✅ 現行有效(最新真值) | 可通關結局鏈 + 22/22;誠實標示 Boss/結局=remake 設計 | 保留 |
+| `opendw_remake/docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md` | ✅ 現行有效(最新真值) | 可通關結局鏈 + 22/22;誠實標示 Boss/結局=remake 設計 | 保留 |
 
 > **57 號**:`docs/57_PM_REVIEW.md` 由另一 agent 撰寫,本盤點不評。
 
@@ -139,10 +139,10 @@
 |------|------|-------|----------|
 | `opendw_remake/README.md` | 🟡 部分過時 | 「現況(R0 進行中)(L22)」「R1 進行中…~117/256 opcode(L34/L38)」——**現為 119 + 可通關**;與根 README 上半(可通關)不一致 | **更新**:R 階段現況、opcode 119、可通關 |
 | `opendw_remake/ARCHITECTURE.md` | ✅ 現行有效 | 架構藍圖 + R0–R6 階段表;設計仍成立,階段「現況」欄可能落後 | 保留;階段表現況欄可更新 |
-| `opendw_remake/docs/REWRITE_READINESS.md` | 🟡 部分過時 | 2026-06-12 里程碑;「~117/256(L25)」現 119;R1「進行中」現已遠超 | **更新**或標里程碑快照 |
-| `opendw_remake/docs/VIEWPORT.md` | 🟡 部分過時 | **L47「俯視圖為占位」、L51「第一人稱 viewport 尚未 port」已過時**——`--fp` 已接入 S_GAME 且 `render_sweep` 全 40 關 PASS(`src/main.cpp` L333/356) | **更新**:標 viewport 已 port + golden PASS |
-| `opendw_remake/docs/VIEWPORT_COMPOSE.md` | ✅ 現行有效 | step 1/2 對拍結論已完成 | 保留 |
-| `opendw_remake/docs/CONTROLS.md` | 🟡 部分過時 | 2026-06-14;**L53「戰鬥結算為乾淨室 placeholder」已過時**(combat_loop 已用 bytecode 真值公式);未列 `--fight-namtar`/`--ending`/建角等新指令 | **更新**:戰鬥真值說明 + 補新 flag |
+| `opendw_remake/docs/engine/REWRITE_READINESS.md` | 🟡 部分過時 | 2026-06-12 里程碑;「~117/256(L25)」現 119;R1「進行中」現已遠超 | **更新**或標里程碑快照 |
+| `opendw_remake/docs/engine/VIEWPORT.md` | 🟡 部分過時 | **L47「俯視圖為占位」、L51「第一人稱 viewport 尚未 port」已過時**——`--fp` 已接入 S_GAME 且 `render_sweep` 全 40 關 PASS(`src/main.cpp` L333/356) | **更新**:標 viewport 已 port + golden PASS |
+| `opendw_remake/docs/engine/VIEWPORT_COMPOSE.md` | ✅ 現行有效 | step 1/2 對拍結論已完成 | 保留 |
+| `opendw_remake/docs/engine/CONTROLS.md` | 🟡 部分過時 | 2026-06-14;**L53「戰鬥結算為乾淨室 placeholder」已過時**(combat_loop 已用 bytecode 真值公式);未列 `--fight-namtar`/`--ending`/建角等新指令 | **更新**:戰鬥真值說明 + 補新 flag |
 | `opendw_remake/docs/adr/0001`、`0002` | ✅ 現行有效 | Asset bundle、雙層 CJK 渲染 ADR;與實作對齊 | 保留 |
 | `opendw_remake/assets/**/README.md`、`automap_demo/`、`party_demo/` 等 | ✅ 現行有效 | 資產/demo 說明 | 保留 |
 
@@ -183,7 +183,7 @@
 | P0 | 根 `README.md` | 刪 L41 後重複/過時段;統一 remake 口徑(119/22-22/38-40/bytecode 真值/可通關);移除 `src/fe/sdldragon` 主產物敘述;3926 改述為雜訊 |
 | P0 | `docs/README.md` + `99_INDEX.md` | 補索引 38/39/15/46–56;更新「目前進度」表至可通關現況;二者擇一為正本(見 §5) |
 | P1 | `opendw_remake/README.md`、`REWRITE_READINESS.md` | R 階段現況 + opcode 119 + 可通關 |
-| P1 | `opendw_remake/docs/VIEWPORT.md`、`CONTROLS.md` | viewport 已 port;戰鬥 bytecode 真值;補 `--fight-namtar`/`--ending`/建角 flag |
+| P1 | `opendw_remake/docs/engine/VIEWPORT.md`、`CONTROLS.md` | viewport 已 port;戰鬥 bytecode 真值;補 `--fight-namtar`/`--ending`/建角 flag |
 | P1 | `47`、`48`、`49` | 加「2026-06-15 快照」帽 + 回填完成狀態(62/100、19 ctest、~117、roadmap、結局觸發已實作) |
 | P2 | `51_WORLDMAP…`、`07` | 連通 27→38/40 標「當輪 vs 最終」;07 Phase 3 已落地 |
 | P2 | `42_COMBAT` | 加導讀:單次公式=真值 / Boss·怪物=設計(分層) |

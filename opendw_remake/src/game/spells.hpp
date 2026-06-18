@@ -7,17 +7,17 @@
 //  • 法術 id:對齊 **fraterrisus 法術索引**(docs/44 §3「法術索引 [60-67] bitfield」,
 //    0x00 L:魔火 … 0x3F)。角色 record[60-67] 為 64-bit bitfield(byte b、bit i →
 //    spell id = b*8 + i),記錄該角色已習得哪些法術。
-//  • 效果值(骰式/目標/Power/類型/攻擊判定):**權威依據 = docs/58_MAGIC_REFERENCE.md
+//  • 效果值(骰式/目標/Power/類型/攻擊判定):**權威依據 = docs/gameplay/58_MAGIC_REFERENCE.md
 //    (fraterrisus 攻略 v3.0 整理)**,比臺灣手冊完整(含召喚生物精確屬性、Zap 攻擊判定
 //    公式、各系全法術 POW/dice)。傷害/治療以 dice_count d dice_sides 表(Mage Fire 1d8…),
 //    變動消耗(var.)以「每點」骰式表(Inferno 1d4/pt),投入上限 = 2×魔法技能 ranks。
 //  • 真值層級 = **remake 設計(grounded 攻略)**:攻略為約定俗成 + 反編佐證,非官方臺灣手冊、
 //    **非 opendw bytecode oracle**(opendw C 碼未實作法術結算,只到選單/載圖)。誠實標示,
 //    不謊稱 bytecode 真值。傷害/治療/判定擲骰走 CombatRng(確定性,可 seed)。
-//  • Zap/Debuff 攻擊判定(docs/58):每目標 1d16+2 roll-under,門檻 12 + 魔法技能 ranks +
+//  • Zap/Debuff 攻擊判定(docs/gameplay/58_MAGIC_REFERENCE.md):每目標 1d16+2 roll-under,門檻 12 + 魔法技能 ranks +
 //    施法者 INT − 防禦方 DV;miss 仍吃半傷。與近戰公式(1d16+3、13+AV−(DV+AC)、bytecode
 //    真值)刻意分開,見 zap_attack_roll。AC 不參與法術判定。
-//  • 召喚:屬性照 docs/58 召喚表(HP/Dex/Armor/武器骰);make_summon 以攻略表值 grounded。
+//  • 召喚:屬性照 docs/gameplay/58_MAGIC_REFERENCE.md 召喚表(HP/Dex/Armor/武器骰);make_summon 以攻略表值 grounded。
 // ──────────────────────────────────────────────────────────────────────
 #pragma once
 
@@ -43,8 +43,8 @@ enum class SpellSchool : std::uint8_t {
 // 效果類型(決定 cast() 如何套用)。
 enum class SpellEffect : std::uint8_t {
   Damage,       // 傷害(固定骰):擲 dice_count d dice_sides → 扣目標 STUN(Zap;走攻擊判定)
-  PowerScaled,  // 傷害(每點變動,docs/58「Nd? hp/pt」):每投入 1 點 Power 擲一次 dice_count d
-                //   dice_sides,投入點數上限 = 2×魔法技能 ranks(docs/58 §var.)。走攻擊判定。
+  PowerScaled,  // 傷害(每點變動,docs/gameplay/58_MAGIC_REFERENCE.md「Nd? hp/pt」):每投入 1 點 Power 擲一次 dice_count d
+                //   dice_sides,投入點數上限 = 2×魔法技能 ranks(docs/gameplay/58_MAGIC_REFERENCE.md §var.)。走攻擊判定。
   Heal,         // 治療:回復我方 STUN(擲範圍)
   BuffAv,       // +AV(攻擊值)
   BuffDv,       // +DV(防禦值)
@@ -57,7 +57,7 @@ enum class SpellEffect : std::uint8_t {
 };
 
 // 召喚類效果的具體種類(decides 召喚出的臨時友方屬性)。
-// 屬性照 **docs/58 召喚表精確值**(HP/Dex/Armor/武器骰);AV/DV=Dex/4。真值層級 =
+// 屬性照 **docs/gameplay/58_MAGIC_REFERENCE.md 召喚表精確值**(HP/Dex/Armor/武器骰);AV/DV=Dex/4。真值層級 =
 // remake 設計(grounded 攻略),**非 bytecode oracle**。見 spells.cpp make_summon。
 enum class SummonKind : std::uint8_t {
   None,         // 非召喚類
@@ -94,9 +94,9 @@ enum class SpellTarget : std::uint8_t {
 };
 
 // 單條法術定義。
-//   • 數值權威依據 = **docs/58_MAGIC_REFERENCE.md(fraterrisus 攻略 v3.0)**;真值層級
+//   • 數值權威依據 = **docs/gameplay/58_MAGIC_REFERENCE.md(fraterrisus 攻略 v3.0)**;真值層級
 //     = remake 設計(grounded 攻略),非官方手冊、非 bytecode oracle(誠實標示)。
-//   • 傷害/治療以 dice_count d dice_sides 表示(docs/58 骰式,如 Mage Fire 1d8、
+//   • 傷害/治療以 dice_count d dice_sides 表示(docs/gameplay/58_MAGIC_REFERENCE.md 骰式,如 Mage Fire 1d8、
 //     Fire Storm 6d6、Inferno 1d4/pt);buff/debuff 固定加值放 amount_min(==amount_max)。
 struct SpellDef {
   std::uint8_t id;           // fraterrisus 索引(0x00..0x3F)
@@ -105,14 +105,14 @@ struct SpellDef {
   SpellEffect effect;
   SpellTarget target;
   int power_cost;            // 使用力量 Power(法力消耗);variable_power 時為最低投入(1 點)
-  bool variable_power;       // true = docs/58「var.」(可選投入多點,每點加一份;上限 2×ranks)
+  bool variable_power;       // true = docs/gameplay/58_MAGIC_REFERENCE.md「var.」(可選投入多點,每點加一份;上限 2×ranks)
   int amount_min;            // buff/debuff:固定加值;Damage/PerPoint:= dice_count*1(骰下界,衍生)
   int amount_max;            // buff/debuff:== amount_min;Damage/PerPoint:= dice_count*dice_sides(骰上界,衍生)
-  int dice_count;            // 傷害/治療骰數(docs/58「NdM」的 N);非擲骰類為 0
-  int dice_sides;            // 傷害/治療骰面(docs/58「NdM」的 M);非擲骰類為 0
+  int dice_count;            // 傷害/治療骰數(docs/gameplay/58_MAGIC_REFERENCE.md「NdM」的 N);非擲骰類為 0
+  int dice_sides;            // 傷害/治療骰面(docs/gameplay/58_MAGIC_REFERENCE.md「NdM」的 M);非擲骰類為 0
   bool zap;                  // true = Zap/Debuff 攻擊類,需法術攻擊判定(1d16+2 roll-under,miss 半傷)
   ControlKind control;       // Control 效果的具體種類(非控制類為 ControlKind::None)
-  const char* note58;        // docs/58 出處/原文摘要(grounding 追溯)
+  const char* note58;        // docs/gameplay/58_MAGIC_REFERENCE.md 出處/原文摘要(grounding 追溯)
   SummonKind summon = SummonKind::None;  // 召喚類的具體種類(非召喚類為 SummonKind::None)
 };
 
@@ -143,7 +143,7 @@ struct CastResult {
   int dazzle_turns = 0;       // Daze:套用的跳過回合數(remake 設計值);其餘 0
   bool target_fled = false;   // Flee:目標本次被逐出戰鬥
   SummonKind summon = SummonKind::None;  // 召喚類:已召喚出的種類(供 combat_loop 加臨時友方);非召喚為 None
-  // ── Zap 攻擊判定明細(docs/58;僅 zap 類有意義)──────────────────────────
+  // ── Zap 攻擊判定明細(docs/gameplay/58_MAGIC_REFERENCE.md;僅 zap 類有意義)──────────────────────────
   bool is_zap = false;        // 此法術走 Zap 攻擊判定(Damage/PerPoint 且 zap==true)
   bool zap_hit = false;       // 攻擊判定命中(true=全傷;false=miss,amount 已折半)
   int zap_roll = 0;           // 1d16+2 擲值
@@ -156,13 +156,13 @@ struct CastResult {
 // 又不致一發定生死。**非 oracle 真值**。
 inline constexpr int kControlDazzleTurns = 2;
 
-// ── Zap/Debuff 法術攻擊判定(docs/58 §「法術攻擊判定」)──────────────────────
+// ── Zap/Debuff 法術攻擊判定(docs/gameplay/58_MAGIC_REFERENCE.md §「法術攻擊判定」)──────────────────────
 // 每目標一次 1d16+2 roll-under;命中條件:roll ≤ 12 + 魔法技能 ranks + 施法者 INT − 防禦方 DV。
 //   • 與近戰 resolve_attack 的差異(刻意分開,標清楚):
 //       近戰 = 1d16+3、門檻 13 + 攻方 AV − (DV+AC)(bytecode 真值);
 //       法術 = 1d16+2、門檻 12 + ranks + INT − DV(攻略 grounded;**AC 不參與、用 INT 取代 AV、
-//             魔法技能 ranks 取代武器技能**)。真值層級 = remake 設計(grounded docs/58)。
-//   • 回傳 true = 命中(吃全傷);false = miss(docs/58:miss 仍吃半傷,由呼叫端折半)。
+//             魔法技能 ranks 取代武器技能**)。真值層級 = remake 設計(grounded docs/gameplay/58_MAGIC_REFERENCE.md)。
+//   • 回傳 true = 命中(吃全傷);false = miss(docs/gameplay/58_MAGIC_REFERENCE.md:miss 仍吃半傷,由呼叫端折半)。
 //   • 用 rng.below(16) 取 [0,16) 再 +2 → roll ∈ [2,17](對齊「1d16+2」)。
 struct ZapHit { bool hit; int roll; int need; };
 ZapHit zap_attack_roll(int caster_int, int magic_ranks, const Combatant& target,
@@ -180,7 +180,7 @@ ZapHit zap_attack_roll(int caster_int, int magic_ranks, const Combatant& target,
 //   • rng:CombatRng(確定性,與物理攻擊共用同一序列)。
 // 傷害/治療作用於 target.hp(=STUN),與物理攻擊一致(SDA:HP=Stun)。
 //   Zap 類(Damage/PerPoint,zap==true)先走 zap_attack_roll:命中吃全傷、miss 吃半傷
-//   (docs/58),result.zap_hit / zap_roll / zap_need 回報判定明細。
+//   (docs/gameplay/58_MAGIC_REFERENCE.md),result.zap_hit / zap_roll / zap_need 回報判定明細。
 // 控制類(Daze/Flee/Disarm)直接作用於 target 的控制狀態;Dispel 為 N/A no-op。
 //   工具/召喚類仍 handled=false(只扣 Power),召喚回填 r.summon。
 CastResult cast_spell(std::uint8_t spell_id, int caster_power, int caster_str,

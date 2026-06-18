@@ -2,7 +2,7 @@
 //   攔截 op_5D(get_character_data)的角色屬性讀取,偵測「讀取角色 skill 欄(0x20-0x3A)」
 //   的事件格,逆出「哪些事件格 script 在檢定哪個技能」。
 //
-// ── 真值層級(誠實標示,見 docs/59)─────────────────────────────────────
+// ── 真值層級(誠實標示,見 docs/gameplay/59_SKILL_CHECK_TRIGGERS.md)─────────────────────────────────────
 //   • 技能檢定「觸發點」= 可識別(bytecode 真值):op_5D 讀 char_data[(sel<<8)+prop]
 //     已逐指令對拍 opendw(get_character_data @engine.c:2568)。prop 在 0x20-0x3A
 //     即角色 skill 欄(player.c struct skill_info)。某事件格 script 含此讀取

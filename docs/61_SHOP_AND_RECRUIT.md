@@ -118,12 +118,12 @@ i18n:`assets/i18n/{zh-TW,en,ja}/shop.tsv`(商店/酒館 UI + curated 物品名 +
 - 工具:`tools/extract/gen_shop_stock.py`、`tools/verify/verify_shop.cpp`、`tools/verify/verify_recruit.cpp`。
 - `tools/verify/verify_i18n.cpp`:kFiles 納入 shop.tsv。
 - `CMakeLists.txt`:dwr_game 加 shop/recruit;新增兩 ctest。
-- 截圖:`docs/shop_recruit/{shop_buy_zh,shop_buy_en,tavern_zh}.png`。
+- 截圖:`opendw_remake/docs/media/shop_recruit/{shop_buy_zh,shop_buy_en,tavern_zh}.png`。
 
 ---
 
 ## 7. 截圖
 
-![商店買賣(繁中)](shop_recruit/shop_buy_zh.png)
-![商店買賣(英文,F4 切語言)](shop_recruit/shop_buy_en.png)
-![酒館招募(繁中)](shop_recruit/tavern_zh.png)
+![商店買賣(繁中)](../opendw_remake/docs/media/shop_recruit/shop_buy_zh.png)
+![商店買賣(英文,F4 切語言)](../opendw_remake/docs/media/shop_recruit/shop_buy_en.png)
+![酒館招募(繁中)](../opendw_remake/docs/media/shop_recruit/tavern_zh.png)

@@ -1,7 +1,7 @@
 # themes/ — 多版本美術素材
 
 為「遊戲中切換 theme」準備,從各平台原版抽出的美術。DOS 版美術 = 既有 bundle 預設 theme,
-不放這裡。抽取方法、格式、受阻清單見 `docs/61_MULTIVERSION_ASSETS.md`。
+不放這裡。抽取方法、格式、受阻清單見 `docs/reference/61_MULTIVERSION_ASSETS.md`。
 
 | theme | 來源平台 | 內容 | palette |
 |---|---|---|---|

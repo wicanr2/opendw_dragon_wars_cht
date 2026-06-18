@@ -301,7 +301,7 @@ tile 0x10「唯有 Irkalla 信徒方可通行」、tile 0x12「黑暗中你發�
   - `opendw_remake/assets/i18n/zh-TW/events.tsv`:+20 條(area 18 瑪根全段 + area 33 菲巴斯地牢
     + area 26/32 結局相關;area 27 結局段先前已譯齊)。
   - `opendw_remake/assets/fonts/cjk24.atlas`:重生(1878→2017 glyph,補新譯文 18 字:伊爾庫…)。
-  - `opendw_remake/docs/screenshots/endgame/*.png`:6 張結局/gate 繁中截圖。
+  - `opendw_remake/docs/media/screenshots/endgame/*.png`:6 張結局/gate 繁中截圖。
 - **VM source(本輪)**:
   - `opendw_remake/src/vm/interpreter.{hpp,cpp}`:op_6B(`op6B_move_reverse` + `adjust_position`)、
     op_8D(`op8D_read_string`)handler + dispatch 表註冊。

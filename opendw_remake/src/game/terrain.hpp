@@ -3,7 +3,7 @@
 // Deep module:對外露 (1) tile 型常數、(2) 「該格現在可不可走」判定(綜合
 // Level tile + TerrainState 旗標)、(3) 互動結果列舉。內部隱藏旗標組合邏輯。
 //
-// ── 真值層級(務必誠實,見 docs/57)─────────────────────────────────────
+// ── 真值層級(務必誠實,見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)─────────────────────────────────────
 //   逆向深掘(2026-06-16):可識別到「面向前方牆型 byte」(engine.c refresh_viewport
 //   5663-5673:前方中央格牆 nibble → data_56C6[nibble+0xF] → gs[0x26]),其低 nibble
 //   hilo 是逐關牆型碼,地牢類部分牆 nibble hilo!=0 與主牆區隔(門牆候選)。**但**
@@ -16,7 +16,7 @@
 //   2026-06-17 更新:**真實 .lvl 陷阱格已由路徑 B 識別**(`real_terrain.hpp`:逐事件格
 //   跑 VM,傷害訊息語意類 → 原版真座標,3 關 111 格)。本檔 0x30..0x34 改為 remake 測試關
 //   保留約定(真實 .lvl 不含),與真陷阱機制相容並存(真陷阱優先)。門真實格仍受阻
-//   (牆 sprite 無專屬門 tag;見 docs/57 §路徑 A + render_fp_cell 證據)。
+//   (牆 sprite 無專屬門 tag;見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md §路徑 A + render_fp_cell 證據)。
 // ──────────────────────────────────────────────────────────────────────
 #pragma once
 

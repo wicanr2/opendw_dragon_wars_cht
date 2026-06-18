@@ -5,7 +5,7 @@
 //   • 陷阱「位置」: 可識別(bytecode 真值)—— tile → script_pc → VM 跑出的 emit 字串
 //     已逐指令對拍 opendw(op_71/run_level_script);字串本身是原版資產解碼結果。
 //   • 陷阱「傷害結算」: 受阻 —— 傷害的 HP/Stun 實際扣減走 op_58 跨資源呼叫 +
-//     未反編的戰鬥/傷害 settlement(opendw 乾淨反編無此 C 碼,docs/57 §1)。VM 觀察到
+//     未反編的戰鬥/傷害 settlement(opendw 乾淨反編無此 C 碼,docs/gameplay/57_DOORS_TRAPS_TERRAIN.md §1)。VM 觀察到
 //     trap script「emit 敵意訊息後 dispatch 到傷害 handler」,但不寫 char_data HP
 //     (已實測:area27 trap tile 走 op_52 跳轉/op_58,非 op_5E 寫 Health)。
 //   故本工具以「emit 訊息語意類」識別陷阱格(位置真值),不宣稱逆出傷害數值。
