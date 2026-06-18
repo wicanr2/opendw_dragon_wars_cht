@@ -200,7 +200,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 核心策略不是「照抄組語」，而是把反組譯當成**正確性的裁判**，自己手寫可維護的引擎，再用差異測試逼兩邊一致。
 
 1. **逆向破解資料格式**。DATA1/DATA2 的 5-bit 文字編碼、Huffman 樹解壓（res31/res168）、sprite 去交錯、場景圖——全部破解並 round-trip 對拍 opendw byte-for-byte。
-2. **手寫 script VM**。目前實作 **~119/256 opcode**（模式 / 算術 / 旗標 / 邏輯 / 比較 / 跳轉 / loop / game_state / bit / 字串輸出）。差異測試 harness（`diff_trace`）逐指令比對 remake VM trace 與 opendw oracle trace。
+2. **手寫 script VM**。目前實作 **126/256 opcode**（模式 / 算術 / 旗標 / 邏輯 / 比較 / 跳轉 / loop / game_state / bit / 字串輸出）。差異測試 harness（`diff_trace`）逐指令比對 remake VM trace 與 opendw oracle trace。
 3. **補出 opendw 從未逆向的 opcode**。op_43/5F/60/63、op_68/79/5B 等在 opendw 標 NULL 或無 C oracle 的指令，直接從原始 DRAGON.COM ASM 反組譯補出並驗。
 4. **資產脫離磁碟**。ResourceProvider 抽象（oracle 用 Data1Provider / 執行期用 BundleProvider），BundleProvider 載入 == DATA1 byte-for-byte，但執行期不依賴原始檔——換檔即換美術（未來 X68000 / PC-9801 素材）。
 5. **每個宣稱都可驗證**。`tools/verify/` 下 32 個 ctest 對拍渲染、存讀檔、戰鬥、連通、i18n…，全綠才算數。
@@ -222,7 +222,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 **已落地（均經 opendw 對拍 / DOS 實機 / 攻略交叉驗證）**
 
 - ✅ 渲染逐位元對拍 opendw：第一人稱 viewport（全 40 關像素 PASS）、標題 / 場景圖、sprite、俯視地圖、wrap 樞紐
-- ✅ VM ~119 opcode，`diff_trace` 逐指令 == opendw
+- ✅ VM 126 opcode，`diff_trace` 逐指令 == opendw
 - ✅ 戰鬥三大公式（命中 / 徒手 / 武器骰）= 原版 bytecode 真值，端到端執行驗證
 - ✅ 連通 38/40 area、61 條法術、特殊攻擊、商店、招募、升級、技能檢定、開門 / 陷阱、戰鬥外施法、存讀檔
 - ✅ 主線事件繁中 200+ 鍵 + 147 段落 + 結局；日文 events / 怪名
