@@ -4,6 +4,8 @@
 
 #include <cstdlib>
 
+#include "vga256.hpp"
+
 namespace dw::render {
 
 std::vector<std::uint8_t> SdlVideo::to_rgb(const Framebuffer& fb,
@@ -74,7 +76,21 @@ void SdlVideo::compose(const Framebuffer& fb) {
   // 1) 像素層:framebuffer → 320×200 texture → nearest 整數放大。
   //    一般模式:放大填滿全視窗(320*scale × 200*scale)。
   //    640 模式:×2 = 640×400,垂直置中於 640×480(上下各 40px 黑邊;絕不拉伸)。
-  auto rgb = to_rgb(fb, active_palette_);   // per-theme palette(set_palette;預設 DOS 盤)
+  // 16 色路徑(DOS/Amiga/X68000):per-theme 16 色盤直接 to_rgb(golden 對拍不破)。
+  // 256 色路徑(VGA-256 theme):先 enhance_to_256(16 色→256 色索引),再用 256 色盤 to_rgb。
+  std::vector<std::uint8_t> rgb;
+  if (vga256_) {
+    auto idx256 = enhance_to_256(fb);
+    const auto& pal256 = vga_palette();
+    rgb.resize(static_cast<std::size_t>(kW) * kH * 3);
+    std::size_t o = 0;
+    for (std::uint8_t i : idx256) {
+      const Rgb& c = pal256[i];   // i 為完整 byte(0–255),不遮罩
+      rgb[o++] = c.r; rgb[o++] = c.g; rgb[o++] = c.b;
+    }
+  } else {
+    rgb = to_rgb(fb, active_palette_);   // per-theme 16 色盤(set_palette;預設 DOS 盤)
+  }
   SDL_UpdateTexture(tex_, nullptr, rgb.data(), kW * 3);
   SDL_RenderClear(ren_);   // 預設黑底 → letterbox 黑邊
   if (mode640_) {

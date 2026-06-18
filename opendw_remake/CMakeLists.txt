@@ -42,7 +42,7 @@ add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)
 
 # --- render 模組(R2:framebuffer + 全螢幕圖解碼 + 8×8 字)---
-add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp src/render/viewport_compose.cpp src/render/minimap.cpp src/render/ui_pieces.cpp src/render/worldmap.cpp)
+add_library(dwr_render STATIC src/render/picture.cpp src/render/font.cpp src/render/cjk_font.cpp src/render/sprite.cpp src/render/viewport.cpp src/render/viewport_compose.cpp src/render/minimap.cpp src/render/ui_pieces.cpp src/render/worldmap.cpp src/render/vga256.cpp)
 target_link_libraries(dwr_render PUBLIC dwr_resource)
 add_library(dwr_i18n STATIC src/i18n/strings.cpp src/i18n/string_table.cpp)
 target_include_directories(dwr_i18n PUBLIC src)
@@ -268,6 +268,13 @@ add_executable(verify_theme tools/verify/verify_theme.cpp)
 target_link_libraries(verify_theme PRIVATE dwr_render)
 add_test(NAME verify_theme
          COMMAND verify_theme ${CMAKE_SOURCE_DIR}/assets/bundle)
+
+# tools/verify:「真 VGA」256 色增強的演算法不變式(remake 加值)。
+#   驗:vga_palette 256 entry + shade8==DOS原色、ramp 單調、enhance_to_256 全黑保留 /
+#       多色畫面 >16 相異索引且色相不變、DOS 16 色盤常數未被汙染(16 色路徑不破)。
+add_executable(verify_vga256 tools/verify/verify_vga256.cpp)
+target_link_libraries(verify_vga256 PRIVATE dwr_render)
+add_test(NAME verify_vga256 COMMAND verify_vga256)
 
 # tools/verify:可通關收官 —— 終戰 Namtar 可勝 + 確定性(combat_loop)。
 #   驗:預設隊伍(第 0 名持受祝福自由之劍)vs Namtar Boss,多 seed 皆 Victory + 隊伍存活;
