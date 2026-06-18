@@ -149,15 +149,31 @@ tar xzf opendw-remake-*.tar.gz
 | ![title-dos](opendw_remake/docs/media/showcase/themes/title_dos.png) | ![title-amiga](opendw_remake/docs/media/showcase/themes/title_amiga.png) |
 | 預設主題：原生 dragon art（res29）+ DOS 16 色標準盤 | `F8` 切到 Amiga：原生金龍標題 + Amiga 自己的 16 色 palette（讀自 `themes/amiga/title.pic` 檔頭） |
 
-F8 循環順序為 **DOS → Amiga → X68000 → DOS**，三套主題：
+F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主題：
 
 | 主題 | 完整度 | 內容 |
 |---|---|---|
-| **DOS** | 完整 | 原生綠龍標題（res29）、DOS 16 色標準盤、res 24–28 結局五場景 |
-| **Amiga** | 完整 | 原生金龍標題、Amiga 16 色 palette（planar 解碼，檔頭帶盤）、單張全螢幕結局圖 |
-| **X68000** | **partial** | 目前只有怪物 / 場景 contact sheet（未切圖），**無原生標題 → 回退 DOS res29**，**palette 為 DOS placeholder**（原生 X68000 盤尚未萃取）。誠實標示，toast 也標 partial |
+| **DOS** | 完整 | 原生綠龍標題（res29）、DOS 16 色標準盤、res 24–28 結局五場景、第一人稱 viewport 對 oracle byte-for-byte |
+| **Amiga** | **接近完整** | 原生金龍標題、結局圖、**50 隻怪物 sprite**（data4 4-bitplane，全偶數資源，權威 `sprite_res()=(attr[0x0B]<<1)+0x8A` 對映接進戰鬥）、**第一人稱地牢牆面**（data3 viewport 圖塊 + 從 `dw` 主程式 CLUT 抽出的**原生 Amiga 16 色盤**：青藍石塊 + 棕側牆 + 綠頂條）。全程 planar 解碼 |
+| **X68000** | **partial** | 目前只有怪物 / 場景 contact sheet（未切圖），**無原生標題 → 回退 DOS res29**，**palette 為 DOS placeholder**（原生 X68000 盤尚未萃取，`.PKH` 壓縮未破解）。誠實標示,toast 也標 partial |
+| **VGA-256** | 增強 | DOS 版面演算法化擴成 256 色「真 VGA」增強盤（remake 加值,原版無此版本;非逐像素手繪重畫,誠實標示） |
 
-> 誠實邊界：X68000 是 partial（無原生標題、palette 為 placeholder、sprite 未切）。日版《火龍之戰》當年只在 **X68000** 發行，**沒有 PC-98 版本**——本專案不會憑空生出一套不存在的 PC-98 美術。
+**Amiga 第一人稱地牢（原生盤）vs DOS 對照**
+
+![amiga-vs-dos-fp](opendw_remake/docs/media/showcase/themes/amiga_vs_dos_fp.png)
+
+左為 DOS 精確透視（紅地板 / 天花完美收斂），右為 Amiga 原生 viewport 盤的石牆美術（青藍石塊 + 棕側牆 trapezoid + 綠頂裝飾條 + 青藍 water tile）。Amiga 牆面用的是遊戲實際資料的原生盤、結構可辨,但中央遠景的透視收斂為**維度匹配近似**,非 DOS 那條 byte-faithful perspective decode。
+
+**Amiga 戰鬥怪物（原生 sprite）**
+
+| Amiga 藍蜘蛛遭遇 |
+|:---:|
+| ![amiga-combat](opendw_remake/docs/media/showcase/themes/amiga_combat_spider.png) |
+| `--theme amiga --encounter 13`：怪物圖換成 Amiga 原生 4-bitplane 立繪（紅底為各怪物自帶盤的透明色 index 8），下方繁中戰鬥指令列 |
+
+> 誠實邊界
+> - **Amiga**（接近完整,仍有受阻項）：第一人稱 viewport 透視為近似（維度匹配 + DOS 落點,非 byte-faithful perspective decode）；怪物 sprite 只切**主格**,多動畫格因無可靠 frame 邊界表未切;原生 viewport 盤全檔僅找到一份,推定為**單一全域世界盤**（若分區切換盤,其載入邏輯未 trace）。
+> - **X68000** 是 partial（無原生標題、palette 為 placeholder、sprite 未切;`.PKH` 壓縮未破解）。日版《火龍之戰》當年只在 **X68000** 發行,**沒有 PC-98 版本**——本專案不會憑空生出一套不存在的 PC-98 美術。
 
 ---
 
