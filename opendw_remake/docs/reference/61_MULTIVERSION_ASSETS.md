@@ -12,7 +12,7 @@
 | 版本 | 磁碟形式 | 標題畫面 | 怪物 sprite | 場景/過場 | UI 圖示 | 狀態 |
 |---|---|---|---|---|---|---|
 | **Amiga** | .adf + WHDLoad HD(`data/`) | ✅ title.pic | ✅ data4 4-bitplane(**50 隻已切**，見 §1.5） | ✅ endgame、**第一人稱 viewport 牆面 data3 + 原生盤(已逆 + 接 §1.6)** | ✅ cursors | **接近完整**（標題+結局+50 怪物+第一人稱地牢牆面;data5/6=音訊非美術,見 §1.7） |
-| **X68000** | .DIM(Human68k FAT12) | ❌ TITLE.PKH(壓縮) | ✅ MON.PIX | ✅ PIC.PIX、❌ 3D/END(壓縮) | ✅ ICON.PIX | **未壓縮 .PIX 成功,.PKH 受阻** |
+| **X68000** | .DIM(Human68k FAT12) | ⚠️ TITLE.PKH(解碼演算法已逆出,接合受阻) | ✅ MON.PIX | ✅ PIC.PIX、⚠️ 3D/END(同 PKH) | ✅ ICON.PIX | **未壓縮 .PIX 成功;.PKH 核心 RLE 解碼器已逆出,GVRAM 接合受阻** |
 | **PC-98** | — | — | — | — | — | **素材不存在(見 §3)** |
 
 產出路徑:`opendw_remake/assets/bundle/themes/<version>/`(`amiga` / `x68000`)。
@@ -351,13 +351,49 @@ themes/x68000/tiles/icon_sheet_w32.png         icon 原寬(32px)直條版
   切 band 後左右排成接觸表(便於目視)。
 - docker image `dwpil`(`python:3.12-slim` + pillow,Dockerfile 在 `.scratch/Dockerfile.pillow`)。
 
-### 受阻:.PKH 壓縮(TITLE / 3D1-4 / END1-5 / SUBTTL)
-- 這些檔熵 ~6.0 bits/byte、無顯著 stride 相關 → 真正壓縮。
-- 嘗試用 remake 既有的 **DOS Huffman 解壓器**(`src/resource/decompress.cpp`,
-  `[size_LE][tree][bitstream]` big-endian 16-bit)套用,off=0/2/4 皆輸出近零熵垃圾
+### .PKH 壓縮(TITLE / 3D1-4 / END1-5 / SUBTTL)— 解碼常式已逆出,接合受阻
+
+- 這些檔熵 ~6.0 bits/byte → 真正壓縮。既有 DOS Huffman 解壓器
+  (`src/resource/decompress.cpp`,`[size_LE][tree][bitstream]` big-endian 16-bit)套用後輸出垃圾
   → **X68000 PKH 與 DOS codec 不相容**。
-- 還原需 RE `DRAGON.X`(284KB,X68000 `.X` 執行檔)中的 PKH 解碼常式。本批**未破解**,
-  標記受阻。標題畫面因此暫缺 X68000 版(僅 Amiga 有完整標題)。
+
+> 狀態更新(本批):從 `DRAGON.X` 反組譯出 PKH 解碼器與**核心 RLE+nibble 演算法**,
+> 演算法自洽可重寫(`tools_build/pkh_unpack.py`),但解出的點陣與真實畫布尺寸不吻合、
+> 目視仍為斜紋雜訊 → **buffer/GVRAM plane 接合層仍差一層**,標題暫未還原。詳下。
+
+#### DRAGON.X 結構
+- `DRAGON.X` 是 **Human68k `.X` 執行檔**,fat12 抽出的映像在 file offset **0x1400** 有 `HU`(0x4855)
+  header(前 0x1400 是另一段資料/Shift-JIS 文字)。X-format header(64B):base=0、entry=0x349a2、
+  text=0x353d8、data=0x861a、bss=0x4ca84、reloc=0x4a1a。
+- text 段 vaddr↔file 映射:**`file_offset = 0x1440 + vaddr`**(base=0,text 起於 header 後)。
+- 檔尾(file 0x43eb8 起)是 **Human68k 符號表**(`02 01 00 02 <addr:4> <name\0>`),含解碼符號:
+  `_xunpack`=0x281be、`_pxunpack`=0x281ec、`_xunpackb`=0x287da、`_xcomp`=0x1808。
+
+#### 已逆出的呼叫鏈與演算法
+- `_xunpack(name, out, ...)`(0x281be):`jsr 0x11c4`(open+read 整檔到 buffer)→ `jsr 0x27fa6`(解析)
+  → `jsr 0x2816a`(GVRAM plane 展開,目標 0xC00000 / 0xD83000)。
+- `0x27fa6`:讀 buffer 前綴 — 16 個 big-endian word @buf+0x0c → 全域表 0x69ba6;
+  word@buf+0x34 → 0x69bca、word@buf+0x36 → 0x69bcc;out=0xD83000(GVRAM)存 0x69bce;
+  然後 **`jsr 0x32c3c`(out, buf+0x38, len)** = 真正的解碼主迴圈。
+- **核心解碼器(已逐指令逆出,可重寫)**:
+  - 主迴圈 `0x32c3c`:`ctrl = *in++`;`count = ctrl & 0x7F`(存 0x445d2);`btst #7,ctrl`:
+    bit7=1 → `jsr 0x32ccc`(run),bit7=0 → `jsr 0x32cfe`(literal);迴圈至 `in >= in_end`(0x445de)。
+    全域:out=0x445d6、in=0x445da、in_end=0x445de。
+  - run `0x32ccc`:讀 1 byte,`movew` 重複 count 次寫 **word**(byte→word RLE)。
+  - literal `0x32cfe`:每讀 1 byte 拆 hi nibble(`b>>4`)、lo nibble,各寫一個 **word**(4bpp 展開)。
+- python 重寫:`tools_build/pkh_unpack.py`(`decode(data)`),已驗證能跑、輸出 16 色全用到的點陣。
+
+#### 受阻精確點(下一個 agent 從這裡接)
+- 解 TITLE.PKH → 211,739 pixels,**不整除任何規則畫布**(512×256 / 256×256 …),目視為固定斜率斜紋
+  雜訊(有結構但錯位),龍/戰士輪廓未顯。
+- 矛盾證據:`0x27fa6` 假設 buf 前 56B 是 header(16-word 表 + w@0x34 + h@0x36),但 TITLE.PKH
+  實測 0x34=0xfff1、0x36=0xf55f(非合理寬高),且前段 16-word 表全是圖像 nibble pattern
+  (0x1111/0xffff)→ **buf ≠ 原始 PKH 檔,中間 `0x11c4`/`0x27f62` 還有一層搬運/轉換未釐清**;
+  或 GVRAM plane 寫入步進(0x2816a:4-plane 交錯、word↔nibble↔plane)才是斜紋主因。
+- **下一步**:逐指令 trace `0x2816a` 的 plane 展開(GVRAM 4-plane 交錯)+ 確認 buf 載入是否
+  跳過/重排前綴;或在 X68000 emulator(`dwemu`)實機 trace `_xunpack` 入口/出口,直接抓 GVRAM dump
+  與輸入比對。`m68k-linux-gnu-objdump` 環境:`docker build` 出的 `dwm68kbin`(`dwm68k`+binutils-m68k)。
+- 還原前標題畫面暫缺 X68000 原生版,沿用 DOS dragon art 回退(見 `ui_theme.hpp` x68000 主題,保持現狀)。
 
 ---
 
@@ -389,7 +425,7 @@ themes/x68000/tiles/icon_sheet_w32.png         icon 原寬(32px)直條版
 | X68000 怪物 (MON.PIX) | ✅ contact sheet(EGA placeholder palette) |
 | X68000 場景 (PIC.PIX) | ✅ contact sheet |
 | X68000 UI 圖示 (ICON.PIX) | ✅ |
-| X68000 標題 (TITLE.PKH) | ❌ 受阻(PKH 壓縮未破解) |
-| X68000 3D 地城 / 結局 (3D*.PKH / END*.PKH) | ❌ 受阻(PKH 壓縮) |
+| X68000 標題 (TITLE.PKH) | ⚠️ 解碼演算法已逆出(`pkh_unpack.py`),GVRAM plane 接合受阻(見 §2「.PKH 壓縮」) |
+| X68000 3D 地城 / 結局 (3D*.PKH / END*.PKH) | ⚠️ 同 TITLE.PKH(同一 RLE codec) |
 | X68000 原生 16 色 palette | ⚠️ TODO(需 trace DRAGON.X CLUT 載入) |
 | PC-98 全部 | — 素材不存在 |
