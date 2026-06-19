@@ -2,7 +2,7 @@
 """
 ⚠️ 作廢(2026-06-10):本腳本驗的是 `20_ALL_TEXT_FROM_DATA1.txt`(3,926 條)這個
 「逐 byte 暴力解 5-bit 壓縮」產生的雜訊基準,邏輯已過時,僅存歷史。
-乾淨文字請見 `docs/ALL_TEXT_FROM_SCRIPTS.txt`,正確萃取方法見 `docs/07_REVISED_PLAN.md`。
+乾淨文字請見 `docs/reverse-engineering/ALL_TEXT_FROM_SCRIPTS.txt`,正確萃取方法見 `docs/engine/07_REVISED_PLAN.md`。
 
 驗證 DATA1 文字萃取完整性
 1. 載入 ALL_TEXT_FROM_DATA1.txt

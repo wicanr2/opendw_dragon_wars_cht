@@ -1,6 +1,6 @@
 // extract_monsters — 從 DATA1 res31 萃取怪物記錄,寫成自包含 bundle 資源。
 //
-// Oracle 對齊(唯讀):opendw src/tools/monster_info.cpp 與 docs/26_MONSTERS_AND_SPRITES.md。
+// Oracle 對齊(唯讀):opendw src/tools/monster_info.cpp 與 docs/reverse-engineering/26_MONSTERS_AND_SPRITES.md。
 //   res31 解壓後 2177 bytes。怪物記錄為「變長」結構:
 //     - record 起點 + 0x00 .. +0x20:21 bytes 戰鬥屬性(語意大多未由 opendw 解出,
 //       已知 byte[0x0B] = sprite 資源索引基底,sprite_res = (byte[0x0B] << 1) + 0x8A,
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
   // manifest(人讀;含逐筆 name + sprite 索引基底,供核對)。
   std::string mf = "{\n  \"format\": \"opendw-monsters/1\",\n";
   mf += "  \"source\": \"DATA1 res31 (decompressed 2177B), record-aligned\",\n";
-  mf += "  \"oracle\": \"opendw src/tools/monster_info.cpp + docs/26_MONSTERS_AND_SPRITES.md\",\n";
+  mf += "  \"oracle\": \"opendw src/tools/monster_info.cpp + docs/reverse-engineering/26_MONSTERS_AND_SPRITES.md\",\n";
   mf += "  \"attr_bytes\": 21,\n";
   mf += "  \"known_fields\": { \"0x0B\": \"sprite resource index base; sprite_res=(b<<1)+0x8A\" },\n";
   mf += "  \"unknown_fields_note\": \"HP/attack/AC/dice semantics NOT decoded by opendw (no combat resolution in oracle C); raw bytes preserved verbatim\",\n";

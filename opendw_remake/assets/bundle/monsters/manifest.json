@@ -1,7 +1,7 @@
 {
   "format": "opendw-monsters/1",
   "source": "DATA1 res31 (decompressed 2177B), record-aligned",
-  "oracle": "opendw src/tools/monster_info.cpp + docs/26_MONSTERS_AND_SPRITES.md",
+  "oracle": "opendw src/tools/monster_info.cpp + docs/reverse-engineering/26_MONSTERS_AND_SPRITES.md",
   "attr_bytes": 21,
   "known_fields": { "0x0B": "sprite resource index base; sprite_res=(b<<1)+0x8A" },
   "unknown_fields_note": "HP/attack/AC/dice semantics NOT decoded by opendw (no combat resolution in oracle C); raw bytes preserved verbatim",

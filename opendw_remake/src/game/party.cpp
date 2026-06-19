@@ -162,9 +162,9 @@ CharacterRecord Party::parse_record(const std::uint8_t* p) {
   std::memcpy(r.spells.data(), p + 60, 8);
   r.status = p[0x4C];          // [76]
   r.gender = p[0x4E];          // [78]
-  r.level = p[0x4F];           // [79] 1 byte(docs/44 §1:level=[79]、XP=[80] 各 1B)。
+  r.level = p[0x4F];           // [79] 1 byte(docs/reverse-engineering/44 §1:level=[79]、XP=[80] 各 1B)。
   // ↑ 原以 rd16(0x4F) 讀 2B,會把 [80] XP 併入高位元組;XP 一旦非 0(戰鬥 +80)
-  //   Level 顯示即被污染。docs/44 明列 level=[79] 1B、XP=[80] 1B → 改讀單 byte,
+  //   Level 顯示即被污染。docs/reverse-engineering/44 明列 level=[79] 1B、XP=[80] 1B → 改讀單 byte,
   //   與 chargen.serialize(只寫 raw[0x4F]=level 1B)一致;回歸:起始隊伍/建角 level
   //   高位元組恆 0,單 byte 與 rd16 結果相同。
   r.xp = p[80];                // [80]

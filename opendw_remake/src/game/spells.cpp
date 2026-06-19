@@ -1,7 +1,7 @@
 // spells — 法術表 + 施法結算實作。對齊狀態見 spells.hpp 檔頭。
 //
 // 法術表建構原則(**數值權威依據 = docs/gameplay/58_MAGIC_REFERENCE.md,fraterrisus 攻略 v3.0**):
-//   • id 對齊 fraterrisus 法術索引(docs/44 §3);L/H/D/S/M 連號(見各條 note58)。
+//   • id 對齊 fraterrisus 法術索引(docs/reverse-engineering/44 §3);L/H/D/S/M 連號(見各條 note58)。
 //   • POW / 目標 / 範圍 / 類型 / 傷害骰式 **一律以 docs/gameplay/58_MAGIC_REFERENCE.md 為準**(比手冊完整,含
 //     召喚屬性與攻擊判定);真值層級 = remake 設計(grounded 攻略),非官方手冊、非
 //     bytecode oracle,誠實標示(見 spells.hpp 檔頭)。
@@ -386,7 +386,7 @@ CastResult cast_spell(std::uint8_t spell_id, int caster_power, int caster_str,
       break;
     }
     case E::Utility: {
-      // 工具類分流(grounded 手冊 docs/33 效果欄):
+      // 工具類分流(grounded 手冊 docs/manual/33 效果欄):
       //   • 召喚類(0x15-0x18/0x23/0x24/0x25/0x39):回填 r.summon,由 combat_loop 加臨時
       //     友方;cast_spell 本身不改 target(召喚不作用於敵人)→ handled=true。
       //   • 地形/光源/補給(Mage Light/Sense/Disarm Trap/Soften Stone/Create Wall/Charger…):

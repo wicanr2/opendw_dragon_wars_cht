@@ -1,4 +1,4 @@
-// recruit — 酒館招募 NPC 實作。對齊依據見 recruit.hpp 檔頭(docs/44 §1 + fraterrisus)。
+// recruit — 酒館招募 NPC 實作。對齊依據見 recruit.hpp 檔頭(docs/reverse-engineering/44 §1 + fraterrisus)。
 #include "game/recruit.hpp"
 
 #include <cstring>

@@ -12,7 +12,7 @@
 //   savegame 存的是 512B 原始 record(savegame.hpp)。本模組每次改 level/xp/AP/
 //   屬性/技能/HP/STUN/PWR/裝備位元,**必同步寫回 CharacterRecord.raw[]**(對齊
 //   party.cpp award_xp 的作法),確保「存→讀→存」byte-for-byte 一致、且 512B
-//   fraterrisus 格式不破壞。offset 全部對齊 docs/44 §1/§2。
+//   fraterrisus 格式不破壞。offset 全部對齊 docs/reverse-engineering/44 §1/§2。
 //
 // ── grounded 來源 vs remake 設計(誠實標示)──────────────────────────────────
 //   [手冊33] 升級提升 STR / HP / STUN(p.12 #1「每一等級提高力量值」、#6/#7
@@ -58,7 +58,7 @@ inline constexpr int kLockEasy   = 6;
 inline constexpr int kLockNormal = 10;
 inline constexpr int kLockHard   = 16;
 
-// 技能陣列索引(skills[0..26],index = selector − 0x24;docs/44 §3)。
+// 技能陣列索引(skills[0..26],index = selector − 0x24;docs/reverse-engineering/44 §3)。
 inline constexpr int kBandage  = 0x29 - 0x24;  // 5  包紮
 inline constexpr int kLockpick = 0x2D - 0x24;  // 9  開鎖
 
@@ -97,7 +97,7 @@ bool spend_ap_on_skill(CharacterRecord& c, int skill_index);
 int available_ap(const CharacterRecord& c);
 
 // ── 使用物品 U(套魔法效果 + 消耗)──────────────────────────────────────────
-// 使用第 slot 格物品的效果(docs/44 §2 magic_effect):
+// 使用第 slot 格物品的效果(docs/reverse-engineering/44 §2 magic_effect):
 //   restores_power → 回 Power(數量 = magic_lo,夾到 max_power)
 //   casts_spell    → 對自己施該法術(回傳 spell_id;結算由呼叫端 cast,本模組只解效果類型)
 //   teaches_spell  → 習得該法術(設 spells bitfield 對應 bit)

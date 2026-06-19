@@ -1,5 +1,5 @@
 # 物品類型名 + 背包 UI 標籤(角色物品欄畫面)。
-# 譯名以 docs/44 §2 物品類型表 + CONTEXT.md「物品 / Items」為準。
+# 譯名以 docs/reverse-engineering/44 §2 物品類型表 + CONTEXT.md「物品 / Items」為準。
 # english	chinese
 item_general	一般物品
 item_shield	盾

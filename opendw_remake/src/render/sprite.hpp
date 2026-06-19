@@ -25,7 +25,7 @@ struct Sprite {
   void blit(Framebuffer& fb, int px, int py, int transparent_index = -1) const;
 
   // 同 blit,但裁切到 [clip_x0, clip_x1) × [clip_y0, clip_y1)(framebuffer 座標,半開區間)。
-  // 用於把怪物立繪限制在 160×136 viewport 框內(docs/59 #4),避免溢出蓋到右側面板。
+  // 用於把怪物立繪限制在 160×136 viewport 框內(docs/gameplay/59 #4),避免溢出蓋到右側面板。
   void blit_clipped(Framebuffer& fb, int px, int py, int transparent_index,
                     int clip_x0, int clip_y0, int clip_x1, int clip_y1) const;
 };

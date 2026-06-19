@@ -2,7 +2,7 @@
 
 從 DRAGON.COM 抽出的 viewport run-length 模板(對拍 opendw `ui_load`,ui.c:785)。
 這是讓「進入遊戲後畫面與原版一致」的資料層;描線核心(`decode_viewport_data` +
-`process_quadrant` + 4× `draw_viewport_*`)的 port 計畫見 [`../../../docs/engine/VIEWPORT.md`](../../../docs/engine/VIEWPORT.md)。
+`process_quadrant` + 4× `draw_viewport_*`)的 port 計畫見 [`../../../docs/engine/VIEWPORT.md`](../../../../docs/engine/VIEWPORT.md)。
 
 | 檔案 | DRAGON.COM 位址 | 大小 | 用途(opendw) |
 |------|----------------|------|---------------|

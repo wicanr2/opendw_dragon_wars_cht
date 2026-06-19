@@ -1,6 +1,6 @@
 // verify_equipment — 物品/裝備格式解碼的 byte-grounded PASS/FAIL 驗證(ctest)。
 //
-// 對拍(grounded in docs/44 §2 = fraterrisus Equipment Format):
+// 對拍(grounded in docs/reverse-engineering/44 §2 = fraterrisus Equipment Format):
 //  A. 物品類型解碼:對幾組 (item_type byte) → ItemType + 大分類(武器/護甲/盾)逐項相等。
 //  B. 售價編碼:0x08→8、0x48→800、0xFF→310,000,000、0x00→0(指數/尾數 M×10^E)。
 //  C. 真實 DATA1 物品萃取對拍:載 bundle/items/items.bin(extract_items 產出),

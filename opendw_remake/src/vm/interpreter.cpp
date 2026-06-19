@@ -612,7 +612,7 @@ void Interpreter::op77_draw_and_set() { emit_string(); }          // (draw_patte
 //     emit、r2 = 下一條起點。remake 的 op_77 既已等同 op_78(略 draw_pattern),
 //     對稱地 op_79 等同 op_7A。
 //   交叉驗證:主線 15 格(area 1/2/6/8/17/29)此前 halt 於 op_79;實作後事件文字
-//     確實 emit(見 docs/52 重跑),語意合理 → 高信心。
+//     確實 emit(見 docs/reverse-engineering/52 重跑),語意合理 → 高信心。
 void Interpreter::op79_draw_and_emit_data() { op7A_emit_data_string(); }
 
 // op_5B(get_map_tile_data @0x427A,opendw 有 body — 對拍移植):
@@ -1708,7 +1708,7 @@ void Interpreter::adjust_position(std::uint8_t direction) {
 //   ── headless ──:dungeon/area 事件格(area 18 tile 0x0D 等)gs[0x23]&2==0 → 純座標
 //     mutation、無 operand、不 halt → gate「選 Yes」分支可走完。worldmap 模式
 //     (area 0,gs[0x23]&2!=0)opendw 自身即 exit/unimplemented 且 app 走獨立 worldmap_dest
-//     進城(docs/54);此處標 last_unimpl 0x6B(不臆造邊界 wrap 數值),但**不 halt 座標
+//     進城(docs/gameplay/54);此處標 last_unimpl 0x6B(不臆造邊界 wrap 數值),但**不 halt 座標
 //     mutation**(座標仍 ±1,與非 worldmap 路徑同),以記錄「worldmap wrap 未復刻」。
 void Interpreter::op6B_move_reverse() {
   std::uint8_t al = (std::uint8_t)(s_.game_state[3] ^ 0x02);  // 反向 facing

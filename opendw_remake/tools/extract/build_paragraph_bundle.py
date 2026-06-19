@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""把 docs/34_READ_PARAGRAPHS.md 解析成自包含的段落書 bundle 資產。
+"""把 docs/manual/34_READ_PARAGRAPHS.md 解析成自包含的段落書 bundle 資產。
 
 輸出(預設 locale = zh-TW):
   assets/bundle/paragraphs/<locale>/paragraphs.tsv
@@ -55,7 +55,7 @@ def clean(t):
 
 
 def main():
-    md = sys.argv[1] if len(sys.argv) > 1 else "docs/34_READ_PARAGRAPHS.md"
+    md = sys.argv[1] if len(sys.argv) > 1 else "docs/manual/34_READ_PARAGRAPHS.md"
     out_bundle = sys.argv[2] if len(sys.argv) > 2 else "opendw_remake/assets/bundle/paragraphs"
     locale = sys.argv[3] if len(sys.argv) > 3 else "zh-TW"
 

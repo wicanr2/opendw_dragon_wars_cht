@@ -9,7 +9,7 @@
 // ── 鐵則:raw[] 與解析欄位同步 ──────────────────────────────────────────────
 //   買賣即時改 gold8[81] 與物品欄 [236-511]。**必同步寫回 CharacterRecord.raw[]**
 //   (對齊 party.cpp award_xp / progression 的作法),確保「存→讀→存」byte-for-byte
-//   一致、512B fraterrisus 格式不破壞。offset 對齊 docs/44 §1/§2。
+//   一致、512B fraterrisus 格式不破壞。offset 對齊 docs/reverse-engineering/44 §1/§2。
 //
 // ── grounded 來源 vs remake 設計(誠實標示)──────────────────────────────────
 //   [grounded,fraterrisus / docs44 §2]:物品 23B 格式 + 售價編碼(M×10^E)。

@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
   for (int a : from_world) std::printf("%d ", a);
   std::printf("\n  連通分量大小:%zu / 40\n", from_world.size());
 
-  // 主線必經地區(docs/48 §1.2)可達性檢核。
+  // 主線必經地區(docs/assessment/48 §1.2)可達性檢核。
   int mainline[] = {1, 2, 5, 6, 8, 17, 23, 20, 14, 25, 32, 31, 21, 30, 29, 4};
   std::printf("\n-- 主線地表地區可達性(從世界圖)--\n");
   int hit = 0, tot = 0;
@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
   //   (op_79 set_msg / op_68 / op_6B / op_70),VM halt → gs[2] 從未被寫 → 無法
   //   靜態/動態逆出目的地。opendw oracle 對這些 opcode 亦標 NULL(無 C 參考)。
   // 本段把「每個非世界圖 mainline 子區 + 其母區進入格的 halt opcode」列出,供
-  //   docs/54 追蹤;**不臆造邊**(逆不出就不補)。
+  //   docs/gameplay/54 追蹤;**不臆造邊**(逆不出就不補)。
   struct SubArea { int child; int parent; const char* note; };
   SubArea subs[] = {
       {6, 8,  "Phoebus 菲巴斯 ← Mud Toad 黃泥蟾蜍(攻略 38 §5.4-5.5)"},

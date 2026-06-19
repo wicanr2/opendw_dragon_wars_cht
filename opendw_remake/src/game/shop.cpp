@@ -1,4 +1,4 @@
-// shop — 商店買賣實作。對齊依據見 shop.hpp 檔頭(docs/44 §1/§2 + fraterrisus)。
+// shop — 商店買賣實作。對齊依據見 shop.hpp 檔頭(docs/reverse-engineering/44 §1/§2 + fraterrisus)。
 #include "game/shop.hpp"
 
 #include <algorithm>
@@ -16,7 +16,7 @@ int slot_base(int slot) {
 }
 
 // 該 slot 的 11B header 是否完整落在 512B record 內。
-// 注意:docs/44 標 13 格(A..M),但 236 + 13×23 = 535 > 512 → 第 12 格(0-based)起點
+// 注意:docs/reverse-engineering/44 標 13 格(A..M),但 236 + 13×23 = 535 > 512 → 第 12 格(0-based)起點
 //   為 512,**完全越界**;實際可用格僅 0..11(12 格)。對齊 equipment.cpp/progression.cpp
 //   的「base+i < 512」防護,把越界格視為「不可用 / 永遠非空」→ 不會被買賣寫入。
 bool slot_in_bounds(int slot) {

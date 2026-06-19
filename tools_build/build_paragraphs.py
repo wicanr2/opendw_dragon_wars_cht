@@ -58,7 +58,7 @@ def build(paras, out_dir):
     return nums, index
 
 if __name__ == '__main__':
-    md = sys.argv[1] if len(sys.argv)>1 else 'docs/34_READ_PARAGRAPHS.md'
+    md = sys.argv[1] if len(sys.argv)>1 else 'docs/manual/34_READ_PARAGRAPHS.md'
     out = sys.argv[2] if len(sys.argv)>2 else 'data/paragraphs'
     paras = parse(md)
     nums, index = build(paras, out)

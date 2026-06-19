@@ -51,7 +51,7 @@ public:
             const std::string& ttf_path = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
             bool headless = false);
 
-  // 640×480 視窗模式(方案 3,見 docs/47):視窗固定 640×480;像素層維持 320×200
+  // 640×480 視窗模式(方案 3,見 docs/assessment/47):視窗固定 640×480;像素層維持 320×200
   //   (byte-for-byte 不動),整數 ×2 放大成 640×400 並「垂直置中」於 640×480
   //   (上下各 40px 黑邊 letterbox,保持像素完美 + 原始 16:10 比例,絕不拉伸)。
   //   文字層字級與 scale 解綁(由呼叫端 add(...) 指定固定 px:CJK 24 / UI 16 / 標題 48);

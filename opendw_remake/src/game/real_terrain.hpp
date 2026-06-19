@@ -3,7 +3,7 @@
 // ── 真值層級(誠實標示,見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)─────────────────────────────────────
 //   • 陷阱「位置」= 可識別(bytecode 真值):每個特殊事件格(word_11C8≥2)的
 //     tile → script_pc → VM 跑出的 emit 字串已逐指令對拍 opendw(op_71/run_level_script)。
-//     字串屬「對隊伍施加即時傷害 / 敵意環境」語意類者(攻略 docs/38 描述的陷阱:
+//     字串屬「對隊伍施加即時傷害 / 敵意環境」語意類者(攻略 docs/walkthrough/38 描述的陷阱:
 //     尼塞山腹「floor moved / icy winds / 灼燒走廊」、矮人鑄爐耗命、魔法學院 tripwire
 //     巨石)→ 該格 = 原版真實陷阱格。座標來自原版資料,非保留值臆造。
 //   • 陷阱「傷害結算」= 受阻 → remake 設計:傷害 HP/Stun 實際扣減走 op_58 跨資源

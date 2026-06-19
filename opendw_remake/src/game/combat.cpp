@@ -126,7 +126,7 @@ Combatant Combatant::from_monster(const MonsterRecord& m) {
   //     armor 旗標欄 → 不臆造 AC/DV 加成,DV=AV=base(見下)。
   //   • 傷害骰:怪物攻擊走 op_68 裝備路徑或徒手骰表,記錄哪欄=武器 descriptor 受
   //     多實例 builder + op_68 自改碼阻擋,未逐欄逆出 → 以 STR 推小骰。
-  //   完整逐怪精確逆出卡在 actor 迴圈動作指派 driver(docs/42 §14),非單一 opcode 缺。
+  //   完整逐怪精確逆出卡在 actor 迴圈動作指派 driver(docs/reverse-engineering/42 §14),非單一 opcode 缺。
   //
   // blob 21B 格式不動;此函式只改「怪物 record → Combatant」投影。
 
@@ -229,9 +229,9 @@ AttackResult resolve_attack(Combatant& attacker, Combatant& target,
     //   0x0DAE 的值,完整一場戰鬥中該值可能由前序攻擊者的 op_36 殘留 → **隔離分析無法判定**
     //   真機是否殘留 STR/5(self-modifying code 不確定性)。另:byte[2]&0x1f!=0 時傷害 =
     //   定值(byte[2]&0x1f),覆寫骰擲(端到端驗,= 遠程/特殊武器定傷)。
-    //   【決策】DOS 實機(docs/43:Str14→3~4、Str21→6)+ SDA 均顯示武器傷害隨 STR 增,
+    //   【決策】DOS 實機(docs/reverse-engineering/43:Str14→3~4、Str21→6)+ SDA 均顯示武器傷害隨 STR 增,
     //   故 **保留 +floor(STR/5) 為 best-fit**(與徒手同係數),不依隔離 bytecode 逕刪 STR bonus
-    //   (無完整戰鬥 oracle 可確認殘留與否,刪除恐 regress DOS 校準)。詳見 docs/42 §13。
+    //   (無完整戰鬥 oracle 可確認殘留與否,刪除恐 regress DOS 校準)。詳見 docs/reverse-engineering/42 §13。
     r.damage = rng.roll(attacker.dmg_dice, attacker.dmg_sides) + attacker.dmg_bonus;
     if (r.damage < 1) r.damage = 1;  // 骰至少 1(無人為下限 3)
     // 作用於 STUN(HP=Stun);STUN≤0 → 死亡。

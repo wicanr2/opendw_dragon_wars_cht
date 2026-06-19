@@ -7,7 +7,7 @@
 //   - DATA1 內多數商店/物品記錄藏在壓縮資源裡;裸 DATA1 可直接定位的物品集中在
 //     0x2C59 起的「召喚物/法術物品表」(Air Talons / Earth Shield / Fire Shield…)
 //     與少數任務物品(Dragon Stone @0x5369)。
-//   - 這些偏移已逐筆對 fraterrisus 規格(docs/44 §2)人工驗證解碼合理,故以
+//   - 這些偏移已逐筆對 fraterrisus 規格(docs/reverse-engineering/44 §2)人工驗證解碼合理,故以
 //     curated 清單萃取(每筆記下 DATA1 偏移 + 期望解碼,可追溯)。
 //
 // 萃取的是 11B header + 物品名(讀到高位元終止,補滿至 12B),即一格 23B 物品欄格式。
@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
   // manifest(人讀)。
   std::string mf = "{\n  \"format\": \"opendw-items/1\",\n";
   mf += "  \"source\": \"DATA1 (DOS) curated item offsets, fraterrisus-verified\",\n";
-  mf += "  \"spec\": \"docs/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format)\",\n";
+  mf += "  \"spec\": \"docs/reverse-engineering/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format)\",\n";
   mf += "  \"slot_bytes\": 23,\n";
   mf += "  \"count\": " + std::to_string(outs.size()) + ",\n";
   mf += "  \"items\": [\n";

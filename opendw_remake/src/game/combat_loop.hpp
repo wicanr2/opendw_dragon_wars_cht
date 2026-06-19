@@ -7,7 +7,7 @@
 // ── 真值來源界定(務必誠實)──────────────────────────────────────────
 //  • 單次物理攻擊一律走 game::resolve_attack(combat.hpp,bytecode 反推 + 端到端
 //    驗證的命中/傷害公式),本模組**不重算公式**,只負責編排「誰打誰、何時打」。
-//  • XP:清怪每員 +80(DOS 實機 docs/43:「Each member gets 80 experience
+//  • XP:清怪每員 +80(DOS 實機 docs/reverse-engineering/43:「Each member gets 80 experience
 //    points for combat.」)→ kXpPerVictory = 80。**有據**。
 //  • 行動順序 / 目標選擇 / 逃跑:**remake 設計**(SDA 定性「DEX 高先攻、隨機選
 //    存活目標」,但無 oracle 確切實作)。以確定性規則實作,標明非原版真值:
@@ -30,7 +30,7 @@
 
 namespace dw::game {
 
-// 清怪後每名隊員獲得的 XP(DOS 實機 docs/43,有據)。
+// 清怪後每名隊員獲得的 XP(DOS 實機 docs/reverse-engineering/43,有據)。
 inline constexpr int kXpPerVictory = 80;
 
 // 一次攻擊行動的結構化事件(供 UI 層套 i18n 模板成戰報文字)。
@@ -132,7 +132,7 @@ class CombatLoop {
   int round_count() const { return round_; }
 
   // 勝利時每員應得 XP(=kXpPerVictory);非勝利回 0。
-  // XP 規則(grounded DOS docs/43:「Each member gets 80 experience points for combat.」):
+  // XP 規則(grounded DOS docs/reverse-engineering/43:「Each member gets 80 experience points for combat.」):
   //   清場(全怪死或逃)即 Victory → 固定每員 +80,**不按擊殺數計**。故「以膽怯/驚嚇把怪
   //   逐出而清場」與「全部打死」一樣給 80(原版為扁平制,逃走怪不額外加也不扣)。**有據(扁平)**。
   int xp_award() const { return outcome_ == CombatOutcome::Victory ? kXpPerVictory : 0; }
@@ -170,7 +170,7 @@ class CombatLoop {
 };
 
 // 暈眩門檻(remake 設計):單次傷害 ≥ 此值時事件標 stunned(對齊 DOS「stunning him」)。
-// DOS 觀察:7 點致暈、4 點不致暈(docs/43 §16/17)→ 取 ≥7 為門檻。**非確切公式**。
+// DOS 觀察:7 點致暈、4 點不致暈(docs/reverse-engineering/43 §16/17)→ 取 ≥7 為門檻。**非確切公式**。
 inline constexpr int kStunThreshold = 7;
 
 // 依 seed 生成一組怪群:同種怪 count 隻(沿用怪物表記錄)。

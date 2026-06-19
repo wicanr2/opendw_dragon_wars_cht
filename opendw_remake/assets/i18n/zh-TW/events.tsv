@@ -1,5 +1,5 @@
 # english	chinese — 事件格文字在地化(踩到特殊格 → run_event emit → tr)。
-# 鍵 = VM 解出的英文原文(逐條 emit);譯文源自 docs/15_TRANSLATION_DRAFT.md / CONTEXT.md。
+# 鍵 = VM 解出的英文原文(逐條 emit);譯文源自 docs/translation/15_TRANSLATION_DRAFT.md / CONTEXT.md。
 # 注意:部分鍵含結尾空白(對齊 VM emit),勿手動 trim。
 Stripped of all possessions and wealth, you've been dropped naked and defenseless into the slums of Purgatory by order of Namtar, the Beast From The Pit.	你們被剝奪了所有財物，赤身裸體、手無寸鐵地被丟進波卡城的貧民窟——這是奉深淵之獸納達之命。
 The stone walls of Purgatory stand as a monument to shattered lives and broken dreams.	波卡城的石牆，是無數破碎生命與幻滅夢想的永恆見證。
@@ -14,7 +14,7 @@ Is freedom from Purgatory worth a long dive into what might be shallow water, th
 Ahead lay odd waters.	前方是詭異的水域。
 The crowd grows wild with the hope of more victims.	人群因渴望更多犧牲者而陷入瘋狂。
 You feel strangely energized!	你感到一股奇異的力量湧上全身！
-# ── 主線事件擴充(docs/52 萃取,grounded CONTEXT.md/15/攻略;[待審] 見 docs/53）──
+# ── 主線事件擴充(docs/reverse-engineering/52 萃取,grounded CONTEXT.md/15/攻略;[待審] 見 docs/translation/53）──
 A breeze crawls in from the harbor, bearing a sickly stench.	一陣微風從港口飄來，夾帶著令人作嘔的惡臭。
 You smell the sea. This section of wall must border on the harbor.	你聞到海的氣味。這段城牆想必是緊鄰著港口。
 You hear the lusty shouts of a large crowd coming from the east.	你聽見東方傳來一大群人縱情的吶喊。
@@ -176,7 +176,7 @@ Quarter Masters Office."	軍需官辦公室。」
 # ── 方向 / 短碎片(多 emit 拼接尾段)──
 north.	北方。
 west.	西方。
-# ── 較長 NPC 對話 / 劇情(provisional;固有名詞待審見 docs/53)──
+# ── 較長 NPC 對話 / 劇情(provisional;固有名詞待審見 docs/translation/53)──
 "Ah! You're the Outlanders," he says. "It is well that you came here. All visitors are required to register." The official points to a chart on the wall, reading aloud what is written there.	「啊！你們就是那些外鄉人。」他說。「你們來這裡是對的。所有訪客都必須登記。」官員指著牆上的一張告示，把上面的內容唸了出來。
 "Ah! I heard there were Outlanders in town. Do you have your visitor's registration papers?" he asks. The official smiles again awaiting your reply.	「啊！我聽說鎮上來了外鄉人。你們有訪客登記證件嗎？」他問道。官員再次微笑，等待你的回答。
 "Ah! Outlanders. You're probably here for a Governor's pass," he says. He hands you a stack of papers. "Have these stamped at the Office of Interior Affairs."	「啊！外鄉人。你們八成是來辦總督通行證的。」他說，遞給你一疊文件。「拿這些到內政事務處去蓋章。」
@@ -190,7 +190,7 @@ You stand at the edge of a bottomless abyss. You dimly spot a balcony on the far
  recognizes this area as a transportation nexus. Do you wish to teleport to the Mystic Wood?	認出這片區域是一處傳送樞紐。你要傳送到神祕林嗎？
  recognizes this glade as a transportation nexus. Do you wish to teleport to...King's IslandQuag	認出這片林間空地是一處傳送樞紐。你要傳送到……王島／奎格
 Utnapishtim is standing to the 	烏特納比西丁站在
-# ── 結局 + 主線 quest gate 事件擴充(docs/55,grounded CONTEXT.md/攻略 38 §5.11/5.20;固有名詞待審見 docs/53)──
+# ── 結局 + 主線 quest gate 事件擴充(docs/gameplay/55,grounded CONTEXT.md/攻略 38 §5.11/5.20;固有名詞待審見 docs/translation/53)──
 This narrow stone bridge spans the chasm.	這座狹窄的石橋橫跨深淵。
 This finger of rock rises from the very pit that spawned Namtar.	這根指狀岩柱，正是從孕育出納達的那座深淵中升起。
 The industious people of Lansk maintain this outpost against the dark.	勤奮的蘭斯克人維繫著這座前哨站，抵禦著黑暗。
@@ -223,7 +223,7 @@ A new age of peace begins, the land is reborn with life and beauty. The dragons 
 === Victory over Namtar ===	=== 戰勝納達 ===
 The Ending of Dragon Wars	火龍之戰・結局
 (remake-composed ending: bundled paragraphs + area27 narrative; not a single original script)	（remake 組合結局：以已收錄的手冊段落＋第27區決戰敘事組成，非原版單一腳本）
-# ── 支線/各城事件擴充(docs/52 全 40 區 mainline_events 掃描;grounded 攻略 38/39+CONTEXT.md;固有名詞待審見 docs/53)──
+# ── 支線/各城事件擴充(docs/reverse-engineering/52 全 40 區 mainline_events 掃描;grounded 攻略 38/39+CONTEXT.md;固有名詞待審見 docs/translation/53)──
 "What can I do for ya, stranger?" says the barkeep	「有什麼能為你效勞的嗎，陌生人？」酒保問道。
 At the Black Market, we have what you need...	在黑市，你需要的東西這裡都有……
 Many people are here dying of various diseases and afflictions. A robed healer attends to the needs of all.	這裡有許多人正死於各種疾病與病痛。一名身披長袍的治療師照料著所有人。

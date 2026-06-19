@@ -4,7 +4,7 @@
 //  A.  確定性(關鍵):固定 seed + 固定隊伍 + 固定怪群 → 兩次完整戰鬥的逐事件
 //      序列(攻擊者/目標/命中/傷害/暈眩/擊倒)+ 逐回合存活數 + 最終 HP + XP
 //      **byte-identical**(序列化成字串後 cmp)。
-//  B.  勝利 XP:怪群全滅 → outcome=Victory、xp_award()==80(DOS 實機 docs/43)。
+//  B.  勝利 XP:怪群全滅 → outcome=Victory、xp_award()==80(DOS 實機 docs/reverse-engineering/43)。
 //  C.  勝負判定:怪全滅→Victory;全隊昏倒→Defeat;flee()→Fled。
 //  D.  公式不變:戰鬥內傷害僅由 resolve_attack 產生(combat_loop 不重算);
 //      以「弱怪群被高 AV 隊伍清空且每次傷害 ≥1」間接驗證走的是 resolve_attack。
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
   for (std::size_t i = 0; i < party.size(); ++i)
     party_proto.push_back(Combatant::from_player(party.at(i)));
 
-  // 固定怪群:6 隻 King's Guard(idx 1)= DOS docs/43 §11 遭遇規模參照。
+  // 固定怪群:6 隻 King's Guard(idx 1)= DOS docs/reverse-engineering/43 §11 遭遇規模參照。
   const int kKingsGuard = 1;
   Combatant mon_proto = Combatant::from_monster(monsters[kKingsGuard]);
   const int kGroup = 6;

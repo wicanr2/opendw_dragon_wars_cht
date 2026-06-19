@@ -10,7 +10,7 @@
 //  7. gold[81] 1 byte 飽和:加超過 255 夾頂(誠實:fraterrisus 1B 欄)。
 //  8. raw 512B round-trip:買賣後 Party::from_raw_records 解析回一致(存檔相容)。
 //
-// grounded(23B 物品格式/售價編碼=fraterrisus docs/44 §2)vs remake(買賣邏輯/curated
+// grounded(23B 物品格式/售價編碼=fraterrisus docs/reverse-engineering/44 §2)vs remake(買賣邏輯/curated
 // 庫存,見 shop.hpp 檔頭),測試只驗「行為自洽 + 守恆 + 確定性 + round-trip」,不對 oracle。
 #include "game/chargen.hpp"
 #include "game/party.hpp"

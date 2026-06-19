@@ -1,7 +1,7 @@
 // i18n/strings — 遊戲文字在地化查表。
 //
 // 以英文原文為鍵(由 text_codec 解出的字串),回傳繁中譯文。譯表載自 TSV
-// (english<TAB>chinese),源自 docs/15_TRANSLATION_DRAFT.md / CONTEXT.md。
+// (english<TAB>chinese),源自 docs/translation/15_TRANSLATION_DRAFT.md / CONTEXT.md。
 #pragma once
 #include <filesystem>
 #include <optional>

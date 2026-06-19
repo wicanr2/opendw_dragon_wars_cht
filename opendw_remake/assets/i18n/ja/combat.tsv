@@ -20,7 +20,7 @@ The party flees!	パーティは逃げ出した！
 , stunning him	、気絶させた
 , killing him	、倒した
 %d %s (%d left)	%d 体の %s（残り %d）
-# 制御系呪文のログ（手冊 docs/33 に基づく；持続/逃走は remake 設計）
+# 制御系呪文のログ（手冊 docs/manual/33 に基づく；持続/逃走は remake 設計）
 Not enough power	マナが足りない
 %s is disoriented!	%s は方向を見失った！
 %s flees in terror!	%s は恐怖で逃げ出した！
@@ -32,7 +32,7 @@ The party has fallen.	パーティは全滅した。
 Each member gets 80 experience points for combat.	各メンバーは戦闘経験値を80点獲得した。
 Each member +80 XP	各メンバー +80 XP
 [ continue ]	［続行］
-# モンスター名（X68000 日本語版 MONS ファイルより抽出。出典 docs/46。
+# モンスター名（X68000 日本語版 MONS ファイルより抽出。出典 docs/reverse-engineering/46。
 #   符号化: Shift-JIS、各バイトのニブルを入れ替えた「ニブルスワップ SJIS」。
 #   MONS 0x211F から 0x3C バイト間隔の固定長配列。DOS res31 の並び順と 1:1 一致。
 #   信頼度: 高（実機日本語版から抽出、英語キーと配列位置で対位）。）

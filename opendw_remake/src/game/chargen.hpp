@@ -8,21 +8,21 @@
 // SDL 建角畫面(S_CREATE 狀態、文字輸入、↑↓/+− 配點)留在 main.cpp,只呼叫本模組。
 //
 // ── grounded 來源 vs remake 設計 ──────────────────────────────────────────
-// 記錄格式:docs/44 §1(fraterrisus 512B);名字編碼:docs/44 §4。
+// 記錄格式:docs/reverse-engineering/44 §1(fraterrisus 512B);名字編碼:docs/reverse-engineering/44 §4。
 // 建角規則(手冊 33 第 6/7/11/12 頁):
 //   - [手冊] 每名角色建立時有「50 個點數」可分配在各項特性(力量/敏捷/智力/精神…)。
 //   - [手冊] 屬性畫面:A)力量 B)敏捷 C)智力 D)精神,+ 加 1 / − 減 1,Esc 離開。
 //   - [手冊] STR↑→傷害↑;DEX↑→戰鬥先攻 + 命中;INT→高級咒語威力 + 命中率;
 //            SPI→法力恢復 + 部分魔法效果;Power=施法消耗的法力池;
 //            HP 降到一定程度死亡;STUN 高 = 耐打;性別 男/女。
-//   - [docs/44 / SDA, DOS 實機] 基礎 AV = DV = DEX ÷ 4。
+//   - [docs/reverse-engineering/44 / SDA, DOS 實機] 基礎 AV = DV = DEX ÷ 4。
 //   - [手冊] 建議保留部分點數(升級時可再提升)→ 允許 leftover>0 完成建角。
 // remake 設計(手冊未明列確切數值處,明確標示;非 opendw byte-for-byte——
 //   opendw 建角流程未逆向):
 //   - 屬性起始值(配點前的內定值)= 9;合法範圍 [3, 18]+(由剩餘點數決定上限)。
 //     手冊只說「系統內定各項數值供你做最初的設定」未列數字 → 取 D&D 風中庸值 9。
 //   - 每 +1 屬性成本 = 1 點(手冊 Cost 欄存在但未列數值)。
-//   - 衍生值:HP = 10 + STR + SPI;STUN = HP(docs/44「HP=Stun」);
+//   - 衍生值:HP = 10 + STR + SPI;STUN = HP(docs/reverse-engineering/44「HP=Stun」);
 //             PWR = SPI + INT/2(SPI/INT→施法/法力)。皆 cur=max。
 //   - 起始技能:全 0(手冊「有些技能須先學會」;升級/事件習得)。可選擇給徒手 1。
 //   - 點數池語意:50 點是「在內定起始值之上」可額外分配的預算([手冊]內定值與
@@ -79,10 +79,10 @@ struct DraftCharacter {
 
   // ── 衍生值(由屬性算;cur=max)。grounded/remake 標記見檔頭 ──
   int derived_hp()   const;   // [remake] 10 + STR + SPI
-  int derived_stun() const;   // [docs/44] = HP
+  int derived_stun() const;   // [docs/reverse-engineering/44] = HP
   int derived_power()const;   // [remake] SPI + INT/2
-  int base_av()      const;   // [docs/44/SDA] DEX/4
-  int base_dv()      const;   // [docs/44/SDA] DEX/4
+  int base_av()      const;   // [docs/reverse-engineering/44/SDA] DEX/4
+  int base_dv()      const;   // [docs/reverse-engineering/44/SDA] DEX/4
 
   // 名字是否合法(非空、長度 ≤ kNameMaxLen、皆可列印 ASCII)。
   bool name_valid() const;
