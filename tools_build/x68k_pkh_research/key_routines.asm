@@ -303,3 +303,38 @@
     1286:	6000 0002      	braw 0x128a
     128a:	4e5e           	unlk %fp
     128c:	4e75           	rts
+
+# ============================================================================
+# 2026-06-19 追加:標題載入呼叫點 + open 常式 + 圖號→檔名表 + 第二 parse 路徑
+# ============================================================================
+
+## 標題載入呼叫點 (vaddr 0x708):_xunpack(id=0x80, x=0x48, y=0x1f, 0, 0)
+##   圖號(figure id)= 0x80;x=0x48、y=0x1f 為硬編座標。_xunpack 入口 = 0x281b4(symtab)。
+   6f2:	42a7           	clr.l -(a7)          ; arg5 = 0
+   6f4:	42a7           	clr.l -(a7)          ; arg4 = 0
+   6f6:	2f3c 0000 001f 	move.l #$1f, -(a7)   ; arg3 = y = 0x1f
+   6fc:	2f3c 0000 0048 	move.l #$48, -(a7)   ; arg2 = x = 0x48
+   702:	2f3c 0000 0080 	move.l #$80, -(a7)   ; arg1 = figure id = 0x80
+   708:	4eb9 0002 81b4 	jsr 0x281b4         ; _xunpack
+   70e:	4fef 0014      	lea $14(a7), a7      ; 清 5 args
+
+## open 常式 0x138a:以 figure id 索引「圖號→檔名表」(id<<3 + 0x3638e,旗標路徑;或一般路徑取字串表)
+   139a:	202e 0008      	move.l $8(a6), d0    ; d0 = id
+   139e:	e788           	lsl.l #3, d0         ; id << 3 (8-byte 記錄)
+   13a0:	d0bc 0003 638e 	add.l #$3638e, d0    ; + table base 0x3638e
+   13a6:	2040           	movea.l d0, a0
+   13a8:	4a90           	tst.l (a0)
+   ...                   ; 之後組出 "<name>:" 字串(寫 0x3a=':' 當磁碟分隔)
+
+## 圖號→檔名表:vaddr 0x36388,8-byte 記錄 {flag:u16, ?:u16, str_ptr:u32}
+##   字串表 @vaddr 0x36587:
+##   "TITLE.PKH\0SUBTTL.PKH\0ICON.PIX\0PROG1..3.PKH\03D1..4.PKH\0END1..5.PKH\0"
+##   前段另有存檔名 "C.1/M.1/F.1/A.1...\0TEMPROST.DAT\0MAP\0PIC.PIX\0MONS\0ITEM\0MON.PIX\0..."
+##   => 此表只映射「圖號→檔名」,不含 w/h/palette。
+
+## 第二 parse 路徑(near-duplicate of 0x27fa6,vaddr 0x2808c body):
+##   同樣 pal@buf+0x0c(16 word)→0x69ba6、w@buf+0x34→0x69bca、h@buf+0x36→0x69bcc;
+##   僅 out=0xda0000(vs 0x27fa6 的 0xd83000)。=> 兩條 parse 都從檔頭讀 w/h/pal,無第三條從圖號表灌入。
+   280ea:	33c0 0006 9bca 	move.w d0, 0x69bca   ; w  <- buf+0x34
+   28102:	33c0 0006 9bcc 	move.w d0, 0x69bcc   ; h  <- buf+0x36
+   28108:	23fc 00da 0000 0006 9bce 	move.l #$da0000, 0x69bce  ; out = 0xda0000

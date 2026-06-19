@@ -421,6 +421,48 @@ DOS `_READ` trap;FAT12 抽取逐 cluster contiguous、byte-faithful,非抽取 bu
   以圖號索引的表,因標題是用硬編座標 `_xunpack(…, x=0x48, y=0x1f, …)` @0x708 載入的)——
   此「外部 header 表」位置尚未定位,是還原標題的**唯一**剩餘缺口。
 
+#### 2026-06-19(本批):呼叫點 + 圖號 + id→檔名表全找到,但證實「圖號→w/h/palette 表不存在」
+
+> 結論:**上面那個「外部 header 表」並不存在。** 遊戲只有「圖號→檔名」表,維度/調色盤仍只能來自
+> PKH 檔頭(對 TITLE.PKH 是垃圾)。受阻點重新精確化(見下),不再是「找一張未定位的參數表」。
+
+- **標題載入呼叫點(vaddr 0x708,反組譯確認)**:
+  ```
+  6f2: clr.l -(a7)          ; arg5 = 0
+  6f4: clr.l -(a7)          ; arg4 = 0
+  6f6: move.l #$1f, -(a7)   ; arg3 = y = 0x1f
+  6fc: move.l #$48, -(a7)   ; arg2 = x = 0x48
+  702: move.l #$80, -(a7)   ; arg1 = 圖號(figure id) = 0x80
+  708: jsr $281b4.l         ; = _xunpack 入口(symtab: _xunpack=0x281b4)
+  ```
+  → **圖號 = 0x80**(硬編座標 x/y 之外確實多傳一個 id)。`_xunpack` body(0x281b6)以 id=`$8(a6)`
+  經 open 常式取檔名,讀進固定 buffer **0x69bd6**,再 `0x27fa6` parse、`0x2816a` blit。
+
+- **id→檔名表(vaddr 0x36388,8-byte 記錄;字串表 @0x36587)**:open 常式 `0x138a` 以
+  `id<<3 + 0x3638e`(經 `0x5e340` 旗標路徑)/ 一般路徑索引字串表;字串表內容
+  `TITLE.PKH\0SUBTTL.PKH\0ICON.PIX\0PROG1..3.PKH\03D1..4.PKH\0END1..5.PKH\0` + 前段存檔名
+  `C.1/M.1/F.1/A.1…\0PIC.PIX\0MON.PIX\0`。→ **這是唯一一個用圖號索引的表,只給「圖號→檔名」,
+  完全不含 w/h/palette。** 確認 id 0x80 載的就是 TITLE.PKH(非抽錯檔)。
+
+- **w/h/palette 參數表「不存在」(雙路徑反證)**:DRAGON.X 內**兩條** parse 路徑(`0x27fa6` 與
+  near-duplicate `0x2808c`,後者僅 out=0xda0000 不同)**都**從檔頭讀 `w@buf+0x34 / h@buf+0x36 /
+  16-word pal@buf+0x0c`。掃全檔對 `0x69bca`(w)、`0x69bcc`(h)、`0x69ba6`(pal table)的寫入點
+  只此兩處,**沒有第三條把 w/h/pal 從別處(圖號表)灌入的程式碼**。→ 維度/調色盤本來就只設計成放在
+  PKH 檔頭;TITLE.PKH 那個位置是垃圾。
+
+- **codec 重新校正(literal count = nibble 數,非 byte 數)**:逐指令覆核 `0x32cfe` —— `count`
+  在 hi nibble 寫出後 `subqb #1`、為 0 即停,再寫 lo、再 `subqb #1`。即 **count 計的是 nibble 數**,
+  每 byte 最多供 2 nibble。修正後從 offset 0 解出 **211,739 nibbles**(與舊權威計數吻合;
+  上一輪「從 buf+0x38 解出 211,327」是少算了 header 區那 0x38 bytes 的 nibble)。
+
+- **像素仍不收斂(全寬度雜訊,非寬度問題)**:以正確 codec + chunky-word/stride-1024 觀念渲染
+  256/320/384/448/512/640 全部呈同一病徵 —— **top ~190px 乾淨**(天空 tan + 橄欖綠 banner,
+  水平對齊正確),**下半部(龍/戰士藝術區)為「有結構但對不上」的斜紋雜訊**。op 分布顯示整條
+  stream 都是正常 RUN/LIT 混合(out 50k–80k 為 pure-RUN 實心填充帶、85k+ 轉密集細節 = 藝術確實在
+  資料裡),所以是 **layout 對位**問題,但**無權威 w/h 無法收斂**,龍/戰士輪廓未顯。
+  證據 PNG:`tools_build/x68k_pkh_research/evidence/`(本批新增 `t2_w512.png` 等;舊
+  `title_w384_grayband_rect.png` 仍代表 top 對齊)。
+
 #### 經驗證的部分還原(width 接近正確,但 w/h 缺載入處)
 - 從 buf+0x38 解碼 → **211,327 pixels**(舊記 211,739 是從 offset 0 多解了 header 區)。
 - autocorrelation 寬度軟峰落在 **~217–234**(平台 ~0.74,無尖峰)。長 RLE 灰帶(val 5,len 38784)。
@@ -429,15 +471,31 @@ DOS `_READ` trap;FAT12 抽取逐 cluster contiguous、byte-faithful,非抽取 bu
   (`title_w512_diagonal.png`)。→ 真實寬度接近 384–448 級距,但**下半部仍為高頻雜訊**(像素順序
   未完全對位),無 w/h 權威值無法收斂、龍/戰士輪廓未顯。
 
-#### 下一個 agent 從這裡接(精確 TODO)
-1. **找「圖號 → (w, h, palette)」外部表**:trace `_xunpack` 的真正呼叫鏈(@0x708 等),看 x/y 之外
-   是否還傳圖號;或在 DRAGON.X 內掃「多組 16-word 0x0RGB palette + 鄰接 w/h」的資料表(類似 Amiga
-   dw 內 @0x0fdf4 世界盤的找法)。標題盤應含金龍色(類 `f59 f28 d15`)。
-2. 拿到權威 w/h 後直接用本批的 chunky-word + stride-1024 blit 重排即可(layout 已不是問題)。
-3. 工具就緒:`tools_build/x68k_pkh_research/`(`key_routines.asm` 反組譯摘錄、`emu_pkh_blit.py`
-   unicorn 實機 harness、`render_widths.py`、`analyze_width.py`)。`dwemu` image 已含 unicorn+capstone;
-   注意 unicorn m68k 不支援 `addi.l/subi.l #imm,(a7)`(opcode 0x0697/0x0497)與 literal 內某指令,
-   harness 已用 CODE hook 手動補 0x0697/0x0497;literal 寫入仍會觸 unicorn gap(parse 階段已足夠取 w/h)。
+#### 下一個 agent 從這裡接(精確 TODO,2026-06-19 修訂)
+
+> ~~「找圖號→(w,h,palette)外部表」已排除~~:**該表不存在**(只有圖號→檔名表 @0x36388)。剩餘
+> 假設改為以下兩條,都需要再一輪深逆向 —— 本輪在「找參數表」這個明確假設上已查證為陰性,屬有界完成。
+
+1. **假設 A:TITLE.PKH 是另一種 PKH header 變體(最可能)**。`0x27fa6` 假設的 layout
+   (`pal@0x0c / w@0x34 / h@0x36 / data@0x38`)可能只對 3D/END 系列成立。標題檔頭那串
+   `…1f ff f1 f5 5f 1f ff fe…` 看起來已是解過的 nibble pattern → 疑為「資料即從 offset 0 開始、
+   無 0x38 header」的格式。下一步:emu 逐指令確認 `_xunpack(id=0x80)` 是否真走 `0x27fa6`,還是
+   `_pxunpack`(0x281fc)/ 別條 parse;比對 3D1.PKH 檔頭 layout(它若有合理 w/h 就反證標題是別種格式)。
+2. **假設 B:下半部雜訊源自 GVRAM bank/中途換寬**。top 對、bottom 不對,可能是 X68000 GVRAM
+   雙 page/bank 切換(top 一個 bank、bottom 另一個),或 blit 中途換 stride。下一步:emu 跑完整
+   blit dispatch(`0x2816a → 0x32b4c`,以及 2× 變體 `0x32bb6`),觀察 `dst`(0xC00000 + scroll
+   `[0x89bd4]`)是否中途跳 bank、`0x445e2` stride 是否被改。
+3. **工具就緒**:`tools_build/x68k_pkh_research/`
+   - `key_routines.asm` — 反組譯摘錄(本批新增呼叫點 0x708、open 0x138a、第二 parse 0x2808c)。
+   - `scan_callers.py` — 掃 `_xunpack/_pxunpack/_xunpackb` 的 jsr 與 0x48/0x1f immediate。
+   - `disasm.py` — capstone m68k 任意區段反組譯(`python3 disasm.py "[(vstart,vend,'label'),…]"`)。
+   - `emu_title.py` — unicorn 跑 parse(0x27fa6)dump w/h/pal + buffer header。
+   - `render2.py`/`render3.py` — 正確 codec(literal=nibble-count)的全寬度 PNG sweep。
+   - `desync.py` — 逐 op 標記 RUN/LIT,定位 stream 結構(本批用來證實「藝術在資料裡、是 layout 問題」)。
+   - `dwemu` image 已含 unicorn 2.1.4 + capstone 5.0.7;`dwtools` 無 m68k-objdump → 用 capstone。
+     注意 unicorn m68k 不支援 `addi.l/subi.l #imm,(a7)`(opcode 0x0697/0x0497),harness 已用
+     CODE hook 手動補;literal 寫入階段仍會觸 unicorn gap(parse 階段已足夠取 header)。
+   - **vaddr↔file 映射**:`file_off = vaddr + 0x1440`(HU header @0x1400,X-format text 段)。
 - 還原前標題畫面暫缺 X68000 原生版,沿用 DOS dragon art 回退(見 `ui_theme.hpp` x68000 主題,保持現狀)。
 
 ---
@@ -470,7 +528,7 @@ DOS `_READ` trap;FAT12 抽取逐 cluster contiguous、byte-faithful,非抽取 bu
 | X68000 怪物 (MON.PIX) | ✅ contact sheet(EGA placeholder palette) |
 | X68000 場景 (PIC.PIX) | ✅ contact sheet |
 | X68000 UI 圖示 (ICON.PIX) | ✅ |
-| X68000 標題 (TITLE.PKH) | ⚠️ codec + GVRAM blitter 全逆出(chunky-word/stride-1024,非 plane 交錯);唯一缺口 = w/h/palette 不在檔內、需找 DRAGON.X 內圖號→參數表(見 §2「.PKH 壓縮」) |
+| X68000 標題 (TITLE.PKH) | ⚠️ codec + GVRAM blitter 全逆出;呼叫點(0x708,圖號 0x80)+ 圖號→檔名表(0x36388)已找到;**證實「圖號→w/h/palette 表不存在」**(維度/調色盤只放 PKH 檔頭,TITLE.PKH 該欄位為垃圾);全寬度渲染僅 top 收斂、藝術區 layout 對不上(見 §2,剩餘假設 A/B) |
 | X68000 3D 地城 / 結局 (3D*.PKH / END*.PKH) | ⚠️ 同 TITLE.PKH(同一 RLE codec) |
 | X68000 原生 16 色 palette | ⚠️ TODO(需 trace DRAGON.X CLUT 載入) |
 | PC-98 全部 | — 素材不存在 |
