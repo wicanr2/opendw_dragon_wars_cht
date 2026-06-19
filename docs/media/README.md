@@ -14,7 +14,7 @@
 
 | # | 節拍 | DOS | Remake |
 |---|---|---|---|
-| 1 | 標題 | Dragon Wars logo (Interplay 89-90) | 火龍之戰標題 / 選單 (刻意保留英文 logo) |
+| 1 | 標題 / 開場 | Dragon Wars 龍圖開場 (Interplay 89-90) | 同一張龍圖開場 splash + 金色「火龍之戰」疊字 + 「按任意鍵繼續」(原版英文 logo 刻意保留) |
 | 2 | 主選單 / 隊伍 | Current party… + Begin the game | 目前隊伍 (1 Muskels…4 Cheetah) + B 開始 / C 繼續 |
 | 3 | 開場敘事 | Stripped of all possessions… (Press ESC) | 對應事件訊息檢視器 (繁中) |
 | 4–8 | 第一人稱走動 | Purgatory viewport,牆面 / 結構透視隨步伐變化 | 同一 Purgatory 走廊的 FP viewport (對 oracle byte-for-byte) |
@@ -34,7 +34,7 @@ DOS 側 (真擷取):
 4. 戰鬥遭遇格採用既有稽核驗證過的真擷取畫面 (`docs/assessment/dos_compare/dos/06_combat_encounter.png`,Innocent Man),縮回 320×200 接入序列 (Purgatory 起點區隨機遭遇稀疏,盲走腳本無法穩定觸發,故沿用該真擷取幀)。
 
 Remake 側 (headless):
-- `SDL_VIDEODRIVER=dummy ./build/opendw_remake <flags> --frames 0 --dump x.ppm --scale 1`,各節拍對應旗標:標題 (預設)、`--char-sheet`、`--map 1 --fp --at X Y` (走動)、`--automap 1 --mm-seed 0`、`--encounter 3 --combat-rounds 1`。旗標說明見 `../../docs/engine/CONTROLS.md`。
+- `SDL_VIDEODRIVER=dummy ./build/opendw_remake <flags> --frames 0 --dump x.ppm --scale 1`,各節拍對應旗標:標題開場 splash (`--title --locale zh-TW`,顯示龍圖 + 火龍之戰疊字)、`--char-sheet`、`--map 1 --fp --at X Y` (走動)、`--automap 1 --mm-seed 0`、`--encounter 3 --combat-rounds 1`。旗標說明見 `../../docs/engine/CONTROLS.md`。
 
 GIF 組裝:`convert` (ImageMagick) 串幀 + 控制 per-frame delay + 放大 3×;並排版以 `+append` 合左右並加 24px 標題列。
 
