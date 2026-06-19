@@ -2,7 +2,9 @@
 
 > 目的:X68000 標題(`TITLE.PKH`)的逆向經過四輪仍未完全還原。本檔把**已釘死的事實**(後續 agent 不必重推)、**屢次被推翻的錯誤假設**、**流程踩雷**集中記錄,避免重蹈覆轍。配合 `61_MULTIVERSION_ASSETS.md` §2 與 `tools_build/x68k_pkh_research/`。
 >
-> 現況(2026-06-19):**受阻**。PKH codec、GVRAM blit、標題載入呼叫點皆已逆出,標題**頂部 ~190px 可收斂**(天空+橄欖綠 banner),但龍/戰士藝術區 layout 對不上。X68000 主題的 title 仍回退 DOS res29。
+> 現況(2026-06-19):**暫時放棄**(四輪 + 全程式模擬仍未還原)。PKH codec、GVRAM blit、標題載入呼叫點皆已逆出,標題**頂部 ~190px 可收斂**(天空+橄欖綠 banner),但龍/戰士藝術區 layout 對不上。X68000 主題的 title 維持回退 DOS res29。
+>
+> **第四輪(全程式模擬,#x68k-title-emu,已停)結果**:用 unicorn 跑真實 DRAGON.X 走完 `_xunpack`→parse→解壓→blit,**dump 出模擬 GVRAM**(`gvram_TITLE.PKH.bin`)。但即使是「遊戲自己解出來的權威 GVRAM」,各寬度(256/384/512/1024)render 仍是**對角斜紋雜訊(diagonal shear)**——資料在、但 line stride/寬度仍收斂不出。**結論:連全模擬都還原不出 → X68000 標題 ROI 過低,暫時放棄**;codec/GVRAM/呼叫鏈的 RE 成果已保留(供未來有 X68000 實機 GVRAM dump 或更多時間時接續)。下一步若要續:逆 `_apalin`(0x4d72)/`_apalbrk`(0x4d8c)取真實 CLUT + 釐清 blit 是否中途換 stride/bank(假設 B)。
 
 ---
 
