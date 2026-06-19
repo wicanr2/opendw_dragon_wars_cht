@@ -169,17 +169,21 @@
 
 ## 5. 發現的 bug / 粗糙處(就算小也列)
 
-| # | 嚴重度 | 現象 | 證據 | 性質 |
-|:--:|:---:|---|---|---|
-| B1 | 中 | **area 0(Dilmun 世界區)俯視全圖只鋪一條水平帶**,未填滿世界網格;一般關卡 automap 正常 | `worldmap.png` vs `automap1.png` | 已知(doc 60 缺口②);世界圖渲染特例 |
-| B2 | 低 | **area 名恆顯英文「Purgatory」**(所有遊戲內畫面左上),未進 i18n | 全 fp/event 截圖 | 在地化漏網(area 名表未接 i18n) |
-| B3 | 低 | **隊員名(Muskels/Theb/Elendil/Cheetah)英文**;預設隊伍未繁中化命名 | 所有 fp 截圖右側面板 | 預設隊伍英文名(玩家自建可中文) |
-| B4 | 低 | **商店首項「Dragon Stone」英文**(其餘 11 件商品繁中) | `shop.png` | 單品項漏譯(劇情關鍵道具) |
-| B5 | 低 | **招募屬性標籤「STR/DEX/INT」英文** | `recruit.png` | 縮寫標籤未 i18n |
-| B6 | 極低 | headless `--char-sheet` 配 `--map` 時讓位給 automap,打不開狀態欄 | 本次重現 | 已知(doc 60 缺口③);測試入口問題,非渲染問題 |
-| B7 | 極低 | ALSA 找不到音效卡時噴一串 stderr 警告(已退靜音,不影響) | 啟動 log | 環境噪音;可 `--mute` 或 dummy driver 抑制 |
+| # | 嚴重度 | 現象 | 證據 | 性質 | 狀態 |
+|:--:|:---:|---|---|---|---|
+| B1 | 中 | **area 0(Dilmun 世界區)俯視只鋪一條水平帶** | `worldmap.png` vs `automap1.png` | 釐清後實為 `--map 0`(S_GAME 俯視 `draw_game`)畫原始 tile 格,被誤標為 automap;`?`/`--automap 0` 早已走 `WorldMap::render`(#154)| **✅ 已修**:area 0 俯視探索(`draw_game`)亦改走 `WorldMap::render`,`?`/automap/`--map 0` 三路徑共用美化世界圖,不再一條帶 |
+| B2 | 低 | **area 名恆顯英文「Purgatory」** | 全 fp/event 截圖 | 在地化漏網(area 名表未接 i18n) | **✅ 已修**:新增 `area_name_tr()`,40 關 area 名走 `WorldMap::place_name_zh`(補齊 18/19/22/27/33/34/35/36/38);「Purgatory→波卡城」「Phoeban Dungeon→菲巴斯地下城」等 |
+| B3 | 低 | **隊員名(Muskels/Theb/Elendil/Cheetah)英文** | 所有 fp 截圖右側面板 | 原版預設角色名,存於 512B player_record 的 7-bit 高位元終止字串 | **待審/保留**:該欄位編碼無法容 CJK,改譯會破存讀檔 byte-for-byte golden;玩家可自由改名;依 CONTEXT.md「proper names 暫保留原文」 |
+| B4 | 低 | **商店首項「Dragon Stone」英文** | `shop.png` | 單品項漏譯(劇情關鍵道具) | **✅ 已修**:shop.tsv 加 `Dragon Stone→龍寶石`(經既有 `tr.tr(name_key)` 路徑) |
+| B5 | 低 | **招募屬性標籤「STR/DEX/INT」英文** | `recruit.png` | 縮寫標籤硬編 | **✅ 已修**:改走 `recruit_str/dex/int`→力量/敏捷/智力(CONTEXT.md 屬性節) |
+| B6 | 極低 | headless `--char-sheet` 配 `--map` 讓位給 automap | 本次重現 | 已知(doc 60 缺口③);測試入口問題 | 未處理(非本次範圍) |
+| B7 | 極低 | ALSA 無音效卡時 stderr 警告(已退靜音) | 啟動 log | 環境噪音 | 未處理(環境噪音) |
 
-無任何 crash / abort / 非零 exit。B1 是唯一「可見的渲染缺口」,其餘為在地化漏網與測試入口噪音。
+無任何 crash / abort / 非零 exit。**B1/B2/B4/B5 已修**(見上「狀態」欄);B3 待審(存檔格式限制);B6/B7 為測試入口 / 環境噪音。
+
+### 5.1 中後期在地化補譯(本次)
+
+新增 i18n-aware 偵測模式至 `mainline_events`(載 zh-TW 全表,逐 emit 段落判 `tr(s)==s` 且含 ASCII → 標 `[EN!]`),全 40 area 掃描:**可達英文回退 74 條 → 1 條**(僅剩 `"egin a new game` 主選單緩衝雜訊,非真實事件)。補譯 73 條中後期探索/對白(瑪根地底世界/尼塞山腹/菲巴斯地下城/拜占儂地下城/蘭斯克渡輪/礦坑/雕像等),譯名依 CONTEXT.md(Lansk蘭斯克/Phoebus菲巴斯/Quag奎格/Necropolis死城);`Rustic→拉斯提克` 為音譯待審。`ctest` 34/34 全綠。
 
 ---
 

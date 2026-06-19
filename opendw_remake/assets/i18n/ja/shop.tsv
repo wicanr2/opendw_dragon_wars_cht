@@ -24,3 +24,7 @@ recruit_unknown	そのような仲間はいません。
 Recruited!	仲間になった!
 (in party)	(パーティー中)
 The tavern is lively tonight.	今夜の酒場は賑やかだ。
+recruit_str	力
+recruit_dex	速
+recruit_int	知
+Dragon Stone	ドラゴンストーン

@@ -135,18 +135,27 @@ std::string WorldMap::place_name_zh(int area) {
     case 14: return "死城";
     case 15: return "矮人廢墟";
     case 17: return "自由港";
+    case 18: return "瑪根地底世界";   // Magan Underworld(CONTEXT.md 官方手冊)
+    case 19: return "礦坑";           // Mines
     case 20: return "蘭斯克";
     case 21: return "沉沒遺跡";
+    case 22: return "沉沒遺跡";       // Sunken Ruins(area 22,與 21 同名)
     case 23: return "神祕林";
     case 24: return "蛇坑";
     case 25: return "京雄城";
     case 26: return "朝聖碼頭";
+    case 27: return "尼塞山腹";       // Depths of Nisir(CONTEXT.md 尼塞;終戰所在)
     case 28: return "舊碼頭";
     case 29: return "圍城軍營";
     case 30: return "獵場";
     case 31: return "魔法學院";
     case 32: return "龍谷";
+    case 33: return "菲巴斯地下城";   // Phoeban Dungeon
+    case 34: return "拉娜的實驗室";   // Lanac'toor's Lab(CONTEXT.md 拉娜)
+    case 35: return "拜占儂地下城";   // Byzan. Dungeon
+    case 36: return "京雄城";         // Kingshome(area 36,與 25 同名)
     case 37: return "奴隸莊園";
+    case 38: return "蘭斯克地下城";   // Lansk Undercity(CONTEXT.md)
     case 39: return "塔斯廢墟";
     default: return "";
   }

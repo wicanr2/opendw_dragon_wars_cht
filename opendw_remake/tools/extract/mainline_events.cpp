@@ -19,8 +19,27 @@
 #include "../../src/resource/level.hpp"
 #include "../../src/resource/provider.hpp"
 #include "../../src/vm/interpreter.hpp"
+#include "../../src/i18n/strings.hpp"
 
 using namespace dw;
+
+// 載入 zh-TW 全部 tsv 表(對齊 app load_locale)。供「未在地化段落」偵測。
+static i18n::Strings load_zh_tw() {
+  i18n::Strings tr;
+  auto m = i18n::Strings::load("assets/i18n/zh-TW/menu.tsv");
+  if (m) tr = *m;
+  for (const char* f : {"events", "combat", "chars", "items", "shop", "spells"})
+    tr.merge(std::string("assets/i18n/zh-TW/") + f + ".tsv");
+  return tr;
+}
+// segment 是否「未在地化的英文回退」:tr 後與原文相同(查無鍵)且含 ASCII 字母。
+static bool is_untranslated_en(const i18n::Strings& tr, const std::string& s) {
+  if (s.empty() || s.rfind("Read paragraph", 0) == 0) return false;
+  if (tr.tr(s) != s) return false;                 // 有譯 → OK
+  bool has_alpha = false;
+  for (char c : s) if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) { has_alpha = true; break; }
+  return has_alpha;
+}
 
 int main(int argc, char** argv) {
   if (argc < 2) {
@@ -36,6 +55,8 @@ int main(int argc, char** argv) {
     areas = {0, 1, 2, 5, 6, 8, 17, 23, 20, 14, 25, 32, 31, 21, 30, 29, 4, 27};
   }
   res::BundleProvider prov(bundle);
+  const i18n::Strings zh = load_zh_tw();             // zh-TW 在地化表(未譯偵測用)
+  std::set<std::string> untranslated;                // 全域去重:未在地化英文段落
 
   // halt opcode 統計(全域):opcode -> 出現次數
   std::map<int, int> halt_count;
@@ -97,8 +118,10 @@ int main(int argc, char** argv) {
       std::uint8_t unimpl = ip.last_unimpl();
       std::printf("── tile 0x%02X → PC 0x%04X ──\n", v, pc);
       for (auto& s : emitted) {
-        std::printf("  emit: \"%s\"\n", s.c_str());
+        bool en = is_untranslated_en(zh, s);
+        std::printf("  emit:%s \"%s\"\n", en ? " [EN!]" : "", s.c_str());
         if (s.rfind("Read paragraph", 0) != 0) uniq_strings.insert(s);
+        if (en) untranslated.insert(s);
         ++total_emit;
       }
       if (unimpl != 0) {
@@ -115,6 +138,12 @@ int main(int argc, char** argv) {
   std::printf("======== 總結 ========\n");
   std::printf("emit 字串總數 %d;去重後唯一字串 %zu 條\n",
               total_emit, uniq_strings.size());
+  std::printf("在地化:唯一 %zu 條,其中 zh-TW 未譯(英文回退)%zu 條\n",
+              uniq_strings.size(), untranslated.size());
+  if (!untranslated.empty()) {
+    std::printf("\n-- zh-TW 未在地化英文段落(可達)--\n");
+    for (auto& s : untranslated) std::printf("  [EN!] \"%s\"\n", s.c_str());
+  }
   std::printf("\n-- halt opcode 分佈(未實作而卡住的格)--\n");
   for (auto& [op, c] : halt_count)
     std::printf("  op 0x%02X : %d 格\n", op, c);
