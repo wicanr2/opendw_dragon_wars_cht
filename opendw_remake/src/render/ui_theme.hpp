@@ -59,6 +59,12 @@ struct EndingScene {
   std::string ref;          // kDosScene:場景名("24");kAmigaPic:themes/ 下相對路徑
   TitleSource source = TitleSource::kDosScene;
   std::string narrative_en; // 疊字英文鍵(tr 在地化);空 = 不疊敘事
+  // 「英文擦除框」(viewport 320×200 座標):原版把英文敘事烤進此塊黑底區。
+  //   非英文語系時:把此框實心填黑(徹底擦掉原版英文)→ 銳利文字層在框內畫在地化敘事
+  //   (對齊原版英文的位置 = 沿用 scene_localize.py 「換字不換版」的作法,取代底部字幕條)。
+  //   ew==0 → 無擦除框 → 回退舊版「底部襯底條疊字幕」(Amiga 單張結局 / 末張 The End 用)。
+  //   英文語系永遠走 art 原樣(英文已烤進圖,不疊任何敘事)。
+  int ex = 0, ey = 0, ew = 0, eh = 0;
 };
 
 // 一個完整 UI 主題:title art 來源 + per-theme 16 色 palette + 戰鬥 backdrop + 覆蓋框配色。
@@ -139,11 +145,13 @@ inline const std::vector<UiTheme>& theme_list() {
     // [0] DOS(預設;完整)。結局過場 = res 24..28 五張 DOS 全螢幕場景,各配在地化敘事。
     //   敘事鍵與場景烤進的原版英文一致(已於 i18n events.tsv 在地化),底部襯底條疊繁中。
     UiTheme dos;
+    // 擦除框 = 原版英文敘事烤進的黑底區(座標沿用 tools_build/scene_localize.py 實測):
+    //   24 英文在右側、25/26/27 在下方。非英文語系填黑該框 + 框內畫在地化敘事(取代字幕條)。
     dos.ending = {
-      {"24", TitleSource::kDosScene, kEndingNarr24},
-      {"25", TitleSource::kDosScene, kEndingNarr25},
-      {"26", TitleSource::kDosScene, kEndingNarr26},
-      {"27", TitleSource::kDosScene, kEndingNarr27},
+      {"24", TitleSource::kDosScene, kEndingNarr24, 196, 30, 124, 150},
+      {"25", TitleSource::kDosScene, kEndingNarr25,   0, 140, 320,  60},
+      {"26", TitleSource::kDosScene, kEndingNarr26,   0, 128, 320,  72},
+      {"27", TitleSource::kDosScene, kEndingNarr27,   0, 116, 320,  84},
       // The End logo 自帶英文立繪;narrative 空 → 只疊在地化收尾標題(全劇終)。
       {"28", TitleSource::kDosScene, ""},
     };

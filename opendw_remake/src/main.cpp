@@ -2015,12 +2015,33 @@ int main(int argc, char** argv) {
           if (((x + y) & 1) == 0) fb.put(x, y, 0);
     };
     const auto& seq = render::theme_ending_scenes(theme);
+    const render::EndingScene* sc =
+        (ending_idx >= 0 && ending_idx < (int)seq.size()) ? &seq[ending_idx] : nullptr;
+    // 非英文語系才疊在地化敘事;英文語系直接呈現原版 art(英文已烤進圖,不疊任何字)。
+    const bool localized = (locale_tag != "[EN]");
     std::string narr;
-    if (ending_idx >= 0 && ending_idx < (int)seq.size() && !seq[ending_idx].narrative_en.empty())
-      narr = tr.tr(seq[ending_idx].narrative_en);   // 在地化敘事(查無回退英文)
+    if (sc && localized && !sc->narrative_en.empty())
+      narr = tr.tr(sc->narrative_en);   // 在地化敘事(查無回退英文)
     const bool is_last = (ending_idx == (int)seq.size() - 1);
-    if (!narr.empty()) {
-      // 底部敘事條:換行後置於畫面下緣;條高隨行數動態(最多覆蓋下半 ~88px)。
+    if (!narr.empty() && sc->ew > 0) {
+      // ── 「換字不換版」:擦掉原版英文烤字區(實心填黑)→ 在原位畫銳利在地化敘事 ──
+      //   取代舊版底部字幕條:英文不再透出、中文落在原版英文的構圖位置(沿用 scene_localize)。
+      int bx = sc->ex, by = sc->ey, bw = sc->ew, bh = sc->eh;
+      for (int y = by; y < by + bh && y < render::kH; ++y)
+        for (int x = bx; x < bx + bw && x < render::kW; ++x)
+          if (x >= 0 && y >= 0) fb.put(x, y, 0);   // 實心黑(= 還原英文後方黑底)
+      std::vector<std::string> lines = tl.wrap(narr, bw - 8, PX_BODY);
+      int line_h = PX_BODY / eff_scale + 2;
+      int total_h = (int)lines.size() * line_h;
+      int y = by + (bh - total_h) / 2; if (y < by + 2) y = by + 2;   // 框內垂直置中
+      for (const std::string& ln : lines) {
+        int w = tl.measure_vwidth(ln, PX_BODY);
+        int x = bx + (bw - w) / 2; if (x < bx + 2) x = bx + 2;       // 框內水平置中
+        tl.add(x, y, ln, 15, PX_BODY);   // 白字
+        y += line_h;
+      }
+    } else if (!narr.empty()) {
+      // 無擦除框(Amiga 單張結局等):沿用底部襯底條疊字幕。
       const int band_top0 = 110;
       std::vector<std::string> lines = tl.wrap(narr, render::kW - 16, PX_BODY);
       int line_h = PX_BODY / eff_scale + 2;
