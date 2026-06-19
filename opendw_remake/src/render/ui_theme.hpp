@@ -110,6 +110,30 @@ struct UiTheme {
   bool vga256 = false;
 };
 
+// Amiga 第一人稱 viewport 配色盤(remake 加值,誠實標示):
+//   原生 Amiga viewport 圖塊的「重組落點」需逆出 Amiga 引擎 blit 錨點演算法(圖塊尺寸 ≠ DOS
+//   sprite,直接套 DOS xpos/ypos 會破碎),屬無界 RE → 暫擱置(見 viewport_amiga.hpp / docs/61)。
+//   改採有界乾淨方案:沿用 **DOS golden 精確透視幾何**(byte-for-byte 對拍那條),只把調色盤
+//   換成 Amiga 風格 —— 石牆轉青藍、地板/天花轉棕,呈現 Amiga 地城氛圍且透視 100% 收斂。
+//   索引語意對齊 DOS viewport 實際用色(直方圖實測:idx3/7/8/11=石牆、idx4/12=地板天花)。
+inline constexpr std::array<Rgb, 16> kAmigaViewportPalette = {{
+  {0x00,0x00,0x00},  // 0 黑(遠景開口/陰影)
+  {0x00,0x00,0xAA},  // 1
+  {0x00,0xAA,0x00},  // 2
+  {0x28,0xB4,0xC8},  // 3 青藍石牆(主面;原 DOS teal)
+  {0x5F,0x3E,0x20},  // 4 棕地板/天花(原 DOS 紅)
+  {0xAA,0x00,0xAA},  // 5
+  {0x8C,0x5F,0x32},  // 6 棕側牆
+  {0x5F,0x96,0xBE},  // 7 藍灰石牆(原 DOS 亮灰)
+  {0x28,0x55,0x78},  // 8 深藍石牆(原 DOS 暗灰)
+  {0x55,0x55,0xFF},  // 9
+  {0x55,0xFF,0x55},  // 10
+  {0x82,0xDC,0xEB},  // 11 亮青石牆高光(原 DOS 亮青)
+  {0xA5,0x6E,0x41},  // 12 淺棕地板(原 DOS 亮紅)
+  {0xFF,0x55,0xFF},  // 13
+  {0xFF,0xFF,0x55},  // 14
+  {0xFF,0xFF,0xFF}}};// 15 白(邊緣高光)
+
 // 結局過場各場景的英文敘事鍵(經 tr() 在地化 → 繁中/日;查無回退英文)。
 //   鍵文字與原版場景烤進點陣圖的英文一致,已於 i18n events.tsv 提供繁中譯文。
 //   集中為具名常數供 theme 結局序列與測試共用,避免散落多處。
