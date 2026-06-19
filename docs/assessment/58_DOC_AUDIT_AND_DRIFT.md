@@ -143,7 +143,7 @@
 | `docs/engine/VIEWPORT.md` | 🟡 部分過時 | **L47「俯視圖為占位」、L51「第一人稱 viewport 尚未 port」已過時**——`--fp` 已接入 S_GAME 且 `render_sweep` 全 40 關 PASS(`src/main.cpp` L333/356) | **更新**:標 viewport 已 port + golden PASS |
 | `docs/engine/VIEWPORT_COMPOSE.md` | ✅ 現行有效 | step 1/2 對拍結論已完成 | 保留 |
 | `docs/engine/CONTROLS.md` | 🟡 部分過時 | 2026-06-14;**L53「戰鬥結算為乾淨室 placeholder」已過時**(combat_loop 已用 bytecode 真值公式);未列 `--fight-namtar`/`--ending`/建角等新指令 | **更新**:戰鬥真值說明 + 補新 flag |
-| `opendw_remake/docs/adr/0001`、`0002` | ✅ 現行有效 | Asset bundle、雙層 CJK 渲染 ADR;與實作對齊 | 保留 |
+| `docs/adr/0001`、`0002` | ✅ 現行有效 | Asset bundle、雙層 CJK 渲染 ADR;與實作對齊 | 保留 |
 | `opendw_remake/assets/**/README.md`、`automap_demo/`、`party_demo/` 等 | ✅ 現行有效 | 資產/demo 說明 | 保留 |
 
 ---
@@ -212,7 +212,7 @@
 ### 5.3 `docs/README.md` 索引是否需重整
 
 **需要**。具體:
-1. **補漏**:38、39、15、46、47、48、49、51(兩支)、52、53、54、55、56、57(指向)、本檔 58、`opendw_remake/docs/*`、ADR 0001/0002。
+1. **補漏**:38、39、15、46、47、48、49、51(兩支)、52、53、54、55、56、57(指向)、本檔 58、原 `opendw_remake/docs/*`(已併入根 `docs/` 各子目錄)、ADR 0001/0002。
 2. **更新「目前進度」表**(L136–147):現況應為「可從頭玩到結局、連通 38/40、22/22 ctest、119 opcode、戰鬥 bytecode 真值、雙層 CJK」。
 3. **與 `99_INDEX.md` 去重**:兩者角色重疊(都是索引);建議 **README.md 為唯一入口**,99_INDEX 標「已併入 README」或刪。
 4. **加口徑說明區**:一句話講清「119(remake)vs 139/117(opendw oracle)」「38/40 連通」「戰鬥真值分層」,避免後續再被當 drift。

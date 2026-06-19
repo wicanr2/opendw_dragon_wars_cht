@@ -155,18 +155,11 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 
 ---
 
-## 7. docs 地圖(兩層 docs)
+## 7. docs 地圖
 
-本 repo 有**兩棵 docs 樹**,分工不同;同號檔屬於不同樹、不同內容,勿混淆:
+全部文件統一收在 repo 根的 [`../docs/`](../docs/README.md) 樹,依用途分成子目錄;原本分散在 `opendw_remake/docs/` 的引擎規格與玩法文件已併入其中(對照見 [`docs/README.md`](docs/README.md))。同號檔以子目錄路徑區分(例:`gameplay/57_DOORS_TRAPS_TERRAIN` vs `assessment/57_PM_REVIEW`),引用時帶完整 `docs/<子目錄>/…` 路徑即可。
 
-| 樹 | 範圍 | 編號 |
-|----|------|------|
-| **根 [`../docs/`](../docs/README.md)** | **專案級**:逆向工程史 + 資料格式 + 攻略整合 + 翻譯資料 + PM / 稽核評估 | 00 / 01–08 / 10–14 / 20–26 / 30–40 / 41–61 / 99 |
-| **[`docs/`](docs/README.md)(本目錄)** | **remake 級**:引擎規格 + 玩法系統實作文件 + 圖 demo | gameplay / engine / audit / reference / media / adr(原 56–61 / CONTROLS / VIEWPORT / REWRITE_READINESS)|
-
-> **編號碰撞提醒**:本目錄已改以**子目錄分類**(gameplay / engine / audit / reference / media / adr),原扁平編號檔(56–61)分入對應子目錄。根 `docs/` 仍為扁平編號,與本樹同號(57/58/59/60)屬不同樹、不同內容(例:本樹 `gameplay/57_DOORS_TRAPS_TERRAIN` vs 根樹 `57_PM_REVIEW`)。引用時務必帶完整路徑(`opendw_remake/docs/…` 或 `../docs/…`)。本目錄索引 [`docs/README.md`](docs/README.md) 有完整清單與分工說明。
-
-remake 級系統文件分類:
+remake 相關的系統文件分類:
 
 - **玩法系統實作 `gameplay/`**:[`docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md`](../docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md)(可通關結局鏈)、[`docs/gameplay/57_DOORS_TRAPS_TERRAIN.md`](../docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)(開門 / 陷阱 / 地形法術)、[`docs/gameplay/58_MAGIC_REFERENCE.md`](../docs/gameplay/58_MAGIC_REFERENCE.md)(法術參考表)、[`docs/gameplay/59_SKILL_CHECK_TRIGGERS.md`](../docs/gameplay/59_SKILL_CHECK_TRIGGERS.md)(技能檢定觸發點)
 - **引擎規格 / 渲染 `engine/`**:[`docs/engine/VIEWPORT.md`](../docs/engine/VIEWPORT.md)、[`docs/engine/VIEWPORT_COMPOSE.md`](../docs/engine/VIEWPORT_COMPOSE.md)(第一人稱 viewport 逆向)、[`docs/engine/CONTROLS.md`](../docs/engine/CONTROLS.md)(操作 + headless 旗標)、[`docs/engine/REWRITE_READINESS.md`](../docs/engine/REWRITE_READINESS.md)(重寫就緒度評估)
