@@ -240,3 +240,35 @@ PPM → PNG:以最小 zlib PNG 編碼器轉(docker 內 python3 zlib;見產出流
 - **訊息列底色**:原版白底黑字;remake 維持深色底白字,與中文化深藍訊息框(`fill_msg_box`)的視覺系統一致(刻意保留)。
 - **隊伍面板偏右、與 viewport 間距較大**:面板狀態條 x 起點鎖定 216(`0x36<<2`,對拍 opendw `draw_player_status`),未動;新增的面板外框讓此區視覺上成為獨立分區。原版面板更貼近 viewport,屬幾何偏差(docs/59 [1] 已記),本次不動已驗證的面板座標。
 - **#3 角色屬性網格、遭遇/逐人動作選單**:屬版型重寫 / 戰鬥系統未落地,非本次「探索/戰鬥主畫面 chrome」範圍,維持原判定。
+
+---
+
+## area 0 世界圖偏差盤點與修正(2026-06-20,`feat/worldmap-fix`)
+
+對 `src/render/worldmap.cpp`(#154 美化世界圖)做三方嚴格比對:① 權威 Dilmun 全區圖(`org_map/dragon-wars-map-dilmun.jpg`,classicgaming 攻略物,**未入庫**,僅比對方位/佈局)② 遊戲真實 area0 tile 幾何(`maps/0.lvl`,32×47 portrait,海=0x0F)③ 目前 `--map 0` dump。
+
+### 比對方法
+
+- 真實 tile 幾何:臨時 ASCII dumper 印 portrait 與 90° CCW landscape(`nx=y, ny=(W-1)-x`),逐 worldmap_dest 地標標出 area id 與 landscape 像素座標,對照權威圖位置。
+- dump:docker `dwsdl` headless(`SDL_VIDEODRIVER=dummy ./build/opendw_remake --map 0 --frames 0 --dump`),`dwimg` 轉 png,分象限放大目視。
+
+### 偏差清單與判定
+
+| 項 | 偏差 | 判定 | 處置 |
+|----|------|------|------|
+| 方位 / 旋轉 | 90° CCW landscape 方向是否正確 | **正確,非 bug**。三方一致:拜占儂(9)左上、圍城軍營(29)貼其下、京雄城(25)上中、獵場(30)上中偏右、魔法學院(31)右上、自由港(17)最右、蛇坑(24)左緣中、神祕林(23)左下、波卡城(1)下方、龍谷(32)/沉沒遺跡(21)右中——皆吻合權威 Dilmun 佈局 | 不動 |
+| 鏡像 | 左右 / 上下鏡像 | **無鏡像錯**。拜占儂左、自由港右(無左右翻);拜占儂上、波卡城下(無上下翻) | 不動 |
+| 比例 / 裁切 | 陸塊 / 海洋比例、邊界 | landscape 282×192,等比;陸海輪廓與權威群島一致;無失真 | 不動 |
+| **label 重疊** | **拜占儂(cy=41)與圍城軍營(cy=47)兩圖示縱向緊鄰(Δ6px),兩標籤疊在一起** | **bug** | 修(見下) |
+| **badge 雜訊** | **頂端「F4:lang」副提示(y=13)疊進地圖框內(框頂 y=10)成淡灰雜訊** | **bug** | 修(見下) |
+
+### 修法
+
+1. **label 防重疊**(`worldmap.cpp`):收集標籤後加一輪去重疊 pass——依 y 升序,後到標籤若與已放置者「同對齊側 + 橫向重疊 + 縱向 < 11px 行高」,往下推一行直到不撞(保守行高 11px、漢字寬 12px 估算)。文字錨點由圖示 ±6px 收到 ±5px,更貼圖示。拜占儂 / 圍城軍營兩標籤改為上下分列、各貼自己的圖示。
+2. **badge**(`main.cpp` `draw_worldmap_view`):地圖模式不呼叫 `add_lang_badge()`(它含會疊進框內的「F4:lang」y=13 副提示),改只畫框上方的右上角語系標籤 `[繁中]`(y=2,在框頂之上),F4 切語系提示併進底部訊息列「Map - Esc: back - F4: lang」。
+
+### 驗證
+
+- dump 對照:拜占儂 / 圍城軍營標籤分列不再重疊;框內「F4:lang」雜訊消失;其餘地標位置不變。
+- **ctest 34/34 PASS**(`render_sweep` 154-case、`verify_automap_l0/l1`、`smoke_app` 等無回歸)。
+- 改動檔:`src/render/worldmap.cpp`、`src/main.cpp`。權威 jpg 未入庫;tile 資產未動。
