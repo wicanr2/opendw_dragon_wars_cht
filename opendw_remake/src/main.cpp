@@ -3119,8 +3119,10 @@ int main(int argc, char** argv) {
         tl.add(lb.x - tw, lb.y, lb.name, 15, PX_UI * 3 / 4);  // 地點名(較小字,白)
       }
     }
-    add_lang_badge();
-    tl.add(8, 190, tr.tr("Map  -  Esc: back"), 7, PX_UI);
+    // 世界圖模式:只留右上角語系標籤(在地圖框上方);不畫「F4:lang」副提示
+    //   (該提示 y=13 會疊進地圖框內變雜訊)。F4 仍可切語系,提示移到底部訊息列。
+    tl.add(render::kW - 56, 2, locale_tag, 11, PX_UI);
+    tl.add(8, 190, tr.tr("Map  -  Esc: back  -  F4: lang"), 7, PX_UI);
   };
   auto draw_game = [&]() {
     // F:真實關卡俯視圖(從 .lvl 解出的 tile 格,像素層)+ 玩家朝向;文字走文字層。

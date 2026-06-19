@@ -252,10 +252,51 @@ std::vector<WorldMap::Label> WorldMap::render(Framebuffer& fb, const res::Level&
       int cy = kOy + ny * kTile + kTile / 2;
       PlaceStyle ps = style_for(dest);
       blit_icon(fb, cx, cy, *ps.icon, ps.color, C_BLACK);
-      // 標籤錨點:圖示右側;近右界則改右對齊放圖示左側。
+      // 標籤錨點:圖示右側;近右界則改右對齊放圖示左側。文字緊貼圖示(±5px)。
       bool right = (nx > g.NW * 3 / 5);
-      labels.push_back({right ? cx - 6 : cx + 6, cy - 4, name, right});
+      labels.push_back({right ? cx - 5 : cx + 5, cy - 4, name, right});
     }
+
+  // ── 標籤防重疊:同側、橫向重疊且縱向太近的標籤往下錯開 ───────────────────────
+  //   (如拜占儂 / 圍城軍營兩圖示緊鄰 → 兩標籤本來疊在一起。)文字層用 PX_UI*3/4≈12px
+  //   字高;此處以保守行高 11px 估算,每組碰撞各往下推一行,落出框則改往上。
+  //   橫向以 name 字數×半形寬粗估字串寬,只在「左對齊朝右」與「右對齊朝左」各自群組內判定。
+  {
+    constexpr int kLineH = 11;          // 估算行高(略小於字高,允許略貼)
+    constexpr int kGlyphW = 12;         // 每漢字像素寬(PX_UI*3/4 約值)
+    auto utf8_chars = [](const std::string& s) {
+      int n = 0;
+      for (unsigned char c : s) if ((c & 0xC0) != 0x80) ++n;  // 數 UTF-8 起始 byte
+      return n;
+    };
+    // 估算標籤佔用的 [x0,x1] 區間(依對齊方向)。
+    auto span_x = [&](const Label& lb) {
+      int w = utf8_chars(lb.name) * kGlyphW;
+      return lb.right_align ? std::pair<int,int>{lb.x - w, lb.x}
+                            : std::pair<int,int>{lb.x, lb.x + w};
+    };
+    // 依 y 升序處理;後者若與任一已放置且橫向重疊者縱向太近,往下推到不撞為止。
+    std::sort(labels.begin(), labels.end(),
+              [](const Label& a, const Label& b) { return a.y < b.y; });
+    for (std::size_t i = 0; i < labels.size(); ++i) {
+      auto [ax0, ax1] = span_x(labels[i]);
+      bool moved = true;
+      int guard = 0;
+      while (moved && guard++ < 16) {
+        moved = false;
+        for (std::size_t j = 0; j < i; ++j) {
+          if (labels[j].right_align != labels[i].right_align) continue;
+          auto [bx0, bx1] = span_x(labels[j]);
+          bool overlap_x = ax0 < bx1 && bx0 < ax1;
+          if (!overlap_x) continue;
+          if (std::abs(labels[i].y - labels[j].y) < kLineH) {
+            labels[i].y = labels[j].y + kLineH;   // 推到該標籤下一行
+            moved = true;
+          }
+        }
+      }
+    }
+  }
 
   // ── 玩家標記(若在 area 0)─────────────────────────────────────────────
   if (px >= 0 && py >= 0 && px < level.w && py < level.h) {
