@@ -2975,7 +2975,14 @@ int main(int argc, char** argv) {
     //   對齊 DOS 戰鬥畫面(docs/audit/dos_compare/06_combat_encounter.png):viewport 內
     //   上半天空 + 下半地面(石礫質感),讓怪物立繪站在場景中而非浮在純黑上。
     //   只填 viewport 內部 [16,176)×[8,144);四周 UI chrome 由 draw_explore_chrome 補。
-    {
+    // ── Amiga theme(sprite 自帶盤):sky/ground 索引在 sprite 盤下會變橘 → 改純黑底,
+    //   立繪置中呈現(像 portrait);DOS theme 維持天空+地面 backdrop(golden 不動)。
+    const bool spr_center = theme.sprite_own_palette;  // Amiga = true
+    if (spr_center) {
+      for (int y = kVpY; y < kVpY + kVpH; ++y)
+        for (int x = kVpX; x < kVpX + kVpW; ++x)
+          fb.put(x, y, 0);   // index 0 = 黑(各盤一致)
+    } else {
       const auto& bd = theme.combat;
       int hy = kVpY + bd.horizon;   // 天空/地面分界(絕對 y)
       for (int y = kVpY; y < kVpY + kVpH; ++y) {
@@ -2996,7 +3003,13 @@ int main(int argc, char** argv) {
     if (enc.sprite) {
       int ph = anim_tick % 48;
       int bob = (ph < 24) ? (ph / 12) : ((47 - ph) / 12);   // 0,0..1,1..0 三角波(±1px)
-      int sy = 8 - bob;                                       // 上浮 = y 減
+      // 立繪落點:Amiga(spr_center)置中於 160×136 viewport;DOS 維持 (16,8)(golden)。
+      int spw = (int)enc.sprite->w, sph = (int)enc.sprite->h;
+      int base_x = spr_center ? kVpX + (kVpW - spw) / 2 : 16;
+      int base_y = spr_center ? kVpY + (kVpH - sph) / 2 : 8;
+      if (base_x < kVpX) base_x = kVpX;
+      if (base_y < kVpY) base_y = kVpY;
+      int sy = base_y - bob;                                  // 上浮 = y 減
       bool flash = (enc.hit_flash > 0) && ((enc.hit_flash / 2) % 2 == 0);  // 閃爍相位
       if (flash) {
         // 受擊閃白:非透明像素一律畫白(index 1),只蓋立繪輪廓(不動 backdrop / golden)。
@@ -3005,7 +3018,7 @@ int main(int argc, char** argv) {
           int fy = sy + y;
           if (fy < kVpY || fy >= kVpY + kVpH) continue;
           for (int x = 0; x < (int)s.w; ++x) {
-            int fx = 16 + x;
+            int fx = base_x + x;
             if (fx < kVpX || fx >= kVpX + kVpW) continue;
             std::uint8_t i = s.idx[(std::size_t)y * s.w + x];
             if (theme.sprite_transparent >= 0 && i == (std::uint8_t)theme.sprite_transparent) continue;
@@ -3013,7 +3026,7 @@ int main(int argc, char** argv) {
           }
         }
       } else {
-        enc.sprite->blit_clipped(fb, 16, sy, theme.sprite_transparent,  // 透明色:DOS=6 棕 / Amiga=8 紅
+        enc.sprite->blit_clipped(fb, base_x, sy, theme.sprite_transparent,  // 透明色:DOS=6 棕 / Amiga=8 紅
                                  kVpX, kVpY, kVpX + kVpW, kVpY + kVpH);
       }
     }
