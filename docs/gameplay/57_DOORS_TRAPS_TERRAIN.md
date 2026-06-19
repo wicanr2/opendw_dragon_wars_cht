@@ -30,7 +30,7 @@
 
 - `src/game/real_terrain.cpp` `RealTraps::identify`:對每個特殊事件格(word_11C8≥2)的 tile →
   `script_pc` → 在 VM 跑該關 bytecode,攔截 emit 字串。字串屬「對隊伍即時傷害 / 敵意環境」
-  語意類(攻略 docs/38 描述的陷阱)→ 該格 = 原版真陷阱格。
+  語意類(攻略 docs/walkthrough/38 描述的陷阱)→ 該格 = 原版真陷阱格。
 - **與攻略抽樣吻合**:
   - area 27 尼塞山腹 tile 0x1A 四角 `(14,10)(24,10)(14,21)(24,21)` emit「The floor moved!」
     = 攻略「the floor is moving 訊息時回原位」陷阱;tile 0x04/0x05 emit「icy winds of despair
@@ -59,7 +59,7 @@
 | 特殊格事件腳本入口(op_71 / `script_pc`) | bytecode 真值 | `Level::script_pc` 已對拍 op_71;特殊格(word_11C8≥2)以 script PC 進事件 VM |
 | **K 開門 / 破密門「動作 + 開/鎖/阻擋語意」** | **受阻 → remake 設計** | 能識別前方牆型 byte 與門牆候選位置,但 `gs[0x26]` 消費者(開門語意)在未反編主迴圈(見 §1/§2) |
 | **陷阱觸發 / 傷害 / 解除** | **受阻 → remake 設計** | opendw 乾淨反編**無陷阱結算**;grounded 手冊 |
-| **戰鬥外地形法術結算** | **受阻 → remake 設計** | opendw C 碼法術未實作(同 docs/44 戰鬥結算);grounded 手冊 |
+| **戰鬥外地形法術結算** | **受阻 → remake 設計** | opendw C 碼法術未實作(同 docs/reverse-engineering/44 戰鬥結算);grounded 手冊 |
 
 ## 受阻證據(誠實標示,絕不謊稱 oracle 真值)
 
@@ -108,7 +108,7 @@
 - 手冊 p176/184:`K` / ↑ =「打開關閉的門、粉碎牆中密門」——引擎級、對面向前方的牆做。
 - 手冊 p33 §技能:Lockpick 開鎖可進鎖住的房間。
 - 手冊 p25/p29 §法術:Sense Traps(偵測陷阱 0x14)、Disarm Trap(解除陷阱 0x36)、Soften Stone(軟化石 0x22,移開石牆/障礙)。
-- 攻略 docs/37/38 測驗五(魔法學院 area 31):以 Soften Stone / Disarm Trap 通關。
+- 攻略 docs/walkthrough/37/38 測驗五(魔法學院 area 31):以 Soften Stone / Disarm Trap 通關。
 
 ### 地形互動狀態:`TerrainState`(per-area 座標旗標)
 

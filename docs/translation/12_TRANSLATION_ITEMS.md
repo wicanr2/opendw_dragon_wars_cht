@@ -123,6 +123,6 @@
 
 ## 7. 參考資料
 
-- `docs/ALL_TEXT_FROM_SCRIPTS.txt`(乾淨 script 字串)
-- `docs/26_MONSTERS_AND_SPRITES.md`(res 解碼重建的範例方法)
+- `docs/reverse-engineering/ALL_TEXT_FROM_SCRIPTS.txt`(乾淨 script 字串)
+- `docs/reverse-engineering/26_MONSTERS_AND_SPRITES.md`(res 解碼重建的範例方法)
 - `../CONTEXT.md`(術語/譯名標準)

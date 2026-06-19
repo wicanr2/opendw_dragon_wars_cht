@@ -1,7 +1,7 @@
-# 58 — 商店買賣 + 酒館招募(PM review docs/57 選項 B 實作)
+# 58 — 商店買賣 + 酒館招募(PM review docs/gameplay/57 選項 B 實作)
 
 > 日期:2026-06-16
-> 範圍:opendw_remake 補上 CRPG「經濟出口 + 隊伍構築」兩環(docs/57 §5 選項 B)。
+> 範圍:opendw_remake 補上 CRPG「經濟出口 + 隊伍構築」兩環(docs/gameplay/57 §5 選項 B)。
 > 前置:選項 A(成長迴圈)已合併 PR #127。
 > 誠實分級沿用四級:**bytecode 真值** / **grounded(手冊/fraterrisus)** / **remake 設計** / **受阻**。
 
@@ -22,7 +22,7 @@
 
 | 構面 | 來源 | 真值層 |
 |---|---|---|
-| 物品 23B 欄位佈局 | fraterrisus《Hex Editing Guide》= docs/44 §2 | **grounded**(`equipment.cpp` 已解,byte 對拍) |
+| 物品 23B 欄位佈局 | fraterrisus《Hex Editing Guide》= docs/reverse-engineering/44 §2 | **grounded**(`equipment.cpp` 已解,byte 對拍) |
 | 售價編碼(M×10^E,指數 3b + 尾數 5b) | fraterrisus | **grounded**(`decode_price`) |
 | 購買價 / 售價關係 | `購買價 = bit[32-39] 解碼值`;`售價(賣出可得) = 購買價 ÷ 2` | **grounded**(對齊 `equipment.cpp` 既有 `purchase_price` / `sale_price`) |
 | 金幣存放 | 角色 record `gold[81]`(fraterrisus;1 byte) | **grounded** |
@@ -35,8 +35,8 @@
   **可販售**(price>0)者。目前僅 **Dragon Stone(購買價 250)**;其餘真實物品多為魔法
   召喚物,原版 `price=0`(非賣品),不列入商店。
 - `"grounded": false` —— **curated 標準裝備**(remake 設計):匕首/短劍/長劍/戰斧/戰錘/
-  小圓盾/鳶形盾/皮甲/鎖鏈甲/鐵盔。以 fraterrisus 23B bit 佈局(docs/44 §2)**乾淨編碼**,
-  價格取攻略 docs/38 量級的合理值。產生器:`tools/extract/gen_shop_stock.py`(可重現)。
+  小圓盾/鳶形盾/皮甲/鎖鏈甲/鐵盔。以 fraterrisus 23B bit 佈局(docs/reverse-engineering/44 §2)**乾淨編碼**,
+  價格取攻略 docs/walkthrough/38 量級的合理值。產生器:`tools/extract/gen_shop_stock.py`(可重現)。
 
 ### 2.3 已知限制(誠實)
 
@@ -44,7 +44,7 @@
   故 **鎖鏈甲(購買價 300)實際買不起**(UI 以灰字顯示);原版 gold 可能更寬(另有
   4B 解析在 0x55),但 remake 以 fraterrisus 1B 欄為金幣真值來源,飽和處理。
 - 付款 / 收款方 = **隊伍第 0 名(主角)**(remake 設計;原版隊伍共用金幣池)。
-- 背包可用格 = **12 格(0..11)**:docs/44 標 13 格(A..M),但 `236 + 13×23 = 535 > 512`,
+- 背包可用格 = **12 格(0..11)**:docs/reverse-engineering/44 標 13 格(A..M),但 `236 + 13×23 = 535 > 512`,
   第 13 格(0-based 12)起點越界,實際可用 12 格(對齊 `equipment.cpp`/`progression.cpp`
   既有 `base+i < 512` 防護)。
 
@@ -56,11 +56,11 @@
 
 | 構面 | 來源 | 真值層 |
 |---|---|---|
-| NPC 識別碼存於 record `[77]` | fraterrisus / docs/44 §1 | **grounded** |
+| NPC 識別碼存於 record `[77]` | fraterrisus / docs/reverse-engineering/44 §1 | **grounded** |
 | 可招募 NPC + 識別碼:Ulrik=0x01 / Louie=0x03 / Valar=0x04 / Halifax=0x05 | fraterrisus NPC identifier 表 | **grounded**(名 + id) |
 | 512B record 佈局(名/屬性/HP/level/identifier) | fraterrisus | **grounded** |
 | NPC 各項屬性 / HP / 定位 | curated 平衡值 | **remake 設計**(非萃自 DATA1 真實 NPC blob) |
-| 隊伍上限 7 槽 | docs/44 §1(最多 7 員 record) | **grounded(上限)** |
+| 隊伍上限 7 槽 | docs/reverse-engineering/44 §1(最多 7 員 record) | **grounded(上限)** |
 | 招募動作 + identifier gate | append 到隊伍尾、同 id 不可重複招 | **remake 設計**(opendw C 未實作招募) |
 
 ### 3.2 隊伍 >4 員處理
@@ -118,12 +118,12 @@ i18n:`assets/i18n/{zh-TW,en,ja}/shop.tsv`(商店/酒館 UI + curated 物品名 +
 - 工具:`tools/extract/gen_shop_stock.py`、`tools/verify/verify_shop.cpp`、`tools/verify/verify_recruit.cpp`。
 - `tools/verify/verify_i18n.cpp`:kFiles 納入 shop.tsv。
 - `CMakeLists.txt`:dwr_game 加 shop/recruit;新增兩 ctest。
-- 截圖:`opendw_remake/docs/media/shop_recruit/{shop_buy_zh,shop_buy_en,tavern_zh}.png`。
+- 截圖:`docs/media/remake/shop_recruit/{shop_buy_zh,shop_buy_en,tavern_zh}.png`。
 
 ---
 
 ## 7. 截圖
 
-![商店買賣(繁中)](../opendw_remake/docs/media/shop_recruit/shop_buy_zh.png)
-![商店買賣(英文,F4 切語言)](../opendw_remake/docs/media/shop_recruit/shop_buy_en.png)
-![酒館招募(繁中)](../opendw_remake/docs/media/shop_recruit/tavern_zh.png)
+![商店買賣(繁中)](../media/remake/shop_recruit/shop_buy_zh.png)
+![商店買賣(英文,F4 切語言)](../media/remake/shop_recruit/shop_buy_en.png)
+![酒館招募(繁中)](../media/remake/shop_recruit/tavern_zh.png)

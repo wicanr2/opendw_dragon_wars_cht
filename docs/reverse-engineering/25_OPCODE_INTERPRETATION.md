@@ -1,7 +1,7 @@
 # Dragon Wars 虛擬 CPU Opcode 判讀報告
 
 > 版本：初版（2026-06-10）
-> 參考：`src/lib/engine.c`（targets[] 第 583 行）、`docs/dragon.asm`、`opendw/doc/script.md`
+> 參考：`src/lib/engine.c`（targets[] 第 583 行）、`docs/reverse-engineering/dragon.asm`、`opendw/doc/script.md`
 
 ---
 
@@ -411,6 +411,6 @@ engine.c 中的虛擬 CPU 狀態變數：
 ## 引用來源
 
 - `/home/anr2/tmp/longcat/opendw_dragon_wars_cht/src/lib/engine.c`：主要實作，targets[] 第 583 行
-- `/home/anr2/tmp/longcat/opendw_dragon_wars_cht/docs/dragon.asm`：部分反組譯（3721 行，涵蓋 0x100–0x5C7B 部分區段）
+- `/home/anr2/tmp/longcat/opendw_dragon_wars_cht/docs/reverse-engineering/dragon.asm`：部分反組譯（3721 行，涵蓋 0x100–0x5C7B 部分區段）
 - `/home/anr2/tmp/longcat/opendw/doc/script.md`：opcode 文字說明（稀疏）
 - `/home/anr2/tmp/longcat/opendw/doc/keypress.txt`：按鍵處理流程（op_89 相關）

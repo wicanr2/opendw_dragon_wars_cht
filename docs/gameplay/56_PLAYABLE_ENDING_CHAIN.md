@@ -3,8 +3,8 @@
 > 日期:2026-06-16
 > 對象:`opendw_remake/`(C++20/SDL2 重製《火龍之戰》Dragon Wars, Interplay 1989)
 > 目標:讓玩家能**實際打贏終戰 Namtar 並看到結局**——「remake 可通關」的收官。
-> 策略:**不**靠 res3 全戰鬥閉環(卡遊戲層 context,docs/42 §14;非 opcode 缺失),
->   改接 remake 自己已可玩的 `combat_loop`。接續 docs/55(主線 gate + 結局事件文字)。
+> 策略:**不**靠 res3 全戰鬥閉環(卡遊戲層 context,docs/reverse-engineering/42 §14;非 opcode 缺失),
+>   改接 remake 自己已可玩的 `combat_loop`。接續 docs/gameplay/55(主線 gate + 結局事件文字)。
 
 ---
 
@@ -49,7 +49,7 @@
     op_8A halt)。
   - **headless**:`--fight-namtar` 旗標 → `begin_namtar()`(end-to-end 驗證 + 截圖)。
 - **單次攻擊**仍走 `game::resolve_attack`(combat.cpp;命中 1d16+3 門檻 13+AV−def、徒手傷害
-  dice+STR/5 = **bytecode 真值**,docs/42 §11/§12)。Boss 只提供「一個強力 Combatant」,
+  dice+STR/5 = **bytecode 真值**,docs/reverse-engineering/42 §11/§12)。Boss 只提供「一個強力 Combatant」,
   **不重算公式**。
 
 ### 1.3 Namtar Boss 屬性(remake 平衡設計,誠實標示)
@@ -88,7 +88,7 @@
    滋味吧!」(攻略結局語)→ **全 劇 終**(THE END)。
 
 > **誠實標示**:原版「勝利後結局畫面」由戰鬥流程/DRAGON.COM 主控觸發,**不在任何 level
->   event script** 中(掃全 40 關證實,docs/55 §3.3),逆不出獨立結局 script。本序列以
+>   event script** 中(掃全 40 關證實,docs/gameplay/55 §3.3),逆不出獨立結局 script。本序列以
 >   **已 bundle 的真實素材組合**:敘事鍵 + 段落 = 真實;「組合與串接」= remake 設計。
 >   結局文件首段即明示「(remake 組合結局:以已收錄的手冊段落＋第27區決戰敘事組成,
 >   非原版單一腳本)」。
@@ -133,9 +133,9 @@
 
 | 項目 | 狀態 |
 |---|---|
-| 單次攻擊命中/傷害公式 | **bytecode 真值**(resolve_attack;docs/42 §11/§12) |
+| 單次攻擊命中/傷害公式 | **bytecode 真值**(resolve_attack;docs/reverse-engineering/42 §11/§12) |
 | RNG(op_4D) | bytecode 移植,對拍 oracle |
-| XP(清怪 +80) | DOS 實機真值(docs/43) |
+| XP(清怪 +80) | DOS 實機真值(docs/reverse-engineering/43) |
 | 行動順序 / 目標選擇 | remake 設計(combat_loop;SDA 定性) |
 | **Namtar Boss 21B 屬性** | **remake 平衡設計(暫定)** —— op_8A monster_id 無乾淨 res31 record,誠實標示 |
 | **自由之劍祝福加成** | **remake 設計** —— flags[85] op_5F/61 已實作,但「祝福→具體戰鬥加成數值」原版未逆出 |
@@ -163,9 +163,9 @@
 ## 6. 卡點與限制(精確,不臆造)
 
 1. **Namtar 戰鬥用 remake combat_loop,非 res3 全戰鬥閉環**:res3 卡 per-character 動作指派
-   狀態機 + 無獨立戰鬥 oracle(docs/42 §14),本任務**不重攻**(誠實記錄)。combat_loop 的
+   狀態機 + 無獨立戰鬥 oracle(docs/reverse-engineering/42 §14),本任務**不重攻**(誠實記錄)。combat_loop 的
    單次攻擊公式是 bytecode 真值,但「Boss 屬性 / 行動編排 / 祝福加成」是 remake 設計。
-2. **結局為 remake 組合**:原版勝利結局畫面逆不出獨立 script(docs/55 §3.3),以 bundled
+2. **結局為 remake 組合**:原版勝利結局畫面逆不出獨立 script(docs/gameplay/55 §3.3),以 bundled
    素材組合,首段明示。
 3. **in-game 觸發未加 headless 移動注入驗證**:互動移動踩格 → begin_namtar 已 wired(與
    `--fight-namtar` 同一 `begin_namtar` 路徑),但 headless 端到端走 `--fight-namtar`

@@ -76,7 +76,7 @@ title.pic (21805B, 壓縮)
 >   奇數 res ID 解出垃圾尺寸(非 sprite,語意未明)。50 個偶數資源全部解碼成合理尺寸的立繪
 >   (目視 contact sheet 確認:人類/野獸/惡魔/龍/騎士/巨人…完整圖鑑)。
 > - **權威 name→sprite 對映(本次確立)**:`MonsterRecord::sprite_res() = (attr[0x0B]<<1)+0x8A`
->   **正確**(舊 docs/26 §二「+0x8A 有偏差」的疑慮為誤判)。monsters.bin 全 25 隻記錄的
+>   **正確**(舊 docs/reverse-engineering/26 §二「+0x8A 有偏差」的疑慮為誤判)。monsters.bin 全 25 隻記錄的
 >   `sprite_res()` 皆落在已抽的偶數資源(Spider→196、Wolf→168、Pikeman→210、Fanatic→222、
 >   Innocent Man→200、King's Guard/Soldier→166、Humbaba→218、Gladiator→202…)。
 > - **入庫命名**:全套以 `<res>.spr` 命名(`themes/amiga/sprites/166.spr` …);原 6 隻具名檔
@@ -195,7 +195,7 @@ blit、非 chunky、而是 plane-sequential 4-bitplane;width/height 由 header w
 
 ## 1.6 Amiga 第一人稱 viewport 牆面（data3，已逆向 + 接進 Amiga 第一人稱）
 
-對應舊「picparts ⚠️ 部分/受阻」與 docs/26 §七「viewport 場景組譯器」待辦 —— **本次逆出格式並接進
+對應舊「picparts ⚠️ 部分/受阻」與 docs/reverse-engineering/26 §七「viewport 場景組譯器」待辦 —— **本次逆出格式並接進
 Amiga 第一人稱**。
 
 ### archive 結構（已驗證）
@@ -251,7 +251,7 @@ viewport 元件主力在 **data3(res 110–135)**,與 DOS `bundle/components/<ta
   dump 目視確認:石塊牆面 + 側牆 trapezoid + water tile)。
 - **DOS theme 完全不經此模組** → verify_fp / verify_compose / render_sweep golden 全綠(未破)。
 
-![amiga-fp-dungeon](../media/showcase/themes/amiga_fp_dungeon.png)
+![amiga-fp-dungeon](../media/remake/showcase/themes/amiga_fp_dungeon.png)
 
 `--theme amiga --fp --map 1` dump:原生 viewport 盤的青藍石塊正面牆 + 棕側牆 trapezoid + 綠頂裝飾條 + 青藍 water tile。
 
@@ -304,7 +304,7 @@ Amiga 音效 / 音樂取樣(8-bit signed PCM,delta 風格編碼),非視覺美術
 
 ### 磁碟結構
 來源 = 三個 `.DIM`(DiskImage,256B header + 2HD raw)。`.DIM` 去 header → Human68k
-FAT12 → 抽檔。流程與工具見 docs/46;FAT12 抽取 `tools_build/fat12_extract.py`。
+FAT12 → 抽檔。流程與工具見 docs/reverse-engineering/46;FAT12 抽取 `tools_build/fat12_extract.py`。
 
 ```
 zip → .DIM → dd bs=256 skip=1 → raw → fat12_extract.py → 個別檔
@@ -506,7 +506,7 @@ DOS `_READ` trap;FAT12 抽取逐 cluster contiguous、byte-faithful,非抽取 bu
 
 - 在 `NEC_PC_9801_TOSEC_2012_04_23.zip`(2.1GB TOSEC 合集)中,58 個 "Dragon*" 條目
   **無任何 "Dragon Wars"**,亦無 "Interplay"/"Starcraft" 發行的對應磁碟。
-- 與 docs/46 的考證一致:Dragon Wars 的日本在地化(Starcraft / Hudson soft 發行)
+- 與 docs/reverse-engineering/46 的考證一致:Dragon Wars 的日本在地化(Starcraft / Hudson soft 發行)
   **只出在 Sharp X68000**,從未有 PC-98 版。「PC-98」是檔名/任務假設的誤稱,實體即 X68000。
 
 結論:**PC-98 沒有 Dragon Wars 可抽**。日本版美術全部來自 X68000(見 §2)。

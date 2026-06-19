@@ -483,8 +483,8 @@ struct engine_state {
 - `docs/SKILL.md`（8,417 bytes）
 - `docs/SDL2_IMPLEMENTATION.md`（11,459 bytes）
 - `docs/ALL_TEXT_FROM_DATA1.txt`（141,230 bytes）
-- `docs/dragon.asm`（71,852 bytes）
-- `docs/Dragon-Wars_Manual_DOS_EN.pdf`（7.5 MB）
+- `docs/reverse-engineering/dragon.asm`（71,852 bytes）
+- `docs/manual/Dragon-Wars_Manual_DOS_EN.pdf`（7.5 MB）
 - `珍066-火龍之戰.rar`（17.7 MB）
 
 **原始 opendw 文件**：

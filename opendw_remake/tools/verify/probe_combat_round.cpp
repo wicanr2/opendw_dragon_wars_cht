@@ -1,5 +1,5 @@
 // probe_combat_round — 驅動 res3 戰鬥腳本完整一回合動作指派,抵達 actor 迴圈(0x0075),
-//   觀察對 data[0x03D6] 怪物群緩衝區的 HP 結算(res3 全戰鬥閉環真值化,docs/42 §15)。
+//   觀察對 data[0x03D6] 怪物群緩衝區的 HP 結算(res3 全戰鬥閉環真值化,docs/reverse-engineering/42 §15)。
 //
 // 收斂鏈(逆向 res18/res4 動作指派狀態機):
 //   res18 主選單 @0x00F8: Fight 'F'(0xC6) → 0x0108: gs[0x67]=0(逐角色動作 index)。

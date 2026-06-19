@@ -66,7 +66,7 @@ cd build && ctest --output-on-failure          # 回歸測試:32 項
 
 ### headless 開發旗標
 
-remake 支援大量 headless dump 旗標(配 `SDL_VIDEODRIVER=dummy` 與 `--frames 0` 只 dump 不開窗),用於對拍與驗證。完整旗標表見 [`docs/engine/CONTROLS.md`](docs/engine/CONTROLS.md)。常用:
+remake 支援大量 headless dump 旗標(配 `SDL_VIDEODRIVER=dummy` 與 `--frames 0` 只 dump 不開窗),用於對拍與驗證。完整旗標表見 [`docs/engine/CONTROLS.md`](../docs/engine/CONTROLS.md)。常用:
 
 ```bash
 SDL_VIDEODRIVER=dummy ./build/opendw_remake --map 1 --fp --frames 0 --dump /tmp/fp.ppm
@@ -74,7 +74,7 @@ SDL_VIDEODRIVER=dummy ./build/opendw_remake --map 1 --read-para 88 --frames 0 --
 SDL_VIDEODRIVER=dummy ./build/opendw_remake --encounter 5 --combat-seed 1 --frames 0 --dump /tmp/c.ppm
 ```
 
-互動執行(玩家向)的選單 / 鍵位 / 三語切換在[根 README](../README.md);完整鍵表見 [`docs/engine/CONTROLS.md`](docs/engine/CONTROLS.md)。
+互動執行(玩家向)的選單 / 鍵位 / 三語切換在[根 README](../README.md);完整鍵表見 [`docs/engine/CONTROLS.md`](../docs/engine/CONTROLS.md)。
 
 ---
 
@@ -98,7 +98,7 @@ SDL_VIDEODRIVER=dummy ./build/opendw_remake --encounter 5 --combat-seed 1 --fram
 | **remake 已實作**(`interpreter.cpp` `kImpl` 非 null) | **126 / 256** |
 | 涵蓋類別 | 模式切換 / 算術 / 旗標 / 邏輯 / 比較 / 跳轉 / loop / game_state / bit / 跨資源 call / 資料資源讀寫 / 角色資料存取 / PRNG / viewport / 字串輸出 / UI |
 
-> 未實作的多為 0xA0–0xFF 區段的原始碼殘留(非真 opcode,ASM 位址呈 x86 機器碼特徵)及少數遊戲層 context 受阻指令。實作以「跑得到主線一輪所需」為優先,逐 batch 補齊、每批用差異測試驗。判讀背景見上層 [`../docs/25_OPCODE_INTERPRETATION.md`](../docs/25_OPCODE_INTERPRETATION.md) 與 [`../docs/OPCODE_REFERENCE.md`](../docs/OPCODE_REFERENCE.md)。
+> 未實作的多為 0xA0–0xFF 區段的原始碼殘留(非真 opcode,ASM 位址呈 x86 機器碼特徵)及少數遊戲層 context 受阻指令。實作以「跑得到主線一輪所需」為優先,逐 batch 補齊、每批用差異測試驗。判讀背景見上層 [`../docs/reverse-engineering/25_OPCODE_INTERPRETATION.md`](../docs/reverse-engineering/25_OPCODE_INTERPRETATION.md) 與 [`../docs/reverse-engineering/OPCODE_REFERENCE.md`](../docs/reverse-engineering/OPCODE_REFERENCE.md)。
 
 ---
 
@@ -151,7 +151,7 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 | Phoebus(area 6)/ area 33 | 入口資料層隔離,為隔離分量 |
 | 音訊 | 無音訊子系統(`op_90` 忠實 no-op),全程靜音 |
 
-量化完成度與缺口稽核見上層 [`../docs/57_PM_REVIEW.md`](../docs/57_PM_REVIEW.md)(技術 ~75% / 玩家內容 ~45–50%)、[`../docs/49_GAP_AUDIT.md`](../docs/49_GAP_AUDIT.md)、[`../docs/48_COMPLETABILITY_ROADMAP.md`](../docs/48_COMPLETABILITY_ROADMAP.md)。
+量化完成度與缺口稽核見上層 [`../docs/assessment/57_PM_REVIEW.md`](../docs/assessment/57_PM_REVIEW.md)(技術 ~75% / 玩家內容 ~45–50%)、[`../docs/assessment/49_GAP_AUDIT.md`](../docs/assessment/49_GAP_AUDIT.md)、[`../docs/assessment/48_COMPLETABILITY_ROADMAP.md`](../docs/assessment/48_COMPLETABILITY_ROADMAP.md)。
 
 ---
 
@@ -168,13 +168,13 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 
 remake 級系統文件分類:
 
-- **玩法系統實作 `gameplay/`**:[`docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md`](docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md)(可通關結局鏈)、[`docs/gameplay/57_DOORS_TRAPS_TERRAIN.md`](docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)(開門 / 陷阱 / 地形法術)、[`docs/gameplay/58_MAGIC_REFERENCE.md`](docs/gameplay/58_MAGIC_REFERENCE.md)(法術參考表)、[`docs/gameplay/59_SKILL_CHECK_TRIGGERS.md`](docs/gameplay/59_SKILL_CHECK_TRIGGERS.md)(技能檢定觸發點)
-- **引擎規格 / 渲染 `engine/`**:[`docs/engine/VIEWPORT.md`](docs/engine/VIEWPORT.md)、[`docs/engine/VIEWPORT_COMPOSE.md`](docs/engine/VIEWPORT_COMPOSE.md)(第一人稱 viewport 逆向)、[`docs/engine/CONTROLS.md`](docs/engine/CONTROLS.md)(操作 + headless 旗標)、[`docs/engine/REWRITE_READINESS.md`](docs/engine/REWRITE_READINESS.md)(重寫就緒度評估)
-- **視覺稽核 `audit/`**:[`docs/audit/60_DOS_VS_REMAKE_VISUAL.md`](docs/audit/60_DOS_VS_REMAKE_VISUAL.md)(DOS vs remake 逐畫面稽核 + `dos_compare/` 對照圖)
-- **多版本素材 `reference/`**:[`docs/reference/61_MULTIVERSION_ASSETS.md`](docs/reference/61_MULTIVERSION_ASSETS.md)(Amiga / X68000 素材抽取)
-- **ADR**:[`docs/adr/0002-two-layer-cjk-rendering.md`](docs/adr/0002-two-layer-cjk-rendering.md)(雙層 CJK 渲染決策)
+- **玩法系統實作 `gameplay/`**:[`docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md`](../docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md)(可通關結局鏈)、[`docs/gameplay/57_DOORS_TRAPS_TERRAIN.md`](../docs/gameplay/57_DOORS_TRAPS_TERRAIN.md)(開門 / 陷阱 / 地形法術)、[`docs/gameplay/58_MAGIC_REFERENCE.md`](../docs/gameplay/58_MAGIC_REFERENCE.md)(法術參考表)、[`docs/gameplay/59_SKILL_CHECK_TRIGGERS.md`](../docs/gameplay/59_SKILL_CHECK_TRIGGERS.md)(技能檢定觸發點)
+- **引擎規格 / 渲染 `engine/`**:[`docs/engine/VIEWPORT.md`](../docs/engine/VIEWPORT.md)、[`docs/engine/VIEWPORT_COMPOSE.md`](../docs/engine/VIEWPORT_COMPOSE.md)(第一人稱 viewport 逆向)、[`docs/engine/CONTROLS.md`](../docs/engine/CONTROLS.md)(操作 + headless 旗標)、[`docs/engine/REWRITE_READINESS.md`](../docs/engine/REWRITE_READINESS.md)(重寫就緒度評估)
+- **視覺稽核 `audit/`**:[`docs/audit/60_DOS_VS_REMAKE_VISUAL.md`](../docs/assessment/60_DOS_VS_REMAKE_VISUAL.md)(DOS vs remake 逐畫面稽核 + `dos_compare/` 對照圖)
+- **多版本素材 `reference/`**:[`docs/reference/61_MULTIVERSION_ASSETS.md`](../docs/reference/61_MULTIVERSION_ASSETS.md)(Amiga / X68000 素材抽取)
+- **ADR**:[`docs/adr/0002-two-layer-cjk-rendering.md`](../docs/adr/0002-two-layer-cjk-rendering.md)(雙層 CJK 渲染決策)
 
-延伸閱讀(根 docs 的核心逆向):[`../docs/42_COMBAT_BYTECODE.md`](../docs/42_COMBAT_BYTECODE.md)(戰鬥公式真值推導)、[`../CONTEXT.md`](../CONTEXT.md)(術語表)。
+延伸閱讀(根 docs 的核心逆向):[`../docs/reverse-engineering/42_COMBAT_BYTECODE.md`](../docs/reverse-engineering/42_COMBAT_BYTECODE.md)(戰鬥公式真值推導)、[`../CONTEXT.md`](../CONTEXT.md)(術語表)。
 
 ---
 

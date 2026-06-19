@@ -4,7 +4,7 @@
 // (3) 單次施法結算 cast()。內部隱藏 spells[60-67] bitfield 走訪、效果分派、骰式。
 //
 // ── 對齊狀態(務必誠實)────────────────────────────────────────────────
-//  • 法術 id:對齊 **fraterrisus 法術索引**(docs/44 §3「法術索引 [60-67] bitfield」,
+//  • 法術 id:對齊 **fraterrisus 法術索引**(docs/reverse-engineering/44 §3「法術索引 [60-67] bitfield」,
 //    0x00 L:魔火 … 0x3F)。角色 record[60-67] 為 64-bit bitfield(byte b、bit i →
 //    spell id = b*8 + i),記錄該角色已習得哪些法術。
 //  • 效果值(骰式/目標/Power/類型/攻擊判定):**權威依據 = docs/gameplay/58_MAGIC_REFERENCE.md
@@ -31,7 +31,7 @@
 
 namespace dw::game {
 
-// 法術類別(對齊 docs/44 法術索引前綴 L/H/D/S/M)。
+// 法術類別(對齊 docs/reverse-engineering/44 法術索引前綴 L/H/D/S/M)。
 enum class SpellSchool : std::uint8_t {
   Low,    // L 初級(Low Magic)
   High,   // H 高級(High Magic)
@@ -72,7 +72,7 @@ enum class SummonKind : std::uint8_t {
 };
 
 // 控制類效果的具體種類(decides combat_loop 如何套用)。
-// 全部 grounded 手冊 docs/33「效果 Effect」欄位描述;確切持續回合數手冊未給,
+// 全部 grounded 手冊 docs/manual/33「效果 Effect」欄位描述;確切持續回合數手冊未給,
 // 用合理值並標「remake 設計」(見 spells.cpp kControlDazzleTurns)。
 enum class ControlKind : std::uint8_t {
   None,      // 非控制類
@@ -188,7 +188,7 @@ CastResult cast_spell(std::uint8_t spell_id, int caster_power, int caster_str,
                       int magic_ranks = 0, int power_points = 1);
 
 // ── 召喚 ───────────────────────────────────────────────────────────────
-// 建立一個「召喚出的臨時友方 combatant」(remake 設計,grounded 手冊 docs/33 效果欄)。
+// 建立一個「召喚出的臨時友方 combatant」(remake 設計,grounded 手冊 docs/manual/33 效果欄)。
 //   kind:召喚種類(決定屬性傾向,見 SummonKind);caster_str:施法者 STR(用於略微
 //         隨施法者強度縮放傷害修正,呼應手冊「使用力量可隨意改變」)。
 //   回傳的 Combatant:is_player=true(我方陣營)、summoned=true(戰鬥結束消失,見

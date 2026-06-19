@@ -1,4 +1,4 @@
-// verify_combat_round — res3 全戰鬥閉環真值化守護(docs/42 §15)。
+// verify_combat_round — res3 全戰鬥閉環真值化守護(docs/reverse-engineering/42 §15)。
 //
 // 驅動 res3 戰鬥腳本完整一回合動作指派狀態機(逆向 res18/res4):
 //   res18 主選單 Fight('F'0xC6)→ 逐角色 Attack('A'0xC1)×2 menu → res4 目標 → Y('Y'0xD9)確認

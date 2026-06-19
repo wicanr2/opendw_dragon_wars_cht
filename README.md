@@ -45,7 +45,7 @@
 
 這條血緣與本專案直接相關：本 remake 的反組譯基準 [opendw](https://github.com/dswban/opendw) 由 Devin Smith 製作，對應的正是 **Heineman 1989 年《火龍之戰》原版 16-bit x86 引擎**。逐指令研究這套引擎，等於在研究 Bard's Tale 技術脈絡的成熟形態。
 
-> 誠實邊界：法律與品牌意義上，《火龍之戰》是獨立 IP，**不是官方第四部 Bard's Tale**——商標問題使它無法掛上舊招牌。「精神續作」一說有 Heineman 本人受訪佐證（本來就是 BT IV、同一批人、可匯入角色、共用設計語彙），不只是後人的浪漫化標籤。完整考證、時間線與信心標示見 [docs/66 — Bard's Tale 血緣脈絡](opendw_remake/docs/reference/66_BARDS_TALE_LINEAGE.md)。
+> 誠實邊界：法律與品牌意義上，《火龍之戰》是獨立 IP，**不是官方第四部 Bard's Tale**——商標問題使它無法掛上舊招牌。「精神續作」一說有 Heineman 本人受訪佐證（本來就是 BT IV、同一批人、可匯入角色、共用設計語彙），不只是後人的浪漫化標籤。完整考證、時間線與信心標示見 [docs/reference/66 — Bard's Tale 血緣脈絡](docs/reference/66_BARDS_TALE_LINEAGE.md)。
 
 ### 這個專案做兩件事
 
@@ -54,7 +54,7 @@
 
 成果：`opendw_remake/`（C++20 + SDL2）現在能跑出**完整一輪**——**建立人物 → 探索 38/40 連通世界 → 主線繁中事件 → 終戰 Namtar → 結局 → 全劇終**。資產已萃取成自包含 bundle（`assets/bundle/`），**執行期不需要原始 `DRAGON.COM` / `DATA1` / `DATA2`**。
 
-> 想看誠實的完成度數字？技術 / 引擎保真度約 **75%**，玩家可玩內容約 **45–50%**（[docs/57 PM review](docs/57_PM_REVIEW.md)）。這份 README 不會把它說成「完整復刻」——能玩完一條主線、戰鬥核心數值對拍原版、全程繁中，但部分 RPG 養成深度與互動仍在補。詳見[誠實邊界](#honesty)。
+> 想看誠實的完成度數字？技術 / 引擎保真度約 **75%**，玩家可玩內容約 **45–50%**（[docs/gameplay/57 PM review](docs/assessment/57_PM_REVIEW.md)）。這份 README 不會把它說成「完整復刻」——能玩完一條主線、戰鬥核心數值對拍原版、全程繁中，但部分 RPG 養成深度與互動仍在補。詳見[誠實邊界](#honesty)。
 
 ---
 
@@ -126,24 +126,24 @@ tar xzf opendw-remake-*.tar.gz
 
 | 在地化主選單 | 第一人稱 + 踩格繁中事件 | Dilmun 世界圖 |
 |:---:|:---:|:---:|
-| ![menu](opendw_remake/docs/media/showcase/menu.png) | ![fp](opendw_remake/docs/media/screenshots/r9_fp_event_twolayer.png) | ![wm](opendw_remake/docs/media/wm_world.png) |
+| ![menu](docs/media/remake/showcase/menu.png) | ![fp](docs/media/remake/screenshots/r9_fp_event_twolayer.png) | ![wm](docs/media/remake/wm_world.png) |
 | VM 跑 bundle bytecode → 繁中（操作對齊原版說明書） | 透視走廊 + 踩格顯事件；雙層渲染（像素層整數放大 + SDL2_ttf 24px CJK 恆銳利） | wrap 樞紐世界圖；走到城鎮格 → 切入該城 area |
 
 | 建立人物 | 終戰 Namtar | 結局・全劇終 |
 |:---:|:---:|:---:|
-| ![cre](docs/chargen_screens/03_chargen_attr.png) | ![nam](opendw_remake/docs/media/screenshots/endgame/namtar_combat.png) | ![end](opendw_remake/docs/media/screenshots/endgame/ending_page4.png) |
+| ![cre](docs/media/chargen_screens/03_chargen_attr.png) | ![nam](docs/media/remake/screenshots/endgame/namtar_combat.png) | ![end](docs/media/remake/screenshots/endgame/ending_page4.png) |
 | `B` 建角：命名 + 50 點屬性配點 + 性別 → 合法 512B 角色 record | 回合制戰鬥：命中 / 傷害公式 = 原版 bytecode 真值 | 戰勝 → 結局序列（敘事 + 結局段落 + 全劇終），繁中可捲動 |
 
 ### F4 三語即時切換（同一畫面）
 
 | 繁體中文 | English | 日本語 |
 |:---:|:---:|:---:|
-| ![zh](opendw_remake/docs/media/screenshots/r10_event_zh-TW.png) | ![en](opendw_remake/docs/media/screenshots/r10_event_en.png) | ![ja](opendw_remake/docs/media/screenshots/r10_event_ja.png) |
+| ![zh](docs/media/remake/screenshots/r10_event_zh-TW.png) | ![en](docs/media/remake/screenshots/r10_event_en.png) | ![ja](docs/media/remake/screenshots/r10_event_ja.png) |
 | 主線事件繁中 | 原文英文 | 日語介面（此格事件無日譯 → 回退英文）；events 212/283 等具 X68000 原版日文者直接顯日文（破解 nibble-swap SJIS） |
 
 ### 半透明對話框（踩格事件訊息）
 
-![dialog](opendw_remake/docs/media/showcase/themes/dialog_intro.png)
+![dialog](docs/media/remake/showcase/themes/dialog_intro.png)
 
 *踩到事件格 → 跑該關事件 script → 畫面下半彈出**半透明訊息框**（深藍 dither 半透明，底下地圖隱約透出 + 白外框 + 亮藍內框雙線；文字層 24px CJK 恆銳利，自動換行分頁）。配色 theme-aware。*
 
@@ -156,7 +156,7 @@ tar xzf opendw-remake-*.tar.gz
 
 | DOS（綠龍） | Amiga（金龍） |
 |:---:|:---:|
-| ![title-dos](opendw_remake/docs/media/showcase/themes/title_dos.png) | ![title-amiga](opendw_remake/docs/media/showcase/themes/title_amiga.png) |
+| ![title-dos](docs/media/remake/showcase/themes/title_dos.png) | ![title-amiga](docs/media/remake/showcase/themes/title_amiga.png) |
 | 預設主題：原生 dragon art（res29）+ DOS 16 色標準盤 | `F8` 切到 Amiga：原生金龍標題 + Amiga 自己的 16 色 palette（讀自 `themes/amiga/title.pic` 檔頭） |
 
 F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主題：
@@ -170,7 +170,7 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 
 **Amiga 第一人稱地牢（原生盤）vs DOS 對照**
 
-![amiga-vs-dos-fp](opendw_remake/docs/media/showcase/themes/amiga_vs_dos_fp.png)
+![amiga-vs-dos-fp](docs/media/remake/showcase/themes/amiga_vs_dos_fp.png)
 
 左為 DOS 精確透視（紅地板 / 天花完美收斂），右為 Amiga 原生 viewport 盤的石牆美術（青藍石塊 + 棕側牆 trapezoid + 綠頂裝飾條 + 青藍 water tile）。Amiga 牆面用的是遊戲實際資料的原生盤、結構可辨,但中央遠景的透視收斂為**維度匹配近似**,非 DOS 那條 byte-faithful perspective decode。
 
@@ -178,7 +178,7 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 
 | Amiga 藍蜘蛛遭遇 |
 |:---:|
-| ![amiga-combat](opendw_remake/docs/media/showcase/themes/amiga_combat_spider.png) |
+| ![amiga-combat](docs/media/remake/showcase/themes/amiga_combat_spider.png) |
 | `--theme amiga --encounter 13`：怪物圖換成 Amiga 原生 4-bitplane 立繪（紅底為各怪物自帶盤的透明色 index 8），下方繁中戰鬥指令列 |
 
 > 誠實邊界
@@ -192,13 +192,13 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 
 **Dilmun 世界地圖**（按 `?` 開平面地圖）。area 0 是 wrap 樞紐世界區，重畫成橫向美化圖，**24 個地點全繁中標記**（拜占庭、京雄城、凌火魔城、救贖之山、自由港、波卡城、石橋、奴隸莊園…）；走到城鎮格即切入該城 area。
 
-![worldmap](opendw_remake/docs/audit/dos_compare/wm_app_a0.png)
+![worldmap](docs/assessment/dos_compare/wm_app_a0.png)
 
 **結局過場：Namtar 被擲回深淵。** 戰勝終戰 Boss 後跑結局序列——DOS 主題為 res **24–28** 五張全螢幕場景（Namtar 墜淵 → 慘叫 → 焚城 → 和平新時代 → 全劇終），每張底部疊一條半透明襯底條承載**繁中敘事**（場景烤進的原版英文立繪保留，下方壓繁中譯文，兩層並陳）。
 
 | Namtar 墜淵（結局首場） |
 |:---:|
-| ![ending](opendw_remake/docs/media/showcase/themes/ending_namtar_pit.png) |
+| ![ending](docs/media/remake/showcase/themes/ending_namtar_pit.png) |
 | 「你們奮力一擲，將納達擲回他當初竄出的那座深淵……」原版英文立繪 + 繁中襯底敘事 |
 
 ---
@@ -214,13 +214,13 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 
 - 命中：`roll ≤ 13 + AV − (DV + AC)`（1d16+3，roll-under）
 - 徒手傷害：`骰 + floor(STR/5)`；武器傷害骰解碼自角色資料延伸位（武器無 STR bonus）
-- RNG：`op_4D`；DOS 實機交叉驗證，命中率與原版吻合（[docs/42](docs/42_COMBAT_BYTECODE.md)）
+- RNG：`op_4D`；DOS 實機交叉驗證，命中率與原版吻合（[docs/reverse-engineering/42](docs/reverse-engineering/42_COMBAT_BYTECODE.md)）
 
 **繁中 + 日文雙在地化**
 menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 採 X68000 原版日文原文。`F4` 切 繁中 / EN / 日，24px 銳利 CJK 雙層渲染。
 
 **對 DOS 原版的視覺保真**
-第一人稱 viewport 全 40 關逐像素對拍 opendw（`render_sweep` 154 case byte-for-byte）。整體版面、配色貼著原版 DOS，標題畫面幾乎逐像素還原（刻意保留英文 logo）。詳見[下節對照](#fidelity)與 [docs/60](opendw_remake/docs/audit/60_DOS_VS_REMAKE_VISUAL.md)。
+第一人稱 viewport 全 40 關逐像素對拍 opendw（`render_sweep` 154 case byte-for-byte）。整體版面、配色貼著原版 DOS，標題畫面幾乎逐像素還原（刻意保留英文 logo）。詳見[下節對照](#fidelity)與 [docs/assessment/60](docs/assessment/60_DOS_VS_REMAKE_VISUAL.md)。
 
 **自包含，工程化**
 資產萃取成 `assets/bundle/`，執行期不依賴原始磁碟檔；docker-first 建置；ctest **34/34**；GitHub Actions CI；Linux 可攜包已實機驗證，Windows / macOS CI 設定已備。
@@ -230,26 +230,26 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 <a name="fidelity"></a>
 ## 🖼️ DOS 原版 vs Remake — 視覺保真
 
-下列並排圖**左為真 DOSBox 擷取**（Interplay 1989/90），**右為 remake** headless dump。第一人稱 pipeline 已對 opendw 全 40 關逐位元一致，其餘畫面為人工視覺稽核（[docs/60](opendw_remake/docs/audit/60_DOS_VS_REMAKE_VISUAL.md)）。
+下列並排圖**左為真 DOSBox 擷取**（Interplay 1989/90），**右為 remake** headless dump。第一人稱 pipeline 已對 opendw 全 40 關逐位元一致，其餘畫面為人工視覺稽核（[docs/assessment/60](docs/assessment/60_DOS_VS_REMAKE_VISUAL.md)）。
 
 | 標題畫面 | 第一人稱走廊 |
 |:---:|:---:|
-| ![cmp-title](opendw_remake/docs/audit/dos_compare/sidebyside/cmp_01_title.png) | ![cmp-fp](opendw_remake/docs/audit/dos_compare/sidebyside/cmp_04_fp.png) |
+| ![cmp-title](docs/assessment/dos_compare/sidebyside/cmp_01_title.png) | ![cmp-fp](docs/assessment/dos_compare/sidebyside/cmp_04_fp.png) |
 | 龍頭 + 紅膚戰士 + 「Dragon Wars / Copyright Interplay 89-90」逐像素還原 | 區名銀幕、右側隊伍面板 + 血條、藍磚邊框、綠柱火炬、透視走廊一致 |
 
 | 戰鬥遭遇 | 世界圖（三方對照） |
 |:---:|:---:|
-| ![cmp-combat](opendw_remake/docs/audit/dos_compare/sidebyside/cmp_06_combat.png) | ![cmp-wm](opendw_remake/docs/audit/dos_compare/sidebyside/cmp_08_worldmap_3way.png) |
+| ![cmp-combat](docs/assessment/dos_compare/sidebyside/cmp_06_combat.png) | ![cmp-wm](docs/assessment/dos_compare/sidebyside/cmp_08_worldmap_3way.png) |
 | 怪物圖佈局對齊原版（golden byte-for-byte） | 權威 Dilmun 設計圖 / DOS / remake 三方並排 |
 
-整體視覺保真度高。多數差異是**刻意的在地化（繁中）或現代化輔助**（底部操作提示列、新／續遊戲選單），不是缺口。已知真缺口集中在主選單語意（remake 是「新／續」二選一、DOS 是隊伍管理選單）與 area 0 世界區 automap 全圖渲染——皆載於 [docs/60](opendw_remake/docs/audit/60_DOS_VS_REMAKE_VISUAL.md)，誠實標示。
+整體視覺保真度高。多數差異是**刻意的在地化（繁中）或現代化輔助**（底部操作提示列、新／續遊戲選單），不是缺口。已知真缺口集中在主選單語意（remake 是「新／續」二選一、DOS 是隊伍管理選單）與 area 0 世界區 automap 全圖渲染——皆載於 [docs/assessment/60](docs/assessment/60_DOS_VS_REMAKE_VISUAL.md)，誠實標示。
 
 ---
 
 <a name="controls"></a>
 ## 🎮 操作
 
-操作以臺灣中文版《火龍之戰》操作手冊為準（[CONTROLS.md](opendw_remake/docs/engine/CONTROLS.md)）。啟動先顯示**火龍之戰 dragon art 標題畫面**（金色「Dragon Wars」立繪 + 在地化標題「火龍之戰」+ 閃爍「按任意鍵」），按任意鍵進主選單。
+操作以臺灣中文版《火龍之戰》操作手冊為準（[CONTROLS.md](docs/engine/CONTROLS.md)）。啟動先顯示**火龍之戰 dragon art 標題畫面**（金色「Dragon Wars」立繪 + 在地化標題「火龍之戰」+ 閃爍「按任意鍵」），按任意鍵進主選單。
 
 | 鍵 | 動作 | | 鍵 | 動作 |
 |---|---|-|---|---|
@@ -271,7 +271,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 | `F10` | 離開遊戲：先**自動存檔**，再彈 yes/no 確認視窗（`Y`/`Enter` 離開、`N`/`Esc` 回遊戲） |
 | `Esc` | 子畫面 = 返回 / 關閉；頂層（選單 / 探索）= 觸發同一離開確認流程（自動存檔 + yes/no），避免誤觸直接掉出 |
 
-> 選單採快捷字母（與手冊一致），remake 額外提供 ↑↓ + Enter 作為現代輔助。完整鍵表與 headless 測試旗標見 [CONTROLS.md](opendw_remake/docs/engine/CONTROLS.md)。
+> 選單採快捷字母（與手冊一致），remake 額外提供 ↑↓ + Enter 作為現代輔助。完整鍵表與 headless 測試旗標見 [CONTROLS.md](docs/engine/CONTROLS.md)。
 
 ---
 
@@ -288,17 +288,17 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 
 延伸閱讀：
 - 🏗️ [opendw_remake/ARCHITECTURE.md](opendw_remake/ARCHITECTURE.md) — VM / 渲染 / 資產層設計與階段表
-- ⚔️ [docs/42 戰鬥 bytecode 逆向](docs/42_COMBAT_BYTECODE.md) — 命中 / 傷害公式真值推導
-- 📐 [docs/42 為什麼原版要拆 DATA1/DATA2](docs/42_WHY_DATA1_DATA2.md) — 1989 硬體環境下的設計推理
+- ⚔️ [docs/reverse-engineering/42 戰鬥 bytecode 逆向](docs/reverse-engineering/42_COMBAT_BYTECODE.md) — 命中 / 傷害公式真值推導
+- 📐 [docs/reverse-engineering/42 為什麼原版要拆 DATA1/DATA2](docs/reverse-engineering/42_WHY_DATA1_DATA2.md) — 1989 硬體環境下的設計推理
 - 📋 [ADR 0001：Asset Bundle 與 ResourceProvider](docs/adr/0001-asset-bundle-and-resource-provider.md)
-- 📖 [docs 索引](docs/README.md) · [術語表 CONTEXT.md](CONTEXT.md) · [opcode 雙語參考](docs/OPCODE_REFERENCE.md)
+- 📖 [docs 索引](docs/README.md) · [術語表 CONTEXT.md](CONTEXT.md) · [opcode 雙語參考](docs/reverse-engineering/OPCODE_REFERENCE.md)
 
 ---
 
 <a name="honesty"></a>
 ## ⚖️ 誠實邊界：真值 vs 受阻
 
-整個專案貫穿一個原則：**bytecode 真值 / remake 設計 / 受阻** 三級分明，從不謊稱 oracle（見 `combat.hpp` 檔頭與各 `docs/42`–`60`）。
+整個專案貫穿一個原則：**bytecode 真值 / remake 設計 / 受阻** 三級分明，從不謊稱 oracle（見 `combat.hpp` 檔頭與各 `docs/reverse-engineering/42`–`60`）。
 
 **已落地（均經 opendw 對拍 / DOS 實機 / 攻略交叉驗證）**
 
@@ -316,7 +316,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 - ⚠️ **Phoebus（area 6）/ area 33** 入口資料層隔離，為隔離分量。
 - ⚠️ **音訊**：無音訊子系統（op_90 忠實 no-op），全程靜音。
 
-完整分級量化見 [docs/57 PM review](docs/57_PM_REVIEW.md)（技術 ~75% / 玩家內容 ~45–50%）、[docs/49 缺口稽核](docs/49_GAP_AUDIT.md)、[docs/48 可通關 roadmap](docs/48_COMPLETABILITY_ROADMAP.md)。
+完整分級量化見 [docs/gameplay/57 PM review](docs/assessment/57_PM_REVIEW.md)（技術 ~75% / 玩家內容 ~45–50%）、[docs/assessment/49 缺口稽核](docs/assessment/49_GAP_AUDIT.md)、[docs/assessment/48 可通關 roadmap](docs/assessment/48_COMPLETABILITY_ROADMAP.md)。
 
 ### 跨平台狀態
 

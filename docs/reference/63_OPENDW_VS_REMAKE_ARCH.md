@@ -20,7 +20,7 @@
 
 關鍵澄清:**「behavior oracle / diff_trace / golden」這套詞彙是 remake 端引入的方法論,不是 opendw 自身的用語。** 對 opendw 全樹 grep `oracle|golden|diff_trace` 零命中;opendw 把自己當「逐位址翻譯的 port」,用 unit test(`src/tests/`)驗證。是 remake 反過來把 opendw 當參考實作,才產生 oracle 關係。報告中不要把兩邊的方法論混為一談。
 
-remake 的 oracle 流程有兩條主軸(`opendw_remake/docs/engine/REWRITE_READINESS.md`):
+remake 的 oracle 流程有兩條主軸(`docs/engine/REWRITE_READINESS.md`):
 
 - **diff_trace 逐指令對拍**:同一段 bytecode 丟進 opendw 與 remake VM,逐指令比對 `(pc, op, r2, r4, flags, mode)` 完全一致(`trace_remake` + `vm_selftest`)。
 - **golden 畫面對拍**:viewport / sprite / minimap 像素與 opendw 輸出 byte-for-byte 比對。
@@ -83,27 +83,27 @@ remake VM 刻意保留 opendw 的暫存器語意(`interpreter.cpp:2085`:「每�
 
 ## 3. 保真層級(四標籤模型)
 
-remake 誠實標示每個機制的真值來源(`docs/47_REMAKE_ASSESSMENT.md` 定義四標籤):**bytecode 真值**(逐指令/byte 對拍 opendw)、**best-fit**(bytecode 有矛盾或無完整 oracle,取最合理值)、**remake 設計**(乾淨室,grounded 手冊)、**受限 demo / 受阻**(僅 headless 路徑可達或無 oracle)。
+remake 誠實標示每個機制的真值來源(`docs/assessment/47_REMAKE_ASSESSMENT.md` 定義四標籤):**bytecode 真值**(逐指令/byte 對拍 opendw)、**best-fit**(bytecode 有矛盾或無完整 oracle,取最合理值)、**remake 設計**(乾淨室,grounded 手冊)、**受限 demo / 受阻**(僅 headless 路徑可達或無 oracle)。
 
 ### Tier A — byte-for-byte / 逐指令對拍真值
 
 - **VM opcode**:`(pc, op, r2, r4, flags, mode)` 逐指令對拍一致(`vm_selftest`、`trace_remake`)。
 - **第一人稱 viewport**:`render_sweep` 全 40 關 ×4 朝向 154 case viewport_memory PASS(byte-for-byte)。
 - **sprite / minimap**:`verify_encounter_golden_spider` / `_wolf` 對 oracle PPM byte-for-byte。
-- **戰鬥單次攻擊公式**:to-hit(`roll=1d16+3`)、徒手傷害(`骰+floor(STR/5)`)、武器主傷害骰(op_68)= bytecode 真值(`docs/42 §11/§12`)。
+- **戰鬥單次攻擊公式**:to-hit(`roll=1d16+3`)、徒手傷害(`骰+floor(STR/5)`)、武器主傷害骰(op_68)= bytecode 真值(`docs/reverse-engineering/42 §11/§12`)。
 - **存讀檔**:`verify_save` byte-for-byte round-trip。
 
 ### Tier B — remake 設計(無 oracle,刻意設計,已標明)
 
-- **combat_loop vs res3**:完整戰鬥迴圈(4 人 vs 怪群、多回合、勝負、XP +80)是 remake 設計的確定性編排(`game/combat_loop.cpp`)。其 header 明文界定:單次攻擊走 `resolve_attack`(bytecode 真值,不重算公式);XP +80 有據(`docs/43` DOS 實機);行動順序/目標選擇/逃跑是 remake 設計(SDA 只定性「DEX 高先攻」,無 oracle 確切實作)。
-- **結局序列**:`docs/56` §2.2 —「原版『勝利後結局畫面』由戰鬥流程/DRAGON.COM 主控觸發,不在任何 level event script 中…逆不出獨立結局 script。本序列以已 bundle 的真實素材組合,『組合與串接』= remake 設計。」
-- **世界地圖連通慣例**:`docs/49` §C — wrap 邊界改 modular 環繞,連通數字為 remake 慣例(opendw 原版在此 `exit(1)`)。
+- **combat_loop vs res3**:完整戰鬥迴圈(4 人 vs 怪群、多回合、勝負、XP +80)是 remake 設計的確定性編排(`game/combat_loop.cpp`)。其 header 明文界定:單次攻擊走 `resolve_attack`(bytecode 真值,不重算公式);XP +80 有據(`docs/reverse-engineering/43` DOS 實機);行動順序/目標選擇/逃跑是 remake 設計(SDA 只定性「DEX 高先攻」,無 oracle 確切實作)。
+- **結局序列**:`docs/gameplay/56` §2.2 —「原版『勝利後結局畫面』由戰鬥流程/DRAGON.COM 主控觸發,不在任何 level event script 中…逆不出獨立結局 script。本序列以已 bundle 的真實素材組合,『組合與串接』= remake 設計。」
+- **世界地圖連通慣例**:`docs/assessment/49` §C — wrap 邊界改 modular 環繞,連通數字為 remake 慣例(opendw 原版在此 `exit(1)`)。
 
 ### Tier C — 受阻(無獨立 oracle)
 
-- **怪物逐回合 HP**:`docs/49` §D —「全戰鬥 VM 閉環(怪物 HP 真扣 + oracle 對拍)🔒…opendw 無『獨立跑一場戰鬥 dump 逐回合 HP』路徑」;`verify_combat_script` 只驗指令軌跡確定性、不驗 HP。
-- **門 K-on-wall / 陷阱**:`docs/49` §C — 機制完備但需逐格跑 bytecode 才能實戰觸發(受阻),`docs/57` 為其機制文件。
-- **Phoebus / area 6/33 隔離**:`docs/55` §5.4 — 與主線正交的隔離分量。
+- **怪物逐回合 HP**:`docs/assessment/49` §D —「全戰鬥 VM 閉環(怪物 HP 真扣 + oracle 對拍)🔒…opendw 無『獨立跑一場戰鬥 dump 逐回合 HP』路徑」;`verify_combat_script` 只驗指令軌跡確定性、不驗 HP。
+- **門 K-on-wall / 陷阱**:`docs/assessment/49` §C — 機制完備但需逐格跑 bytecode 才能實戰觸發(受阻),`docs/gameplay/57` 為其機制文件。
+- **Phoebus / area 6/33 隔離**:`docs/gameplay/55` §5.4 — 與主線正交的隔離分量。
 - **X68000 / Amiga `.PKH`**:DOS 反組譯之外的平台無 oracle;多版本素材抽取屬 remake 加值(見 §4),非真值對拍。
 
 ---
@@ -112,14 +112,14 @@ remake 誠實標示每個機制的真值來源(`docs/47_REMAKE_ASSESSMENT.md` �
 
 | 加值 | 證據 |
 |---|---|
-| 繁中 + 英 + 日三語在地化 | 根 README;日文從 X68000 原版抽事件文字補入 `assets/i18n/ja/`(`docs/46`,events 13→212 / spells 57 / monster 23 byte-for-byte) |
+| 繁中 + 英 + 日三語在地化 | 根 README;日文從 X68000 原版抽事件文字補入 `assets/i18n/ja/`(`docs/reverse-engineering/46`,events 13→212 / spells 57 / monster 23 byte-for-byte) |
 | CJK 雙層渲染(ADR-0002) | 像素層維持 320×200 indexed framebuffer;**文字層改用 SDL2_ttf + host TTF(wqy-zenhei)在視窗原生高解析繪製,永不被縮放 → 恆銳利**(`docs/adr/0002`) |
 | 多版本美術主題(F8 切換) | DOS / Amiga / X68000 從三版原磁碟抽素材(`docs/reference/61`) |
 | VGA-256 主題 | 「原版沒有這個版本…用演算法(漸層 + 邊緣壓暗)把 flat 色塊擴成 256 色」(`docs/reference/62`)= 純 remake 加值 |
-| 世界地圖重設計 / 半透明 UI | `docs/59` 版面保真;訊息框 3/4 dither 半透明疊層 |
+| 世界地圖重設計 / 半透明 UI | `docs/gameplay/59` 版面保真;訊息框 3/4 dither 半透明疊層 |
 | 全域熱鍵 | `docs/engine/CONTROLS.md`:F4 語言循環、F8 theme 循環、F10 自動存檔離開、離開確認 |
 | 音訊邊界 | `audio/` lib + `verify_audio` ctest(op_90 接 oracle 索引,Hz/ms = remake 設計) |
-| 打包 / CI | 跨平台(Linux/macOS/Windows)、Docker 多階段、CPack `.tar.gz` 自包含 bundle、GitHub Actions CI(`docs/50`)。**runtime 不依賴 `DRAGON.COM` / `DATA1` / `DATA2`** |
+| 打包 / CI | 跨平台(Linux/macOS/Windows)、Docker 多階段、CPack `.tar.gz` 自包含 bundle、GitHub Actions CI(`docs/engine/50`)。**runtime 不依賴 `DRAGON.COM` / `DATA1` / `DATA2`** |
 | 自動化測試 | ctest 34 項(實測)= `vm_selftest` + `render_sweep` + `smoke_app` + 31 個 `verify_*` |
 
 對照 opendw:opendw 沒有在地化、沒有 CJK、單一 DOS 美術、無打包/CI 流程、驗證以少量 unit test 為主、runtime 直接讀 `dragon.com`。
@@ -128,11 +128,11 @@ remake 誠實標示每個機制的真值來源(`docs/47_REMAKE_ASSESSMENT.md` �
 
 ## 5. opendw 有但 remake 尚未完整
 
-- **res3 全戰鬥閉環**:`docs/49` §D — bytecode 路徑跑到 actor 迴圈前卡在 `res18↔res4` 逐角色動作指派狀態機(非 opcode 缺失,`last_unimpl=0`);怪物 HP 真扣 + oracle 對拍仍受阻(remake 用 `combat_loop` 確定性編排替代,但那不是原 bytecode 閉環)。
+- **res3 全戰鬥閉環**:`docs/assessment/49` §D — bytecode 路徑跑到 actor 迴圈前卡在 `res18↔res4` 逐角色動作指派狀態機(非 opcode 缺失,`last_unimpl=0`);怪物 HP 真扣 + oracle 對拍仍受阻(remake 用 `combat_loop` 確定性編排替代,但那不是原 bytecode 閉環)。
 - **部分 NULL / 未逆 opcode**:opendw `targets[]` 有約 21 個從未逆向的 NULL opcode;remake 已逆出並實作 op_68,其餘約 20 個未補。另在 0x00–0x9F 範圍內,opendw 非 NULL 但 remake 未實作者約 23 個(多為 RPG 系統「動詞」:特殊攻擊、部分技能效果)。
 - **原 runtime 完整覆蓋**:未實作集中在「RPG 系統的動詞」;受阻集中在跨區連通(wrap 樞紐 edge→area 對映,opendw 自身亦 `exit(1)`)與戰鬥真值閉環。
 
-注:`docs/49` 為快照,shop / recruit / progression / ending 等項自快照後已補上對應 ctest(見 §6 測試清單),此處列「快照時點」的缺口。
+注:`docs/assessment/49` 為快照,shop / recruit / progression / ending 等項自快照後已補上對應 ctest(見 §6 測試清單),此處列「快照時點」的缺口。
 
 ---
 
@@ -149,7 +149,7 @@ remake 誠實標示每個機制的真值來源(`docs/47_REMAKE_ASSESSMENT.md` �
 | 全域裸狀態 | 256-byte `game_state` + ~812 處 `word_/data_` 全域 | `vm_state` 封裝 + sink callback 解耦 |
 | 自動化測試 | unit test(`src/tests/` 數支) | **ctest 34**(diff_trace + golden + round-trip + verify_*) |
 
-opcode 數字 drift(報告口徑):remake `kImpl` 實測 **126** 實作;`docs/47` / `docs/49` 寫 117(舊快照);`docs/25` 的 139 是描述 **opendw `targets[]`** 的非 NULL 數(不同口徑)。原 256 槽中 0xA0–0xFF 約 96 個是反組譯時資料段誤植的 NULL artifact,`docs/OPCODE_REFERENCE.md` 明言「不建議嘗試實作這些 opcode」。
+opcode 數字 drift(報告口徑):remake `kImpl` 實測 **126** 實作;`docs/assessment/47` / `docs/assessment/49` 寫 117(舊快照);`docs/reverse-engineering/25` 的 139 是描述 **opendw `targets[]`** 的非 NULL 數(不同口徑)。原 256 槽中 0xA0–0xFF 約 96 個是反組譯時資料段誤植的 NULL artifact,`docs/reverse-engineering/OPCODE_REFERENCE.md` 明言「不建議嘗試實作這些 opcode」。
 
 ctest 數字 drift:原始碼 `grep -c add_test` = **34**;README/docs 內 19/27/32/33 為各時點舊快照,以 34 為現值。
 

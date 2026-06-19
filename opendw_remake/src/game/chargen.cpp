@@ -32,11 +32,11 @@ bool DraftCharacter::dec(int i) {
   return true;
 }
 
-// ── 衍生值(remake 設計 / docs/44;見檔頭)──
+// ── 衍生值(remake 設計 / docs/reverse-engineering/44;見檔頭)──
 int DraftCharacter::derived_hp() const {
   return 10 + static_cast<int>(attr[kStr]) + static_cast<int>(attr[kSpi]);
 }
-int DraftCharacter::derived_stun() const { return derived_hp(); }  // docs/44:HP=Stun
+int DraftCharacter::derived_stun() const { return derived_hp(); }  // docs/reverse-engineering/44:HP=Stun
 int DraftCharacter::derived_power() const {
   return static_cast<int>(attr[kSpi]) + static_cast<int>(attr[kInt]) / 2;
 }
@@ -56,7 +56,7 @@ void wr16(std::array<std::uint8_t, 512>& r, int off, int v) {
   r[off] = static_cast<std::uint8_t>(v & 0xFF);
   r[off + 1] = static_cast<std::uint8_t>((v >> 8) & 0xFF);
 }
-// 名字高位元終止編碼(docs/44 §4 / 對拍 party.cpp read_name):
+// 名字高位元終止編碼(docs/reverse-engineering/44 §4 / 對拍 party.cpp read_name):
 //   每字元 7-bit ASCII,除最後一字元外皆設高位元;最後一字元高位元清除。
 //   寫進 [00..11](12B);名後填 0(不設高位元 → read_name 在名末即止)。
 void write_name(std::array<std::uint8_t, 512>& r, const std::string& name) {

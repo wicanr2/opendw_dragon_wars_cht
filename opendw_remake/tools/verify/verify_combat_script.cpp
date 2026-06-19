@@ -4,7 +4,7 @@
 //  ✅ 驗:原版戰鬥 bytecode 能在 remake VM 上「確定性地」跑——固定 seed + 固定隊伍
 //     + 固定注入鍵(Fight/Attack),跑到攻擊迴圈,兩次執行的指令軌跡 byte-identical;
 //     且全程不踩未實作 opcode(守護 op_89/17/63/69/33-36/18/4D 等戰鬥路徑不回歸)。
-//  ❌ 不驗:逐回合 HP 變化對拍 opendw byte-identical。原因(見 docs/42 §9):
+//  ❌ 不驗:逐回合 HP 變化對拍 opendw byte-identical。原因(見 docs/reverse-engineering/42 §9):
 //     怪物參戰角色(roster)由「res3@0x4c6 遭遇表 + res31 怪物記錄 + RNG」建立的
 //     pipeline 尚未完整逆向(opendw monster_info.cpp 亦只部分 RE),且無「可獨立執行
 //     的 opendw」可對一場完整戰鬥逐位元組對拍。故 combat.cpp 仍為乾淨室 placeholder。
@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
     //   0x0D73 jz 跳過 → **無 STR bonus**。端到端跑出的範圍 = 純骰 roll(descriptor)。
     struct WCase { std::uint8_t desc; const char* label; } wcases[] = {
       {0x00, "1d4"},   // 0b000_00_000
-      {0x21, "2d6"},   // 0b001_00_001(docs/44 §2 範例編碼)
+      {0x21, "2d6"},   // 0b001_00_001(docs/reverse-engineering/44 §2 範例編碼)
       {0x05, "6d4"},   // 0b000_00_101
       {0xA3, "4d20"},  // 0b101_00_011
     };
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
         wc.label, mn, mx, wc.label, lo, hi);
       check(mn == lo && mx == hi, buf);
     }
-    // byte[2] 分支(docs/42 §15 修正:第九輪實作 op_97 load_char_data 後重新端到端驗):
+    // byte[2] 分支(docs/reverse-engineering/42 §15 修正:第九輪實作 op_97 load_char_data 後重新端到端驗):
     //   byte[2]&0x1f == 0:純骰(上方已驗),op_36(÷STR)被 0x0D73 jz 跳過 → 無 STR bonus。
     //   byte[2]&0x1f != 0:**非定值**(§13「定值」結論為 op_97 未實作時腳本在 0x0D7B
     //     load_char_data 早停的假象)。op_97 實作後,byte2!=0 走 0x0D76-0x0D7F:

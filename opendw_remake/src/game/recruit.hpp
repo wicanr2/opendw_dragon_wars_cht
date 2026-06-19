@@ -15,7 +15,7 @@
 //   [remake 設計,明標——招募邏輯 + NPC 屬性 opendw C 未實作,非原版 byte-for-byte]:
 //       • NPC 各項屬性 / HP / 技能 = curated 平衡值(見 recruit.cpp 模板;非萃取自
 //         DATA1 真實 NPC blob,故誠實標為 remake 設計)。名字 grounded(fraterrisus)。
-//       • 隊伍上限 7 槽(docs/44 §1:最多 7 員 record;前 4 主戰、NPC 佔 slot 4-6)。
+//       • 隊伍上限 7 槽(docs/reverse-engineering/44 §1:最多 7 員 record;前 4 主戰、NPC 佔 slot 4-6)。
 //         招募 → append 到隊伍尾(若 < 7);滿 7 → 擋下。
 //       • identifier[77] gate:隊伍中已有同 identifier 的成員 → 不可重複招募。
 //       • 招募點(酒館)由遊戲層(main.cpp / 事件)決定;本模組只管「名單 + 招募動作」。
@@ -30,7 +30,7 @@
 
 namespace dw::game {
 
-// 隊伍上限(docs/44 §1:最多 7 員 record)。
+// 隊伍上限(docs/reverse-engineering/44 §1:最多 7 員 record)。
 inline constexpr int kMaxPartyMembers = 7;
 
 // 可招募的 NPC 模板(名 + 識別碼 + curated 屬性)。

@@ -5,7 +5,7 @@
 #   • grounded(fraterrisus / DATA1):從 bundle/items/items.bin 取「可販售」(price>0)的
 #     真實物品(目前僅 Dragon Stone price=250)。標 "grounded": true。
 #   • curated(remake 設計):標準裝備(劍/盾/各甲),以 fraterrisus 23B 物品欄 bit 佈局
-#     (docs/44 §2)逐位元編碼,價格取攻略 docs/38 量級的合理值。標 "grounded": false。
+#     (docs/reverse-engineering/44 §2)逐位元編碼,價格取攻略 docs/walkthrough/38 量級的合理值。標 "grounded": false。
 #     商店買賣邏輯 opendw C 未實作,故 curated 部分為 remake 設計,非原版 byte-for-byte。
 #
 # 用法:python3 gen_shop_stock.py <bundle_dir>
@@ -15,7 +15,7 @@ import os
 import struct
 import sys
 
-# ── 23B 物品欄 bit 編碼(fraterrisus,docs/44 §2)──────────────────────────────
+# ── 23B 物品欄 bit 編碼(fraterrisus,docs/reverse-engineering/44 §2)──────────────────────────────
 # 11 byte header(88 bit,LSB-first across bytes)+ 12 byte 名(高位元終止)。
 ITEM_TYPE = {
     "general": 0x00, "shield": 0x01, "full_shield": 0x02, "axe": 0x03,
@@ -138,7 +138,7 @@ def main():
         # name_key 用物品自身英文名(i18n items.tsv 可補譯)。
         entries.append({"hex": rec.hex(), "name_key": nm, "grounded": True})
 
-    # 2) curated:標準裝備(remake 設計;價格量級取攻略 docs/38)。
+    # 2) curated:標準裝備(remake 設計;價格量級取攻略 docs/walkthrough/38)。
     #    name_key 用 i18n 鍵(shop_item_*),items.tsv 補繁中。
     curated = [
         # (name_key, 英文名, type, price, av_mod, ac_mod, dmg=(count,sides))
@@ -160,7 +160,7 @@ def main():
     doc = {
         "format": "opendw-shop/1",
         "source": "grounded items from bundle/items/items.bin (fraterrisus/DATA1) + curated standard equipment (remake design)",
-        "spec": "docs/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format); buy/sell logic = remake design (opendw C 未實作商店)",
+        "spec": "docs/reverse-engineering/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format); buy/sell logic = remake design (opendw C 未實作商店)",
         "slot_bytes": 23,
         "note": "grounded=true: real DATA1 item byte-for-byte. grounded=false: remake curated equipment with cleanly encoded prices (M x 10^E).",
         "count": len(entries),

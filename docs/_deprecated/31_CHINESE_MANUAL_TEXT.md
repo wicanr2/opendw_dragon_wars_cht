@@ -4,7 +4,7 @@
 > 已被 **`33_MANUAL_TRANSCRIPTION.md`(視覺精確轉寫)** 與 **`34_READ_PARAGRAPHS.md`** 取代。
 > 手冊文字請一律改參考 33/34;本檔僅供歷史記錄。
 
-> **來源**：`docs/珍066-火龍之戰.rar`（44 頁掃描影像）
+> **來源**：`docs/manual/珍066-火龍之戰.rar`（44 頁掃描影像）
 > **萃取方式**：docker tesseract 4.1.1，語言 `chi_tra+eng`，預處理：灰階 + 二值化 + 2x 放大
 > **狀態**：OCR 初稿完成（2026-06-10），需人工校對
 > **語言**：繁體中文（臺灣版 / 宇峻奧汀 Soft-World）
@@ -25,7 +25,7 @@
 
 ## 頁面 000a
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_000a.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_000a.jpg`
 - **內容描述**：封面 / 書名頁
 - **OCR 文字**：
 
@@ -43,7 +43,7 @@ Dragon Wars
 
 ## 頁面 000b
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_000b.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_000b.jpg`
 - **內容描述**：版權頁 / 出版資訊
 - **OCR 文字**：
 
@@ -106,7 +106,7 @@ BERR IR28~ 3498 PO RON 28-34. KAOHSILING. RO€               : 鍵盤
 
 ## 頁面 001
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_001.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_001.jpg`
 - **內容描述**：遊戲序章 / 火龍傳說
 - **OCR 文字**：
 
@@ -116,7 +116,7 @@ ree    Aa生
 
 ## 頁面 002
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_002.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_002.jpg`
 - **內容描述**：故事背景
 - **OCR 文字**：
 
@@ -202,7 +202,7 @@ Co \O ~J3 ch fe —-
 
 ## 頁面 003
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_003.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_003.jpg`
 - **內容描述**：遊戲流程說明
 - **OCR 文字**：
 
@@ -320,7 +320,7 @@ Enterj 鍵直接入入遊戲。 ( 若要儲存,請確定沒有貼上防寫紙 )
 
 ## 頁面 004
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_004.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_004.jpg`
 - **內容描述**：操作說明
 - **OCR 文字**：
 
@@ -426,7 +426,7 @@ se
 
 ## 頁面 005
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_005.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_005.jpg`
 - **內容描述**：操作說明（續）
 - **OCR 文字**：
 
@@ -496,7 +496,7 @@ ee eae XE HE * FA FAG / Sek 28 Dn Bed > TAR PERS © BE MIR AY
 
 ## 頁面 006
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_006.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_006.jpg`
 - **內容描述**：角色建立
 - **OCR 文字**：
 
@@ -663,7 +663,7 @@ Dragon Wars
 
 ## 頁面 007
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_007.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_007.jpg`
 - **內容描述**：角色建立（續）
 - **OCR 文字**：
 
@@ -769,7 +769,7 @@ Misc magic           查看其他魔法
 
 ## 頁面 008
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_008.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_008.jpg`
 - **內容描述**：遊戲介面介紹
 - **OCR 文字**：
 
@@ -839,7 +839,7 @@ La
 
 ## 頁面 009
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_009.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_009.jpg`
 - **內容描述**：遊戲介面介紹（續）
 - **OCR 文字**：
 
@@ -903,7 +903,7 @@ BUR] o 不過很 重要的一點 :你必須 記住你的際 貞們所擁有的�
 
 ## 頁面 010
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_010.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_010.jpg`
 - **內容描述**：章節標題 / 城市介紹
 - **OCR 文字**：
 
@@ -982,7 +982,7 @@ RRR PUR BEAR co不過傳說擁有者的師 傳還存活在這世上,因此只要
 
 ## 頁面 011
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_011.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_011.jpg`
 - **內容描述**：城市 / 酒保傳聞
 - **OCR 文字**：
 
@@ -1070,7 +1070,7 @@ D.waC Item):
 
 ## 頁面 012
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_012.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_012.jpg`
 - **內容描述**：道具店 / 物品描述
 - **OCR 文字**：
 
@@ -1167,7 +1167,7 @@ ef      yf
 
 ## 頁面 013
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_013.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_013.jpg`
 - **內容描述**：物品描述（續）
 - **OCR 文字**：
 
@@ -1205,7 +1205,7 @@ fi AFB ( Power ) : 6 0
 
 ## 頁面 014
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_014.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_014.jpg`
 - **內容描述**：法術說明
 - **OCR 文字**：
 
@@ -1237,7 +1237,7 @@ MR ( Effect): +2 AC                                       1召喚風元索 (Air 
 
 ## 頁面 015
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_015.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_015.jpg`
 - **內容描述**：法術說明（續）
 - **OCR 文字**：
 
@@ -1273,7 +1273,7 @@ me ( Effect): +2 AC .                                 wR (Effect ):使用力量�
 
 ## 頁面 016
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_016.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_016.jpg`
 - **內容描述**：戰鬥系統
 - **OCR 文字**：
 
@@ -1329,7 +1329,7 @@ Aas ( Target ) : —faRE
 
 ## 頁面 017
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_017.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_017.jpg`
 - **內容描述**：戰鬥系統（續）
 - **OCR 文字**：
 
@@ -1397,7 +1397,7 @@ FR BE ( Range ) : 400K ©
 
 ## 頁面 018
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_018.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_018.jpg`
 - **內容描述**：怪物圖鑑
 - **OCR 文字**：
 
@@ -1471,7 +1471,7 @@ SK
 
 ## 頁面 019
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_019.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_019.jpg`
 - **內容描述**：怪物圖鑑（續）
 - **OCR 文字**：
 
@@ -1506,7 +1506,7 @@ wie ( Effect ):+15 Dex。
 
 ## 頁面 020
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1238_020.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1238_020.jpg`
 - **內容描述**：怪物圖鑑（續）
 - **OCR 文字**：
 
@@ -1516,7 +1516,7 @@ wie ( Effect ):+15 Dex。
 
 ## 頁面 001
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_001.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_001.jpg`
 - **內容描述**：第二冊 開始
 - **OCR 文字**：
 
@@ -1526,7 +1526,7 @@ wie ( Effect ):+15 Dex。
 
 ## 頁面 002
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_002.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_002.jpg`
 - **內容描述**：章節標題
 - **OCR 文字**：
 
@@ -1578,7 +1578,7 @@ ft
 
 ## 頁面 003
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_003.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_003.jpg`
 - **內容描述**：新章節 / 劇情段落
 - **OCR 文字**：
 
@@ -1667,7 +1667,7 @@ ia [last > 內容不外乎見串納達或是一些不堪入日的春宮畫。總
 
 ## 頁面 004
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_004.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_004.jpg`
 - **內容描述**：劇情說明
 - **OCR 文字**：
 
@@ -1741,7 +1741,7 @@ Bek Ue aN th P\— — RFR > a BS RAR RAE IL ft PS BT AES BI的
 
 ## 頁面 005
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_005.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_005.jpg`
 - **內容描述**：地圖說明
 - **OCR 文字**：
 
@@ -1826,7 +1826,7 @@ in
 
 ## 頁面 006
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_006.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_006.jpg`
 - **內容描述**：地圖說明（續）
 - **OCR 文字**：
 
@@ -1917,7 +1917,7 @@ ny
 
 ## 頁面 007
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_007.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_007.jpg`
 - **內容描述**：迷宮 / 地下城
 - **OCR 文字**：
 
@@ -2003,7 +2003,7 @@ IsIes )。,這裏並不屬於
 
 ## 頁面 008
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_008.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_008.jpg`
 - **內容描述**：迷宮 / 地下城（續）
 - **OCR 文字**：
 
@@ -2105,7 +2105,7 @@ SF A ATLA MIS To”
 
 ## 頁面 009
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_009.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_009.jpg`
 - **內容描述**：道具 / 裝備
 - **OCR 文字**：
 
@@ -2193,7 +2193,7 @@ OR US BU Sp >並且開始工作。軍際並不供應你的食物或任何訓練�
 
 ## 頁面 010
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_010.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_010.jpg`
 - **內容描述**：道具 / 裝備（續）
 - **OCR 文字**：
 
@@ -2286,7 +2286,7 @@ o 傢這樣當 個奴隸離開這裡是很可悲,可是至少總比餓死在波�
 
 ## 頁面 011
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_011.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_011.jpg`
 - **內容描述**：特殊物品
 - **OCR 文字**：
 
@@ -2322,7 +2322,7 @@ Ironhead)由混亂中出現。“我必須謝謝你 ,你的確為清除拜占儂
 
 ## 頁面 012
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_012.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_012.jpg`
 - **內容描述**：特殊物品（續）
 - **OCR 文字**：
 
@@ -2417,7 +2417,7 @@ F WUBH RE o HAS! ARRAS > fb— me ERR oo我把我的知識給你,希望你能
 
 ## 頁面 013
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_013.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_013.jpg`
 - **內容描述**：法術一覽
 - **OCR 文字**：
 
@@ -2506,7 +2506,7 @@ o” 龍的撞擊聲仿來愈大,它開始用頭擅思牆壁而使地牢發出�
 
 ## 頁面 014
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_014.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_014.jpg`
 - **內容描述**：法術一覽（續）
 - **OCR 文字**：
 
@@ -2607,7 +2607,7 @@ Salvatlion )已經好有幾個小時了, 可是
 
 ## 頁面 015
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_015.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_015.jpg`
 - **內容描述**：法術一覽（續）
 - **OCR 文字**：
 
@@ -2704,7 +2704,7 @@ ee » 火氏和其他可怖的刑兵。 Be AE HET A Sk GE A
 
 ## 頁面 016
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_016.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_016.jpg`
 - **內容描述**：結局段落
 - **OCR 文字**：
 
@@ -2779,7 +2779,7 @@ AE o
 
 ## 頁面 017
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_017.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_017.jpg`
 - **內容描述**：結局段落（續）
 - **OCR 文字**：
 
@@ -2892,7 +2892,7 @@ KS
 
 ## 頁面 018
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_018.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_018.jpg`
 - **內容描述**：附錄 / 表格
 - **OCR 文字**：
 
@@ -2971,7 +2971,7 @@ HE ER PE BUTE RK PB HSI ARE 0 A URERB IER» BE         的地方。 你們甚至
 
 ## 頁面 019
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_019.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_019.jpg`
 - **內容描述**：附錄 / 表格（續）
 - **OCR 文字**：
 
@@ -3072,7 +3072,7 @@ ane
 
 ## 頁面 020
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_020.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_020.jpg`
 - **內容描述**：附錄 / 表格（續）
 - **OCR 文字**：
 
@@ -3125,7 +3125,7 @@ LS
 
 ## 頁面 021
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_021.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_021.jpg`
 - **內容描述**：索引
 - **OCR 文字**：
 
@@ -3135,7 +3135,7 @@ LS
 
 ## 頁面 022
 
-- **掃描檔**：`docs/chinese_manual_images/2F3_SCAN1239_022.jpg`
+- **掃描檔**：`docs/manual/chinese_manual_images/2F3_SCAN1239_022.jpg`
 - **內容描述**：**空的**
 - **OCR 文字**：
 

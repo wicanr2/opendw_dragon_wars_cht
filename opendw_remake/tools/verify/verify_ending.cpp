@@ -8,7 +8,7 @@
 //
 // 誠實界定:Namtar Boss 屬性 + 自由之劍祝福加成 = remake 平衡設計(非原版逐欄真值;
 //   原版 op_8A 怪物 id 為戰鬥設定流程產物 0x03,無乾淨 res31 record,見 combat.hpp 檔頭)。
-//   單次攻擊公式(命中/傷害)= bytecode 真值(resolve_attack,docs/42 §11/§12)。
+//   單次攻擊公式(命中/傷害)= bytecode 真值(resolve_attack,docs/reverse-engineering/42 §11/§12)。
 //   結局序列為 remake 組合(bundled 段落 + area27 敘事,非原版單一 script,見 main.cpp
 //   enter_ending);其文字渲染另由 render_endgame / app --ending 截圖佐證,此 ctest 只守
 //   「可勝 + 確定性」這個可機械化驗證的核心。

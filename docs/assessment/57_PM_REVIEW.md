@@ -6,7 +6,7 @@
 > | 升級/技能檢定/X 配點、使用物品、裝備穿脫 ⛔ | ✅ 已實作 | PR #127 |
 > | 商店買賣、酒館招募 ⛔ | ✅ 已實作 | PR #129 |
 > | 特殊攻擊(強力一擊/卸武裝/前進/快速)+ Dodge ⛔ | ✅ 已實作 | PR #137 |
-> | 戰鬥外施法、召喚、工具法術 ⛔ | ✅ 已實作(grounded fraterrisus 攻略 docs/58) | PR #137 |
+> | 戰鬥外施法、召喚、工具法術 ⛔ | ✅ 已實作(grounded fraterrisus 攻略 docs/gameplay/58) | PR #137 |
 > | 開門/破密門、陷阱(真實位置) ⛔ | 🟡 已實作(remake 設計 + 陷阱原版位置) | PR #135 / #140 |
 > | quest gate / 結局 / 跨區連通 ⛔/🔒 | 🟡 已實作(連通 38/40、gate opcode op_6B/8D) | PR #121/#122/#143 |
 > | **res3 全戰鬥閉環真值化 + 武器 STR bonus** 🔒 | ✅ **解除**(actor 迴圈、怪物 HP 實扣、武器 STR bonus=0 定論) | PR #141 |
@@ -140,10 +140,10 @@ CRPG 的樂趣公式 = **探索的未知 × 戰鬥的策略 × 成長的正回�
 
 ## 附:本報告實據(絕對路徑)
 
-- 原版面貌:`docs/33_MANUAL_TRANSCRIPTION.md`、`docs/38_SOFTWORLD_WALKTHROUGH.md`、`docs/39_SOFTWORLD_FULLTEXT_AND_MAPS.md`、`docs/44_DATA_FORMATS_AND_MECHANICS.md`、`docs/43_DOS_PLAYTEST.md`。
-- remake 現況:`docs/47_REMAKE_ASSESSMENT.md`(可玩性 62/100,已過時)、`docs/48_COMPLETABILITY_ROADMAP.md`、`docs/49_GAP_AUDIT.md`(逐系統 ✅/🟡/⛔/🔒)、`docs/54_WORLDMAP_REACHABILITY_AUDIT.md`(連通 38/40)、`docs/55_MAINLINE_QUEST_GATE_AND_ENDGAME.md`(gate + 結局)。
+- 原版面貌:`docs/manual/33_MANUAL_TRANSCRIPTION.md`、`docs/walkthrough/38_SOFTWORLD_WALKTHROUGH.md`、`docs/walkthrough/39_SOFTWORLD_FULLTEXT_AND_MAPS.md`、`docs/reverse-engineering/44_DATA_FORMATS_AND_MECHANICS.md`、`docs/reverse-engineering/43_DOS_PLAYTEST.md`。
+- remake 現況:`docs/assessment/47_REMAKE_ASSESSMENT.md`(可玩性 62/100,已過時)、`docs/assessment/48_COMPLETABILITY_ROADMAP.md`、`docs/assessment/49_GAP_AUDIT.md`(逐系統 ✅/🟡/⛔/🔒)、`docs/gameplay/54_WORLDMAP_REACHABILITY_AUDIT.md`(連通 38/40)、`docs/gameplay/55_MAINLINE_QUEST_GATE_AND_ENDGAME.md`(gate + 結局)。
 - 程式 / 驗證:`opendw_remake/src/`(combat/party/chargen/equipment/spells)、`opendw_remake/CMakeLists.txt`(**ctest 22 項**,含 `verify_ending`)、`opendw_remake/tools/verify/`(`probe_namtar_balance.cpp` 證 Namtar 屬性為 remake 平衡、`verify_ending.cpp`、`trace_quest_gates.cpp`)。
 - showcase:`README.md`「可從頭玩到結局」段(建角 / 終戰 Namtar / 結局截圖)。
 - 譯名:`CONTEXT.md`(Namtar→納達、Irkalla→伊爾卡拉、波卡城/瑪根地底世界等官方手冊對齊)。
 
-> **誠實聲明**:本檔還原度百分比為**玩家可感體驗加權估值**(非逐 byte 量測),依據 docs/47/49/54/55 已逐項驗證的 ✅/🟡/⛔ 狀態加權推得,供產品決策用;工程真值請以對應 ctest 與 docs/42–55 的逐項對拍為準。
+> **誠實聲明**:本檔還原度百分比為**玩家可感體驗加權估值**(非逐 byte 量測),依據 docs/assessment/47/49/54/55 已逐項驗證的 ✅/🟡/⛔ 狀態加權推得,供產品決策用;工程真值請以對應 ctest 與 docs/reverse-engineering/42–55 的逐項對拍為準。

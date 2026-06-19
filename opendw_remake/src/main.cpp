@@ -1648,7 +1648,7 @@ int main(int argc, char** argv) {
   };
 
   // 640×480 模式:像素層固定 ×2(scale=2),故 scale 概念對文字層 = 2;字級「解綁」
-  //   為固定原生 px(CJK 24 / UI 16 / 標題 48),不隨 scale 縮放(這正是 docs/47 方案 3 要點)。
+  //   為固定原生 px(CJK 24 / UI 16 / 標題 48),不隨 scale 縮放(這正是 docs/assessment/47 方案 3 要點)。
   // 一般 scale 模式:原生字級隨 scale 等比(基準 scale=3)。
   const int eff_scale = win640 ? 2 : scale;   // 文字/版面虛擬座標換算用的有效倍率
   const int PX_TITLE = win640 ? 48 : 48 * scale / 3;   // 標題「火龍之戰」
@@ -1700,7 +1700,7 @@ int main(int argc, char** argv) {
     add_lang_badge();
   };
 
-  // ── 探索/戰鬥畫面 UI chrome(docs/59「該修」#1/#2/#3,往 1990 原版靠攏)───────────
+  // ── 探索/戰鬥畫面 UI chrome(docs/gameplay/59「該修」#1/#2/#3,往 1990 原版靠攏)───────────
   //
   // 誠實標示(grounding):原版的藍石磚邊框與金色「Dragon Wars」立繪 logo 是 DRAGON.COM
   //   內的 UI piece 資源(com 0x6AE0,opendw ui.c:798 `ui_pieces`)。本專案 bundle **未**抽出
@@ -1737,7 +1737,7 @@ int main(int argc, char** argv) {
   };
   // 探索/戰鬥共用框架。
   //   優先:原版 ui_pieces(石磚邊框 + Dragon Wars 立繪 logo + pillar),對拍 opendw
-  //         draw_ui_piece/ui_draw/ui_header_draw,byte-for-byte 真值(docs/59 收尾)。
+  //         draw_ui_piece/ui_draw/ui_header_draw,byte-for-byte 真值(docs/gameplay/59 收尾)。
   //   退回(ui_pieces.bin 缺失時):藍色實線外框 + 文字 logo 近似(舊行為)。
   //   兩者皆只畫 viewport(160×136 @ (16,8))外圍 + 右側面板區,不碰 viewport_memory
   //   (render_sweep 154 case 鎖定的像素),故不影響第一人稱對拍。
@@ -1920,7 +1920,7 @@ int main(int argc, char** argv) {
 
   // ── 結局序列(S_ENDING)──────────────────────────────────────────────────
   // 誠實標示:**remake 組合結局,非原版單一 script**。原版「勝利後結局畫面」由戰鬥
-  //   流程/DRAGON.COM 主控觸發,不在任何 level event script 中(掃全 40 關證實,docs/55
+  //   流程/DRAGON.COM 主控觸發,不在任何 level event script 中(掃全 40 關證實,docs/gameplay/55
   //   §3.3),逆不出獨立結局 script。本序列以「已 bundle 的真實素材」組合:
   //     ① area27 結局敘事(events.tsv 的真實 emit 鍵:納達現身/鐵頭巴克/決戰平原)
   //     ② 結局段落(手冊段落 131/132/135/137/138,攻略 §5.20 註明的決戰/結局段落;
@@ -2549,7 +2549,7 @@ int main(int argc, char** argv) {
   };
   // ── 遭遇畫面:怪物 index → 可用 bundle sprite。──
   // 誠實揭露:res31 record byte[0x0B] 推出的 sprite 編號與實際 sprite 資源有偏差
-  //   (docs/26_MONSTERS_AND_SPRITES.md 已記:需逐一視覺核對),故此處用「怪物名 → 已
+  //   (docs/reverse-engineering/26_MONSTERS_AND_SPRITES.md 已記:需逐一視覺核對),故此處用「怪物名 → 已
   //    視覺核對過的 bundle sprite」對照表;查無則回退第一個 spider/wolf,再無則畫空框。
   //   sprite 圖渲染路徑本身(.spr indexed blit)已由 sprite_dump golden 對拍 oracle。
   auto sprite_for_monster = [&](const std::string& name,
@@ -2570,7 +2570,7 @@ int main(int argc, char** argv) {
     if (sprite_res > 0 && !theme.sprite_dir.empty()) {
       if (auto s = render::Sprite::load(dir + std::to_string(sprite_res) + ".spr")) return s;
     }
-    // 2) 名稱關鍵字 → 已核對 sprite 檔(視覺核對來源:docs/26 contact sheet;DOS / Amiga 缺檔回退)。
+    // 2) 名稱關鍵字 → 已核對 sprite 檔(視覺核對來源:docs/reverse-engineering/26 contact sheet;DOS / Amiga 缺檔回退)。
     if (name.find("Spider") != std::string::npos) return load("196_spider");
     if (name.find("Wolf") != std::string::npos)   return load("168_wolf");
     if (name.find("Dog") != std::string::npos || name.find("hound") != std::string::npos)
@@ -2680,7 +2680,7 @@ int main(int argc, char** argv) {
                  enc.group_loop->monsters().at(0).hp, combat_seed);
   };
   // 把 CombatLoop 累積的新事件轉成在地化戰報行,追加進 enc.log。
-  //   DOS 格式(docs/43 §11):
+  //   DOS 格式(docs/reverse-engineering/43 §11):
   //     命中:「{攻擊者} 攻擊 {目標},命中 N 點傷害[,使其暈眩][,將其擊倒]。」
   //     落空:「{攻擊者} 攻擊 {目標},落空。」
   //   以 tr() 翻可翻片段(攻擊/命中/點傷害/落空/使其暈眩/將其擊倒/怪名),組成整行。
@@ -2989,7 +2989,7 @@ int main(int argc, char** argv) {
       }
     }
     // 怪物圖:畫進 framebuffer (16,8),裁切限制在 160×136 viewport 框內
-    //   (docs/59 #4:避免立繪溢出蓋到右側面板)。clip = [16,176) × [8,144)。
+    //   (docs/gameplay/59 #4:避免立繪溢出蓋到右側面板)。clip = [16,176) × [8,144)。
     // ── idle 呼吸 + 受擊閃白(單格程序化動畫;無真動畫格,見 EncounterState::hit_flash 註)──
     //   呼吸:y 以三角波 ±1px 緩慢起伏(週期 ~48 幀);headless 同 anim_tick → dump 相位穩定。
     //   受擊:hit_flash>0 期間立繪整體閃白(index 1),最後 1px 著地後回正常立繪。
@@ -3021,10 +3021,10 @@ int main(int argc, char** argv) {
       for (int x = 16; x < 16 + 160; ++x) { fb.put(x, 8, 8); fb.put(x, 8 + 135, 8); }
       for (int y = 8; y < 8 + 136; ++y) { fb.put(16, y, 8); fb.put(16 + 159, y, 8); }
     }
-    // UI chrome(藍外框 + logo;docs/59 #1/#2)。畫在 viewport / 面板框外,不蓋立繪。
+    // UI chrome(藍外框 + logo;docs/gameplay/59 #1/#2)。畫在 viewport / 面板框外,不蓋立繪。
     draw_explore_chrome();
     // 怪群描述(i18n;viewport 上方):「N 隻 {怪名}」(存活/總數)。單怪時只顯示怪名。
-    //   白字對齊原版場景/怪名色(docs/59 #6)。
+    //   白字對齊原版場景/怪名色(docs/gameplay/59 #6)。
     if (enc.group && enc.group_loop && enc.mon_count > 1) {
       char gbuf[128];
       // zh-TW:「6 隻 禁衛軍(存活 4)」;en passthrough:「6 King's Guard (4 left)」。
@@ -3038,7 +3038,7 @@ int main(int argc, char** argv) {
     // 右側隊伍狀態面板(沿用 party_panel)。
     party.draw_status_panel(fb, tl, PX_UI);
     add_lang_badge();
-    // 底部訊息列(原版:viewport 下方白框)。先畫框底,選單/戰報文字疊在框內。(docs/59 #3)
+    // 底部訊息列(原版:viewport 下方白框)。先畫框底,選單/戰報文字疊在框內。(docs/gameplay/59 #3)
     draw_msg_strip("", 7);
     // 選單列(熱鍵對齊原版戰鬥選單資源 Section 0x12:Fight / Run + 施咒 C),移進訊息列。
     int menu_y = kMsgStripY0 + 3;
@@ -3144,13 +3144,13 @@ int main(int argc, char** argv) {
     // 右側隊伍狀態面板(同 fp 模式;像素層狀態條 + 文字層角色名)。
     // 段落 overlay 近全螢幕 → 隱藏面板/關卡名,避免文字層名字穿透蓋在段落上。
     if (!para.active) {
-      draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/59 #1/#2)
+      draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/gameplay/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/59 #6)
+      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/gameplay/59 #6)
     }
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框)。訊息列獨立,不擠進原本的提示位置。
-    // (docs/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
+    // (docs/gameplay/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
       draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
@@ -3206,12 +3206,12 @@ int main(int argc, char** argv) {
     //   像素層 = 狀態條(HP/暈眩/法力);文字層 = 角色名(PX_UI 字級)。
     // 段落 overlay 近全螢幕 → 隱藏面板/關卡名,避免文字層名字穿透蓋在段落上。
     if (!para.active) {
-      draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/59 #1/#2)
+      draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/gameplay/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/59 #6)
+      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/gameplay/59 #6)
     }
     add_lang_badge();
-    // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/59 #3)
+    // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/gameplay/59 #3)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
       draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
@@ -4071,8 +4071,8 @@ int main(int argc, char** argv) {
         if (level) {
           int tv = level->tile(px, py);
           // ── 終戰 Namtar:area27(尼塞山腹)的 op_8A combat encounter 格(tile 0x18/0x19)──
-          //   原版這兩格是 op_8A 遭遇(probe_encounter_id 實測;docs/55 §3.2)。res3 全戰鬥閉環
-          //   卡遊戲層 context(docs/42),故 remake 改接自有的 combat_loop:踩格 → begin_namtar
+          //   原版這兩格是 op_8A 遭遇(probe_encounter_id 實測;docs/gameplay/55 §3.2)。res3 全戰鬥閉環
+          //   卡遊戲層 context(docs/reverse-engineering/42),故 remake 改接自有的 combat_loop:踩格 → begin_namtar
           //   (隊伍 vs Namtar Boss)。誠實標示:Boss 屬性/祝福 = remake 設計(combat.hpp)。
           if (current_area == 27 && (tv == 0x18 || tv == 0x19) && tv != last_event_tile) {
             last_event_tile = tv;

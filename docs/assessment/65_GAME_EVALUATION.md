@@ -3,7 +3,7 @@
 > 評估日期:2026-06-19。分支:`docs/game-evaluation`。
 > 對象:`opendw_remake/`(C++20 / SDL2 重製《火龍之戰》Dragon Wars, Interplay 1989/90)。
 > 方法:**唯讀**。全程 docker(`dwsdl` 跑遊戲、`dwimg` 轉圖),`SDL_VIDEODRIVER=dummy` / `SDL_AUDIODRIVER=dummy` headless,逐系統實跑 + 目視 dump。截圖在 `../media/assessment/eval65/`。
-> 基準對照:`../../../docs/57_PM_REVIEW.md`(2026-06-16 PM review,當時整體還原度 ~45–50%)。
+> 基準對照:`../../../docs/assessment/57_PM_REVIEW.md`(2026-06-16 PM review,當時整體還原度 ~45–50%)。
 > 誠實分級沿用既有四級:**bytecode 真值** / **best-fit** / **remake 設計(grounded 手冊)** / **受阻**。
 
 ---
@@ -122,11 +122,11 @@
 
 ---
 
-## 3. 與上次 PM review(docs/57)逐項對比
+## 3. 與上次 PM review(docs/gameplay/57)逐項對比
 
 上次 review 列 §2 逐系統表;本次重新評估(✅=已關閉 / 🟡=部分 / ⛔=仍缺):
 
-| 系統 | docs/57 還原度 | 本次 | 變化關鍵 |
+| 系統 | docs/gameplay/57 還原度 | 本次 | 變化關鍵 |
 |---|:---:|:---:|---|
 | 探索 / 世界 | 🟡 70% | 🟡 **75%** | 開門/破密門/陷阱已實作(remake 設計);area 0 automap bug 仍在 |
 | 戰鬥 | 🟡 55% | 🟡 **65%** | 4 特殊攻擊 + 閃避 + 施法補齊;怪物程序化動畫;res3 閉環仍受阻 |
@@ -143,7 +143,7 @@
 
 **重算 §2.1 量化(玩家可感體驗加權):**
 
-| 體驗構面 | 原版佔比 | docs/57 達成 | 本次達成 | 本次加權 |
+| 體驗構面 | 原版佔比 | docs/gameplay/57 達成 | 本次達成 | 本次加權 |
 |---|:---:|:---:|:---:|:---:|
 | 探索迷宮 + 自動地圖 | 25% | 70% | 75% | 18.8% |
 | 戰鬥(指令 + 數值手感) | 20% | 55% | 65% | 13.0% |
@@ -153,7 +153,7 @@
 | 招募 / 隊伍構築 | 5% | 0% | 75% | 3.8% |
 | **合計** | 100% | **~40%** | | **~66%** |
 
-加上四主題/音訊/熱鍵屬「超原版加值」不計入原版佔比,故**整體可玩內容還原度約 66–68%**(docs/57 §5 預期「A+B 後可拉到 65–70%」,**已達標**)。
+加上四主題/音訊/熱鍵屬「超原版加值」不計入原版佔比,故**整體可玩內容還原度約 66–68%**(docs/gameplay/57 §5 預期「A+B 後可拉到 65–70%」,**已達標**)。
 
 ---
 
@@ -192,13 +192,13 @@
 | 項目 | 狀態 | 出處 |
 |---|---|---|
 | **X68000 標題(TITLE.PKH)** | **暫時放棄**(四輪 + 全程式模擬仍對角斜紋;PKH codec/GVRAM blit/呼叫鏈已逆出,頂部 ~190px 收斂、藝術區 layout 對不上)→ X68000 主題標題回退 DOS res29 | `reference/64_X68K_PKH_LESSONS.md` |
-| **怪物逐回合 HP vs oracle** | 受阻(res3 全戰鬥閉環 op_89 動作指派卡點,無法 byte-diff);combat_loop 為 remake 設計(同真值公式) | docs/57 R2、`42_COMBAT_BYTECODE.md` |
-| **怪物屬性(21B blob)** | AV/DV/STR = bytecode 真值;完整 HP/AC 暫定 | docs/57 R3 |
-| **武器 STR bonus** | best-fit(self-modifying-code 矛盾未解,定論 bonus=0) | docs/57 R4 |
-| **Phoebus(area 6)/ area 33** | 資料層隔離分量進不去;連通 38/40 靠 remake 慣例 | docs/57 R5 |
-| **物品 gate set 來源** | 逆不出(quest「取得道具→設旗標」端) | docs/57 R6 |
+| **怪物逐回合 HP vs oracle** | 受阻(res3 全戰鬥閉環 op_89 動作指派卡點,無法 byte-diff);combat_loop 為 remake 設計(同真值公式) | docs/gameplay/57 R2、`42_COMBAT_BYTECODE.md` |
+| **怪物屬性(21B blob)** | AV/DV/STR = bytecode 真值;完整 HP/AC 暫定 | docs/gameplay/57 R3 |
+| **武器 STR bonus** | best-fit(self-modifying-code 矛盾未解,定論 bonus=0) | docs/gameplay/57 R4 |
+| **Phoebus(area 6)/ area 33** | 資料層隔離分量進不去;連通 38/40 靠 remake 慣例 | docs/gameplay/57 R5 |
+| **物品 gate set 來源** | 逆不出(quest「取得道具→設旗標」端) | docs/gameplay/57 R6 |
 | **Amiga 透視 / 音樂、X68000 3D/END** | Amiga 牆面已逆出可用;Amiga 68k 音樂播放器、X68000 .PKH 3D/END 受阻 | `reference/61_MULTIVERSION_ASSETS.md` |
-| **非戰鬥技能檢定觸發點** | skill_check 機制已實作,但「在哪個格觸發哪個檢定」受 walking-engine 未反編所阻 | docs/57、`gameplay/59` |
+| **非戰鬥技能檢定觸發點** | skill_check 機制已實作,但「在哪個格觸發哪個檢定」受 walking-engine 未反編所阻 | docs/gameplay/57、`gameplay/59` |
 | **音訊精確波形 / 原版音樂** | PCM 取樣為觀測真值;事件對映 = remake 設計;PC speaker 音符序列 / Amiga 68k 音樂未還原 | `assets/bundle/audio/README.md` |
 
 受阻項多為「深水區真值」(原版 oracle 或架構所阻),已誠實記錄;不影響可玩性,只影響「100% bytecode 真值」的宣稱上限。
@@ -225,7 +225,7 @@
 ## 附:本報告實據
 
 - 評估截圖(34 張):`../media/assessment/eval65/`(本次 headless dump)+ `../media/screenshots/grow_levelup.png`/`grow_alloc.png`(升級/配點 UI 既有證據)。
-- 基準:`../../../docs/57_PM_REVIEW.md`(2026-06-16,~45–50%)。
+- 基準:`../../../docs/assessment/57_PM_REVIEW.md`(2026-06-16,~45–50%)。
 - 視覺稽核:`60_DOS_VS_REMAKE_VISUAL.md`(三處真缺口)。
 - 多版本素材 / 主題:`../reference/61_MULTIVERSION_ASSETS.md`、`../reference/62_VGA256_THEME.md`、`../reference/64_X68K_PKH_LESSONS.md`。
 - 音訊:`assets/bundle/audio/README.md`、`src/audio/sound.{hpp,cpp}`。
@@ -233,4 +233,4 @@
 - 操作 / headless 旗標:`../engine/CONTROLS.md`。
 - 驗證:容器內乾淨重建 `ctest` **34/34 全綠**;所有測項 exit 0、無 crash。
 
-> **誠實聲明**:百分比為玩家可感體驗加權估值(非逐 byte 量測),依逐系統實跑 + 目視 dump 的 PASS / 觀察狀態加權推得,供產品決策用;工程真值請以對應 ctest 與 docs/42–55 的逐項對拍為準。
+> **誠實聲明**:百分比為玩家可感體驗加權估值(非逐 byte 量測),依逐系統實跑 + 目視 dump 的 PASS / 觀察狀態加權推得,供產品決策用;工程真值請以對應 ctest 與 docs/reverse-engineering/42–55 的逐項對拍為準。

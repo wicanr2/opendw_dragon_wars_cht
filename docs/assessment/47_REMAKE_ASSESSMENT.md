@@ -59,7 +59,7 @@ remake 採**雙層渲染**(ADR 0002):像素層 320×200 indexed framebuffer 整�
 | opcode 實作數 | 已從 R1 初期 15/256 推進到約 **117/256**(`src/vm/interpreter.cpp` kImpl 表,batch 1–12) | grep `op_` 實作表 |
 | 逐指令差異測試 | **成立且一致**:同段 bytecode 丟 opendw(oracle)與 remake VM,`(pc,op,r2,r4,flags,mode)` 逐指令比對一致 | `trace_remake`、`vm_selftest`(ctest)、README/READINESS 所述 `diff_trace.sh`(註:該 shell 腳本現於 repo 未見,屬文件參考漂移,但 trace harness 本身在用) |
 | 覆蓋類別 | 模式/算術(含乘除 op_33–36)/旗標/邏輯/比較/跳轉/loop/game_state/bit/字串輸出/跨資源 call(op_58/59/5C)/角色資料皆有 | interpreter.cpp |
-| 無 oracle 的 opcode | op_43 / 0x5F / 0x60 / 0x63 在 opendw 為 NULL(targets[] 裸名無實作);另約 22 個 NULL opcode。這些需 ASM/spec 自實作 + 人工驗,**不能純 diff** | READINESS §風險、docs/42 §5 |
+| 無 oracle 的 opcode | op_43 / 0x5F / 0x60 / 0x63 在 opendw 為 NULL(targets[] 裸名無實作);另約 22 個 NULL opcode。這些需 ASM/spec 自實作 + 人工驗,**不能純 diff** | READINESS §風險、docs/reverse-engineering/42 §5 |
 
 **評語**:把「重寫」從賭一把變成可機械化驗證,是這專案方法論的核心價值,已端到端證明。扣分:(1) 戰鬥腳本路徑卡在 `op_89` 動作指派狀態機(res3@0x08b6 的逐角色完成標記未逆出),導致完整戰鬥 VM 在互動主迴圈跑不通;(2) README 仍寫「56/256」與 `diff_trace.sh`,與現況(117 opcode、腳本未見)有文件漂移。
 
@@ -69,9 +69,9 @@ remake 採**雙層渲染**(ADR 0002):像素層 320×200 indexed framebuffer 整�
 
 | 公式 / 資料 | 分級 | 證據 |
 |-------------|------|------|
-| To-hit 命中(roll=1d16+3,HIT ⟺ roll ≤ 13+AV−(DV+AC)) | **bytecode 真值** | docs/42 §12;掃 AV/def 跑 res3 bytecode @0x0F73,5 case PASS;`combat.cpp` 常數 |
-| 徒手傷害(dmg=骰+floor(STR/5),無 ×3/2) | **bytecode 真值** | docs/42 §11(自改碼修復後雙向確認);`combat.cpp` `str_damage_bonus` |
-| 武器主傷害骰(descriptor=op_68 byte[8];sides 表 [d4..d100]) | **bytecode 真值** | docs/42 §13 + op_68 原始反組譯;descriptor 0x00/0x21/0x05/0xA3 對拍 |
+| To-hit 命中(roll=1d16+3,HIT ⟺ roll ≤ 13+AV−(DV+AC)) | **bytecode 真值** | docs/reverse-engineering/42 §12;掃 AV/def 跑 res3 bytecode @0x0F73,5 case PASS;`combat.cpp` 常數 |
+| 徒手傷害(dmg=骰+floor(STR/5),無 ×3/2) | **bytecode 真值** | docs/reverse-engineering/42 §11(自改碼修復後雙向確認);`combat.cpp` `str_damage_bonus` |
+| 武器主傷害骰(descriptor=op_68 byte[8];sides 表 [d4..d100]) | **bytecode 真值** | docs/reverse-engineering/42 §13 + op_68 原始反組譯;descriptor 0x00/0x21/0x05/0xA3 對拍 |
 | 武器 STR bonus | **best-fit** | self-modifying-code 矛盾、無完整戰鬥 oracle;保留 +floor(STR/5) 守 DOS 校準(`combat.cpp` 註明) |
 | 怪物屬性對映(21 bytes blob → HP/AV/DV/骰/AC) | **remake 暫定** | opendw monster_info 未完整逆向;`combat.hpp` 逐欄註「暫定」 |
 | 完整迴圈(4 人 vs 怪群、多回合、勝負、XP +80) | remake 設計(確定性) | `combat_loop.cpp`;`verify_combat`、`verify_combat_loop`、`verify_combat_script` |
@@ -82,8 +82,8 @@ remake 採**雙層渲染**(ADR 0002):像素層 320×200 indexed framebuffer 整�
 
 ## 5. 法術 / 道具系統 — **8.5 / 10**
 
-- **法術(8/10)**:61 條(0x00–0x3C)涵蓋五大 school,9 種效果型 + 4 種控制類(`spells.cpp:29–172`)。效果值 grounded 手冊 docs/33,**非臆造**;但施法結算公式**非 opendw byte-for-byte 移植**(原版 bytecode 未逆出),屬 remake grounded 模型(檔頭誠實宣告)。`verify_spells` 驗表規模 / 效果值對拍手冊 / bitfield / 扣 Power / 確定性。缺:工具/召喚類(5 條)未數值結算、variable_power 倍率基準待校準(7 條)。
-- **道具(9/10)**:23B/件 bit-packed 格式對齊 fraterrisus(docs/44 §2);`verify_equipment` 以真實 DATA1 的 7 件樣本 byte-grounded 對拍類型/AV/售價/名稱,13 格物品欄 + AC 聚合 PASS。缺:完整物品表(現 7 樣本足以驗格式)、magic_effect 功能未全落地。
+- **法術(8/10)**:61 條(0x00–0x3C)涵蓋五大 school,9 種效果型 + 4 種控制類(`spells.cpp:29–172`)。效果值 grounded 手冊 docs/manual/33,**非臆造**;但施法結算公式**非 opendw byte-for-byte 移植**(原版 bytecode 未逆出),屬 remake grounded 模型(檔頭誠實宣告)。`verify_spells` 驗表規模 / 效果值對拍手冊 / bitfield / 扣 Power / 確定性。缺:工具/召喚類(5 條)未數值結算、variable_power 倍率基準待校準(7 條)。
+- **道具(9/10)**:23B/件 bit-packed 格式對齊 fraterrisus(docs/reverse-engineering/44 §2);`verify_equipment` 以真實 DATA1 的 7 件樣本 byte-grounded 對拍類型/AV/售價/名稱,13 格物品欄 + AC 聚合 PASS。缺:完整物品表(現 7 樣本足以驗格式)、magic_effect 功能未全落地。
 
 **評語**:格式與表格層 grounded 紮實;扣分主要在「結算」深度(施法效果結算是模型而非 oracle)與「全表」廣度。原版有但 remake 缺:遊戲中使用物品(U)、施法在群戰的完整套用。
 
@@ -95,7 +95,7 @@ remake 採**雙層渲染**(ADR 0002):像素層 320×200 indexed framebuffer 整�
 |------|------|------|
 | zh-TW | **~95%** | menu/chars/combat/items/spells 完整;**events 僅波卡城序盤 13 條**(完整遊戲 ~100+);段落 1–147 完整轉寫 |
 | en | passthrough(設計) | tr() 查無回退英文源,非缺陷 |
-| ja | **不均(8–81%)** | **events 13 條 100%(X68000 反萃取,亮點,docs/46)**;其他層 chars 8% / combat 15% / spells 20% / menu 20% |
+| ja | **不均(8–81%)** | **events 13 條 100%(X68000 反萃取,亮點,docs/reverse-engineering/46)**;其他層 chars 8% / combat 15% / spells 20% / menu 20% |
 
 譯名依上層 `CONTEXT.md`:法術 61 名、地名(波卡城/罪惡之城/瑪根地底世界/銀輪/陳屍所)、角色名(Namtar→納達、Irkalla→伊爾卡拉)皆對齊官方手冊。`verify_i18n` 驗 TSV 格式 / fallback 契約 / zh-TW 可載入(ja 缺項回退英文不算 FAIL)。
 
@@ -148,8 +148,8 @@ remake 採**雙層渲染**(ADR 0002):像素層 320×200 indexed framebuffer 整�
 
 | 視窗倍率 | 視窗實際尺寸 | CJK 內文 ink 高 | UI tag ink 高 | 截圖 |
 |---------|------------|----------------|--------------|------|
-| `--scale 2` | **640 × 400** | ~15–16 px | ~7 px | `docs/assessment/menu_scale2.png`、`para_scale2.png` |
-| `--scale 3` | **960 × 600** | **23–24 px** | ~10–16 px | `docs/assessment/menu_scale3.png`、`para_scale3.png` |
+| `--scale 2` | **640 × 400** | ~15–16 px | ~7 px | `docs/assessment/pm_scale_screens/menu_scale2.png`、`para_scale2.png` |
+| `--scale 3` | **960 × 600** | **23–24 px** | ~10–16 px | `docs/assessment/pm_scale_screens/menu_scale3.png`、`para_scale3.png` |
 
 量測法:PIL 逐列偵測白色字素帶,取連續帶高度。scale=3 內文 6 條行帶實測 23/24/23/24/24/24 px → **與 `PX_BODY=24` 吻合**;scale=2 同段為 15/15/15/15/16 px → 與 `24*2/3=16` 吻合。標題「火龍之戰」scale=3 ink 高 45px(`PX_TITLE=48` 之 ink box,字面框略小於 point size 屬正常)。`[繁中]`(PX_UI=16)scale=3 ink ≈10px(該串為小字面 CJK,ink 小於 nominal,屬 TTF 正常現象)。
 
@@ -181,7 +181,7 @@ remake 採**雙層渲染**(ADR 0002):像素層 320×200 indexed framebuffer 整�
 
 | 優先 | 缺口 | 分類 | 位置 |
 |:---:|------|------|------|
-| 高 | 戰鬥動作指派狀態機 op_89(res3@0x08b6)未逆出 → 互動戰鬥走不完一場 | 受限 | `docs/42` §14、`combat_loop` |
+| 高 | 戰鬥動作指派狀態機 op_89(res3@0x08b6)未逆出 → 互動戰鬥走不完一場 | 受限 | `docs/reverse-engineering/42` §14、`combat_loop` |
 | 高 | 連貫劇情 / quest flag / 勝利結局未成體系 | remake 待做 | `main.cpp` 狀態機 |
 | 高 | 事件文字在地化僅序盤 ~13/100+ | 內容 | `assets/i18n/*/events.tsv` |
 | 中 | 武器 STR bonus(best-fit)、怪物屬性對映(暫定)無 oracle 真值 | best-fit | `combat.cpp/hpp` |

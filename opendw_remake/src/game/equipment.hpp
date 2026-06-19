@@ -5,7 +5,7 @@
 //   bit-packed 佈局、售價指數/尾數編碼、高位元終止字串解碼。
 //
 // 來源(權威依據):
-//   - docs/44_DATA_FORMATS_AND_MECHANICS.md §2 裝備格式(= fraterrisus
+//   - docs/reverse-engineering/44_DATA_FORMATS_AND_MECHANICS.md §2 裝備格式(= fraterrisus
 //     《Dragon Wars Hex Editing Guide (PC)》Equipment Format)。
 //   - 一格物品欄 = 23 byte = 11 byte(88 bit)bit-packed 欄位 + 12 byte 物品名
 //     (高位元終止字串,末位元組高位元清除;名最長 12B,不足以 0 填補)。
@@ -16,7 +16,7 @@
 //       → type=general、price=250、magic 高位元組 0x84=回復法力。
 //     "Fire Shield"  hdr=80bf000f00018000000000
 //       → type=shield(0x01)、AV 修正 −15。
-//   證明 type / 售價 / AV 修正 / 名稱解碼合理(見 docs/44 §2 與 verify 註解)。
+//   證明 type / 售價 / AV 修正 / 名稱解碼合理(見 docs/reverse-engineering/44 §2 與 verify 註解)。
 #pragma once
 
 #include <array>
@@ -28,7 +28,7 @@
 namespace dw::game {
 
 // 物品類型(fraterrisus item type,bit[40-47] 低 5 bit)。
-// 對照 docs/44 §2 物品類型表;名稱以英文鍵表示,i18n 由 item_type_key() 轉譯。
+// 對照 docs/reverse-engineering/44 §2 物品類型表;名稱以英文鍵表示,i18n 由 item_type_key() 轉譯。
 enum class ItemType : std::uint8_t {
   General      = 0x00,  // 一般 / 任務物品
   Shield       = 0x01,
@@ -67,11 +67,11 @@ bool is_shield(ItemType t);   // 盾 / 全身盾
 bool is_helmet(ItemType t);
 
 // 完整解析出的一格物品(fraterrisus 23B 物品欄格式)。
-// 欄位全部對齊 docs/44 §2;未記載的 bit(01-02/09/16-18 等)不展開(留 TODO)。
+// 欄位全部對齊 docs/reverse-engineering/44 §2;未記載的 bit(01-02/09/16-18 等)不展開(留 TODO)。
 struct ItemInstance {
   bool present = false;          // 該格是否有物品(11B header 非全 0)
 
-  // ── bit-packed 欄位(docs/44 §2)──────────────────────────────────────
+  // ── bit-packed 欄位(docs/reverse-engineering/44 §2)──────────────────────────────────────
   bool equipped = false;         // bit[00] 已裝備
   int charges = 0;               // bit[03-07] 充能/使用次數
   bool av_mod_negative = false;  // bit[08] AV 修正為負
@@ -92,7 +92,7 @@ struct ItemInstance {
 
   std::array<std::uint8_t, 11> raw{};  // 原始 11B header(供 round-trip / 對拍)
 
-  // 魔法效果便利判斷(docs/44 §2;fraterrisus magical effects):
+  // 魔法效果便利判斷(docs/reverse-engineering/44 §2;fraterrisus magical effects):
   //   magic 高位元組 [48-55]:
   //     0x00          可充能但無魔法效果
   //     0b00xxxxxx    使用時施放法術(法術 id = bit[50-55])
@@ -112,7 +112,7 @@ struct ItemInstance {
 ItemInstance parse_item(const std::uint8_t* p, std::size_t avail);
 
 // 售價編碼解碼(指數 3 bit + 尾數 5 bit;值 = M × 10^E)。
-// 對照 docs/44 §2:0x08=8、0x48=800、0xFF=310,000,000;0x00=不可販售。
+// 對照 docs/reverse-engineering/44 §2:0x08=8、0x48=800、0xFF=310,000,000;0x00=不可販售。
 int decode_price(std::uint8_t encoded);
 
 }  // namespace dw::game

@@ -4,8 +4,8 @@
 > **角色**:專案負責人(唯讀盤點)
 > **性質**:**唯讀**。本報告只新增本檔,**不搬檔、不改文件、不改 src、不動 git**。搬移與修正由使用者審後執行。
 > **基準**:對照「目前實作」= `opendw_remake/src/` + `tools/verify/` ctest + 最新 docs(47–56)+ 最新 git 狀態(PR #100–#123)。
-> **與 00 的關係**:`docs/00_DOC_AUDIT.md`(2026-06-10)是**早期審查**,只涵蓋資產/翻譯/手冊軸,**早於** remake 戰鬥真值化、連通 38/40、可通關鏈(47–56)。本檔接續 00,聚焦「**與目前實作的 drift**」。
-> **注意**:`docs/57_PM_REVIEW.md` 由另一 agent 撰寫,本盤點不重複其結論、不修改該檔。
+> **與 00 的關係**:`docs/assessment/00_DOC_AUDIT.md`(2026-06-10)是**早期審查**,只涵蓋資產/翻譯/手冊軸,**早於** remake 戰鬥真值化、連通 38/40、可通關鏈(47–56)。本檔接續 00,聚焦「**與目前實作的 drift**」。
+> **注意**:`docs/assessment/57_PM_REVIEW.md` 由另一 agent 撰寫,本盤點不重複其結論、不修改該檔。
 
 ---
 
@@ -16,14 +16,14 @@
 | 項目 | 真值 | 出處 |
 |------|------|------|
 | VM opcode(remake 實作) | **119** | `src/vm/interpreter.cpp` 的 `kImpl` 表 `t[0xNN]=` 賦值共 **119** 筆;根 README L33「~119 opcode」 |
-| opendw(C oracle)opcode 命名/實作 | 139 命名 / 117 NULL(原版口徑) | `docs/OPCODE_REFERENCE.md` L57–64 |
+| opendw(C oracle)opcode 命名/實作 | 139 命名 / 117 NULL(原版口徑) | `docs/reverse-engineering/OPCODE_REFERENCE.md` L57–64 |
 | ctest 數 | **22/22** | `opendw_remake/CMakeLists.txt` `add_test` 共 22;根 README L39「22/22」 |
-| 連通性 | **38/40 area** | 根 README L19/L35;`docs/54` Update 2 |
+| 連通性 | **38/40 area** | 根 README L19/L35;`docs/gameplay/54` Update 2 |
 | 第一人稱 viewport | **已 port 並接入 S_GAME** | `src/main.cpp` L285/333/356 `--fp`→S_GAME;`render_sweep` 全 40 關 154 case |
 | 戰鬥單次攻擊公式 | **bytecode 真值**(命中 `roll≤13+AV−(DV+AC)`、徒手傷害 `骰+floor(STR/5)`) | `src/game/combat.cpp` L164–166;`src/game/combat_loop.cpp`;`verify_combat_script` 對拍 res3 |
 | 戰鬥 Boss/怪物數值 | **remake 設計**(誠實標示) | `src/game/combat.hpp` L116–117/L163/L189(Namtar Boss、怪物 21-byte 對映、weapon op_68 = 暫定) |
 | 終戰→結局 | **可玩**(`--fight-namtar`→勝利→`S_ENDING`) | `src/main.cpp` L293/343/412/1168;`verify_ending` |
-| 主線繁中事件 | 200+ 鍵 + 147 段落 + 結局 | 根 README L36;`docs/55`/`docs/56` |
+| 主線繁中事件 | 200+ 鍵 + 147 段落 + 結局 | 根 README L36;`docs/gameplay/55`/`docs/gameplay/56` |
 
 > 關鍵釐清:**「119(remake 實作)」與「139/117(opendw 原版口徑)」是兩套不同計數**,不是矛盾。OPCODE_REFERENCE 講 opendw oracle 的 `targets[]`;remake 講自己實作了幾個。報告引用時要標清楚口徑,避免被當成 drift。
 
@@ -40,7 +40,7 @@
 | **`README.md`(根)** | 🟡 **最嚴重 drift** | 上半(L17–39)已更新(38/40、22/22、~119 opcode、bytecode 真值);**下半(L41–276)整段過時且與上半自相矛盾**:L49「ALL_TEXT_FROM_DATA1.txt(3926 條)」當成果、L66「engine.c…115 個 opcode」、L124–129「DATA1 文字提取(3926 條)」「640×480 未做」、L162–169「~85 個未實作 opcode」、L269–276「已命名 op 143 / 未實作 ~85」、L104–157 **建置/執行/中文化狀態整段重複貼兩次**、L119「./src/fe/sdldragon」(已非主產物,主產物是 `opendw_remake/build/opendw_remake`) | **更新**:刪除 L41 以後重複/過時段;統一為 remake 口徑(119 opcode、22/22、bytecode 真值、38/40);3926 條改述為「已知雜訊,見 `_deprecated/`」 |
 | **`CONTEXT.md`** | ✅ 現行有效 | 術語/譯名表,與 `src/i18n` 用詞一致;area/換場機制節(L95–102)與 `src/world` 實作對齊 | 保留 |
 | **`SKILL.md`(根)** | 🟡 部分過時 | L44「進度(2026-06-10,8 個 PR 已合併)…R1 batch 1 = **15/256 opcode**」— 現為 119;「R0 ✅、R1 batch 1」階段描述停在 6/10 | **更新**進度節至 2026-06-16(119 opcode、22 ctest、可通關);或標為歷史快照 |
-| **`skills/opendw-chinese-localization.md`** | 🟡 部分過時 / 📌 | 內容停在 2026-06-09(L14「6.5/10 規劃良好,實作才剛開始」、L21「實作尚未開始」、翻譯覆蓋率 2.5%/怪名 0%)。與 `docs/60_SKILL.md` 高度重疊 | **標歷史快照**;或合併到 `docs/60_SKILL.md` 後擇一保留(見 §3) |
+| **`skills/opendw-chinese-localization.md`** | 🟡 部分過時 / 📌 | 內容停在 2026-06-09(L14「6.5/10 規劃良好,實作才剛開始」、L21「實作尚未開始」、翻譯覆蓋率 2.5%/怪名 0%)。與 `docs/assessment/60_SKILL.md` 高度重疊 | **標歷史快照**;或合併到 `docs/assessment/60_SKILL.md` 後擇一保留(見 §3) |
 
 ### 1.2 規劃與分析(00–08)
 
@@ -111,8 +111,8 @@
 | 檔案 | 狀態 | drift | 建議動作 |
 |------|------|-------|----------|
 | `47_REMAKE_ASSESSMENT.md` | 🟡 部分過時 | **可玩性 62/100(L22)已過時**——評估時點(2026-06-15)在連通 38/40 + 可通關鏈 + 結局之前;ctest「19/19(L31)」現為 22/22;opcode「~117/256(L59)」現為 119 | **更新分數與數字**,或頂部加「此為 2026-06-15 快照,後續 48–56 已推進(連通 38/40、可通關、22/22)」 |
-| `48_COMPLETABILITY_ROADMAP.md` | 🟡 部分過時 | roadmap 多數已完成:P0 連通(已 38/40)、P1 quest gate(`docs/55` 已通)、P3 結局(`docs/56` 已可玩);「<10% 連通」「只 1 條真跨區」已被後續推翻 | **更新**完成狀態,或標「roadmap 已大幅落地,見 54/55/56」 |
-| `49_GAP_AUDIT.md` | 🟡 部分過時 | 多面向標 🟡/⛔ 未實作(裝備/use item/商店/NPC 招募/結局觸發);其中**結局觸發已實作**(`docs/56`、`S_ENDING`);ctest「20/20(L223)」現 22/22;連通敘述停在中段 | **更新**結局/連通/ctest 欄;其餘未實作項仍成立 |
+| `48_COMPLETABILITY_ROADMAP.md` | 🟡 部分過時 | roadmap 多數已完成:P0 連通(已 38/40)、P1 quest gate(`docs/gameplay/55` 已通)、P3 結局(`docs/gameplay/56` 已可玩);「<10% 連通」「只 1 條真跨區」已被後續推翻 | **更新**完成狀態,或標「roadmap 已大幅落地,見 54/55/56」 |
+| `49_GAP_AUDIT.md` | 🟡 部分過時 | 多面向標 🟡/⛔ 未實作(裝備/use item/商店/NPC 招募/結局觸發);其中**結局觸發已實作**(`docs/gameplay/56`、`S_ENDING`);ctest「20/20(L223)」現 22/22;連通敘述停在中段 | **更新**結局/連通/ctest 欄;其餘未實作項仍成立 |
 | `50_BUILD.md` | ✅ 現行有效 | 建置指南,無過時數字 | 保留 |
 | `51_TEST_PLAN.md` | ✅ 現行有效 | 測試策略;**與 `51_WORLDMAP_AREA_SWITCH_RE.md` 同號**(見 §4) | 保留;**改號去衝突** |
 | `51_WORLDMAP_AREA_SWITCH_RE.md` | 🟡 部分過時 | 連通「27/40(L30)」是該輪結論,**現為 38/40**(54 已推進);機制逆向本身正確 | **更新**連通數字,或標「27/40 為當輪;最終 38/40 見 54」;**改號**去衝突 |
@@ -120,9 +120,9 @@
 | `53_EVENTS_TRANSLATION_REVIEW.md` | ✅ 現行有效 | 翻譯待審清單 | 保留 |
 | `54_WORLDMAP_REACHABILITY_AUDIT.md` | ✅ 現行有效(連通真值來源) | Update 2 = 38/40 的最終結論;誠實標示 Phoebus(6)逆不出 | 保留 |
 | `55_MAINLINE_QUEST_GATE_AND_ENDGAME.md` | ✅ 現行有效 | quest gate 系統 + 結局可觸發;ctest 21/21(該輪) | 保留;ctest 現 22/22(56 後) |
-| `opendw_remake/docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md` | ✅ 現行有效(最新真值) | 可通關結局鏈 + 22/22;誠實標示 Boss/結局=remake 設計 | 保留 |
+| `docs/gameplay/56_PLAYABLE_ENDING_CHAIN.md` | ✅ 現行有效(最新真值) | 可通關結局鏈 + 22/22;誠實標示 Boss/結局=remake 設計 | 保留 |
 
-> **57 號**:`docs/57_PM_REVIEW.md` 由另一 agent 撰寫,本盤點不評。
+> **57 號**:`docs/assessment/57_PM_REVIEW.md` 由另一 agent 撰寫,本盤點不評。
 
 ### 1.8 索引 / Skill / 二進位
 
@@ -131,7 +131,7 @@
 | `docs/README.md` | 🟡 部分過時 | **未列 38/39/15/47–56**(只到 60_SKILL);「目前進度」表(L136–147)停在 2026-06-10(「CJK 渲染/SDL2 ❌ 未開始」「文字萃取修正中」)——與 remake 可通關現況嚴重不符 | **重整索引**:補 38/39/15/46–56;更新進度表;見 §5 |
 | `99_INDEX.md` | 🟡 部分過時 | 2026-06-10 重建版;同樣未含 47–56 與 remake 進度 | **更新**或與 README 合併(見 §5) |
 | `60_SKILL.md` | 📌 歷史紀錄 | 2026-06-09 經驗記錄;3926 條已加修正註;與根 `SKILL.md`、`skills/opendw-chinese-localization.md` 三方重疊 | 保留;**三方收斂**(§3) |
-| `docs/dragon.asm`、`*.pdf`、`*.rar` | ✅ 現行有效 | 二進位參考 | 保留 |
+| `docs/reverse-engineering/dragon.asm`、`*.pdf`、`*.rar` | ✅ 現行有效 | 二進位參考 | 保留 |
 
 ### 1.9 opendw_remake/ 內部文件
 
@@ -139,10 +139,10 @@
 |------|------|-------|----------|
 | `opendw_remake/README.md` | 🟡 部分過時 | 「現況(R0 進行中)(L22)」「R1 進行中…~117/256 opcode(L34/L38)」——**現為 119 + 可通關**;與根 README 上半(可通關)不一致 | **更新**:R 階段現況、opcode 119、可通關 |
 | `opendw_remake/ARCHITECTURE.md` | ✅ 現行有效 | 架構藍圖 + R0–R6 階段表;設計仍成立,階段「現況」欄可能落後 | 保留;階段表現況欄可更新 |
-| `opendw_remake/docs/engine/REWRITE_READINESS.md` | 🟡 部分過時 | 2026-06-12 里程碑;「~117/256(L25)」現 119;R1「進行中」現已遠超 | **更新**或標里程碑快照 |
-| `opendw_remake/docs/engine/VIEWPORT.md` | 🟡 部分過時 | **L47「俯視圖為占位」、L51「第一人稱 viewport 尚未 port」已過時**——`--fp` 已接入 S_GAME 且 `render_sweep` 全 40 關 PASS(`src/main.cpp` L333/356) | **更新**:標 viewport 已 port + golden PASS |
-| `opendw_remake/docs/engine/VIEWPORT_COMPOSE.md` | ✅ 現行有效 | step 1/2 對拍結論已完成 | 保留 |
-| `opendw_remake/docs/engine/CONTROLS.md` | 🟡 部分過時 | 2026-06-14;**L53「戰鬥結算為乾淨室 placeholder」已過時**(combat_loop 已用 bytecode 真值公式);未列 `--fight-namtar`/`--ending`/建角等新指令 | **更新**:戰鬥真值說明 + 補新 flag |
+| `docs/engine/REWRITE_READINESS.md` | 🟡 部分過時 | 2026-06-12 里程碑;「~117/256(L25)」現 119;R1「進行中」現已遠超 | **更新**或標里程碑快照 |
+| `docs/engine/VIEWPORT.md` | 🟡 部分過時 | **L47「俯視圖為占位」、L51「第一人稱 viewport 尚未 port」已過時**——`--fp` 已接入 S_GAME 且 `render_sweep` 全 40 關 PASS(`src/main.cpp` L333/356) | **更新**:標 viewport 已 port + golden PASS |
+| `docs/engine/VIEWPORT_COMPOSE.md` | ✅ 現行有效 | step 1/2 對拍結論已完成 | 保留 |
+| `docs/engine/CONTROLS.md` | 🟡 部分過時 | 2026-06-14;**L53「戰鬥結算為乾淨室 placeholder」已過時**(combat_loop 已用 bytecode 真值公式);未列 `--fight-namtar`/`--ending`/建角等新指令 | **更新**:戰鬥真值說明 + 補新 flag |
 | `opendw_remake/docs/adr/0001`、`0002` | ✅ 現行有效 | Asset bundle、雙層 CJK 渲染 ADR;與實作對齊 | 保留 |
 | `opendw_remake/assets/**/README.md`、`automap_demo/`、`party_demo/` 等 | ✅ 現行有效 | 資產/demo 說明 | 保留 |
 
@@ -170,7 +170,7 @@
 
 | 候選 | 理由 | 取代者 | 建議 |
 |------|------|--------|------|
-| `skills/opendw-chinese-localization.md` | 與 `docs/60_SKILL.md` + 根 `SKILL.md` 三方重疊,內容停在 2026-06-09「實作尚未開始」 | `docs/60_SKILL.md`(較完整)+ 根 `SKILL.md`(較新) | **三選一收斂**:擇一為正本,另兩者標歷史或併入;不必進 `_deprecated/`(skill 檔有觸發用途) |
+| `skills/opendw-chinese-localization.md` | 與 `docs/assessment/60_SKILL.md` + 根 `SKILL.md` 三方重疊,內容停在 2026-06-09「實作尚未開始」 | `docs/assessment/60_SKILL.md`(較完整)+ 根 `SKILL.md`(較新) | **三選一收斂**:擇一為正本,另兩者標歷史或併入;不必進 `_deprecated/`(skill 檔有觸發用途) |
 
 **結論**:`_deprecated/` 清單**本輪無新增建議**。drift 文件用「更新/加註」處理,不靠歸檔。
 
@@ -183,7 +183,7 @@
 | P0 | 根 `README.md` | 刪 L41 後重複/過時段;統一 remake 口徑(119/22-22/38-40/bytecode 真值/可通關);移除 `src/fe/sdldragon` 主產物敘述;3926 改述為雜訊 |
 | P0 | `docs/README.md` + `99_INDEX.md` | 補索引 38/39/15/46–56;更新「目前進度」表至可通關現況;二者擇一為正本(見 §5) |
 | P1 | `opendw_remake/README.md`、`REWRITE_READINESS.md` | R 階段現況 + opcode 119 + 可通關 |
-| P1 | `opendw_remake/docs/engine/VIEWPORT.md`、`CONTROLS.md` | viewport 已 port;戰鬥 bytecode 真值;補 `--fight-namtar`/`--ending`/建角 flag |
+| P1 | `docs/engine/VIEWPORT.md`、`CONTROLS.md` | viewport 已 port;戰鬥 bytecode 真值;補 `--fight-namtar`/`--ending`/建角 flag |
 | P1 | `47`、`48`、`49` | 加「2026-06-15 快照」帽 + 回填完成狀態(62/100、19 ctest、~117、roadmap、結局觸發已實作) |
 | P2 | `51_WORLDMAP…`、`07` | 連通 27→38/40 標「當輪 vs 最終」;07 Phase 3 已落地 |
 | P2 | `42_COMBAT` | 加導讀:單次公式=真值 / Boss·怪物=設計(分層) |
@@ -228,4 +228,4 @@
 - **Top drift**:根 README 自相矛盾、戰鬥 placeholder 舊說、opcode/連通/ctest 口徑未標、62/100 與 viewport「未 port」過時、roadmap 未回填、進度表停 6/10。
 - **健康度**:誠實度高、結構偏散;主病灶為「快照未回填 + 口徑不統一 + 索引漏列 + 編號衝突」。對外門面(根 README)優先修。
 
-> **唯讀聲明**:本報告只新增 `docs/58_DOC_AUDIT_AND_DRIFT.md`。所有「建議動作」均待使用者審核後再執行;本輪未搬任何檔、未改任何文件或 src、未動 git。
+> **唯讀聲明**:本報告只新增 `docs/assessment/58_DOC_AUDIT_AND_DRIFT.md`。所有「建議動作」均待使用者審核後再執行;本輪未搬任何檔、未改任何文件或 src、未動 git。

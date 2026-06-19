@@ -50,7 +50,7 @@
 sudo apt-get install -y unrar
 mkdir -p /tmp/chinese_manual
 cd /tmp/chinese_manual
-unrar x /home/anr2/tmp/longcat/opendw_dragon_wars_cht/docs/珍066-火龍之戰.rar
+unrar x /home/anr2/tmp/longcat/opendw_dragon_wars_cht/docs/manual/珍066-火龍之戰.rar
 ```
 
 #### 方案 B：使用 Docker + unrar（無 root 權限）
@@ -58,7 +58,7 @@ unrar x /home/anr2/tmp/longcat/opendw_dragon_wars_cht/docs/珍066-火龍之戰.r
 docker run --rm \
   -v /home/anr2/tmp/longcat/opendw_dragon_wars_cht/docs:/docs:ro \
   -v /tmp/chinese_manual:/out \
-  alpine sh -c "apk add --no-cache unrar && unrar x /docs/珍066-火龍之戰.rar /out/"
+  alpine sh -c "apk add --no-cache unrar && unrar x /docs/manual/珍066-火龍之戰.rar /out/"
 ```
 
 #### 方案 C：Python `rarfile` 套件
@@ -66,7 +66,7 @@ docker run --rm \
 pip install rarfile   # rarfile 4.0+ 支援 RAR4
 python3 -c "
 import rarfile
-rf = rarfile.RarFile('docs/珍066-火龍之戰.rar')
+rf = rarfile.RarFile('docs/manual/珍066-火龍之戰.rar')
 rf.extractall('/tmp/chinese_manual')
 "
 ```
@@ -287,7 +287,7 @@ docs/
 ### 3.3 分析步驟
 
 #### Step 1：建立 opcode 字典
-整理 `docs/OPCODE_REFERENCE.md`：
+整理 `docs/reverse-engineering/OPCODE_REFERENCE.md`：
 ```
 | Opcode | 名稱 | 參數 | 說明 |
 |--------|------|------|------|
@@ -369,7 +369,7 @@ diff /tmp/text_log.txt docs/ALL_TEXT_FROM_DATA1.txt
 將英文 PDF 掃描檔 OCR 後，與 DATA1 中的英文文字交叉比對：
 ```bash
 # 將 PDF 轉為圖片
-pdftoppm -png -r 200 docs/Dragon-Wars_Manual_DOS_EN.pdf /tmp/manual_page
+pdftoppm -png -r 200 docs/manual/Dragon-Wars_Manual_DOS_EN.pdf /tmp/manual_page
 
 # OCR
 for f in /tmp/manual_page-*.png; do

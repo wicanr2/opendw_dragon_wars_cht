@@ -71,7 +71,7 @@ Heineman 在 Game Developer(原 Gamasutra)專訪中親述商標歸屬:
 - Dragon Wars — MobyGames: https://www.mobygames.com/game/2026/dragon-wars/
 - Dragon Wars — C64-Wiki: https://www.c64-wiki.com/wiki/Dragon_Wars
 - The CRPG Addict, "Game 100: Dragon Wars (1989)": http://crpgaddict.blogspot.com/2013/06/game-100-dragon-wars-1989.html(抓取 403,僅列為延伸閱讀)
-- 本專案內部交叉參考:`opendw_remake/docs/reference/63_OPENDW_VS_REMAKE_ARCH.md`(opendw = Devin Smith 反組譯,對應 Heineman 1989 原版)
+- 本專案內部交叉參考:`docs/reference/63_OPENDW_VS_REMAKE_ARCH.md`(opendw = Devin Smith 反組譯,對應 Heineman 1989 原版)
 
 ---
 查證日期:2026-06。所有事實主張以上列來源為據,矛盾處已並陳並標信心;未獲可靠來源者標「待考」。

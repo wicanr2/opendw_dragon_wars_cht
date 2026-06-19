@@ -39,7 +39,7 @@
     18,
     22
   ],
-  "combat_script_note": "戰鬥腳本(res 3)經 op_58 跨資源 call 用到的資源:0x02、0x03(自身)、0x04(攻擊分支)、0x06(戰鬥訊息)、0x12=18(戰鬥選單,1375B)、0x16=22。供 probe_combat_script / 未來戰鬥 bytecode 執行使用。見 docs/42_COMBAT_BYTECODE.md。",
+  "combat_script_note": "戰鬥腳本(res 3)經 op_58 跨資源 call 用到的資源:0x02、0x03(自身)、0x04(攻擊分支)、0x06(戰鬥訊息)、0x12=18(戰鬥選單,1375B)、0x16=22。供 probe_combat_script / 未來戰鬥 bytecode 執行使用。見 docs/reverse-engineering/42_COMBAT_BYTECODE.md。",
   "strings": [
     "strings/0.tsv",
     "strings/3.tsv",

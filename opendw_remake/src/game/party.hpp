@@ -53,8 +53,8 @@ struct CharacterRecord {
   std::uint16_t power = 0, max_power = 0;             // 0x1C,0x1E = [28,30]
 
   // ── 戰鬥相關欄位(fraterrisus 512B 格式;本次擴充)──────────────────
-  std::array<std::uint8_t, 27> skills{};  // [32-58] 每技能 1B = 等級(順序見 docs/44)
-  std::array<std::uint8_t, 8> spells{};   // [60-67] 法術 bitfield(順序見 docs/44)
+  std::array<std::uint8_t, 27> skills{};  // [32-58] 每技能 1B = 等級(順序見 docs/reverse-engineering/44)
+  std::array<std::uint8_t, 8> spells{};   // [60-67] 法術 bitfield(順序見 docs/reverse-engineering/44)
   std::uint8_t xp = 0;       // [80] 經驗值 XP
   std::uint8_t gold8 = 0;    // [81] 金幣(fraterrisus 記為 1B;見 gold 欄註)
   std::uint8_t av = 0;       // [82] AV 攻擊值(命中)— 注意:起始隊伍為 0,runtime 計算
@@ -73,7 +73,7 @@ struct CharacterRecord {
   std::array<std::uint8_t, 512> raw{};  // 完整原始 record
 
   // 物品欄 13 格 [236-511](每格 23B = 11B bit-packed + 12B 名)。
-  // 來源:docs/44 §2(fraterrisus inventory slot A..M)。回傳全 13 格的完整解析
+  // 來源:docs/reverse-engineering/44 §2(fraterrisus inventory slot A..M)。回傳全 13 格的完整解析
   // (空格 present=false)。供背包 UI / 裝備邏輯使用。
   static constexpr int kInventorySlots = 13;
   static constexpr int kInventoryBase = 236;
@@ -97,7 +97,7 @@ struct CharacterRecord {
 };
 
 // 技能陣列索引(skills[0..26] 對應 selector 0x24..0x3E;index = selector − 0x24)。
-// 武器技能(docs/44):0x37 斧 … 0x3E 投擲。
+// 武器技能(docs/reverse-engineering/44):0x37 斧 … 0x3E 投擲。
 enum SkillIndex {
   kSkillAxe = 0x37 - 0x24,     // 19
   kSkillFlail = 0x38 - 0x24,   // 20

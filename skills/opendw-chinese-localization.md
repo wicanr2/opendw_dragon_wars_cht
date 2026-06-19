@@ -122,7 +122,7 @@
 - 對話/物品名稱：在 DATA1 script 中，需要正確解壓
 
 #### 翻譯檔案
-- `docs/10_TRANSLATION.md`：已知的中英文對照表（100+ 條目，2.5% 覆蓋率）
+- `docs/translation/10_TRANSLATION.md`：已知的中英文對照表（100+ 條目，2.5% 覆蓋率）
 - 需要從 DATA1 提取完整的對話和物品名稱
 
 #### 翻譯進度（依類別）
@@ -394,14 +394,14 @@ class BitExtractor:
 | 路徑 | 內容 |
 |------|------|
 | `docs/README.md` | 專案說明 |
-| `docs/01_PLAN.md` | 中文化實作計畫 |
-| `docs/02_ANALYSIS.md` | 反組譯分析 |
-| `docs/10_TRANSLATION.md` | 翻譯對照表 |
+| `docs/reverse-engineering/01_PLAN.md` | 中文化實作計畫 |
+| `docs/reverse-engineering/02_ANALYSIS.md` | 反組譯分析 |
+| `docs/translation/10_TRANSLATION.md` | 翻譯對照表 |
 | `docs/SKILL.md` | 本 Skill 文件 |
 | `docs/REVIEW_REPORT.md` | 審查報告 |
 | `docs/NEXT_PLAN.md` | 下一階段計畫 |
 | `docs/ALL_TEXT_FROM_DATA1.txt` | DATA1 萃取文字（3,926 條） |
-| `docs/dragon.asm` | 反組譯參考 |
+| `docs/reverse-engineering/dragon.asm` | 反組譯參考 |
 
 #### 技術參考
 - 5-bit 編碼：`src/lib/compress.c` 的 `alphabet[]` 和 `extract_letter()`

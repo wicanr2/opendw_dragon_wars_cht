@@ -67,7 +67,7 @@
 
 > 日期:2026-06-16
 > 對象:`opendw_remake/`(C++20/SDL2 重製《火龍之戰》)
-> 接續:docs/51(世界圖 tile→area 轉移機制反組譯)、docs/48 roadmap P0(主線連通)
+> 接續:docs/reverse-engineering/51(世界圖 tile→area 轉移機制反組譯)、docs/assessment/48 roadmap P0(主線連通)
 > 方法:**0.lvl bytecode 靜態反推**(`dump_worldmap_tiles`)+ **事件 script 動態探測**
 >   (`probe_subarea_entry`,跑母區 tile script 觀測 gs 寫入/op58 tag/halt opcode)
 >   + 攻略 38/39 地點交叉驗證 + 權威 Dilmun 世界圖(classicgaming.cc)位置交叉判定。
@@ -87,7 +87,7 @@
 | 全部 area | 40(0..39,**全部可正常載入**) |
 | area 0 世界圖直接可達(直連 tile→area) | **26** |
 | 從 area 1(波卡城)/ area 0(世界圖)flood-fill 連通分量 | ~~27~~ → **33 / 40**(+24 條子區 relocate 邊) |
-| 主線**地表**必經地區(docs/48 §1.2,16 區)可達 | **15 / 16**(唯缺 area 6 菲巴斯) |
+| 主線**地表**必經地區(docs/assessment/48 §1.2,16 區)可達 | **15 / 16**(唯缺 area 6 菲巴斯) |
 | 仍未連通 | 7 area:**6(菲巴斯)、9(拜占儂)、19(礦場)、22(沉沒水)、27(尼塞山腹)、33(菲巴斯地牢)、35(拜占儂地下)** |
 
 > **連通躍升**:子區 relocate 機制逆出後,新通 area **16(矮人城堡)、18(瑪根)、34(拉娜實驗室)、
@@ -367,8 +367,8 @@ area 14→18(奈羅波裡→瑪根)、area 25→36(京雄→京雄地牢)、area
   後落入 op_7A@0x4801)/ op_7A@0x4801(extract_string from word_3ADF[r2])/ 跳表 base 0x3960。
 - op_5B opendw body:`opendw/src/lib/engine.c` `op_5B_unused()`(line 2510)+ `get_map_tile_data()`
   (line 5206)。
-- 攻略交叉:`docs/38_SOFTWORLD_WALKTHROUGH.md`(§5.4-5.5 菲巴斯、§5.14 拜占儂)。
-- 機制反組譯來源:`docs/51_WORLDMAP_AREA_SWITCH_RE.md`。
+- 攻略交叉:`docs/walkthrough/38_SOFTWORLD_WALKTHROUGH.md`(§5.4-5.5 菲巴斯、§5.14 拜占儂)。
+- 機制反組譯來源:`docs/reverse-engineering/51_WORLDMAP_AREA_SWITCH_RE.md`。
 
 ---
 

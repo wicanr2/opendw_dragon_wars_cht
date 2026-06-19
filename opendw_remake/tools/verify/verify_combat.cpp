@@ -12,7 +12,7 @@
 //      證明 CombatRng 與 oracle 演算法在固定 seed/tick 下序列一致。
 //  C.  結算可重現:固定 seed + 固定隊伍 + 固定怪物,跑 N 回合,兩次執行逐回合
 //      (命中/傷害/HP)完全一致 → 證明結算路徑確定性。
-//      註:結算公式 grounded in docs/44(fraterrisus+SDA+手冊),非 opendw byte-for-byte;
+//      註:結算公式 grounded in docs/reverse-engineering/44(fraterrisus+SDA+手冊),非 opendw byte-for-byte;
 //      to-hit 骰分布為暫定,待 DOS 校準(見 combat.hpp 檔頭)。不宣稱 oracle 真值。
 //
 // 用法:verify_combat <bundle_dir>
@@ -50,7 +50,7 @@ struct RefRng {
   }
 };
 
-// oracle 名單(opendw monster_info.cpp / docs/26_MONSTERS_AND_SPRITES.md 走訪 res31)。
+// oracle 名單(opendw monster_info.cpp / docs/reverse-engineering/26_MONSTERS_AND_SPRITES.md 走訪 res31)。
 // 含單複數 escape 的字面(\en / \ves)亦保留,逐字對拍。
 const char* kOracleNames[] = {
     "Robber",       "King's Guard", "Soldier",          "Bandit",
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
     // 註:enc==0(=「1d4」的純編碼)在物品欄語境保留為「空欄/無骰」,故不列為傷害骰 case。
     const Case cases[] = {
         {0b000'00'001, 2, 4,  "0x01 = 2d4"},     // 最低 d4 但骰數>1(避開 enc==0 空欄)
-        {0b101'00'001, 2, 20, "0xA1 = 2d20"},    // docs/44 範例
+        {0b101'00'001, 2, 20, "0xA1 = 2d20"},    // docs/reverse-engineering/44 範例
         {0b001'00'000, 1, 6,  "0x20 = 1d6"},
         {0b011'00'010, 3, 10, "0x62 = 3d10"},
         {0b111'00'111, 8, 100,"0xE7 = 8d100"},

@@ -3,7 +3,7 @@
 > 日期:2026-06-15
 > 對象:`opendw_remake/`(C++20 / SDL2 重製《火龍之戰》Dragon Wars, Interplay 1989)
 > 方法:**唯讀分析**。讀攻略(主線真值)+ remake 現況文件 + remake 原始碼/資產 + 跑現有 `probe_areaswitch` / `verify_*` 觀察。本報告為唯一新增產物,未改 `src` / `CMakeLists` / 驗證程式 / git。
-> 定位:接續 `docs/47_REMAKE_ASSESSMENT.md`(可玩性 62/100)的盤點,聚焦「**能不能從頭打到尾**」這條軸,並把缺口排成可執行的優先序。
+> 定位:接續 `docs/assessment/47_REMAKE_ASSESSMENT.md`(可玩性 62/100)的盤點,聚焦「**能不能從頭打到尾**」這條軸,並把缺口排成可執行的優先序。
 
 ---
 
@@ -19,7 +19,7 @@
 
 ---
 
-## 1. 主線鏈 / 勝利條件(攻略真值,出自 docs/38、39)
+## 1. 主線鏈 / 勝利條件(攻略真值,出自 docs/walkthrough/38、39)
 
 ### 1.1 勝利條件(三件套 + 終戰)
 
@@ -94,7 +94,7 @@
 | Soften Stone 軟化石(法術) | 穿牆進 Namtar 基地 | 法術書 | gate(地形) |
 | Inferno 地獄之火(法術) | 尼塞山/淬劍 | Nisir 神殿 | gate |
 
-**現況**:remake 道具/法術的**格式與表格層**已 grounded(`verify_equipment` / `verify_spells`,見 docs/47 §5),但**「使用物品改變世界狀態」「quest flag」「gate 判定」尚未成體系**(docs/47 §7 明列)。這是缺口 C 的核心。
+**現況**:remake 道具/法術的**格式與表格層**已 grounded(`verify_equipment` / `verify_spells`,見 docs/assessment/47 §5),但**「使用物品改變世界狀態」「quest flag」「gate 判定」尚未成體系**(docs/assessment/47 §7 明列)。這是缺口 C 的核心。
 
 ---
 
@@ -131,7 +131,7 @@ area 28 "Old Dock"        tile 0x06 @(6,3) — AREA 28->26 (Old Dock → Pilgrim
 - `sync_relocation` 對 wrap 目標**明確跳過**(`src/main.cpp`:`"target uses wrap boundary (flag&2), opendw leaves this unimplemented"`)。
 - 根因:**oracle opendw 自身對 wrap 邊界是 `exit(1)` 未實作**(故 remake 為求不假裝、不崩潰,選擇明確跳過 + log)。
 
-實測 wrap 旗標(讀 `.lvl` 前 3 byte,bit1):**area 0/18/19/22/27/34/35/39 = wrap=1**,其餘 32 關 wrap=0。與 docs/47 / 任務描述完全一致。
+實測 wrap 旗標(讀 `.lvl` 前 3 byte,bit1):**area 0/18/19/22/27/34/35/39 = wrap=1**,其餘 32 關 wrap=0。與 docs/assessment/47 / 任務描述完全一致。
 
 ### 2.4 「area23→0 stub bug 假象」澄清(已修正,非真連通)
 
@@ -165,19 +165,19 @@ area 28 "Old Dock"        tile 0x06 @(6,3) — AREA 28->26 (Old Dock → Pilgrim
 
 ### 缺口 B — 戰鬥真值閉環(卡在動作指派狀態機)
 
-- **現況**(docs/42 §11–14 + 47 §4):**結算公式已 bytecode 真值化**並端到端對拍 ——
+- **現況**(docs/reverse-engineering/42 §11–14 + 47 §4):**結算公式已 bytecode 真值化**並端到端對拍 ——
   - to-hit:`roll = 1d16+3`,`HIT ⟺ roll ≤ 13 + AV − (DV+AC)`(✅ bytecode 真值)。
   - 徒手傷害:`骰 + floor(STR/5)`(✅ bytecode 真值,證偽舊 ×3/2 假說)。
   - 武器主傷害骰來源/解碼(op_68 0x08 = byte[8])、武器定傷(byte[2]!=0):✅(第七輪反組譯 DRAGON.COM op_68 handler)。
 - **卡點**:不是 opcode 缺失(`last_unimpl=0`),而是 **op_89 之後「逐角色動作指派狀態機不收斂」**(res18 主選單 → res4 目標選擇 → 角色動作選單三層 op_89,headless 餵完 Fight→Attack×4 後 gs[6] 卡在 3、迴圈不退出 → 到不了 actor 迴圈 res3@0x0075 → 怪物 HP 不被扣)。
-- **重要修正**:docs/47 §3/§10 仍寫「op_89(res3@0x08b6)未逆出 → 戰鬥走不完」;docs/42 第八輪已澄清 **op_89 本身已實作**,真正卡點是「per-character 動作完成標記 + 全員完成偵測」這個跨 res3/res18/res4 的互動狀態機(res3@0x08b6 的動作輸入 driver 計數器)。**這是文件漂移,本報告以 docs/42 最新輪為準。**
+- **重要修正**:docs/assessment/47 §3/§10 仍寫「op_89(res3@0x08b6)未逆出 → 戰鬥走不完」;docs/reverse-engineering/42 第八輪已澄清 **op_89 本身已實作**,真正卡點是「per-character 動作完成標記 + 全員完成偵測」這個跨 res3/res18/res4 的互動狀態機(res3@0x08b6 的動作輸入 driver 計數器)。**這是文件漂移,本報告以 docs/reverse-engineering/42 最新輪為準。**
 - **另一根本限制**:opendw C 碼**無法獨立跑一場完整戰鬥並 dump 逐回合 char_data** → 即使狀態機補齊,「byte-identical HP 對拍」仍需先在 opendw 加 headless 戰鬥入口 + instrumentation(無現成 oracle 路徑)。
 - **分級**:**部分受 oracle 限制**。狀態機收斂屬可逆向工(已定位到 op/gs 層級);但「真值對拍 HP」受 oracle 缺路徑阻。**對「能不能玩戰鬥」**:互動主迴圈進得去、能下令、能看勝負(`combat_loop.cpp` 確定性模型),只是**數值閉環未經 oracle 蓋章**。
 
 ### 缺口 C — 主線內容 / quest 體系 / 結局
 
 - **事件在地化僅序盤**:`assets/i18n/zh-TW/events.tsv` 僅 ~13 條(全為波卡城序盤),完整遊戲 ~100+。日文 events 13 條 100%(X68000 反萃取,亮點),其餘層薄。
-- **quest flag / 物品 gate / NPC 狀態機未成體系**(docs/47 §7):§1.3 列的市民證/拉娜碎片/眼鏡/自由之劍鑄造鏈/朝聖者之袍等 gate,目前**沒有「持有 X → 改變世界狀態 / 解鎖 Y」的判定層**。
+- **quest flag / 物品 gate / NPC 狀態機未成體系**(docs/assessment/47 §7):§1.3 列的市民證/拉娜碎片/眼鏡/自由之劍鑄造鏈/朝聖者之袍等 gate,目前**沒有「持有 X → 改變世界狀態 / 解鎖 Y」的判定層**。
 - **結局觸發未實作**:決戰 Namtar 後的「屍體送靈魂之泉 → 走向納達之坑 → 結局畫面」整條未做(且決戰地 area 27 受缺口 A 阻,進不去)。
 - **段落書(防拷手冊)完整**:1–147 已轉寫並 bundle(`assets/bundle/paragraphs/`),ParaViewer 可捲動 —— 這層**已就緒**,不算缺口。
 - **分級**:**需大量內容工 + 設計工**(quest 體系是 remake 待做,非 oracle 阻;在地化是純內容工;結局是設計 + 觸發)。
@@ -211,7 +211,7 @@ area 28 "Old Dock"        tile 0x06 @(6,3) — AREA 28->26 (Old Dock → Pilgrim
 
 | # | 項目 | 價值 | 難度 | 阻力 |
 |---|---|:---:|:---:|---|
-| P2-1 | **逆向 res3@0x08b6 動作指派 driver**:逐角色「已選動作」標記 + 全員完成偵測,讓 headless / 互動主迴圈跑到 actor 迴圈(res3@0x0075)、怪物 HP 真扣 | 中高 | 中高 | **[可做]** 已定位到 op/gs 層級(docs/42 §14);非 opcode 缺失 |
+| P2-1 | **逆向 res3@0x08b6 動作指派 driver**:逐角色「已選動作」標記 + 全員完成偵測,讓 headless / 互動主迴圈跑到 actor 迴圈(res3@0x0075)、怪物 HP 真扣 | 中高 | 中高 | **[可做]** 已定位到 op/gs 層級(docs/reverse-engineering/42 §14);非 opcode 缺失 |
 | P2-2 | **opendw 加 headless 戰鬥入口 + dump char_data** → 建立可對拍的「整場戰鬥 oracle」 | 中 | 中 | **[受 oracle 阻]** 需動 oracle 程式(目前 opendw 無法獨立跑一場戰鬥輸出逐回合 HP) |
 | P2-3 | 武器 STR bonus 真值定論(self-modifying-code 矛盾) | 低 | 中 | **[受 oracle 阻]** 需 P2-1+P2-2 跑完整場武器攻擊觀察自改碼殘留;在此之前維持 best-fit 標示 |
 
@@ -224,7 +224,7 @@ area 28 "Old Dock"        tile 0x06 @(6,3) — AREA 28->26 (Old Dock → Pilgrim
 | P3-1 | **事件文字在地化全覆蓋**(events.tsv ~13 → ~100+ 條 zh-TW;ja 補齊) | 高 | 中 | **[內容工]** VM emit 的英文鍵已可逐條抽出;翻譯量大但無技術阻 |
 | P3-2 | **結局事件**:決戰 Namtar 後屍體送靈魂之泉 → 納達之坑 → 結局畫面/段落 | 高 | 中 | **[可做]**(設計 + 觸發);依賴 P0(進得去 area 27) |
 | P3-3 | NPC 對話狀態機 / 連貫劇情推進(把段落 + 事件串成有因果的主線體驗) | 中 | 中高 | **[可做]**(remake 設計) |
-| P3-4 | 譯名收斂(Lanac'toor 拉娜/拉哥、Nergal/Namtar 區分、Enkidu/Utnapishtim 待核 → 進 CONTEXT.md) | 中 | 低 | **[內容工]** docs/38 §7 Flagged 已列 |
+| P3-4 | 譯名收斂(Lanac'toor 拉娜/拉哥、Nergal/Namtar 區分、Enkidu/Utnapishtim 待核 → 進 CONTEXT.md) | 中 | 低 | **[內容工]** docs/walkthrough/38 §7 Flagged 已列 |
 
 ### 依賴關係(關鍵路徑)
 
@@ -266,8 +266,8 @@ P3-1 / P3-4              (內容工;可隨時平行推進)
 
 ## 附:本報告引用的實據(檔案絕對路徑)
 
-- 主線真值:`docs/38_SOFTWORLD_WALKTHROUGH.md`、`docs/39_SOFTWORLD_FULLTEXT_AND_MAPS.md`
-- remake 現況:`docs/47_REMAKE_ASSESSMENT.md`、`docs/42_COMBAT_BYTECODE.md`(§11–14 戰鬥真值/卡點)
+- 主線真值:`docs/walkthrough/38_SOFTWORLD_WALKTHROUGH.md`、`docs/walkthrough/39_SOFTWORLD_FULLTEXT_AND_MAPS.md`
+- remake 現況:`docs/assessment/47_REMAKE_ASSESSMENT.md`、`docs/reverse-engineering/42_COMBAT_BYTECODE.md`(§11–14 戰鬥真值/卡點)
 - area 對照表:`opendw_remake/assets/bundle/maps/README.md`(40 關名 ↔ 攻略)
 - area-switch 機制:`opendw_remake/src/main.cpp`(`run_event` / `sync_relocation` / `enter_map`,wrap flag&2 跳過分支)
 - 連通實測:`opendw_remake/build/probe_areaswitch`(`assets/bundle` 與 `--data1`,皆 8 hit);`opendw_remake/tools/verify/verify_areaswitch.cpp`(案例註解:area23→0 stub bug 假象修正)

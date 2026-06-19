@@ -2,7 +2,7 @@
 
 > 日期:2026-06-14
 > 目的:在 DOSBox 容器跑原版 DOS《Dragon Wars》(Interplay 1989/90, v1.1),走到開局第一場戰鬥,記錄**實際**的命中/傷害數值、暈眩、死亡、經驗值與早期事件,作為 combat 公式校準的**經驗 oracle**。
-> 動機:`docs/42_COMBAT_BYTECODE.md` 已證明 remake 的戰鬥結算仍是乾淨室 placeholder——怪物 roster pipeline 尚未完整逆向、無法獨立跑一場戰鬥對拍。實機觀察提供「輸入屬性 → 輸出數值」的黑箱真值,可在不依賴 bytecode 逆向的情況下,獨立校準/驗證命中與傷害模型。
+> 動機:`docs/reverse-engineering/42_COMBAT_BYTECODE.md` 已證明 remake 的戰鬥結算仍是乾淨室 placeholder——怪物 roster pipeline 尚未完整逆向、無法獨立跑一場戰鬥對拍。實機觀察提供「輸入屬性 → 輸出數值」的黑箱真值,可在不依賴 bytecode 逆向的情況下,獨立校準/驗證命中與傷害模型。
 >
 > **可信度標記**:本文嚴格區分
 > - **【觀察】** = 螢幕截圖直接讀到的數字 / 訊息(可複現)。
@@ -74,7 +74,7 @@ WORKDIR /game
 **【推斷 A — AV/DV 公式(Lv1、徒手)】證據強**
 四筆 (Dex, AV, DV):(20,5,5)、(24,6,6)、(16,4,4)、(12,3,3)。皆滿足 **AV = DV = Dex ÷ 4**(整除)。
 - 反例風險:四點都恰好被 4 整除,無法區分 `floor(Dex/4)` 與 `round(Dex/4)`;也無法判定是否有 `+Lv` 或 `+武器技能` 項(此處 Lv 都=1、武器技能未生效)。後續升級 / 持武器後須再採點。
-- 與手冊一致性:`docs/33` 手冊只說「AV 高易擊中、DV 高難被擊中、武器技能提高 AV」,未給數字(原文標 `〔?〕`);此處補上 Lv1 基準。
+- 與手冊一致性:`docs/manual/33` 手冊只說「AV 高易擊中、DV 高難被擊中、武器技能提高 AV」,未給數字(原文標 `〔?〕`);此處補上 Lv1 基準。
 
 ---
 
@@ -151,7 +151,7 @@ preamble 後往另一方向繞貧民窟,觸發「**You have just attracted some 
 ### 5.1 傷害模型 — 【推斷 B】證據中等
 
 採到的「我→敵」單次傷害:Theb(Str14)= {3,4,4},Muskels(Str21)= {6}。
-- **Str 與傷害正相關**:Str21 的 Muskels(6)> Str14 的 Theb(3~4)。與手冊「力量愈大傷害愈大」一致(`docs/33` 第 276 行)。
+- **Str 與傷害正相關**:Str21 的 Muskels(6)> Str14 的 Theb(3~4)。與手冊「力量愈大傷害愈大」一致(`docs/manual/33` 第 276 行)。
 - **量級**:Lv1 徒手單擊個位數(3~7,含敵方)。Robber「一擊即死」→ Robber HP 約 ≤ 個位數(3 點就能 kill,故 Robber HP ≲ 3~4 或本就殘血;單筆無法定 HP)。
 - **形態(推測,證據弱)**:疑似「小骰 + Str 修正」。例如徒手 ≈ `1dK + g(Str)`,其中 g 單調增。Theb 觀測 3~4(跨度小)、Muskels 觀測 6。**樣本太少,無法定骰面與修正係數**;不應據此寫死公式。
 - **反例 / 風險**:有甲目標(King's Guard)Theb 仍打出 3~4,與無甲 Robber 的 3~4 同量級 → **本作傷害疑似不被目標 AC 直接減免**(AC 可能只影響命中,不減傷),但樣本不足,僅標為待驗。
@@ -175,11 +175,11 @@ preamble 後往另一方向繞貧民窟,觸發「**You have just attracted some 
 | 事件(實機文字摘要) | 觸發點 | 對照 |
 |---|---|---|
 | 開場:被剝奪一切、赤手空拳被丟進 Purgatory 貧民窟(奉 Namtar 之命) | Begin game 後 | `04_intro_purgatory.png`;攻略 §4 開場敘事(Namtar 放逐)一致 |
-| 「No one escapes Purgatory alive…」 | 開場第 2 頁 | 對應「有進無出的城」(`docs/38` §5.1 簡介) |
+| 「No one escapes Purgatory alive…」 | 開場第 2 頁 | 對應「有進無出的城」(`docs/walkthrough/38` §5.1 簡介) |
 | Main Gate 守衛:闖門會被守衛打 | 城門事件格 | 攻略波卡城圖例「重兵把守城門」 |
 | King's Guards(5)+ Pikemen(6)遭遇 | 闖門 | 守衛戰(攻略多處「守衛」) |
 
-> 本次未走到攻略明確編號的 Read Paragraph 觸發點(訊息 5/9/67/77 等,需深入城內特定格);開場兩段為過場敘事文字,非段落書防拷。後續若要採段落觸發,可循 `docs/38` §5.1 行動清單格號導航。
+> 本次未走到攻略明確編號的 Read Paragraph 觸發點(訊息 5/9/67/77 等,需深入城內特定格);開場兩段為過場敘事文字,非段落書防拷。後續若要採段落觸發,可循 `docs/walkthrough/38` §5.1 行動清單格號導航。
 
 ---
 
@@ -259,11 +259,11 @@ timeout 90 docker run --rm -v /tmp/dwgame:/game dwdos bash /game/drive.sh
 
 ### 9.3 反推徒手傷害公式 — 【推斷,證據強(結構性指紋)】
 
-> **⚠ 已被 bytecode 反推修正(2026-06-14,見 docs/42 §11)**:本節 `damage = max(3, floor(1.5×1d4))`
+> **⚠ 已被 bytecode 反推修正(2026-06-14,見 docs/reverse-engineering/42 §11)**:本節 `damage = max(3, floor(1.5×1d4))`
 > → {3,4,6}「無 5」是 **53 筆小樣本近似**。端到端跑 res3 bytecode 的**真值**為
 > **`damage = 1d4 + floor(STR/5)`**(加法 STR/5,**無 ×3/2、無 floor3**)→ STR10 = {3,4,**5**,6}**含 5**。
 > 「缺 5」「×1.5」均被 bytecode 證偽(小樣本剛好沒採到 5)。以下原推斷保留作歷史紀錄;
-> 確切公式以 docs/42 §11(bytecode 反推 + verify_combat_script 對拍)為準。
+> 確切公式以 docs/reverse-engineering/42 §11(bytecode 反推 + verify_combat_script 對拍)為準。
 
 三個硬指紋:
 

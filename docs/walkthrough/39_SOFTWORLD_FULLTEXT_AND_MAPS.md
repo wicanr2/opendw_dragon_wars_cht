@@ -1331,6 +1331,6 @@ Phoebus 的地牢很大,一旦被守衛逮到了,一場大戰是免不了的。�
 ## 相關文件
 
 - [`38_SOFTWORLD_WALKTHROUGH.md`](38_SOFTWORLD_WALKTHROUGH.md) — 三期攻略**導讀整合版**(按地點 + 事件表 + 手冊段落擴充)
-- [`34_READ_PARAGRAPHS.md`](34_READ_PARAGRAPHS.md) — 手冊「編號段落書」段落 1–147 全文(攻略「訊息 N」對應)
+- [`34_READ_PARAGRAPHS.md`](../manual/34_READ_PARAGRAPHS.md) — 手冊「編號段落書」段落 1–147 全文(攻略「訊息 N」對應)
 - [`35_SOFTWORLD_25.md`](35_SOFTWORLD_25.md) / [`36_SOFTWORLD_26.md`](36_SOFTWORLD_26.md) / [`37_SOFTWORLD_27.md`](37_SOFTWORLD_27.md) — 各期原始轉寫
-- [`CONTEXT.md`](../CONTEXT.md) — 譯名標準
+- [`CONTEXT.md`](../../CONTEXT.md) — 譯名標準

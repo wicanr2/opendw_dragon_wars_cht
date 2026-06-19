@@ -1,7 +1,7 @@
 {
   "format": "opendw-items/1",
   "source": "DATA1 (DOS) curated item offsets, fraterrisus-verified",
-  "spec": "docs/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format)",
+  "spec": "docs/reverse-engineering/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format)",
   "slot_bytes": 23,
   "count": 7,
   "items": [

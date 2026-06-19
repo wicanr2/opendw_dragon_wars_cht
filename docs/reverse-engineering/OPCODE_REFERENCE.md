@@ -2,7 +2,7 @@
 # Dragon Wars 虛擬 CPU — Opcode 參考手冊
 
 > **Version / 版本**: 1.0.0 (2026-06-10)
-> **Source / 來源**: Derived from `docs/25_OPCODE_INTERPRETATION.md` (community reverse-engineering analysis)
+> **Source / 來源**: Derived from `docs/reverse-engineering/25_OPCODE_INTERPRETATION.md` (community reverse-engineering analysis)
 > **Status / 狀態**: Community research document — not an official Interplay publication
 
 ---
@@ -569,10 +569,10 @@ ASM 位址無效或超出反組譯涵蓋範圍的 opcode：
 ## References / 引用來源
 
 - `src/lib/engine.c` — opendw main implementation; `targets[]` dispatch table at line 583 / 主要實作，targets[] 第 583 行
-- `docs/dragon.asm` — partial disassembly of original DOS COM binary (3721 lines, covering select ranges within 0x100–0x5C7B) / 部分反組譯（3721 行，涵蓋 0x100–0x5C7B 部分區段）
+- `docs/reverse-engineering/dragon.asm` — partial disassembly of original DOS COM binary (3721 lines, covering select ranges within 0x100–0x5C7B) / 部分反組譯（3721 行，涵蓋 0x100–0x5C7B 部分區段）
 - `opendw/doc/script.md` — sparse opcode text description / opcode 文字說明（稀疏）
 - `opendw/doc/keypress.txt` — keypress handling flow (relevant to op_89) / 按鍵處理流程（op_89 相關）
-- `docs/25_OPCODE_INTERPRETATION.md` — source analysis report (this document's authoritative basis) / 來源分析報告（本文件的唯一事實來源）
+- `docs/reverse-engineering/25_OPCODE_INTERPRETATION.md` — source analysis report (this document's authoritative basis) / 來源分析報告（本文件的唯一事實來源）
 
 ---
 

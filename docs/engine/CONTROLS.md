@@ -1,6 +1,6 @@
 # OpenDW Remake — 操作規範(與原版說明書一致)
 
-> 來源:臺灣中文版《火龍之戰》操作手冊(轉寫見 `../../../docs/33_MANUAL_TRANSCRIPTION.md`)。
+> 來源:臺灣中文版《火龍之戰》操作手冊(轉寫見 `../../../docs/manual/33_MANUAL_TRANSCRIPTION.md`)。
 > remake 的輸入處理**以本表為準**,確保操作與原版說明書一致。
 
 ## 開機 title splash

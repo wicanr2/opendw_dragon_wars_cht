@@ -4,7 +4,7 @@
 > 對象:`opendw_remake/`(C++20/SDL2 重製《火龍之戰》Dragon Wars, Interplay 1989)
 > 方法:**bytecode 動態 trace**(remake VM 實機跑每 area 每事件格 script)+ 攻略 38/39 真值
 >   + CONTEXT.md 譯名。grounded;逆得出才接,卡點精確記錄不臆造。
-> 接續:docs/48(可通關 roadmap §1 勝利條件)、docs/52(主線事件字串)、docs/54(可達性 38/40)。
+> 接續:docs/assessment/48(可通關 roadmap §1 勝利條件)、docs/reverse-engineering/52(主線事件字串)、docs/gameplay/54(可達性 38/40)。
 > 新增工具:`tools/verify/trace_quest_gates.cpp`(逆出 flag 依賴)、`tools/verify/render_endgame.cpp`
 >   (結局/gate 事件 → VM → 繁中 → PPM 截圖)。
 >
@@ -12,7 +12,7 @@
 >   (事件 emit 路徑)。**op_6B、op_8D 已於 `feat/quest-gate-opcodes` 實作(2026-06-17)**:全 40 關
 >   事件格動態 trace **零 halt**;area 18 tile 0x0D 付命門「選 Yes」分支、area 33 tile 0x14 說暗語
 >   say-word 分支皆能走完。詳見 §2.4。**終戰 Namtar 是 combat encounter(op_8A),卡在全戰鬥閉環的
->   遊戲層 context(已知 docs/42,非 opcode 缺失 last_unimpl=0);結局訊息不在任何 level script 中**
+>   遊戲層 context(已知 docs/reverse-engineering/42,非 opcode 缺失 last_unimpl=0);結局訊息不在任何 level script 中**
 >   (= 勝利後由戰鬥流程觸發,逆不出獨立結局事件)。
 
 ---
@@ -25,7 +25,7 @@
 | quest gate 系統(bytecode) | **逆出**:level script 用 **game_state bit 旗標**(op_9b 設 / op_9d,op_50 測 → jnz/jz 分支)做進度 gate。共 **135 個唯一 flag、313 次操作**。 |
 | 角色祝福旗標(flags[85]) | char_data byte 0x55:`0x80` Irkalla 祝福、`0x10` 永恆之神(+3 全屬性)、`0x20` Enkidu(德魯伊)。由 op_5F 設 / op_61 測(戰鬥/共享 script,非 level event)。 |
 | gate 事件能跑嗎 | **能,且唯二 halt 已解除**。op_6B(DRAGON.COM 0x45A1 反組譯)、op_8D(opendw 0x49D3 read_string_input)已實作(`feat/quest-gate-opcodes`,2026-06-17)→ 全 40 關事件格動態 trace **零 halt**;付命門/說暗語 gate「選 Yes」分支跑通。詳見 §2.4。 |
-| 結局事件能觸發+跑完嗎 | **事件文字全部能觸發+跑+繁中顯示**(area 27 尼塞山腹 29 條 emit 零 halt;area 18 瑪根納達之坑/靈魂之泉/Irkalla 亦跑通)。**但決戰 Namtar 是戰鬥(op_8A),卡全戰鬥閉環(docs/42);勝利後的結局畫面不在 level script 中 → 逆不出獨立結局事件 script。** |
+| 結局事件能觸發+跑完嗎 | **事件文字全部能觸發+跑+繁中顯示**(area 27 尼塞山腹 29 條 emit 零 halt;area 18 瑪根納達之坑/靈魂之泉/Irkalla 亦跑通)。**但決戰 Namtar 是戰鬥(op_8A),卡全戰鬥閉環(docs/reverse-engineering/42);勝利後的結局畫面不在 level script 中 → 逆不出獨立結局事件 script。** |
 | 在地化 | events.tsv +20 條(area 18 瑪根全段 + area 33 菲巴斯地牢 + area 26/32 結局相關);area 27 結局段先前已譯齊。 |
 | 截圖驗證 | `render_endgame` headless 跑事件 → 繁中渲染 6 張(`docs/screenshots/endgame/`)。 |
 | 回歸 | ctest **31/31**(本輪改 VM source:interpreter/vm_state,新增 op_6B/op_8D + 6 項 vm_selftest 逐指令對照,全綠)。 |
@@ -67,7 +67,7 @@
 | 「付命為代價」妖精關 | 另一條瑪根通道 | area 18 tile 0x0D op_9d×2 + op_8c(Yes/No)→ **Yes 分支 op_6B(NULL)** | 同上 |
 | 龍谷取龍寶石 | 召龍后 | area 32 tile 0x0D op_9d 測 gsAA.1/gsB9.6 + op_9b 設 gsB9.6 | `trace_quest_gates 32` |
 | area 27 終局段門 | Mystalvision/Buck「已見」 | tile 0x12 測 gsA7.0、tile 0x22 測 gsA7.1、tile 0x26 測 gsB9.2/gsB9.7 | `trace_quest_gates 27` |
-| 自由之劍祝福 | flags[85] | char_data 0x55:op_5F 設 0x80(Irkalla)/0x10(神)、op_61 測 | docs/44 §1;interpreter op5F/op61 |
+| 自由之劍祝福 | flags[85] | char_data 0x55:op_5F 設 0x80(Irkalla)/0x10(神)、op_61 測 | docs/reverse-engineering/44 §1;interpreter op5F/op61 |
 
 ---
 
@@ -116,7 +116,7 @@
 
 | halt opcode | 格數 | 位置 | 解除方式 |
 |---|---|---|---|
-| op_6B | 26 | area 0 世界圖格 | dungeon 路徑(gs[0x23]&2==0)純座標 mutation、不 halt;worldmap 模式標 last_unimpl 但座標仍 ±1(wrap 未復刻,記錄不臆造)。app 進城走獨立 worldmap_dest(docs/54)。 |
+| op_6B | 26 | area 0 世界圖格 | dungeon 路徑(gs[0x23]&2==0)純座標 mutation、不 halt;worldmap 模式標 last_unimpl 但座標仍 ±1(wrap 未復刻,記錄不臆造)。app 進城走獨立 worldmap_dest(docs/gameplay/54)。 |
 | op_6B | 1 | **area 18 tile 0x0D** | adjust_position(gs[3]^2)→ 不 halt;Yes 分支跑通(§2.4)。 |
 | op_8D | 1 | **area 33 tile 0x14** | read_string_input headless 文字注入 → gs[0xC6..];say-word 比對鏈接通(§2.4)。 |
 
@@ -165,7 +165,7 @@ dispatch 表 `[0x3960+0x6B*2]=0x45A1`(ndisasm DRAGON.COM,file offset 0x44A1)。�
 
 **remake headless 移植**:dungeon/area 路徑(gs[0x23]&2==0)→ `adjust_position(gs[3]^2)` 純座標
 mutation、無 operand、不 halt。worldmap 模式(area 0,gs[0x23]&2!=0)→ opendw 自身即 exit/unimplemented
-且 app 走獨立 worldmap_dest 進城(docs/54);此處座標仍 ±1 但標 `last_unimpl=0x6B`(wrap 數值不臆造)。
+且 app 走獨立 worldmap_dest 進城(docs/gameplay/54);此處座標仍 ±1 但標 `last_unimpl=0x6B`(wrap 數值不臆造)。
 vm_selftest 3 項(facing N/E 反向、worldmap 標記)通過。
 
 #### gate Yes 分支跑通實證(trace_subarea_dyn `--yes`)
@@ -201,13 +201,13 @@ tile 0x10「唯有 Irkalla 信徒方可通行」、tile 0x12「黑暗中你發�
 
 - area 27 有 **2 個 op_8A encounter 觸發格**(tile 0x18/0x19);龍谷(32)4 個、瑪根(18)2 個。
 - 終戰 Namtar / Buck Ironhead 是 **戰鬥(op_8A → res3 combat script)**,不是敘事 op_78。
-- **卡點 = 全戰鬥閉環的遊戲層 context**(docs/42 §14):結算公式(to-hit 1d16+3 門檻 13+AV−def、
+- **卡點 = 全戰鬥閉環的遊戲層 context**(docs/reverse-engineering/42 §14):結算公式(to-hit 1d16+3 門檻 13+AV−def、
   徒手傷害 dice+STR/5、武器骰 op_68 0x08)**已 bytecode 真值化 + 端到端對拍**;但
   **per-character 動作指派狀態機不收斂**(res18↔res4 逐角色動作選單迴圈,headless 餵
   Fight→Attack×4 後 gs[6] 卡 3、到不了 actor 迴圈 res3@0x0075 → 怪物 HP 不被扣)。
   **非 opcode 缺失(last_unimpl=0)**,是跨 res3/res18/res4 的互動狀態機 + 「opendw 無法
   獨立跑一場完整戰鬥 dump 逐回合 char_data」雙重 oracle 限制。
-- → **終戰本身的戰鬥閉環沿用 docs/42 既有卡點,本任務不重複攻(誠實記錄,不謊稱可打完)**。
+- → **終戰本身的戰鬥閉環沿用 docs/reverse-engineering/42 既有卡點,本任務不重複攻(誠實記錄,不謊稱可打完)**。
 
 ### 3.3 結局訊息/段落是什麼
 
@@ -249,17 +249,17 @@ tile 0x10「唯有 Irkalla 信徒方可通行」、tile 0x12「黑暗中你發�
                    ├ tile 0x12/0x22 gsA7.0/A7.1「已見」抑制
                    └ tile 0x18/0x19 op_8A encounter = 終戰 Namtar
                                  │
-                                 ▼  ★ 卡點:全戰鬥閉環(docs/42,遊戲層 context)
+                                 ▼  ★ 卡點:全戰鬥閉環(docs/reverse-engineering/42,遊戲層 context)
                           [結局:勝利後觸發,不在 level script → 逆不出]
 ```
 
 **推進到結局所需(grounded)**:
-1. 跨區連通到 area 18 / 27 / 32(docs/54:38/40 可達,主線地表 15/16)。
+1. 跨區連通到 area 18 / 27 / 32(docs/gameplay/54:38/40 可達,主線地表 15/16)。
 2. game_state 進度旗標(gsB9.x)由序盤→後期事件**自動累積**(gate 邏輯已跑通)。
 3. 物品 gate(市民證/朝聖者袍/眼鏡/龍寶石/自由之劍)—— **flag 被測得到,set 來源在
    inventory/共享 script,逆不出 set 點**(記錄,非臆造)。
 4. char_data 祝福旗標(Irkalla/神)—— op_5F/61 已實作,戰鬥/共享 script 設。
-5. **終戰 Namtar combat + 結局觸發 —— 卡全戰鬥閉環(docs/42)**,本任務不謊稱已打通。
+5. **終戰 Namtar combat + 結局觸發 —— 卡全戰鬥閉環(docs/reverse-engineering/42)**,本任務不謊稱已打通。
 
 ---
 
@@ -301,19 +301,19 @@ tile 0x10「唯有 Irkalla 信徒方可通行」、tile 0x12「黑暗中你發�
   - `opendw_remake/assets/i18n/zh-TW/events.tsv`:+20 條(area 18 瑪根全段 + area 33 菲巴斯地牢
     + area 26/32 結局相關;area 27 結局段先前已譯齊)。
   - `opendw_remake/assets/fonts/cjk24.atlas`:重生(1878→2017 glyph,補新譯文 18 字:伊爾庫…)。
-  - `opendw_remake/docs/media/screenshots/endgame/*.png`:6 張結局/gate 繁中截圖。
+  - `docs/media/remake/screenshots/endgame/*.png`:6 張結局/gate 繁中截圖。
 - **VM source(本輪)**:
   - `opendw_remake/src/vm/interpreter.{hpp,cpp}`:op_6B(`op6B_move_reverse` + `adjust_position`)、
     op_8D(`op8D_read_string`)handler + dispatch 表註冊。
   - `opendw_remake/src/vm/vm_state.hpp`:新增 `headless_text`(op_8D 文字注入)。
   - `opendw_remake/tests/vm_selftest.cpp`:+6 項(op_6B/op_8D 逐指令對照)。
-- **docs**:本檔(docs/55)。
+- **docs**:本檔(docs/gameplay/55)。
 - **未改 opendw;DRAGON.COM / 圖檔未入庫**(op_6B 反組譯從 /tmp 取磁碟 + docker ndisasm,原檔不入庫)。
 
 ## 7. 卡點清單(精確,不臆造)
 
 1. **終戰 Namtar 全戰鬥閉環**:結算公式已真值化,卡 per-character 動作指派狀態機 +
-   無獨立戰鬥 oracle(docs/42 §14)。**沿用既有卡點,未攻**。
+   無獨立戰鬥 oracle(docs/reverse-engineering/42 §14)。**沿用既有卡點,未攻**。
 2. **結局畫面 script**:勝利後結局不在 level event script → 由戰鬥流程/主控觸發,**逆不出
    獨立 script**;與卡點 1 綁定。攻略結局亦無獨立段落編號。
 3. **物品 gate set 來源**:市民證/朝聖者袍/眼鏡/龍寶石等 flag 被 op_9d 測得到,但 **set 點
@@ -323,4 +323,4 @@ tile 0x10「唯有 Irkalla 信徒方可通行」、tile 0x12「黑暗中你發�
    全 40 關零 halt,付命門 Yes 分支 + 說暗語 say-word 分支跑通(§2.4)。**唯一剩餘標記**:op_6B
    worldmap 模式(area 0,gs[0x23]&2)的邊界 wrap 數值未復刻(opendw 自身亦 unimplemented;app 走
    獨立 worldmap_dest 進城),座標 mutation 已套用,wrap 後座標不臆造。
-5. **area 6/33 隔離分量**:docs/54 已記,與本任務正交。
+5. **area 6/33 隔離分量**:docs/gameplay/54 已記,與本任務正交。

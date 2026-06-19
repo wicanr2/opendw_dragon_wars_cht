@@ -2,7 +2,7 @@
 
 > 本檔列出 `opendw_remake/assets/i18n/zh-TW/events.tsv` 主線擴充中**信心較低或固有名詞未入 CONTEXT.md** 的譯法，請使用者裁決。
 > 譯名一律以 `CONTEXT.md` 為準；以下為 CONTEXT.md **尚未收錄**的新出現專名，我給了 provisional 音/意譯，**待確認**後再回填 CONTEXT.md。
-> 來源：`docs/52_MAINLINE_EVENT_STRINGS.md`（bytecode 萃取）+ `docs/15` 草表 + 攻略 `docs/38/39`。
+> 來源：`docs/reverse-engineering/52_MAINLINE_EVENT_STRINGS.md`（bytecode 萃取）+ `docs/translation/15` 草表 + 攻略 `docs/walkthrough/38/39`。
 
 ## A. 固有名詞（CONTEXT.md 未收錄，provisional 待審）
 
@@ -42,5 +42,5 @@ events.tsv **逐條 emit 為獨立 tr 鍵**（含結尾不完整的句子），�
 ## D. 未納入（本輪不譯）
 
 - `Read paragraph N`：防拷段落，內容在手冊/段落書（`data/paragraphs/`，ParaViewer 處理），非 events.tsv 範圍。
-- op_79 gate 卡住而未 emit 的事件格（見 docs/52 halt 表）：補完 op_79 後可能 emit 新字串，屆時再萃取補譯。
+- op_79 gate 卡住而未 emit 的事件格（見 docs/reverse-engineering/52 halt 表）：補完 op_79 後可能 emit 新字串，屆時再萃取補譯。
 - area 0 世界圖 op_6B gate 卡住格：app 走 `worldmap_dest` 靜態進城，非主線阻斷。

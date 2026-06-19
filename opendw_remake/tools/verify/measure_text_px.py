@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # measure_text_px — 量測 640×480 dump 的視窗尺寸 / letterbox 黑邊 / 文字 ink 高度。
 #
-# 用途:驗證 docs/47 方案 3 的目標 —— 視窗確為 640×480、像素層 320×200 ×2 垂直置中
+# 用途:驗證 docs/assessment/47 方案 3 的目標 —— 視窗確為 640×480、像素層 320×200 ×2 垂直置中
 #   (上下各 40px 黑邊)、文字層字級固定(CJK 內文 ≈24px、UI ≈16px)。
 #
 # 量法(非字形 metrics,而是「實際畫到畫面上的 ink」):

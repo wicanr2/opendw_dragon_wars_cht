@@ -178,6 +178,6 @@ text = nibswap(raw_mons).decode("cp932")
 | `assets/fonts/cjk24.atlas` | 更新 | 2112→2279 字形（日本語字形追加、旧字形保持・欠字 0） |
 | `tools_build/fat12_extract.py` | 既存 | Human68k FAT12 抽出ツール（Docker） |
 | `tools_build/gen_cjk_atlas_from_i18n.sh` | 既存 | i18n 全文字から atlas 再生成（Docker + wqy-zenhei） |
-| `docs/46_PC98_JA_EXTRACTION.md` | 更新 | 本書 |
+| `docs/reverse-engineering/46_PC98_JA_EXTRACTION.md` | 更新 | 本書 |
 
 原ゲームファイル（X68000 / DOS）は **入庫しない**。

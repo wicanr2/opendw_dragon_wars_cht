@@ -8,7 +8,7 @@
 //   (2) quest gate 驗證:列出哪個 area/tile 卡在哪個未實作 opcode。
 //
 // 用法: mainline_events <bundle_dir> [area ...]
-//   不給 area → 預設主線必經區(docs/48 §1.2 + 世界圖 0 + 結局 27)。
+//   不給 area → 預設主線必經區(docs/assessment/48 §1.2 + 世界圖 0 + 結局 27)。
 #include <cstdio>
 #include <cstdlib>
 #include <map>

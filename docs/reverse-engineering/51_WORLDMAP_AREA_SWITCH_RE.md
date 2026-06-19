@@ -4,7 +4,7 @@
 > 對象:`opendw_remake/`(C++20/SDL2 重製《火龍之戰》)
 > 方法:**16-bit binary 反組譯**(DRAGON.COM,opendw 對此路徑 `exit(1)` 未實作 → 無 C oracle)
 >   + `0.lvl` / `18.lvl` bytecode 靜態反推 + 攻略(38/39)地點交叉驗證 + headless 端到端驗證。
-> 定位:接續 docs/48 roadmap **P0(解鎖主幹連通)**。逆出 area 0 Dilmun 世界圖的城鎮/地點格 → area
+> 定位:接續 docs/assessment/48 roadmap **P0(解鎖主幹連通)**。逆出 area 0 Dilmun 世界圖的城鎮/地點格 → area
 >   轉移對映,並實作,使連通分量從「幾乎只剩波卡城」一次擴張到 **27/40 area**。
 >
 > **誠實標示**:area 0 世界圖的 tile→area 對映已**高信心逆出 + 交叉驗證**並實作;area 18 瑪根地底
@@ -158,7 +158,7 @@ gs[2] 變更,如 area28→26),從 area 0 / area 1 做 BFS。結果:
 主線地表可達:15 / 16   (唯 area 6 Phoebus 不在世界圖直連表 — 由他途進入)
 ```
 
-→ **連通分量從「幾乎只剩波卡城(<10%)」擴張到 27/40。** 這是 docs/48 P0「demo → 可通關」的關鍵轉折。
+→ **連通分量從「幾乎只剩波卡城(<10%)」擴張到 27/40。** 這是 docs/assessment/48 P0「demo → 可通關」的關鍵轉折。
 
 ### 3.4 headless 端到端
 

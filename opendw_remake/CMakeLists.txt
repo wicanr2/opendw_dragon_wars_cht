@@ -234,7 +234,7 @@ target_link_libraries(extract_items PRIVATE dwr_resource)
 add_executable(extract_ui_pieces tools/extract/extract_ui_pieces.cpp)
 
 # tools/verify:物品/裝備格式解碼 PASS/FAIL(類型/售價/真實 DATA1 物品對拍 + 13 格物品欄 + AC 聚合)。
-# grounded in docs/44 §2(fraterrisus Equipment Format)。
+# grounded in docs/reverse-engineering/44 §2(fraterrisus Equipment Format)。
 add_executable(verify_equipment tools/verify/verify_equipment.cpp)
 target_link_libraries(verify_equipment PRIVATE dwr_game)
 add_test(NAME verify_equipment
@@ -298,7 +298,7 @@ target_link_libraries(probe_namtar_balance PRIVATE dwr_game)
 # tools/verify:建角流程確定性 PASS/FAIL(新遊戲 / 建立人物)。
 #   驗:建出的 record 解析回 CharacterRecord round-trip(名/屬性/性別/HP/STUN/PWR);
 #   屬性在合法範圍;effective_av/dv == DEX/4(SDA);點數守恆(配點前後總點數一致);
-#   確定性(同 DraftCharacter → 同 512B)。grounded in docs/44 §1 + docs/33 手冊。
+#   確定性(同 DraftCharacter → 同 512B)。grounded in docs/reverse-engineering/44 §1 + docs/manual/33 手冊。
 add_executable(verify_chargen tools/verify/verify_chargen.cpp)
 target_link_libraries(verify_chargen PRIVATE dwr_game)
 add_test(NAME verify_chargen COMMAND verify_chargen)
@@ -306,7 +306,7 @@ add_test(NAME verify_chargen COMMAND verify_chargen)
 # tools/verify:RPG 成長迴圈確定性 PASS/FAIL(升級 XP→Level+2AP+HP/STUN/STR、
 #   X 配點 AP 守恆 + effective_av 隨 DEX、使用物品 U 效果+消耗、裝備穿脫 AV/AC 隨變、
 #   技能檢定等級→成功率、包紮回 HP、512B raw round-trip)。
-#   grounded:升級+2AP=SDA(docs/44 L103)、STR/HP 隨等級=手冊;XP 曲線/技能難度=remake(誠實標)。
+#   grounded:升級+2AP=SDA(docs/reverse-engineering/44 L103)、STR/HP 隨等級=手冊;XP 曲線/技能難度=remake(誠實標)。
 add_executable(verify_progression tools/verify/verify_progression.cpp)
 target_link_libraries(verify_progression PRIVATE dwr_game)
 add_test(NAME verify_progression COMMAND verify_progression)
@@ -319,7 +319,7 @@ target_link_libraries(verify_party_ops PRIVATE dwr_game)
 add_test(NAME verify_party_ops COMMAND verify_party_ops)
 
 # tools/verify:法術系統確定性 PASS/FAIL(法術表筆數/效果值對拍手冊 + 施法扣 Power +
-#   傷害/治療在手冊範圍 + 確定性)。grounded in docs/33 手冊;非 oracle(見 spells.hpp 檔頭)。
+#   傷害/治療在手冊範圍 + 確定性)。grounded in docs/manual/33 手冊;非 oracle(見 spells.hpp 檔頭)。
 add_executable(verify_spells tools/verify/verify_spells.cpp)
 target_link_libraries(verify_spells PRIVATE dwr_game)
 add_test(NAME verify_spells
@@ -327,7 +327,7 @@ add_test(NAME verify_spells
 
 # tools/verify:商店買賣確定性 PASS/FAIL(買=gold[81] 扣對 + 物品入背包 + 窮買不到 +
 #   背包滿擋下;賣=gold 加半價 + 物品移除 + 空格擋下;stock.json 載入;512B raw round-trip)。
-#   grounded:23B 物品格式/售價編碼=fraterrisus(docs/44 §2);買賣邏輯/curated 庫存=remake 設計(誠實標)。
+#   grounded:23B 物品格式/售價編碼=fraterrisus(docs/reverse-engineering/44 §2);買賣邏輯/curated 庫存=remake 設計(誠實標)。
 add_executable(verify_shop tools/verify/verify_shop.cpp)
 target_link_libraries(verify_shop PRIVATE dwr_game)
 add_test(NAME verify_shop
@@ -342,7 +342,7 @@ add_test(NAME verify_recruit
          COMMAND verify_recruit ${CMAKE_SOURCE_DIR}/assets/bundle)
 
 # tools/verify:把原版戰鬥腳本(res 3)餵進 remake VM 的調查工具(gap 分析,非 ctest)。
-#   印跑了幾步、停在哪個 opcode/pc。見 docs/42_COMBAT_BYTECODE.md。
+#   印跑了幾步、停在哪個 opcode/pc。見 docs/reverse-engineering/42_COMBAT_BYTECODE.md。
 add_executable(probe_combat_script tools/verify/probe_combat_script.cpp)
 target_link_libraries(probe_combat_script PRIVATE dwr_vm dwr_game)
 
@@ -355,7 +355,7 @@ add_executable(probe_monster_stats tools/verify/probe_monster_stats.cpp)
 target_link_libraries(probe_monster_stats PRIVATE dwr_vm dwr_game)
 
 # tools/verify:戰鬥 bytecode 確定性執行(res3 跑到攻擊迴圈、軌跡可重現、無缺 opcode)。
-#   注意:此 ctest 不驗 HP-vs-oracle(roster pipeline 未完整逆向,見 docs/42 §9)。
+#   注意:此 ctest 不驗 HP-vs-oracle(roster pipeline 未完整逆向,見 docs/reverse-engineering/42 §9)。
 add_executable(verify_combat_script tools/verify/verify_combat_script.cpp)
 target_link_libraries(verify_combat_script PRIVATE dwr_vm dwr_game)
 add_test(NAME verify_combat_script
@@ -404,7 +404,7 @@ add_executable(verify_mainline_reachable tools/verify/verify_mainline_reachable.
 target_link_libraries(verify_mainline_reachable PRIVATE dwr_vm)
 
 # tools/verify:世界圖逐格盤點(area 0 每個特殊格 → script bytes → 解碼 IDX)。
-# grounding 用(docs/54 盤點表來源),非 ctest gate。
+# grounding 用(docs/gameplay/54 盤點表來源),非 ctest gate。
 add_executable(dump_worldmap_tiles tools/verify/dump_worldmap_tiles.cpp)
 target_link_libraries(dump_worldmap_tiles PRIVATE dwr_resource)
 

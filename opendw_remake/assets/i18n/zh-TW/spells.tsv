@@ -1,5 +1,5 @@
-# 法術名 + 施法畫面訊息 — 譯名取自臺灣中文版手冊(docs/33 附錄二咒語說明)。
-# id 對齊 fraterrisus 法術索引(docs/44 §3);效果值見 src/game/spells.cpp(grounded 手冊)。
+# 法術名 + 施法畫面訊息 — 譯名取自臺灣中文版手冊(docs/manual/33 附錄二咒語說明)。
+# id 對齊 fraterrisus 法術索引(docs/reverse-engineering/44 §3);效果值見 src/game/spells.cpp(grounded 手冊)。
 # english	chinese
 # ── 施法 UI 訊息 ──
 Cast	施法

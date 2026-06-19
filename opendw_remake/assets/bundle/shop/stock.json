@@ -1,7 +1,7 @@
 {
   "format": "opendw-shop/1",
   "source": "grounded items from bundle/items/items.bin (fraterrisus/DATA1) + curated standard equipment (remake design)",
-  "spec": "docs/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format); buy/sell logic = remake design (opendw C 未實作商店)",
+  "spec": "docs/reverse-engineering/44_DATA_FORMATS_AND_MECHANICS.md §2 (fraterrisus Equipment Format); buy/sell logic = remake design (opendw C 未實作商店)",
   "slot_bytes": 23,
   "note": "grounded=true: real DATA1 item byte-for-byte. grounded=false: remake curated equipment with cleanly encoded prices (M x 10^E).",
   "count": 11,

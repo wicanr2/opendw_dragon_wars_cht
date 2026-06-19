@@ -36,6 +36,6 @@ DOS real mode 僅 640KB、64KB 分段,650KB 不可能全載入。所以**按需�
 
 ## 與本 remake 的對照(反向)
 
-remake 把兩者**合成一個 asset bundle**(見 [`adr/0001`](adr/0001-asset-bundle-and-resource-provider.md))。現代儲存沒有軟碟容量/換片/640KB 約束,所以:
+remake 把兩者**合成一個 asset bundle**(見 [`adr/0001`](../adr/0001-asset-bundle-and-resource-provider.md))。現代儲存沒有軟碟容量/換片/640KB 約束,所以:
 - 當年**拆**是為了**塞得下**(硬體妥協)。
 - 現在**合**是為了**改得動**(可編輯/可替換,對話=改 TSV、sprite=改 PNG)。

@@ -10,7 +10,7 @@
 //    opendw 用 sys_ticks() 當亂源(非確定);本實作以「可 seed 的遞增 tick」取代
 //    (與 remake VM vm_state.fake_ticks 同策略),故可確定性對拍。
 //  • 戰鬥結算公式來源 = **fraterrisus 資料格式 + SDA 戰鬥機制 + 臺灣中文版手冊**
-//    (彙整於 docs/44_DATA_FORMATS_AND_MECHANICS.md / docs/33_MANUAL_TRANSCRIPTION.md):
+//    (彙整於 docs/reverse-engineering/44_DATA_FORMATS_AND_MECHANICS.md / docs/manual/33_MANUAL_TRANSCRIPTION.md):
 //      - 命中:攻擊者 AV vs 目標 DV;base AV/DV = DEX÷4;AV 含武器技能(1:1 隱形)。
 //      - 傷害:解碼武器主傷害骰(高3bit 骰面 / 低3bit 骰數-1)+ STR 修正 − 目標 AC。
 //      - AC 先從物理傷害扣除,再作用於 STUN(HP=Stun);STUN≤0 → status bit0(死亡)。
@@ -18,7 +18,7 @@
 //    戰鬥結算,只到載圖+動畫,見 check_random_encounter_timer @0x4D5C;真正 bytecode
 //    結算 op 尚未逆出)。因此 **不可宣稱為 oracle 真值**。
 //  • ⚠ **to-hit 骰分布為暫定**:SDA 只記「AV vs DV、疑似小骰 D&D-like」,未給確切骰式。
-//    本實作採參數化小骰(見 ToHitModel),**待 docs/43_DOS_PLAYTEST.md 的 DOS 實機觀察校準**。
+//    本實作採參數化小骰(見 ToHitModel),**待 docs/reverse-engineering/43_DOS_PLAYTEST.md 的 DOS 實機觀察校準**。
 //    其「確定性」可驗證(固定 seed → 固定結果),但確切骰分布尚待校準。
 // ──────────────────────────────────────────────────────────────────────
 #pragma once
@@ -70,7 +70,7 @@ namespace dw::game {
 //        或徒手骰表;怪物記錄哪欄 = 武器 descriptor 受多實例 builder + op_68 自改碼
 //        阻擋,**未逐欄逆出**。實作以 byte[0x00](STR)+ 小骰回退,標「推斷」。
 //    • 精確逐怪 HP/AC/傷害的完整逆向卡在「per-character 動作指派 driver」(res3
-//        @0x08b6 actor 迴圈,docs/42 §14:headless 動作狀態機不收斂),非單一 opcode
+//        @0x08b6 actor 迴圈,docs/reverse-engineering/42 §14:headless 動作狀態機不收斂),非單一 opcode
 //        缺失;靜態反組譯已逆出搬運/setup 邏輯,但 actor 迴圈逐欄投影 char_data 槽
 //        需該 driver 跑通才能端到端對拍。
 // ──────────────────────────────────────────────────────────────────────────────
@@ -166,7 +166,7 @@ class CombatRng {
 // 玩家側:av/dv/ac/傷害骰 依 fraterrisus+SDA 規格(見 from_player)。
 // 怪物側:**AV/DV(=byte[0x01]>>2)與 STR(=byte[0x00])為反組譯逆出(res3 setup
 //         driver 0x08B6,見 MonsterRecord 檔頭)**;HP/AC/傷害骰因群模板間接化 +
-//         actor 迴圈 driver 受阻(docs/42 §14)為 **推斷**,誠實標示。
+//         actor 迴圈 driver 受阻(docs/reverse-engineering/42 §14)為 **推斷**,誠實標示。
 //
 // HP=Stun(SDA):戰鬥傷害作用於 STUN;故 hp 欄載入角色 STUN 值。
 struct Combatant {
@@ -252,7 +252,7 @@ struct AttackResult {
 };
 
 // 解算 attacker → target 的一次物理攻擊(會改 target.hp / status)。
-//   命中:roll = 2dN(N=kToHitDie,**暫定**;bytecode 真值 = 1d16+3,門檻鏈待續驗 docs/42 §11);
+//   命中:roll = 2dN(N=kToHitDie,**暫定**;bytecode 真值 = 1d16+3,門檻鏈待續驗 docs/reverse-engineering/42 §11);
 //         hit ⇔ roll + attacker.av >= kToHitBase + target.dv + target.ac。AC 在命中側(不減傷)。
 //   傷害:**【bytecode 反推 + 端到端驗證,徒手證據確鑿】dmg = 傷害骰 + floor(STR/5)**。
 //         徒手傷害骰 = res3 0x0EC2 descriptor[min(Fist,7)](Fist=0 → 1d4);**無 ×3/2、無 floor(3)**。
@@ -264,7 +264,7 @@ AttackResult resolve_attack(Combatant& attacker, Combatant& target, CombatRng& r
 
 // ── 特殊攻擊(手冊 §戰鬥;**真值層級:remake 設計 grounded 手冊**)────────────────
 // 誠實界定(務必保留):
-//  • 手冊(docs/33 §戰鬥/特殊攻擊;CONTEXT.md 戰鬥術語)列出 4 種特殊攻擊 + Dodge:
+//  • 手冊(docs/manual/33 §戰鬥/特殊攻擊;CONTEXT.md 戰鬥術語)列出 4 種特殊攻擊 + Dodge:
 //      Mighty Blow(強力一擊)/ Disarm enemy(卸武裝)/ Advance(前進)/
 //      Quickly fight(快速戰鬥)/ Dodge enemies(閃避敵人)。
 //  • opendw C 反編**未實作任何戰鬥結算**(engine.c 只到載圖 + 動畫;player.c spell_info

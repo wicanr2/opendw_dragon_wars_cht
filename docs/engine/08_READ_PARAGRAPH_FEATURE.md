@@ -3,7 +3,7 @@
 > **日期**：2026-06-10（規劃）/ 2026-06-13（已實作,自包含驗證通過）
 > **目標**：重製版遇到「Read paragraph N」時,直接在遊戲內顯示手冊段落文字,免去翻實體手冊。
 > **狀態**：✅ 已實作(自包含,無 DATA1)。段落號 N 來源逐指令對拍 opendw oracle;
-> 段落書 bundle `assets/bundle/paragraphs/<locale>/paragraphs.tsv`(147 段,自 `docs/34`);
+> 段落書 bundle `assets/bundle/paragraphs/<locale>/paragraphs.tsv`(147 段,自 `docs/manual/34`);
 > VM op_58/59 對齊 opendw byte-stack + 新增 op_81(print_number)使 N 進輸出流;
 > app `run_event` 攔「Read paragraph 」+ N → 顯示段落繁中原文(回退「Read paragraph N」);
 > CJK atlas 擴至 1653 字涵蓋全段落;7 個觸發點 N=27/90/146/134/108/53/65 與地點吻合。
@@ -12,8 +12,8 @@
 > TextLayer wrap 多行、↑↓ 逐行 / PgUp PgDn / Space 逐頁、Esc 關閉、底部「▲▼ 行範圍/總行數」。
 > headless:`--read-para N`(可加 `--para-scroll P` 逐頁下捲 + `--frames`)dump 全文分頁;
 > 段落僅 zh-TW 有資料,en/ja 回退 zh-TW 全文 + 標題 i18n。ctest 8/8 不破。
-> 截圖:`opendw_remake/docs/media/screenshots/r8_read_paragraph_zh.png`(Magic College + 段落 146);
-> 捲動 demo:`opendw_remake/docs/media/paragraph_demo/`(段落 88 頂/底頁 + en 回退 + 遊戲內段落 94)。
+> 截圖:`docs/media/remake/screenshots/r8_read_paragraph_zh.png`(Magic College + 段落 146);
+> 捲動 demo:`docs/media/remake/paragraph_demo/`(段落 88 頂/底頁 + en 回退 + 遊戲內段落 94)。
 
 ---
 

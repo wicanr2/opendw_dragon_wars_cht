@@ -1,7 +1,7 @@
 // resource/paragraphs — 「Read paragraph N」段落書(防拷手冊)查表。
 //
 // 自包含資產:assets/bundle/paragraphs/<locale>/paragraphs.tsv(由
-// tools/extract/build_paragraph_bundle.py 從 docs/34_READ_PARAGRAPHS.md 產出)。
+// tools/extract/build_paragraph_bundle.py 從 docs/manual/34_READ_PARAGRAPHS.md 產出)。
 // 每行 `N<TAB>繁中全文`,段落內換行以字面 \n 轉義(載入時還原)。
 //
 // 防拷流程:VM 事件 script 走 op_78(emit「Read paragraph 」)+ op_81(印段落號 N);

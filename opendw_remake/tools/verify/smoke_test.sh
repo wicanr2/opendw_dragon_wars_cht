@@ -59,7 +59,7 @@ det "標題場景圖"  --scene 29
 det "段落 88"     --read-para 88
 det "遭遇畫面"    --encounter 12 --combat-seed 4660
 
-echo "== 640×480 視窗模式(letterbox;docs/47 方案 3)=="
+echo "== 640×480 視窗模式(letterbox;docs/assessment/47 方案 3)=="
 # 視窗確為 640×480、像素層 320×200 ×2 垂直置中(上下各 40px 黑邊 letterbox)。
 # 640 模式像素層固定 ×2,不吃 --scale;仍可 --frames 1 限制幀數。
 "$BIN" --win640 --frames 1 --scene 29 --dump "$TMP/w640.ppm" >/dev/null 2>&1

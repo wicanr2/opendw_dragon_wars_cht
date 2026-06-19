@@ -11,7 +11,7 @@
 namespace dw::game {
 
 // 陷阱訊息語意類(小寫子字串;任一命中即判該事件格 script 為傷害/敵意機關)。
-//   來源:攻略 docs/38 描述的陷阱 + 全 40 關 emit 掃描人工 curate(保守取「即時敵意
+//   來源:攻略 docs/walkthrough/38 描述的陷阱 + 全 40 關 emit 掃描人工 curate(保守取「即時敵意
 //   環境 / 機關」句,排除景物 / 劇情描述以避免誤報)。與 tools/verify/detect_traps.cpp
 //   同一份判定集(此處為單一真理來源;工具可獨立維護自身副本供逐關 dump)。
 static const char* kTrapPhrases[] = {

@@ -21,15 +21,15 @@ description: 推進《火龍之戰》(Dragon Wars, Interplay 1989)的繁體中�
 
 ## ⚠️ 必懂的技術 lore(踩過的雷)
 
-1. **遊戲文字不是靜態表**:內嵌在 script bytecode,緊接 `op_77/op_78/op_7B` 之後、byte 對齊的 5-bit 壓縮串。**逐 byte 暴力解全 section = 雜訊**(`docs/_deprecated/20_ALL_TEXT_FROM_DATA1.txt` 的 3926 條就是這樣來的,已作廢)。乾淨文字 = `docs/ALL_TEXT_FROM_SCRIPTS.txt`(跟 bytecode 解出)。
+1. **遊戲文字不是靜態表**:內嵌在 script bytecode,緊接 `op_77/op_78/op_7B` 之後、byte 對齊的 5-bit 壓縮串。**逐 byte 暴力解全 section = 雜訊**(`docs/_deprecated/20_ALL_TEXT_FROM_DATA1.txt` 的 3926 條就是這樣來的,已作廢)。乾淨文字 = `docs/reverse-engineering/ALL_TEXT_FROM_SCRIPTS.txt`(跟 bytecode 解出)。
 2. **section 0x08–0x16 不是文字表**(暴力萃取假象)。
 3. **5-bit 文字編碼**:`alphabet[]`(92 項,compress.c)+ 5-bit 取位(carry=tmp>(tmp<<1))+ 0x1E 大小寫切換 + 0xAF/0xDC escape(變數代入)。`extract_string` 回傳值 = 下一條起始 offset。已移植 `opendw_remake/src/resource/text_codec`。
 4. **資源壓縮**:section > 0x17 是 Huffman 樹字典(compress.c build_dictionary+decompress)。開頭 2 bytes LE = 解壓後大小。已移植 `resource/decompress`,對 res31/res168 **byte-for-byte == opendw**。
 5. **DATA2 bug**:89 個資源**只在 DATA2**(DATA1 header[N] ≥ 0xFF00)。原 resource.c 寫死只讀 data1 → 讀錯資料(怪物 sprite 半數錯誤)。修正:header≥0xFF00 改從 data2 載入(`tools_build/resource_data2.patch`,已內建於 remake archive)。
-6. **怪物名在 res31**(壓縮,2177B);record byte 對齊,name 在 record+0x21(5-bit)。`monsters.txt` 的 168/196/200/210/222 是 **sprite 圖編號,非名字**。見 `docs/26_MONSTERS_AND_SPRITES.md`。
+6. **怪物名在 res31**(壓縮,2177B);record byte 對齊,name 在 record+0x21(5-bit)。`monsters.txt` 的 168/196/200/210/222 是 **sprite 圖編號,非名字**。見 `docs/reverse-engineering/26_MONSTERS_AND_SPRITES.md`。
 7. **怪物 sprite 渲染**:走 `show_random_encounter`/`draw_random_encounter_graphic`(160×136 viewport,nibble-per-pixel,DOS 16 色)。`tools_build/sprite_dump.cpp`。
 8. **全螢幕場景圖**(res 24-29,解壓=32000B=320×200):是**垂直 XOR delta 交錯**,渲染前**必須先做 title_adjust 還原**(opendw main.c),否則紅/青條紋亂碼。`tools_build/scene_render.py`、中文版 `scene_localize.py`。
-9. **Read Paragraph 防拷**:遊戲只顯示「Read paragraph N」(字串在 section 0x08@0x2d9,op_78 + op_81 數字)。段落文字在**印刷手冊**。手冊段落號 = 遊戲 N(已驗證:段落 137=Magan/Irkalla=玩家截圖)。段落 DB:`data/paragraphs/`(147 段),工具 `tools_build/build_paragraphs.py`。功能規劃 `docs/08_READ_PARAGRAPH_FEATURE.md`。
+9. **Read Paragraph 防拷**:遊戲只顯示「Read paragraph N」(字串在 section 0x08@0x2d9,op_78 + op_81 數字)。段落文字在**印刷手冊**。手冊段落號 = 遊戲 N(已驗證:段落 137=Magan/Irkalla=玩家截圖)。段落 DB:`data/paragraphs/`(147 段),工具 `tools_build/build_paragraphs.py`。功能規劃 `docs/engine/08_READ_PARAGRAPH_FEATURE.md`。
 10. **CJK 渲染**:24×24 文泉驛(wqy-zenhei,GPL)點陣,進 320×200 framebuffer,每行約 13 中文字。驗證圖 `docs/cjk_demo/`,原型 `tools_build/cjk_render_proto.py`。
 11. **VM quirk**:用 `word_3AE6` 當旗標(bit0 carry/bit6 zero/bit7 sign)、`byte_3AE1` 模式、`word_3AE2/3AE4` 主次暫存器,且「ax 高位 vs 模式」決定字/位元組運算。remake VmState 刻意**鏡像這些變數**以利逐字移植 + 差異測試。
 
@@ -44,7 +44,7 @@ description: 推進《火龍之戰》(Dragon Wars, Interplay 1989)的繁體中�
 ## 進度(2026-06-10,8 個 PR 已合併)
 - **R0 資產層**:archive + text_codec + decompress(含 DATA2 修正)對拍 opendw byte-for-byte ✅
 - **R1 batch 1**:VM 核心(VmState/dispatch/trace)+ 15/256 純 opcode,自測通過
-- 翻譯草表 v0.1(`docs/15_TRANSLATION_DRAFT.md`,258 條)、中文場景圖、手冊+段落+三期攻略視覺轉寫、docs 審查整併(錯誤結論作廢、譯名對齊)
+- 翻譯草表 v0.1(`docs/translation/15_TRANSLATION_DRAFT.md`,258 條)、中文場景圖、手冊+段落+三期攻略視覺轉寫、docs 審查整併(錯誤結論作廢、譯名對齊)
 
 ## 下一步(建議順序)
 1. **R1 差異測試 harness**(關鍵):在 opendw 加 trace hook 輸出 `(pc,op,r2,r4,flags,gamestate diff)`,remake 跑同 bytecode 逐行 diff。立起來後每加 opcode 自動驗。
@@ -61,9 +61,9 @@ description: 推進《火龍之戰》(Dragon Wars, Interplay 1989)的繁體中�
 
 ## 關鍵檔案
 - `opendw_remake/ARCHITECTURE.md`(重寫設計 + 驗證策略 + 階段表)
-- `docs/07_REVISED_PLAN.md`(萃取修正計畫)、`docs/00_DOC_AUDIT.md`(文件審查)
-- `docs/OPCODE_REFERENCE.md`(中英雙語 256-opcode)、`docs/25_OPCODE_INTERPRETATION.md`
-- `docs/26_MONSTERS_AND_SPRITES.md`、`docs/08_READ_PARAGRAPH_FEATURE.md`
-- `docs/15_TRANSLATION_DRAFT.md`、`CONTEXT.md`
-- `docs/33/34/35/36/37`(手冊/段落/攻略轉寫)
+- `docs/engine/07_REVISED_PLAN.md`(萃取修正計畫)、`docs/assessment/00_DOC_AUDIT.md`(文件審查)
+- `docs/reverse-engineering/OPCODE_REFERENCE.md`(中英雙語 256-opcode)、`docs/reverse-engineering/25_OPCODE_INTERPRETATION.md`
+- `docs/reverse-engineering/26_MONSTERS_AND_SPRITES.md`、`docs/engine/08_READ_PARAGRAPH_FEATURE.md`
+- `docs/translation/15_TRANSLATION_DRAFT.md`、`CONTEXT.md`
+- `docs/manual/33/34/35/36/37`(手冊/段落/攻略轉寫)
 - `tools_build/`(docker 工具 + patch + 渲染腳本)、`data/paragraphs/`

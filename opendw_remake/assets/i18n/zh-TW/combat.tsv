@@ -1,5 +1,5 @@
 # 戰鬥畫面 UI 標籤 + 怪物名 — 譯名以 CONTEXT.md「戰鬥 / Combat」「怪物」為準。
-# 選單選項源自原版戰鬥選單資源 Section 0x12（docs/24_SCRIPT_TEXT_MAPPING.md:136）。
+# 選單選項源自原版戰鬥選單資源 Section 0x12（docs/reverse-engineering/24_SCRIPT_TEXT_MAPPING.md:136）。
 # english	chinese
 Encounter	遭遇戰
 Will the party:	隊伍要：
@@ -14,14 +14,14 @@ miss	落空
 damage	傷害
 slain	擊殺
 The party flees!	隊伍逃離了！
-# 戰報訊息模板（對齊 DOS docs/43 §11；%s/%s/%d 順序固定：攻擊者/目標/傷害值，勿調換）
+# 戰報訊息模板（對齊 DOS docs/reverse-engineering/43 §11；%s/%s/%d 順序固定：攻擊者/目標/傷害值，勿調換）
 %s attacks %s for %d damage	%s 攻擊 %s，命中 %d 點傷害
 %s attacks %s and misses	%s 攻擊 %s，落空
 , stunning him	，使其暈眩
 , killing him	，將其擊倒
 # 怪群描述（%d 數量 / %s 怪名 / %d 存活）
 %d %s (%d left)	%d 隻 %s（存活 %d）
-# 控制類法術戰報（grounded 手冊 docs/33；持續/逃離為 remake 設計）
+# 控制類法術戰報（grounded 手冊 docs/manual/33；持續/逃離為 remake 設計）
 Not enough power	法力不足
 The party is full.	隊伍已滿，無法再召喚。
 %s is disoriented!	%s 迷失了方向！

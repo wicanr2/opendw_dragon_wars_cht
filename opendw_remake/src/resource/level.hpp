@@ -69,14 +69,14 @@ public:
   // 黃泥蟾蜍=8、自由港=17、京雄城=25、龍谷=32…);唯 tile 0x1C @(27,7) 的 IDX=0x89
   // 超出範圍(特殊/非換區格,排除)。注意:菲巴斯(6)/拜占儂(9) **不在** area 0
   // 世界圖 26 格直連表中 —— 它們是「由母區踩格進入」的子區(菲巴斯←黃泥蟾蜍 8、
-  // 拜占儂←軍營 29),其進入鏈卡在未實作 opcode(op_79 等),見 docs/54。
+  // 拜占儂←軍營 29),其進入鏈卡在未實作 opcode(op_79 等),見 docs/gameplay/54。
   //
   // 重要誠實標示:**opendw 對此路徑無實作**(resource 8 的 op_58 子常式 +
   //   op_68/op_70 在 opendw targets[] 標 NULL → exit/未逆出)。本對映是
   //   **直接從 DRAGON.COM 16-bit 反組譯 + 0.lvl bytecode 靜態反推**,經攻略
   //   地點交叉驗證(7/7 已知 area 名吻合);入口座標/朝向因受 resource 8
   //   runtime 控制流阻而**未能靜態逆出**,故進區後落點採目標關卡第一可走格
-  //   (連通正確,非 byte-exact 入口)。詳見 docs/49。
+  //   (連通正確,非 byte-exact 入口)。詳見 docs/assessment/49。
   //
   // 回傳:目的地 area id(0..39),或 -1(非世界圖換區格)。
   int worldmap_dest(std::uint8_t tile_value) const {
@@ -154,7 +154,7 @@ public:
   // **關鍵發現(逆出 Byzanople 拜占儂 9 進城)**:area 29 @0x04FA 為 `1A 00 07 /
   //   1A 01 09 / 1A 02 09`(op_8C-gated),即 Siege Camp 軍營踩該格答 Y → 進拜占儂
   //   (gs[2]=9,入口 (7,9))。**舊版兩套機制(worldmap_dest off=6、subarea_relocs
-  //   1A 45)都掃不到此邊**(無 1A 45 09),這就是 docs/54 §2.3 所述「第三種未識別
+  //   1A 45)都掃不到此邊**(無 1A 45 09),這就是 docs/gameplay/54 §2.3 所述「第三種未識別
   //   機制」。動態 trace(trace_subarea_dyn 29 --yes)實證 gs2:29->9。
   //
   // 誠實標示:目的地 + 入口座標 byte-exact(直接讀 1A 02/1A 00/1A 01 的 immediate);

@@ -8,7 +8,7 @@
 
 - **進入**:`op_8A`(engine.c:4876)→ `trigger_random_encounter`(engine.c:4818)。**只設圖形/動畫狀態**(`byte_4F0F`=怪物id、載入 sprite 資源、`init_monster_animation`、`byte_4F2B`=0xFF),**不寫任何戰鬥數值**到 game_state / char_data。
 - **戰鬥腳本本體**:**DATA1 resource 3**(`assets/bundle/scripts/3.bin`,解壓 5390 bytes)。由 `script 1` 經 `op_58 load_resource res:0x03 offset:0x0000` 進入(對拍確認)。doc/script.md 亦標「Section 3, 1706 (encounter)」(1706 = 0x6AA)。
-- **戰鬥用到的資源**:res 0x02、0x03(自身)、0x06(戰鬥訊息字串)、0x12(戰鬥選單,1375B,docs/24:136)、0x16。已全數抽進 `assets/bundle/scripts/`(自包含,執行期不需 DATA1)。
+- **戰鬥用到的資源**:res 0x02、0x03(自身)、0x06(戰鬥訊息字串)、0x12(戰鬥選單,1375B,docs/reverse-engineering/24:136)、0x16。已全數抽進 `assets/bundle/scripts/`(自包含,執行期不需 DATA1)。
 - **結算位置(關鍵)**:opendw C **沒有**戰鬥結算;命中/傷害/HP 全在 res3 bytecode,經以下 primitive:
   - `op_5D/5E`(get/set char_data,engine.c:2568/2601)讀寫角色/怪物 HP 等屬性。
   - `op_4D`(PRNG,engine.c:2210)亂數。
@@ -159,7 +159,7 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
 - **op_68 在 opendw `targets[]` 為 NULL**(engine.c:583 區,handler @0x450A,**未逆向**);disasm.cpp 僅標 `1 arg`;`dos/dragon.asm` 不及該位址;`doc/script.md` 無。res3 用 op_68 **22 次**(命中/傷害/AI 路徑),武器傷害核心(0x0D68 的 `op_68 0x08/0x02/0x01`)即靠它讀「武器記錄的位元欄位」。**無任何可逐指令對齊的 oracle** → 須從原始 COM 反組譯 op-dispatch 表(現無素材)。
 
 ### 與 DOS 校準 / combat.cpp 是否一致
-- 校準錨點(docs/43 §9):徒手 Str10 → {3,4,6}、傷害 `max(3, floor(1.5×raw))`、`×3/2`、AV=DV=Dex/4、AC 壓命中不減傷。
+- 校準錨點(docs/reverse-engineering/43 §9):徒手 Str10 → {3,4,6}、傷害 `max(3, floor(1.5×raw))`、`×3/2`、AV=DV=Dex/4、AC 壓命中不減傷。
 - bytecode 顯示的徒手路徑用 **Fistfighting 技能 + STR + 骰表 + `op_36 0x05`(÷5)**,與校準的 `×3/2`/`max(3)` **結構不同**(bytecode 是「骰 ÷5」而非「×1.5 取下限 3」)。**尚不能判定等價**:因徒手路徑的最終命中/傷害仍經 op_68(0x0E83 等)與 roster 數值,未端到端跑出數字驗證。
 - **結論:不可升級標示**。weapon 傷害被 op_68 擋住、徒手傷害未端到端跑出數字對校準,故 combat.cpp **維持「手冊/實機校準」標示不變**(嚴守鐵則:未經 bytecode 跑通+對拍不謊稱 oracle)。
 
@@ -310,7 +310,7 @@ docker run --rm -v "$PWD/opendw_remake":/app -w /app dwsdl bash -c '
   `sel = gs[gs[6]+0x0A]`、`slot = gs[7]`、stride 23、區段 = `data_CA4C`(opendw 拆成獨立 4096B 陣列;
   原始 binary 中 0xCA4C = 0xC960 + 0xEC,在同一資料段內,即 char record 內偏移 +0xEC 的物品/裝備區)。
 - **unknown_4456 表**(@0x4456,binary 實讀)= `{0,23,46,69,92,115,138,161,184,207,230,253,...}` = **slot × 23**。
-  佐證 docs/44 §2「裝備 23B/件」+ op_64(@0x446F)裝備邏輯:掃 12 槽 × 23B、找 byte[+0xB]==0 空槽寫入。
+  佐證 docs/reverse-engineering/44 §2「裝備 23B/件」+ op_64(@0x446F)裝備邏輯:掃 12 槽 × 23B、找 byte[+0xB]==0 空槽寫入。
 
 ### 武器傷害邏輯(op 層級,res3 0x0D68,**op_68 反推後可完整讀懂**)
 ```

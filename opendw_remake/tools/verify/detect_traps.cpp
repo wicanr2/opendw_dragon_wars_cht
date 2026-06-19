@@ -10,7 +10,7 @@
 //     (已實測:area27 trap tile 走 op_52 跳轉/op_58,非 op_5E 寫 Health)。
 //   故本工具以「emit 訊息語意類」識別陷阱格(位置真值),不宣稱逆出傷害數值。
 //
-//   訊息判定集 = 由攻略(docs/38)描述的陷阱 + 全 40 關 emit 掃描人工 curate;
+//   訊息判定集 = 由攻略(docs/walkthrough/38)描述的陷阱 + 全 40 關 emit 掃描人工 curate;
 //   保守取「瞬時敵意環境/機關」語句,排除單純景物描述(避免誤報)。
 //
 // 用法:detect_traps <bundle_dir> [area] [--list]
@@ -32,7 +32,7 @@
 using namespace dw;
 
 // 陷阱訊息語意類:小寫子字串,任一命中即判該 script 為傷害/敵意機關。
-//   來源:攻略 docs/38(尼塞山腹陷阱「the floor is moving」、放逐橋單向門、
+//   來源:攻略 docs/walkthrough/38(尼塞山腹陷阱「the floor is moving」、放逐橋單向門、
 //   矮人鑄爐耗命、魔法學院 tripwire 巨石、Mystic Wood 陷阱)+ 全關 emit 掃描。
 //   保守:只取「對玩家施加即時傷害/環境敵意」的句子,景物/劇情描述不收。
 static const char* kTrapPhrases[] = {

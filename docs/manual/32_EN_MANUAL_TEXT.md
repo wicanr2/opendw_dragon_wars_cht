@@ -3,7 +3,7 @@
 > ℹ️ **本檔已由視覺轉寫取代舊版 tesseract OCR。**
 > 由 Claude 直接「看圖」(Read 工具讀 PNG)逐頁精確重新轉寫,取代先前粗糙、含亂碼的 tesseract 輸出。
 >
-> **來源**:`docs/en_manual_images/page-01.png` ~ `page-48.png`(48 頁掃描影像)。
+> **來源**:`docs/manual/en_manual_images/page-01.png` ~ `page-48.png`(48 頁掃描影像)。
 > **方法**:視覺逐頁轉寫(非 OCR)。看不清的字以 `[?]` 標記,不臆造。
 > **日期**:2026-06-12。
 > **用途**:作為英文原文 oracle,與中文「Read Paragraph 段落書」`34_READ_PARAGRAPHS.md`(段落 1–147)交叉對照。

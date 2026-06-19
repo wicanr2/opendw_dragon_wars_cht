@@ -10,7 +10,7 @@
 //  7. 隊伍 round-trip:招募後 raw_records → from_raw_records byte-for-byte 一致(存檔相容)。
 //  8. >4 員處理:招募使隊伍可達 5/6/7 員,size() 正確、各成員可解析。
 //
-// grounded(512B 格式 + identifier[77] + NPC 名=fraterrisus docs/44 §1)vs remake
+// grounded(512B 格式 + identifier[77] + NPC 名=fraterrisus docs/reverse-engineering/44 §1)vs remake
 // (NPC 屬性/招募邏輯,見 recruit.hpp 檔頭),測試只驗「行為自洽 + gate + 上限 + round-trip」。
 #include "game/chargen.hpp"
 #include "game/party.hpp"

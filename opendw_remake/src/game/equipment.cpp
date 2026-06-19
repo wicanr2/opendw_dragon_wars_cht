@@ -1,4 +1,4 @@
-// equipment — 物品/裝備格式解析實作。對齊依據見 equipment.hpp 檔頭(docs/44 §2)。
+// equipment — 物品/裝備格式解析實作。對齊依據見 equipment.hpp 檔頭(docs/reverse-engineering/44 §2)。
 #include "game/equipment.hpp"
 
 namespace dw::game {
@@ -6,7 +6,7 @@ namespace dw::game {
 namespace {
 
 // 取 11B header 內 [lo,hi](inclusive)bit 區段;LSB-first across bytes。
-// 對齊 docs/44 §2 的 bit offset(與 party.cpp parse_equip 同一套位元規則)。
+// 對齊 docs/reverse-engineering/44 §2 的 bit offset(與 party.cpp parse_equip 同一套位元規則)。
 std::uint32_t bit_field(const std::uint8_t* q, int lo, int hi) {
   std::uint32_t v = 0;
   for (int b = lo; b <= hi; ++b) {
@@ -114,7 +114,7 @@ ItemInstance parse_item(const std::uint8_t* p, std::size_t avail) {
   it.ac_mod           = static_cast<int>(bit_field(p, 28, 31));
   std::uint8_t price_enc = static_cast<std::uint8_t>(bit_field(p, 32, 39));
   it.purchase_price   = decode_price(price_enc);
-  it.sale_price       = it.purchase_price / 2;  // docs/44:售價 = 購買價 ÷ 2
+  it.sale_price       = it.purchase_price / 2;  // docs/reverse-engineering/44:售價 = 購買價 ÷ 2
   it.type             = static_cast<ItemType>(bit_field(p, 40, 44));  // 低 5 bit
   it.magic_effect     = static_cast<std::uint16_t>(bit_field(p, 48, 63));
   it.primary_dmg      = decode_damage_dice(static_cast<std::uint8_t>(bit_field(p, 64, 71)));

@@ -1,9 +1,9 @@
 # 59 — 版面忠實度比對(Remake vs 1990 原版 Dragon Wars)
 
 > 唯讀分析。把 `opendw_remake` 各畫面的版面配置,逐項對照 1990 年原版 *Dragon Wars*(Interplay / Rebecca Heineman)的實機配置,確認重製版是否貼近原始。
-> **權威參考(原版 ground truth)**:`docs/dos_playtest/`(dwdos 跑原版 DOS 抓的真畫面)+ `docs/33_MANUAL_TRANSCRIPTION.md`(臺灣中文版手冊轉寫)。
+> **權威參考(原版 ground truth)**:`docs/dos_playtest/`(dwdos 跑原版 DOS 抓的真畫面)+ `docs/manual/33_MANUAL_TRANSCRIPTION.md`(臺灣中文版手冊轉寫)。
 > **remake 現況**:用現有 headless dump(`--fp` / `--encounter` / `--char-sheet` / `--map`)在 docker(`dwsdl` 影像)重產,scale 3(960×600,等比 320×200)。
-> 並排對照圖在 `docs/layout_compare/`;remake 單張原圖在 `docs/layout_compare/remake_raw/`。
+> 並排對照圖在 `docs/layout_compare/`;remake 單張原圖在 `docs/media/layout_compare/remake_raw/`。
 
 ---
 
@@ -17,7 +17,7 @@ remake 把每個畫面該有的**元素都畫到了、相對位置大致正確**
 > `ui_draw` / `ui_header_draw`)在 S_GAME / S_COMBAT 畫**原版石磚藍/綠框 + Dragon Wars 立繪 logo + pillar**,
 > 取代 `main.cpp` 舊的 `frame_rect` 藍實線 + `tr("Dragon Wars")` 文字。chrome 渲染 320×200 對拍獨立 oracle
 > **byte-for-byte**(ctest `verify_ui_pieces_golden` PASS);viewport 154-case 不動(render_sweep 仍 PASS)。
-> 對照圖見 `docs/ui_chrome_demo/chrome_compare.png`(原版 vs remake chrome,像素級吻合)。
+> 對照圖見 `docs/media/ui_chrome_demo/chrome_compare.png`(原版 vs remake chrome,像素級吻合)。
 > logo 維持原版英文立繪(在地化選單仍繁中;in-game chrome logo 用原版美術即真值,中文 logo 另議)。
 > 下方 #1/#2 原文敘述保留以記錄升級前狀態;★1/★2 修補項已落地。
 
@@ -40,7 +40,7 @@ remake 把每個畫面該有的**元素都畫到了、相對位置大致正確**
 
 ## 原版版面的基準座標(共用框架)
 
-原版探索與戰鬥共用同一套「框架」,從 `docs/dos_playtest/05_world_map_ui.png`、`16_guard_hits_7_stun.png` 與手冊 L131–138 可歸納:
+原版探索與戰鬥共用同一套「框架」,從 `docs/media/dos_playtest/05_world_map_ui.png`、`16_guard_hits_7_stun.png` 與手冊 L131–138 可歸納:
 
 | 區塊 | 原版位置(320×200 內) | 內容 |
 |------|------|------|
@@ -66,7 +66,7 @@ remake 的對應實作(`src/game/party_panel.cpp`、`src/main.cpp`):
 
 ## [1] 第一人稱探索 First-person Exploration
 
-對照圖:`docs/layout_compare/01_fp_explore.png`
+對照圖:`docs/media/layout_compare/01_fp_explore.png`
 (左=原版 `05_world_map_ui.png`;右=remake `--map 1 --fp`,迷宮透視牆面)
 remake 戶外版另見 `remake_raw/fp_explore.png`。
 
@@ -92,7 +92,7 @@ remake 戶外版另見 `remake_raw/fp_explore.png`。
 
 ## [2] 戰鬥 / 遭遇 Combat / Encounter
 
-對照圖:`docs/layout_compare/02_combat_encounter.png`
+對照圖:`docs/media/layout_compare/02_combat_encounter.png`
 (左=原版 `16_guard_hits_7_stun.png`;右=remake `--encounter 0`)
 
 | 元素 | 原版 | remake | 判定 |
@@ -115,7 +115,7 @@ remake 戶外版另見 `remake_raw/fp_explore.png`。
 
 ## [3] 角色屬性 Character Stats
 
-對照圖:`docs/layout_compare/03_char_stats.png`
+對照圖:`docs/media/layout_compare/03_char_stats.png`
 (左=原版 `06_muskels_stats.png`;右=remake `--map 0 --char-sheet 1`)
 remake 原圖:`remake_raw/charsheet.png`。
 
@@ -140,7 +140,7 @@ remake 原圖:`remake_raw/charsheet.png`。
 
 ## [4] 遭遇選單 Encounter Prompt(Fight / Run)
 
-對照圖:`docs/layout_compare/04_encounter_prompt.png`
+對照圖:`docs/media/layout_compare/04_encounter_prompt.png`
 (左=原版 `11_encounter_kingsguards.png`;右=remake `--encounter 0`)
 
 原版遭遇開場:**右側面板區**變成白底黑字描述框,內含怪物登場敘述 + 選單
@@ -162,7 +162,7 @@ remake:沒有這個遭遇描述/選單框,直接進戰鬥畫面,底部一行 `F:
 
 ## [5] 戰鬥動作選單 Combat Action Menu
 
-對照圖:`docs/layout_compare/05_combat_action_menu.png`
+對照圖:`docs/media/layout_compare/05_combat_action_menu.png`
 (左=原版 `12_combat_action_menu.png`;右=remake `--encounter 0`)
 
 原版逐人行動:**右側面板區**(原本顯示隊伍狀態的位置)換成
@@ -223,7 +223,7 @@ PPM → PNG:以最小 zlib PNG 編碼器轉(docker 內 python3 zlib;見產出流
 
 依上方「Top 偏差」清單實作了 #1/#2/#3/#4/#5/#6(#7=#5 同項;#3 角色屬性網格、#6 已含於下;遭遇/逐人動作選單 #6 系統項待戰鬥結算落地)。viewport 像素層 byte-for-byte 不動 —— `render_sweep` 154 全 PASS、ctest 25/25 全 PASS。
 
-對照圖:`docs/layout_compare/06_fp_explore_after.png`、`07_combat_encounter_after.png`(左=原版、右=修正後 remake);remake 單張在 `docs/layout_compare/remake_after/`。
+對照圖:`docs/media/layout_compare/06_fp_explore_after.png`、`07_combat_encounter_after.png`(左=原版、右=修正後 remake);remake 單張在 `docs/media/layout_compare/remake_after/`。
 
 | 項 | 修了什麼 | grounded vs 近似 | 改動檔 |
 |----|---------|------------------|--------|
@@ -238,7 +238,7 @@ PPM → PNG:以最小 zlib PNG 編碼器轉(docker 內 python3 zlib;見產出流
 
 - **logo 與外框為「文字 / 實線近似」,非原版石磚紋理立繪**:根因是 DRAGON.COM 的 `ui_pieces`(com 0x6AE0)從未抽進 bundle,且本專案執行期刻意不依賴 DRAGON.COM。要 byte-for-byte 還原,需先把 com 0x6AE0 的 43 份 `ui_pieces`(opendw `ui_load`,ui.c:798;每片 = w,h,offset_delta,y_pos + w×h nibble bitmap)抽成 bundle 資產,再以 `draw_ui_piece` 等價邏輯 blit。屬資產萃取工作,非本次版面修正範圍。
 - **訊息列底色**:原版白底黑字;remake 維持深色底白字,與中文化深藍訊息框(`fill_msg_box`)的視覺系統一致(刻意保留)。
-- **隊伍面板偏右、與 viewport 間距較大**:面板狀態條 x 起點鎖定 216(`0x36<<2`,對拍 opendw `draw_player_status`),未動;新增的面板外框讓此區視覺上成為獨立分區。原版面板更貼近 viewport,屬幾何偏差(docs/59 [1] 已記),本次不動已驗證的面板座標。
+- **隊伍面板偏右、與 viewport 間距較大**:面板狀態條 x 起點鎖定 216(`0x36<<2`,對拍 opendw `draw_player_status`),未動;新增的面板外框讓此區視覺上成為獨立分區。原版面板更貼近 viewport,屬幾何偏差(docs/gameplay/59 [1] 已記),本次不動已驗證的面板座標。
 - **#3 角色屬性網格、遭遇/逐人動作選單**:屬版型重寫 / 戰鬥系統未落地,非本次「探索/戰鬥主畫面 chrome」範圍,維持原判定。
 
 ---
