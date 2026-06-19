@@ -57,12 +57,12 @@ docker run --rm -v "$PWD":/app -w /app dwsdl bash -c \
 ```bash
 cd opendw_remake
 cmake -S . -B build && cmake --build build -j --target opendw_remake
-cd build && ctest --output-on-failure          # 回歸測試:32 項
+cd build && ctest --output-on-failure          # 回歸測試:34 項
 ```
 
-### 回歸測試(ctest 32 項)
+### 回歸測試(ctest 34 項)
 
-`CMakeLists.txt` 註冊 **32** 個 `add_test`,涵蓋 VM 自測、存讀檔 round-trip、戰鬥(公式 / loop / special / script / round / golden 怪物)、結局鏈、建角、升級、隊伍操作、法術、商店、招募、地形、area switch / city entry / wrap、op58、i18n、render_sweep(第一人稱全 40 關)、compose / fp / automap / seen viewport、smoke。CI 全綠才算數。
+`CMakeLists.txt` 註冊 **34** 個 `add_test`,涵蓋 VM 自測、存讀檔 round-trip、戰鬥(公式 / loop / special / script / round / golden 怪物)、結局鏈、建角、升級、隊伍操作、法術、商店、招募、地形、area switch / city entry / wrap、op58、i18n、render_sweep(第一人稱全 40 關)、compose / fp / automap / seen viewport、smoke。CI 全綠才算數。
 
 ### headless 開發旗標
 
@@ -121,7 +121,7 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 
 流程:cmake build → `cpack -G TGZ` 產包 → 解開 → 啟動器 headless `--frames 0` 執行驗證(**全綠才產出**)。安裝佈局:`bin/opendw-remake`(binary)+ `bin/opendw-remake.sh`(啟動器,自動 `cd` 至資產目錄)+ `share/opendw-remake/assets/`(自包含 bundle / i18n)。字型不打包(授權考量),執行期搜尋系統 CJK 字型,可用 `DWR_FONT` 指定。亦可 `cmake --install build --prefix <dir>`。
 
-跨平台 CI(`.github/workflows/ci.yml`):Linux 已實機驗證(build + ctest 32 + package + headless 執行);Windows(vcpkg/MSVC)、macOS(Homebrew)CI 設定已備,未在本機環境實機驗證。
+跨平台 CI(`.github/workflows/ci.yml`):Linux 已實機驗證(build + ctest 34 + package + headless 執行);Windows(vcpkg/MSVC)、macOS(Homebrew)CI 設定已備,未在本機環境實機驗證。
 
 ---
 
