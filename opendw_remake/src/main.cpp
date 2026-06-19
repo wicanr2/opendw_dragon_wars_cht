@@ -2362,8 +2362,12 @@ int main(int argc, char** argv) {
       tl.add(tx, y, row, cur ? 15 : (joined ? 8 : 7), PX_BODY);
       if (joined) tl.add(CS_X + CS_W / 2 + 4, y, tr.tr("(in party)"), 8, PX_UI);
       else {
-        char st[48];
-        std::snprintf(st, sizeof st, "STR%d DEX%d INT%d", t.strength, t.dexterity, t.intel);
+        char st[80];
+        // B5:招募屬性標籤走 i18n(recruit_str/dex/int → 力量/敏捷/智力,CONTEXT.md 屬性節)。
+        std::snprintf(st, sizeof st, "%s%d %s%d %s%d",
+                      tr.tr("recruit_str").c_str(), t.strength,
+                      tr.tr("recruit_dex").c_str(), t.dexterity,
+                      tr.tr("recruit_int").c_str(), t.intel);
         tl.add(CS_X + CS_W / 2 - 20, y, st, cur ? 14 : 7, PX_UI);
       }
       y += CS_LINE_H;
@@ -3094,10 +3098,36 @@ int main(int argc, char** argv) {
       tl.add(rx, ry + 28, tr.tr("[ continue ]"), 8, PX_UI);
     }
   };
+  // area id / 關卡英文名 → 在地化關卡名(B2 在地化漏網修復)。
+  //   優先用 WorldMap::place_name_zh(area)(CONTEXT.md 譯名;area 0 與 worldmap 共用同一表),
+  //   其次走 i18n tr()(menu/events 等表的鍵),最後回退英文名(CONTEXT.md flagged 暫保留原文者)。
+  auto area_name_tr = [&](int area, const std::string& en) -> std::string {
+    std::string zh = render::WorldMap::place_name_zh(area);
+    if (!zh.empty()) return zh;
+    if (!en.empty()) { std::string t = tr.tr(en); if (!t.empty()) return t; }
+    return en;
+  };
+  // area 0(Dilmun)美化世界圖共用繪製(B1):`?`/automap 與俯視探索(--map 0)同走此路徑,
+  //   不再出現舊「單一水平帶」的原始 tile 格。其餘 39 關仍走 Minimap(oracle automap)。
+  //   像素層由 WorldMap::render 畫(地形 + 圖示),繁中地點名 + 標題由文字層繪製(銳利)。
+  auto draw_worldmap_view = [&]() {
+    auto labels = worldmap.render(fb, *level, px, py);
+    if (!para.active) {
+      tl.add(8, 2, "Dilmun  迪瑪", 14, PX_UI);             // 標題:行星名(原文 + 繁中)
+      for (auto& lb : labels) {
+        int tw = lb.right_align ? tl.measure_vwidth(lb.name, PX_UI * 3 / 4) : 0;
+        tl.add(lb.x - tw, lb.y, lb.name, 15, PX_UI * 3 / 4);  // 地點名(較小字,白)
+      }
+    }
+    add_lang_badge();
+    tl.add(8, 190, tr.tr("Map  -  Esc: back"), 7, PX_UI);
+  };
   auto draw_game = [&]() {
     // F:真實關卡俯視圖(從 .lvl 解出的 tile 格,像素層)+ 玩家朝向;文字走文字層。
     fb.clear(0);
     if (!level) return;
+    // area 0(Dilmun overworld):俯視探索一律走美化世界圖(B1),非原始 tile 一條帶。
+    if (current_area == 0) { draw_worldmap_view(); return; }
     int W = level->w, H = level->h;
     int cs = std::min(11, std::min(300 / (W ? W : 1), 150 / (H ? H : 1)));
     if (cs < 2) cs = 2;
@@ -3114,7 +3144,7 @@ int main(int argc, char** argv) {
     if (!para.active) {
       draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, level->name, 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/59 #6)
+      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/59 #6)
     }
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框)。訊息列獨立,不擠進原本的提示位置。
@@ -3155,7 +3185,7 @@ int main(int argc, char** argv) {
         if (!para.active) {
           draw_explore_chrome();
           party.draw_status_panel(fb, tl, PX_UI);
-          tl.add(8, 2, level->name, 15, PX_UI);
+          tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);
         }
         add_lang_badge();
         if (!para.active && !msg.active && !sheet.active)
@@ -3176,7 +3206,7 @@ int main(int argc, char** argv) {
     if (!para.active) {
       draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, level->name, 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/59 #6)
+      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/59 #6)
     }
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/59 #3)
@@ -3193,19 +3223,7 @@ int main(int argc, char** argv) {
     // area 0(Dilmun)→ 美化世界地圖(旋轉 90° landscape + 地形美化 + 繁中地點標記)。
     //   像素層由 WorldMap::render 畫(地形 + 圖示),繁中地點名由文字層 tl 繪製(銳利)。
     //   其餘 39 關落到下方 oracle automap(Minimap),保真資產不動。
-    if (current_area == 0) {
-      auto labels = worldmap.render(fb, *level, px, py);
-      if (!para.active) {
-        tl.add(8, 2, "Dilmun  迪瑪", 14, PX_UI);           // 標題:行星名(原文 + 繁中)
-        for (auto& lb : labels) {
-          int tw = lb.right_align ? tl.measure_vwidth(lb.name, PX_UI * 3 / 4) : 0;
-          tl.add(lb.x - tw, lb.y, lb.name, 15, PX_UI * 3 / 4);  // 地點名(較小字,白)
-        }
-      }
-      add_lang_badge();
-      tl.add(8, 190, tr.tr("Map  -  Esc: back"), 7, PX_UI);
-      return;
-    }
+    if (current_area == 0) { draw_worldmap_view(); return; }  // B1:`?`/automap area 0 → 美化世界圖(共用)
     if (minimap_ok && minimap_dirty) {
       // --mm-seed 顯式給值(測試/展示)→ 用 Seed 模式;否則用遊戲內真實 fog of war。
       //   用 render_full(8 趟疊圖)鋪滿整個視窗(修稽核 #1:單趟 render 只畫最頂一帶)。
@@ -3219,7 +3237,7 @@ int main(int argc, char** argv) {
       minimap_dirty = false;
     }
     if (minimap_ok) minimap.to_framebuffer(fb, /*ox=*/1, /*oy=*/8, /*rows=*/0xC0);
-    if (!para.active) tl.add(8, 2, level->name, 14, PX_UI);   // 文字層:關卡名
+    if (!para.active) tl.add(8, 2, area_name_tr(current_area, level->name), 14, PX_UI);   // 文字層:關卡名
     add_lang_badge();
     tl.add(8, 188, tr.tr("Map  -  Esc: back"), 7, PX_UI);     // 圖例(i18n)
   };
