@@ -35,11 +35,21 @@
 <a name="what"></a>
 ## 🐉 這是什麼
 
-1989 年，Interplay 推出《火龍之戰》（*Dragon Wars*）——一款以「被剝奪所有裝備、丟進罪惡之城地牢」開場的第一人稱迷宮 CRPG。它是 *Bard's Tale* 班底的精神續作，以硬派的探索、技能檢定與回合制群戰著稱。
+### 一段藏在改名背後的血緣
 
-這個專案做兩件事：
+1989 年，Interplay 推出《火龍之戰》（*Dragon Wars*）——一款以「被剝奪所有裝備、赤身丟進罪惡之城地牢」開場的第一人稱迷宮 CRPG。但它一開始並不叫這個名字。
 
-- **乾淨室重製**。不是把組合語言再翻一次，而是理解後的現代重寫——手寫的 script VM + 渲染器 + 資產層，**執行原始（已萃取並驗證）的 bytecode**。正確性靠 [opendw](https://github.com/dswban/opendw)（Devin Smith 的 C 反組譯，對應 Rebecca Heineman 1989 原版引擎）當 **oracle**：每個模組以「與 opendw 逐位元 / 逐指令一致」為驗收。
+直到發行前一個月，這款遊戲都還叫**《吟遊詩人傳說 IV》（Bard's Tale IV）**。問題出在商標：Interplay 握有引擎程式碼與劇本，但「Bard's Tale」這塊招牌的商標權屬於發行商美商藝電（EA）。為了不付授權費，團隊在最後關頭把遊戲改名、重寫故事硬塞進一條龍（成品裡龍的戲份其實很少），改由 Activision（當時品牌 Mediagenic）發行。Interplay 的廣告仍直接喊話「Bard's Tale Fans Rejoice!」，並主打可從《吟遊詩人傳說》三部曲匯入角色——血緣寫在臺面上。
+
+把這兩條線縫在一起的人是 **Rebecca "Burger Becky" Heineman**：她從初代《吟遊詩人傳說》就在寫資料壓縮常式與開發工具，到第三作《Thief of Fate》與《火龍之戰》更直接擔任主程式。所以《火龍之戰》不是另起爐灶的重寫，而是同一條技術脈絡在 Heineman 手下走到的成熟末端——它融合了《吟遊詩人傳說》的第一人稱地城骨架，與《廢土》（Wasteland, 1988）的開放敘事與「段落書」（paragraph book）防拷劇情。
+
+這條血緣與本專案直接相關：本 remake 的反組譯基準 [opendw](https://github.com/dswban/opendw) 由 Devin Smith 製作，對應的正是 **Heineman 1989 年《火龍之戰》原版 16-bit x86 引擎**。逐指令研究這套引擎，等於在研究 Bard's Tale 技術脈絡的成熟形態。
+
+> 誠實邊界：法律與品牌意義上，《火龍之戰》是獨立 IP，**不是官方第四部 Bard's Tale**——商標問題使它無法掛上舊招牌。「精神續作」一說有 Heineman 本人受訪佐證（本來就是 BT IV、同一批人、可匯入角色、共用設計語彙），不只是後人的浪漫化標籤。完整考證、時間線與信心標示見 [docs/66 — Bard's Tale 血緣脈絡](opendw_remake/docs/reference/66_BARDS_TALE_LINEAGE.md)。
+
+### 這個專案做兩件事
+
+- **乾淨室重製**。不是把組合語言再翻一次，而是理解後的現代重寫——手寫的 script VM + 渲染器 + 資產層，**執行原始（已萃取並驗證）的 bytecode**。正確性靠 [opendw](https://github.com/dswban/opendw)（Devin Smith 的 C 反組譯，對應上文那套 Heineman 1989 原版引擎）當 **oracle**：每個模組以「與 opendw 逐位元 / 逐指令一致」為驗收。
 - **繁體中文化**。menu、角色、戰鬥、法術、物品全繁中，主線事件 200+ 鍵 + 147 段落 + 結局譯成繁中；遊戲中 `F4` 可即時切 繁中 / EN / 日，24×24 點陣與 SDL2_ttf 雙層渲染讓 CJK 永遠銳利。
 
 成果：`opendw_remake/`（C++20 + SDL2）現在能跑出**完整一輪**——**建立人物 → 探索 38/40 連通世界 → 主線繁中事件 → 終戰 Namtar → 結局 → 全劇終**。資產已萃取成自包含 bundle（`assets/bundle/`），**執行期不需要原始 `DRAGON.COM` / `DATA1` / `DATA2`**。
@@ -129,7 +139,7 @@ tar xzf opendw-remake-*.tar.gz
 | 繁體中文 | English | 日本語 |
 |:---:|:---:|:---:|
 | ![zh](opendw_remake/docs/media/screenshots/r10_event_zh-TW.png) | ![en](opendw_remake/docs/media/screenshots/r10_event_en.png) | ![ja](opendw_remake/docs/media/screenshots/r10_event_ja.png) |
-| 主線事件繁中 | 原文英文 | events 212/283 採 X68000 原版日文原文（破解 nibble-swap SJIS） |
+| 主線事件繁中 | 原文英文 | 日語介面（此格事件無日譯 → 回退英文）；events 212/283 等具 X68000 原版日文者直接顯日文（破解 nibble-swap SJIS） |
 
 ### 半透明對話框（踩格事件訊息）
 
