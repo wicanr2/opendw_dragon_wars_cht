@@ -357,9 +357,11 @@ themes/x68000/tiles/icon_sheet_w32.png         icon 原寬(32px)直條版
   (`src/resource/decompress.cpp`,`[size_LE][tree][bitstream]` big-endian 16-bit)套用後輸出垃圾
   → **X68000 PKH 與 DOS codec 不相容**。
 
-> 狀態更新(本批):從 `DRAGON.X` 反組譯出 PKH 解碼器與**核心 RLE+nibble 演算法**,
-> 演算法自洽可重寫(`tools_build/pkh_unpack.py`),但解出的點陣與真實畫布尺寸不吻合、
-> 目視仍為斜紋雜訊 → **buffer/GVRAM plane 接合層仍差一層**,標題暫未還原。詳下。
+> 狀態更新(2026-06-19):核心 RLE+nibble codec + **GVRAM blitter(0x32b4c)已逐指令完整逆出**,
+> 並用 `dwemu` 實機驗證。**GVRAM = chunky 16-bit-word、stride 1024 words/line,無 plane 交錯**
+> (推翻舊「需 4-plane deinterleave」假設)。真正且唯一的殘餘缺口:**w/h/palette 不存在於 PKH 檔內**
+> (檔內對應欄位為零/垃圾,已 emu 證實),維度與調色盤由 DRAGON.X 內某「圖號→參數」表供給,該表
+> 位置尚未定位 → 標題暫未還原。詳下。
 
 #### DRAGON.X 結構
 - `DRAGON.X` 是 **Human68k `.X` 執行檔**,fat12 抽出的映像在 file offset **0x1400** 有 `HU`(0x4855)
@@ -383,16 +385,59 @@ themes/x68000/tiles/icon_sheet_w32.png         icon 原寬(32px)直條版
   - literal `0x32cfe`:每讀 1 byte 拆 hi nibble(`b>>4`)、lo nibble,各寫一個 **word**(4bpp 展開)。
 - python 重寫:`tools_build/pkh_unpack.py`(`decode(data)`),已驗證能跑、輸出 16 色全用到的點陣。
 
-#### 受阻精確點(下一個 agent 從這裡接)
-- 解 TITLE.PKH → 211,739 pixels,**不整除任何規則畫布**(512×256 / 256×256 …),目視為固定斜率斜紋
-  雜訊(有結構但錯位),龍/戰士輪廓未顯。
-- 矛盾證據:`0x27fa6` 假設 buf 前 56B 是 header(16-word 表 + w@0x34 + h@0x36),但 TITLE.PKH
-  實測 0x34=0xfff1、0x36=0xf55f(非合理寬高),且前段 16-word 表全是圖像 nibble pattern
-  (0x1111/0xffff)→ **buf ≠ 原始 PKH 檔,中間 `0x11c4`/`0x27f62` 還有一層搬運/轉換未釐清**;
-  或 GVRAM plane 寫入步進(0x2816a:4-plane 交錯、word↔nibble↔plane)才是斜紋主因。
-- **下一步**:逐指令 trace `0x2816a` 的 plane 展開(GVRAM 4-plane 交錯)+ 確認 buf 載入是否
-  跳過/重排前綴;或在 X68000 emulator(`dwemu`)實機 trace `_xunpack` 入口/出口,直接抓 GVRAM dump
-  與輸入比對。`m68k-linux-gnu-objdump` 環境:`docker build` 出的 `dwm68kbin`(`dwm68k`+binutils-m68k)。
+#### GVRAM 4-plane 接合層 — 已完整逆出(2026-06-19)
+
+本批把 `0x2816a` → `0x32b4c`(真正的 GVRAM blitter)逐指令逆完,並用 `dwemu`(unicorn m68k)
+實機驗證 parse 行為。**GVRAM layout 完全釐清,且推翻了「需要 4-plane deinterleave」的舊假設**:
+
+- **`0x2816a` 派發**(實體於 0x2816c):`push(0, h=0x69bcc, w=0x69bca, src=0xD83000, dst=((y<<10)+x)<<1)`
+  → `jsr 0x32b4c`。
+- **`0x32b4c` blitter(逐指令逆出,見 `tools_build/x68k_pkh_research/key_routines.asm`)**:
+  - `a0 = 0xC00000 + (dst & 0xFFFFFF) + [0x89bd4]`(GVRAM 基底 0xC00000 + runtime 卷軸 offset)。
+  - `a1 = src = 0xD83000`(解碼暫存)。
+  - 內層:`movew (a1)+,(a0)+` 重複 **w 次**(每 word = 1 像素,**chunky,非 plane 分離**)。
+  - 外層 h 列;**dst 列步進 `0x445e2 = (1024 - w) << 1` bytes → GVRAM stride = 1024 words(2048 B)/line**;
+    src 列步進為 0(暫存區即 w×h 連續打包)。
+  - **結論:GVRAM 是 chunky 16-bit-word(每 word 直接 = 4bpp 色號),沒有 plane 交錯;斜紋雜訊不是
+    plane interleave 造成的。** 另有變體 `0x32bb6`(2× 水平放大:每 word 寫 a0 兩次 + a2=a0+2048 兩次)。
+- **codec 逐指令覆核(`pkh_unpack.py` 正確)**:run `0x32ccc` 讀 1 byte 重複 count 次寫 word;
+  literal `0x32cfe` hi=`b>>4`、lo=寫**整 byte d1**(顯示取 &0x0F,與 python 一致,無差異)。codec 無誤。
+- **全域大端**:`0x27f62` = `(buf[off]<<8)|buf[off+1]`,所有 16-bit 讀皆 big-endian(已 emu 確認)。
+
+#### 真正的殘餘受阻點:**w/h/palette 不在 PKH 檔內**(本批新定位,證據確鑿)
+
+舊判讀「buf 還差一層搬運」**不成立** —— 已證實 `0x11c4` 是單純 open+read 整檔(count=0=讀全檔,
+DOS `_READ` trap;FAT12 抽取逐 cluster contiguous、byte-faithful,非抽取 bug)。檔案內容就是手上這份。
+真正問題是 `0x27fa6` 期望的 header 欄位在檔裡是垃圾/零:
+
+- **`dwemu` 實機 parse TITLE.PKH 得 w(0x69bca)=0xfff1(65521)、h(0x69bcc)=0xf55f(62815)**
+  —— 直接從 buf+0x34/0x36 大端讀出,確認是垃圾維度(非 plane 步進問題)。
+- **16-word palette 表(buf+0x0c)實機讀出 = `[0,0,0,0,0,0x1111,0,…,0xffff,0x1111,0x1000]`**,
+  全是影像 nibble pattern,**不是 0x0RGB 調色盤**。
+- **全 PKH 檔同病**:掃 TITLE/3D1-4/END1-5 的 buf+0x34/0x36 與 buf+0x0c,**沒有任何一個**有合理
+  w/h 或 0x0RGB palette;檔案一律從 buf+0x38 起即 entropy ~6.0 的壓縮資料(前 0x38 bytes entropy
+  僅 1.52 = 確實是 header 區,但其 palette/w-h 欄位是零/垃圾)。
+- 推論:**該遊戲的每張圖維度與調色盤來自 PKH 檔外的來源**(很可能是 DRAGON.X 內、由呼叫端
+  以圖號索引的表,因標題是用硬編座標 `_xunpack(…, x=0x48, y=0x1f, …)` @0x708 載入的)——
+  此「外部 header 表」位置尚未定位,是還原標題的**唯一**剩餘缺口。
+
+#### 經驗證的部分還原(width 接近正確,但 w/h 缺載入處)
+- 從 buf+0x38 解碼 → **211,327 pixels**(舊記 211,739 是從 offset 0 多解了 header 區)。
+- autocorrelation 寬度軟峰落在 **~217–234**(平台 ~0.74,無尖峰)。長 RLE 灰帶(val 5,len 38784)。
+- **width=384 時灰帶呈水平矩形(非斜)**,上方白區 + 灰帶對齊乾淨(見
+  `tools_build/x68k_pkh_research/evidence/title_w384_grayband_rect.png`);width=512 則整體斜紋
+  (`title_w512_diagonal.png`)。→ 真實寬度接近 384–448 級距,但**下半部仍為高頻雜訊**(像素順序
+  未完全對位),無 w/h 權威值無法收斂、龍/戰士輪廓未顯。
+
+#### 下一個 agent 從這裡接(精確 TODO)
+1. **找「圖號 → (w, h, palette)」外部表**:trace `_xunpack` 的真正呼叫鏈(@0x708 等),看 x/y 之外
+   是否還傳圖號;或在 DRAGON.X 內掃「多組 16-word 0x0RGB palette + 鄰接 w/h」的資料表(類似 Amiga
+   dw 內 @0x0fdf4 世界盤的找法)。標題盤應含金龍色(類 `f59 f28 d15`)。
+2. 拿到權威 w/h 後直接用本批的 chunky-word + stride-1024 blit 重排即可(layout 已不是問題)。
+3. 工具就緒:`tools_build/x68k_pkh_research/`(`key_routines.asm` 反組譯摘錄、`emu_pkh_blit.py`
+   unicorn 實機 harness、`render_widths.py`、`analyze_width.py`)。`dwemu` image 已含 unicorn+capstone;
+   注意 unicorn m68k 不支援 `addi.l/subi.l #imm,(a7)`(opcode 0x0697/0x0497)與 literal 內某指令,
+   harness 已用 CODE hook 手動補 0x0697/0x0497;literal 寫入仍會觸 unicorn gap(parse 階段已足夠取 w/h)。
 - 還原前標題畫面暫缺 X68000 原生版,沿用 DOS dragon art 回退(見 `ui_theme.hpp` x68000 主題,保持現狀)。
 
 ---
@@ -425,7 +470,7 @@ themes/x68000/tiles/icon_sheet_w32.png         icon 原寬(32px)直條版
 | X68000 怪物 (MON.PIX) | ✅ contact sheet(EGA placeholder palette) |
 | X68000 場景 (PIC.PIX) | ✅ contact sheet |
 | X68000 UI 圖示 (ICON.PIX) | ✅ |
-| X68000 標題 (TITLE.PKH) | ⚠️ 解碼演算法已逆出(`pkh_unpack.py`),GVRAM plane 接合受阻(見 §2「.PKH 壓縮」) |
+| X68000 標題 (TITLE.PKH) | ⚠️ codec + GVRAM blitter 全逆出(chunky-word/stride-1024,非 plane 交錯);唯一缺口 = w/h/palette 不在檔內、需找 DRAGON.X 內圖號→參數表(見 §2「.PKH 壓縮」) |
 | X68000 3D 地城 / 結局 (3D*.PKH / END*.PKH) | ⚠️ 同 TITLE.PKH(同一 RLE codec) |
 | X68000 原生 16 色 palette | ⚠️ TODO(需 trace DRAGON.X CLUT 載入) |
 | PC-98 全部 | — 素材不存在 |
