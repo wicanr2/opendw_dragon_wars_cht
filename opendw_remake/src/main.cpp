@@ -3114,7 +3114,7 @@ int main(int argc, char** argv) {
               if (fx < kVpX || fx >= kVpX + kVpW) continue;
               std::uint8_t i = s.idx[(std::size_t)y * s.w + x];
               if (theme.sprite_transparent >= 0 && i == (std::uint8_t)theme.sprite_transparent) continue;
-              fb.put(fx, fy, 1);                                // index 1 = 白
+              fb.put(fx, fy, 15);                               // index 15 = 白(DOS 盤;index 1 是藍,勿用)
             }
           }
         } else {
@@ -3143,49 +3143,51 @@ int main(int argc, char** argv) {
     // 右側隊伍狀態面板(沿用 party_panel)。
     party.draw_status_panel(fb, tl, PX_UI);
     add_lang_badge();
-    // 底部訊息列(原版:viewport 下方白框)。先畫框底,選單/戰報文字疊在框內。(docs/gameplay/59 #3)
-    draw_msg_strip("", 7);
-    // 選單列(熱鍵對齊原版戰鬥選單資源 Section 0x12:Fight / Run + 施咒 C),移進訊息列。
-    int menu_y = kMsgStripY0 + 3;
-    tl.add(kMsgStripX0 + 4, menu_y, tr.tr("F:Fight  R:Run"), 11, PX_UI);
-    tl.add(kMsgStripX0 + 4 + 110, menu_y, tr.tr("C:Cast"), 11, PX_UI);
-    // 第二列:特殊攻擊熱鍵(手冊 §戰鬥;remake 設計結算)。群戰才顯示(單怪 demo 不支援)。
-    if (enc.group && !enc.over)
-      tl.add(kMsgStripX0 + 4, menu_y + 11,
-             tr.tr("M:Mighty D:Disarm A:Advance Q:Quick E:Dodge"), 14, PX_UI);  // 黃(14):特殊招式列,亮且與基本列(青)區隔(文字層用固定 DOS 盤,9=藍在黑底偏暗)
-    // 施法選單(C 開啟)/戰報 log:放右側面板下方空白區(對齊原版「逐人動作選單在右側面板區」),
-    //   不擠進底部訊息列(訊息列高度有限)。rx 對齊隊伍面板 x;ry 落在面板狀態條下方。
-    int rx = kVpX + kVpW + 8;     // 184,右側欄起點(對齊隊伍面板 x≈216 左側留邊)
-    // 施法選單(C 開啟):列出可施法術(已習得 + Power 足夠),熱鍵 1-9 + 上下游標。
+    // ── 底部寬訊息框(全寬;對齊原版「戰鬥旁白 + 行動選單在大框」)──────────────
+    //   原版把怪群描述 + 行動選單 + 戰報放在右側大框;remake 右側改成隊伍 HP 面板,故把
+    //   行動選單 + 戰報旁白放底部全寬框(viewport 下方),避免擠在右側窄欄被 viewport
+    //   chrome(綠柱)蓋住、看不清。
+    const int cbX0 = kMsgStripX0, cbX1 = kPanelX1 + 3;           // 14 .. 315(全寬)
+    const int cbY0 = kMsgStripY0, cbY1 = kMsgStripY1;            // 150 .. 192
+    for (int y = cbY0; y <= cbY1; ++y) for (int x = cbX0; x <= cbX1 && x < render::kW; ++x) fb.put(x, y, 0);
+    frame_rect(cbX0, cbY0, cbX1, cbY1, 9);                       // 亮藍外框
+    const int LPX = PX_UI * 3 / 4;                               // 框內字級(較小,容更多字)
+    // 施法選單(C 開啟):全寬框內橫向排列可施法術。
     if (enc.casting) {
-      int cy = 100;
       char hbuf[160];
-      std::snprintf(hbuf, sizeof hbuf, "%s (PW %d)", tr.tr("Choose spell:").c_str(),
-                    enc.hero_power);
-      tl.add(rx, cy, hbuf, 14, PX_UI); cy += 12;
-      if (enc.spellbook.empty()) {
-        tl.add(rx + 8, cy, tr.tr("No spells"), 7, PX_UI);
-      } else {
+      std::snprintf(hbuf, sizeof hbuf, "%s (PW %d)", tr.tr("Choose spell:").c_str(), enc.hero_power);
+      tl.add(cbX0 + 4, cbY0 + 3, hbuf, 14, LPX);
+      if (enc.spellbook.empty()) tl.add(cbX0 + 10, cbY0 + 16, tr.tr("No spells"), 7, LPX);
+      else {
+        int sx = cbX0 + 6, sy = cbY0 + 16;
         for (int i = 0; i < (int)enc.spellbook.size() && i < 9; ++i) {
           const game::SpellDef* s = game::find_spell(enc.spellbook[i]);
           if (!s) continue;
-          std::snprintf(hbuf, sizeof hbuf, "%c%d %s (%d)",
-                        i == enc.cast_sel ? '>' : ' ', i + 1,
+          std::snprintf(hbuf, sizeof hbuf, "%c%d %s(%d)", i == enc.cast_sel ? '>' : ' ', i + 1,
                         tr.tr(s->name_key).c_str(), s->power_cost);
-          tl.add(rx + 8, cy, hbuf, i == enc.cast_sel ? 15 : 7, PX_UI);
-          cy += 12;
+          tl.add(sx, sy, hbuf, i == enc.cast_sel ? 15 : 7, LPX);
+          sx += 96; if (sx > cbX1 - 80) { sx = cbX0 + 6; sy += 12; }   // 橫向排,滿一列換行
         }
       }
       add_lang_badge();
-      return;  // 施法選單期間不疊戰報(避免版面擁擠)
+      return;
     }
-    // 戰鬥 log(在地化:hit/miss/slain 走 tr;含數字部分原樣)。右側欄顯示。
-    int ly = 100;
-    for (const auto& line : enc.log) {
-      // 把鍵化片段(hit/miss/slain/->)逐字保留;只翻可翻片段太細,這裡整行顯示英文鍵
-      // + 末行若 over 顯示在地化結果。簡化:整行直接顯示(英文戰報)。
-      tl.add(rx, ly, line, 7, PX_UI); ly += 12;
+    // 行動選單(1 行;全寬):基本(青 11)+ 特殊招式(黃 14)。戰鬥結束改顯示「繼續」提示。
+    int mLineY = cbY0 + 3;
+    if (!enc.over) {
+      tl.add(cbX0 + 4, mLineY,
+             tr.tr("F:Fight  R:Run") + "  " + tr.tr("C:Cast"), 11, LPX);
+      if (enc.group)
+        tl.add(cbX0 + 92, mLineY, tr.tr("M:Mighty D:Disarm A:Advance Q:Quick E:Dodge"), 14, LPX);
     }
+    // 戰報旁白(最近 2 行;全寬、白字、可讀)── 移出右側窄欄,放這寬框。
+    int logY = cbY0 + 16;
+    int nlog = (int)enc.log.size();
+    for (int i = (nlog > 2 ? nlog - 2 : 0); i < nlog; ++i) {
+      tl.add(cbX0 + 4, logY, enc.log[(std::size_t)i], 15, LPX);
+      logY += 12;
+    }
+    // 結果橫幅(over):色彩編碼結果 + 繼續提示(放選單列位置)。
     if (enc.over) {
       std::string tail;
       int tail_col = 12;
@@ -3195,12 +3197,9 @@ int main(int argc, char** argv) {
       else tail = enc.group ? tr.tr("Victory!")
                             : (!enc.mon.alive() ? (tr.tr(enc.mon_name_en) + " " + tr.tr("slain"))
                                                 : (enc.hero.name + " down"));
-      // 結果橫幅放右側面板下方空白區(ry 落在戰報 log 下方,不爭垂直空間)。
-      int ry = ly + 6;
-      tl.add(rx, ry, tail, tail_col, PX_UI);
-      if (enc.victory)           // 勝利:右欄顯示簡短 XP 橫幅(全文在下方戰報 log)
-        tl.add(rx, ry + 14, tr.tr("Each member +80 XP"), 14, PX_UI);
-      tl.add(rx, ry + 28, tr.tr("[ continue ]"), 8, PX_UI);
+      tl.add(cbX0 + 4, mLineY, tail, tail_col, LPX);
+      std::string cont = tr.tr("[ continue ]");
+      tl.add(cbX1 - tl.measure_vwidth(cont, LPX) - 6, mLineY, cont, 8, LPX);
     }
   };
   // area id / 關卡英文名 → 在地化關卡名(B2 在地化漏網修復)。
@@ -3499,6 +3498,9 @@ int main(int argc, char** argv) {
     for (int r = 0; r < combat_rounds && !enc.over; ++r) {
       if (enc.group && cast_spell_id < 0) group_round(); else combat_round();
     }
+    // 跑完回合清受擊閃白(hit_flash 是互動時一閃即過的回饋;headless 靜態 dump 要顯示正常
+    //   立繪 + 戰報,不要凍在閃白幀,否則怪物看似消失)。
+    if (combat_rounds > 0) enc.hit_flash = 0;
     if (combat_rounds > 0) {
       if (enc.group && enc.group_loop) {
         std::fprintf(stderr,
