@@ -418,3 +418,19 @@ area 14→18(奈羅波裡→瑪根)、area 25→36(京雄→京雄地牢)、area
 - 仍缺 **6 / 33**(隔離 {6,33} 分量,無外部入邊;逆不出,誠實記錄,不臆造)。
 - docker `dwsdl`(remake build/ctest)、`dwtools`(diff_trace oracle);先 `rm -rf build build_*`。
 - **未改 opendw;DRAGON.COM / 權威圖檔 未入庫。**
+
+### E. {6,33} 菲巴斯入口 — 加深排除(2026-06-20 re-confirm,窮舉三路皆無)
+
+本輪沿「菲巴斯(area 6)入口」三條最可能路徑窮舉,**全部排除**,確認既有結論:
+
+1. **worldmap 權威 grid 解碼**(`Level::script_pc`→`worldmap_dest` 逐 grid tile,非 raw byte 掃描):
+   area 0 grid 上 27 個 worldmap 地點 tile,**dest 無 6**。→ 菲巴斯**不是 worldmap 地點**。
+2. **raw byte 掃 `58 08 06 00 …→6` 是 false positive**:該樣式(op_58 tag8 off6 = 世界圖地點處理常式)
+   出現在每個地點 script,「dest=6」那筆**不被任何 grid tile 的 `script_pc` 指向**(資料區巧合),非真入口。
+3. **area 8(黃泥蟾蜍,攻略稱菲巴斯前導母區)動態 trace `--yes`**:全 tile 跑完 **gs[2] 恆為 8**(不換區);
+   tile 0x0A 雖寫 gs[94]=06,那非 gs[2](area 變數),不構成 →6 relocate。
+4. **全 40 關 raw 掃 `1A 45/02 06`(標準子區/城進入 relocate)**:指向 area 6 者**唯 area 33**(33→6 地牢出口)。
+
+**結論**:菲巴斯入口採**未解碼機制**(疑為特殊腳本事件動態算 dest,或原版 area 0 資料未含其地點 tile),
+非 4 種已知換區編碼之一。**{6,33} 非主線必經**(終戰 area 27 已可達,主線 38/40 連通完整);依 ROI 紀律
+**停止深挖、誠實標未解**;日後要補需反組譯 DRAGON.COM 世界圖/事件 handler 找菲巴斯的特殊入口。
