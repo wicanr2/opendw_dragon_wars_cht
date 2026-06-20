@@ -249,6 +249,29 @@ opendw `player.c` 的 `struct player_record` 把 `[0x55..0x58]` 標成 `unsigned
 **已落地**:`scripts/11.bin` 的玩家可見訊息(`" gets the "` 給物品、`" can't carry any more."` 背包滿、寶箱訊息)
 本輪補繁中(events.tsv)→ 物品取得/開寶箱回饋顯示繁中。
 
+## 5c. 端到端驗證(2026-06-20)— 發現真正的最後缺口:event↔party 角色狀態未同步
+
+實際追「開寶箱 → op_64 給物品 → 進隊伍背包」全鏈,**verify 到精確斷點**:
+
+1. **寶箱 tile 走 `op_58 res11@0x000f`(上鎖入口)**,先 emit「上了鎖的箱子」,**op_64 給物品在 0x0012 入口**
+   (解鎖後才走)。即上鎖寶箱要先解鎖才給物品(K 解鎖互動);無鎖物品/NPC 給予走 0x0012/0x0009。
+2. **致命斷點:`run_event`(main.cpp:797)設 VM state 時只載 `game_state`,完全沒載/寫回 party 的 `char_data`
+   /`char_ext`**。→ op_64 把物品寫進 VM **暫態 char_ext(預設全 0)**,事件一結束就丟,**沒進隊伍背包/存檔**。
+3. **建模落差**:原版 `data_CA4C = data_C960 + 0xEC`(char_ext 背包 = 512B record 內偏移 0xEC 起的後半;
+   stats 前 236B + 背包 12 槽×23B = 512),**兩者重疊**;remake VM 用**兩個分開的陣列**,故即使同步 char_data 也
+   不會帶到背包。隊伍背包真值存於 512B record `[236 + slot*23]`(= `--demo-items` 注入用的佈局,c.inventory())。
+
+**即:給物品 MECHANISM 完整(op_64/65/67 + script 11 + 旁白繁中全到位、vm_selftest 自證),但 END-TO-END
+持久化未通** —— `run_event` 缺「事件前載 party 背包 → char_ext、事件後 char_ext → party 背包」這段同步。
+此即 §6 列的「event→char 持久化」gap 的具體形,同時影響**物品給予**與**祝福旗標(op_5F)**(祝福也寫進
+暫態 char_data,同樣丟失)。
+
+**修法(已界定,屬子系統工 + golden 風險)**:run_event 前後同步 VM char_ext/char_data ↔ party 512B records
+(member i → record i,selector=i*2,背包在 [236+slot*23]);需設 gs[6]/gs[0x1F]/gs[0x0A+i] 角色 context。
+風險:改變事件期間的角色 context 可能影響 flavor 事件分支;需 combat/save golden + 事件 trace 全驗。
+**verify 工具(mainline_events/trace_quest_gates)用自有 VM setup、不經 run_event**,combat 走 party records、
+save 不跑事件 → 風險主要在「遊戲內事件行為」層,需實測。
+
 ---
 
 ## 6. 還卡在哪(精確,不臆造)
