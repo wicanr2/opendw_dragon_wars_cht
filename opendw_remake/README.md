@@ -57,12 +57,12 @@ docker run --rm -v "$PWD":/app -w /app dwsdl bash -c \
 ```bash
 cd opendw_remake
 cmake -S . -B build && cmake --build build -j --target opendw_remake
-cd build && ctest --output-on-failure          # 回歸測試:34 項
+cd build && ctest --output-on-failure          # 回歸測試:35 項
 ```
 
-### 回歸測試(ctest 34 項)
+### 回歸測試(ctest 35 項)
 
-`CMakeLists.txt` 註冊 **34** 個 `add_test`,涵蓋 VM 自測、存讀檔 round-trip、戰鬥(公式 / loop / special / script / round / golden 怪物)、結局鏈、建角、升級、隊伍操作、法術、商店、招募、地形、area switch / city entry / wrap、op58、i18n、render_sweep(第一人稱全 40 關)、compose / fp / automap / seen viewport、smoke。CI 全綠才算數。
+`CMakeLists.txt` 註冊 **35** 個 `add_test`,涵蓋 VM 自測、存讀檔 round-trip、戰鬥(公式 / loop / special / script / round / golden 怪物)、結局鏈、建角、升級、隊伍操作、法術、商店、招募、地形、area switch / city entry / wrap、op58、i18n、render_sweep(第一人稱全 40 關)、compose / fp / automap / seen viewport、smoke。CI 全綠才算數。
 
 ### headless 開發旗標
 
@@ -95,7 +95,7 @@ SDL_VIDEODRIVER=dummy ./build/opendw_remake --encounter 5 --combat-seed 1 --fram
 | 項目 | 數值 |
 |------|------|
 | 總 opcode 空間 | 256(0x00–0xFF) |
-| **remake 已實作**(`interpreter.cpp` `kImpl` 非 null) | **126 / 256** |
+| **remake 已實作**(`interpreter.cpp` `kImpl` 非 null) | **129 / 256**(含 op_64/65/67 物品 CRUD + 0x4754 簽章比對,opendw 原標 NULL) |
 | 涵蓋類別 | 模式切換 / 算術 / 旗標 / 邏輯 / 比較 / 跳轉 / loop / game_state / bit / 跨資源 call / 資料資源讀寫 / 角色資料存取 / PRNG / viewport / 字串輸出 / UI |
 
 > 未實作的多為 0xA0–0xFF 區段的原始碼殘留(非真 opcode,ASM 位址呈 x86 機器碼特徵)及少數遊戲層 context 受阻指令。實作以「跑得到主線一輪所需」為優先,逐 batch 補齊、每批用差異測試驗。判讀背景見上層 [`../docs/reverse-engineering/25_OPCODE_INTERPRETATION.md`](../docs/reverse-engineering/25_OPCODE_INTERPRETATION.md) 與 [`../docs/reverse-engineering/OPCODE_REFERENCE.md`](../docs/reverse-engineering/OPCODE_REFERENCE.md)。
@@ -144,11 +144,11 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 | 項目 | 真值來源 / 驗證 |
 |------|----------------|
 | 渲染:第一人稱 viewport(全 40 關)、title / 場景圖、sprite、俯視地圖、wrap 樞紐 | byte-for-byte 對拍 opendw(`render_sweep` 154 case) |
-| VM 126 opcode | `diff_trace` 逐指令 == opendw |
+| VM 129 opcode | `diff_trace` 逐指令 == opendw |
 | 戰鬥命中公式 `roll ≤ 13 + AV − (DV + AC)`(1d16+3 roll-under) | res3 + DRAGON.COM 反組譯逆出,DOS 實機交叉驗證 |
 | 徒手傷害 `骰 + floor(STR/5)`、武器傷害骰(無 STR bonus) | 同上,端到端執行驗證 |
 | PRNG(`op_4D`) | DOS 實機命中率吻合 |
-| 連通 38/40 area、61 法術、特殊攻擊、商店、招募、升級、技能檢定、開門 / 陷阱、戰鬥外施法、存讀檔 | ctest 對拍 |
+| 連通 40/40 area、61 法術、特殊攻擊、商店、招募、升級、技能檢定、開門 / 陷阱、戰鬥外施法、存讀檔 | ctest 對拍 |
 | 主線事件繁中 200+ 鍵 + 147 段落 + 結局;日文 events 212/283、怪名 | i18n 對拍 |
 
 ### ⚠️ 誠實受阻(架構或 oracle 所阻,照實說)
@@ -156,10 +156,10 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 | 項目 | 受阻原因 |
 |------|----------|
 | 怪物逐回合 HP byte-diff | opendw 無獨立戰鬥入口,無法對拍每回合 HP;終戰用 remake `combat_loop`(同 bytecode 公式),非 res3 全戰鬥閉環(卡 op_89 動作指派的遊戲層 context);怪物 HP / AC 為暫定值 |
-| 門 K-on-wall / 部分非戰鬥技能觸發 | 落在尚未反編的 walking-engine → remake 設計(grounded 手冊),非 bytecode 真值 |
+| 物品/祝福「互動觸發層」 | 上鎖寶箱 K 解鎖、NPC 對話給予、門 K-on-wall 等互動指令迴圈 opendw 未重製;**給物品/祝福機制已逆出並端到端打通**(op_64/65/67 + 0x4754 + `verify_item_persist` 證物品進 512B record 背包持久),卡的只剩「哪互動觸發哪段給予」binding(內容工) |
 | Namtar Boss 屬性、自由之劍祝福加成、結局序列 | remake 平衡 / 組合設計(原版勝利畫面 script 逆不出) |
-| Phoebus(area 6)/ area 33 | 入口資料層隔離,為隔離分量 |
-| 音樂素材渲染 | **音效已實作**(SDL2 方波 + Amiga/X68000 真實 PCM,接門/撞牆/命中/施法/`op_90`);**背景音樂引擎端就緒**(`sound.cpp` music 頻道 + 依 state 切 title/game/combat/end);僅缺把 Amiga `.tune` 經 **UADE** 渲染成 WAV(沙箱網路受限抓不到 UADE,留給本機渲染,見 `assets/bundle/audio/music/README.md`)。WAV 放進去即循環播放。DOS 版原本無背景音樂 |
+| ~~Phoebus(area 6)/ area 33~~ 已解 | 原版 DATA1 漏放菲巴斯世界圖入口 tile(0x07→6),remake 依 Dilmun 地圖原位還原 → 連通 40/40(誠實標示:remake 還原,非原版原狀;doc 54 §F) |
+| 背景音樂(已渲染,著作不入庫) | **音效**(SDL2 方波 + Amiga/X68000 真實 PCM)+ **背景音樂**(Amiga MANIACS of NOISE `.tune` 經 **UADE** 渲染成 WAV,引擎依 state 循環切 title/game/combat/end,`verify_audio` 驗 4 曲)皆已實作;音檔屬著作 → gitignore 不散布,跑 `tools_build/render_music.sh` 自備生成。DOS 版原本無背景音樂 |
 
 量化完成度與缺口稽核見上層 [`../docs/assessment/57_PM_REVIEW.md`](../docs/assessment/57_PM_REVIEW.md)(技術 ~75% / 玩家內容 ~45–50%)、[`../docs/assessment/49_GAP_AUDIT.md`](../docs/assessment/49_GAP_AUDIT.md)、[`../docs/assessment/48_COMPLETABILITY_ROADMAP.md`](../docs/assessment/48_COMPLETABILITY_ROADMAP.md)。
 

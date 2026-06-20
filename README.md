@@ -4,7 +4,7 @@
 > C++20 + SDL2 乾淨重寫 ✦ 以 opendw（C 反組譯）為逐位元正確性 oracle ✦ 24px 銳利 CJK ✦ 繁中／英文／日文三語
 
 [![CI](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml/badge.svg)](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml)
-![ctest](https://img.shields.io/badge/ctest-34%2F34-success)
+![ctest](https://img.shields.io/badge/ctest-35%2F35-success)
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![SDL2](https://img.shields.io/badge/SDL2-ttf-blue)
 ![license](https://img.shields.io/badge/code-BSD-green)
@@ -60,7 +60,7 @@
 - **乾淨室重製**。不是把組合語言再翻一次，而是理解後的現代重寫——手寫的 script VM + 渲染器 + 資產層，**執行原始（已萃取並驗證）的 bytecode**。正確性靠 [opendw](https://github.com/dswban/opendw)（Devin Smith 的 C 反組譯，對應上文那套 Heineman 1989 原版引擎）當 **oracle**：每個模組以「與 opendw 逐位元 / 逐指令一致」為驗收。
 - **繁體中文化**。menu、角色、戰鬥、法術、物品全繁中，主線事件 200+ 鍵 + 147 段落 + 結局譯成繁中；遊戲中 `F4` 可即時切 繁中 / EN / 日，24×24 點陣與 SDL2_ttf 雙層渲染讓 CJK 永遠銳利。
 
-成果：`opendw_remake/`（C++20 + SDL2）現在能跑出**完整一輪**——**建立人物 → 探索 38/40 連通世界 → 主線繁中事件 → 終戰 Namtar → 結局 → 全劇終**。資產已萃取成自包含 bundle（`assets/bundle/`），**執行期不需要原始 `DRAGON.COM` / `DATA1` / `DATA2`**。
+成果：`opendw_remake/`（C++20 + SDL2）現在能跑出**完整一輪**——**建立人物 → 探索 40/40 連通世界 → 主線繁中事件 → 終戰 Namtar → 結局 → 全劇終**。資產已萃取成自包含 bundle（`assets/bundle/`），**執行期不需要原始 `DRAGON.COM` / `DATA1` / `DATA2`**。
 
 > 想看誠實的完成度數字？技術 / 引擎保真度約 **75%**，玩家可玩內容約 **45–50%**（[docs/gameplay/57 PM review](docs/assessment/57_PM_REVIEW.md)）。這份 README 不會把它說成「完整復刻」——能玩完一條主線、戰鬥核心數值對拍原版、全程繁中，但部分 RPG 養成深度與互動仍在補。詳見[誠實邊界](#honesty)。
 
@@ -105,7 +105,7 @@ cmake -S . -B build && cmake --build build --target opendw_remake
 ./build/opendw_remake --win640        # 640×480 視窗（固定 24/16px CJK）
 ./build/opendw_remake --read-para 88  # Read Paragraph 段落檢視器
 ./build/opendw_remake --fight-namtar  # 終戰 Namtar → 結局
-cd build && ctest                     # 回歸測試（34/34；CI 亦跑）
+cd build && ctest                     # 回歸測試（35/35；CI 亦跑）
 ```
 
 預設繁體中文，遊戲中 `F4` 循環切 繁中 / EN / 日。
@@ -236,7 +236,7 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 ## ✨ 亮點
 
 **一條能走完的主線**
-建角 → 探索 38/40 連通區（第一人稱 viewport）→ 主線繁中事件 → 終戰 Namtar → 結局。存讀檔 byte-for-byte round-trip，Read Paragraph 防拷段落有專屬捲動檢視器。
+建角 → 探索 40/40 連通區（第一人稱 viewport）→ 主線繁中事件 → 終戰 Namtar → 結局。存讀檔 byte-for-byte round-trip，Read Paragraph 防拷段落有專屬捲動檢視器。
 
 **戰鬥核心 = 原版 bytecode 真值**
 不是憑感覺調的數字。命中、傷害、RNG 都從 res3 + DRAGON.COM 反組譯逆出，端到端執行驗證：
@@ -252,7 +252,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 第一人稱 viewport 全 40 關逐像素對拍 opendw（`render_sweep` 154 case byte-for-byte）。整體版面、配色貼著原版 DOS，標題畫面幾乎逐像素還原（刻意保留英文 logo）。詳見[下節對照](#fidelity)與 [docs/assessment/60](docs/assessment/60_DOS_VS_REMAKE_VISUAL.md)。
 
 **自包含，工程化**
-資產萃取成 `assets/bundle/`，執行期不依賴原始磁碟檔；docker-first 建置；ctest **34/34**；GitHub Actions CI；Linux 可攜包已實機驗證，Windows / macOS CI 設定已備。
+資產萃取成 `assets/bundle/`，執行期不依賴原始磁碟檔；docker-first 建置；ctest **35/35**；GitHub Actions CI；Linux 可攜包已實機驗證，Windows / macOS CI 設定已備。
 
 ---
 
@@ -310,10 +310,10 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 核心策略不是「照抄組語」，而是把反組譯當成**正確性的裁判**，自己手寫可維護的引擎，再用差異測試逼兩邊一致。
 
 1. **逆向破解資料格式**。DATA1/DATA2 的 5-bit 文字編碼、Huffman 樹解壓（res31/res168）、sprite 去交錯、場景圖——全部破解並 round-trip 對拍 opendw byte-for-byte。
-2. **手寫 script VM**。目前實作 **126/256 opcode**（模式 / 算術 / 旗標 / 邏輯 / 比較 / 跳轉 / loop / game_state / bit / 字串輸出）。差異測試 harness（`diff_trace`）逐指令比對 remake VM trace 與 opendw oracle trace。
+2. **手寫 script VM**。目前實作 **129/256 opcode**（模式 / 算術 / 旗標 / 邏輯 / 比較 / 跳轉 / loop / game_state / bit / 字串輸出）。差異測試 harness（`diff_trace`）逐指令比對 remake VM trace 與 opendw oracle trace。
 3. **補出 opendw 從未逆向的 opcode**。op_43/5F/60/63、op_68/79/5B 等在 opendw 標 NULL 或無 C oracle 的指令，直接從原始 DRAGON.COM ASM 反組譯補出並驗。
 4. **資產脫離磁碟**。ResourceProvider 抽象（oracle 用 Data1Provider / 執行期用 BundleProvider），BundleProvider 載入 == DATA1 byte-for-byte，但執行期不依賴原始檔——換檔即換美術（未來 X68000 / PC-9801 素材）。
-5. **每個宣稱都可驗證**。`tools/verify/` 下 34 個 ctest 對拍渲染、存讀檔、戰鬥、連通、i18n…，全綠才算數。
+5. **每個宣稱都可驗證**。`tools/verify/` 下 35 個 ctest 對拍渲染、存讀檔、戰鬥、連通、i18n…，全綠才算數。
 
 延伸閱讀：
 - 🏗️ [opendw_remake/ARCHITECTURE.md](opendw_remake/ARCHITECTURE.md) — VM / 渲染 / 資產層設計與階段表
@@ -332,29 +332,25 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 **已落地（均經 opendw 對拍 / DOS 實機 / 攻略交叉驗證）**
 
 - ✅ 渲染逐位元對拍 opendw：第一人稱 viewport（全 40 關像素 PASS）、標題 / 場景圖、sprite、俯視地圖、wrap 樞紐
-- ✅ VM 126 opcode，`diff_trace` 逐指令 == opendw
+- ✅ VM 129 opcode，`diff_trace` 逐指令 == opendw（含本輪首逆的 op_64/65/67 物品 CRUD + 0x4754 簽章比對，opendw 原標 NULL）
 - ✅ 戰鬥三大公式（命中 / 徒手 / 武器骰）= 原版 bytecode 真值，端到端執行驗證
-- ✅ 連通 38/40 area、61 條法術、特殊攻擊、商店、招募、升級、技能檢定、開門 / 陷阱、戰鬥外施法、存讀檔
-- ✅ 主線事件繁中 200+ 鍵 + 147 段落 + 結局；日文 events / 怪名
+- ✅ 連通 **40/40** area（含還原菲巴斯入口）、61 條法術、特殊攻擊、商店、招募、升級、技能檢定、開門 / 陷阱、戰鬥外施法、**物品給予/祝福端到端持久化**、存讀檔
+- ✅ 主線事件繁中 200+ 鍵 + 147 段落 + 結局；共享 script 旁白（戰鬥/法術/裝備/建角）繁中 0 未譯；日文 events / 怪名
 - ✅ **音效**：SDL2 音訊 — PC speaker 風格方波（門 / 撞牆 / effect 頻率由 opendw `dx/bx` bytecode 推導）+ 原版平台真實 8-bit PCM 取樣（**Amiga `data5/6`、X68000 `DW.SND`** 抽出,SFX 截短播放）。接上開門 / 撞牆 / 命中 / 施法 / `op_90` 腳本音效;`--mute` 可關
 
 **誠實受阻（架構或 oracle 所阻，照實說）**
 
 - ⚠️ **怪物逐回合 HP 無法 byte-diff**：opendw 沒有獨立戰鬥入口，無法對拍怪物每回合具體 HP。終戰用 remake `combat_loop`（同 bytecode 真值公式），非 res3 全戰鬥閉環（後者卡 op_89 動作指派的遊戲層 context）。怪物 HP / AC 為暫定值。
-- ⚠️ **門 K-on-wall 與部分非戰鬥技能觸發**落在尚未反編的 walking-engine，屬 remake 設計（grounded 手冊），非 bytecode 真值。
+- ⚠️ **物品/祝福的「互動觸發層」**落在尚未反編的 walking-engine：上鎖寶箱按 K 解鎖、NPC 對話選擇給物品、門 K-on-wall 等的**互動指令迴圈** opendw 未重製。**給物品/祝福的機制本身已逆出並端到端打通**（op_64/65/67 物品 CRUD + 0x4754 簽章比對已實作、`verify_item_persist` 證實物品進 512B record 背包並持久）——卡的只剩「哪個互動觸發哪段給予」這層 binding 與物品-地點逐一編目（內容工，可由攻略反推）。
 - ⚠️ **Namtar Boss 屬性、自由之劍祝福加成、結局序列** = remake 平衡 / 組合設計（原版勝利畫面 script 逆不出）。
-- ⚠️ **Phoebus（area 6）/ area 33** 入口資料層隔離，為隔離分量。
+- ✅ **~~Phoebus（area 6）/ area 33 隔離~~ 已解**：原版 DATA1 漏放菲巴斯的世界圖入口 tile（0x07→area 6，唯一未放置的城市 tile，bundle==DATA1 byte-for-byte 確認），remake 依權威 Dilmun 地圖在太陽島原位還原該入口落點 → 連通 **40/40**、菲巴斯內部事件繁中 24/24（誠實標示：remake 還原，非原版資料原狀；見 docs/gameplay/54 §F）。
 - ✅/©️ **背景音樂：已用 UADE 渲染、循環播放**（音檔屬著作,不入庫）。**音效**見上「已落地」。背景音樂取自 Amiga `.tune`（"Music by MANIACS of NOISE"，68k 機械碼播放器 + 內嵌曲目），用 **UADE**（不需 Kickstart ROM）渲染成 WAV，引擎依遊戲狀態循環切 title/game/combat/end 四曲（`sound.cpp` music 頻道;`verify_audio` 已驗 4 曲載入 + 切曲）。**渲染後音檔屬 MANIACS of NOISE / Interplay 著作 → gitignore 不散布**;自備 Amiga 版合法副本後跑 [`tools_build/render_music.sh`](tools_build/render_music.sh)（recipe 見 [`bundle/audio/music/README.md`](opendw_remake/assets/bundle/audio/music/README.md)）即生成並自動播放。（DOS 版原本無背景音樂——`0x5C3B` 為 PC speaker 音效碼,非音樂。）
 
 完整分級量化見 [docs/gameplay/57 PM review](docs/assessment/57_PM_REVIEW.md)（技術 ~75% / 玩家內容 ~45–50%）、[docs/assessment/49 缺口稽核](docs/assessment/49_GAP_AUDIT.md)、[docs/assessment/48 可通關 roadmap](docs/assessment/48_COMPLETABILITY_ROADMAP.md)。
 
 ### 跨平台狀態
 
-| 平台 | 取得 SDL2 | 狀態 |
-|---|---|---|
-| Linux (x86_64) | apt `libsdl2-dev` `libsdl2-ttf-dev` | ✅ docker 實機驗證：build + ctest 34/34 + 產包 + headless 執行 |
-| Windows (x64) | vcpkg `sdl2` `sdl2-ttf`（MSVC） | ⏳ CI 設定已備，未在本環境實機驗證 |
-| macOS | Homebrew `sdl2` `sdl2_ttf` | ⏳ CI 設定已備，未在本環境實機驗證 |
+打包與各平台產物狀態見上方 [Build 與開發](#build) 的五 job 對照表（Linux tarball/AppImage ✅ 本機驗證、Windows/macOS CI 完整、Android scaffold）。Linux 已 docker 實機驗證 build + **ctest 35/35** + 產包 + headless 執行。
 
 ---
 
@@ -365,7 +361,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 opendw_dragon_wars_cht/
 ├── opendw_remake/         # ★ 主產物：C++20 + SDL2 乾淨重寫的 runtime（可玩）
 │   ├── src/               #   resource / vm / render / game / i18n
-│   ├── tools/verify/      #   對拍 / 驗證工具（ctest 34 項）
+│   ├── tools/verify/      #   對拍 / 驗證工具（ctest 35 項）
 │   ├── tools/extract/     #   DATA1/DATA2 → 自包含 bundle 萃取
 │   ├── assets/bundle/     #   自包含資產（maps/sprites/scenes/scripts/monsters/items/…）
 │   ├── assets/i18n/       #   zh-TW / en / ja 在地化 TSV
