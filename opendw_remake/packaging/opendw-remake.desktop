@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Dragon Wars 火龍之戰
+Comment=Dragon Wars (Interplay 1989) C++20/SDL2 Traditional Chinese remake
+Exec=opendw-remake
+Icon=opendw-remake
+Categories=Game;RolePlaying;
+Terminal=false

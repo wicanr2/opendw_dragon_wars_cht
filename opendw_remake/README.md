@@ -121,7 +121,17 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 
 流程:cmake build → `cpack -G TGZ` 產包 → 解開 → 啟動器 headless `--frames 0` 執行驗證(**全綠才產出**)。安裝佈局:`bin/opendw-remake`(binary)+ `bin/opendw-remake.sh`(啟動器,自動 `cd` 至資產目錄)+ `share/opendw-remake/assets/`(自包含 bundle / i18n)。字型不打包(授權考量),執行期搜尋系統 CJK 字型,可用 `DWR_FONT` 指定。亦可 `cmake --install build --prefix <dir>`。
 
-跨平台 CI(`.github/workflows/ci.yml`):Linux 已實機驗證(build + ctest 34 + package + headless 執行);Windows(vcpkg/MSVC)、macOS(Homebrew)CI 設定已備,未在本機環境實機驗證。
+跨平台 CI(`.github/workflows/ci.yml`)五個 job,皆產**可玩產物**(GitHub Actions Artifacts):
+
+| 平台 | 產物 | 狀態 |
+|---|---|---|
+| **Linux tarball** | `opendw-remake-*.tar.gz`(binary + 啟動器 + assets) | ✅ 本機 docker 實機驗證(build + ctest 35 + package + headless) |
+| **Linux AppImage** | `*.AppImage`(雙擊即玩,打包 SDL2 依賴;`tools/package/build_appimage.sh`) | ✅ AppDir 結構本機驗證;appimagetool 打包於 CI |
+| **Windows x64** | `opendw-remake-windows-x64/`(exe + SDL2/SDL2_ttf DLL + assets) | ⏳ vcpkg/MSVC CI 設定完整,GitHub Actions 實跑產出 |
+| **macOS** | `opendw-remake-macos/`(binary + SDL dylib + assets + 啟動器) | ⏳ Homebrew CI 設定完整,GitHub Actions 實跑產出 |
+| **Android APK** | scaffold(`android/`;Gradle + NDK) | ⏳ 建置 scaffold 已備;**需 asset manager 整合 + 觸控 UX + 實機測試**(見 `android/README.md`) |
+
+所有平台**自包含 assets(bundle / i18n / fonts),不含原始遊戲檔**。字型不打包(授權),執行期搜尋系統 CJK 字型或以 `DWR_FONT` 指定。
 
 ---
 
