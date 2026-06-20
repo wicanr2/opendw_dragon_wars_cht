@@ -26,6 +26,13 @@
 #include <cstring>
 #include <cctype>
 #include <optional>
+#if defined(_WIN32)
+#include <direct.h>
+#define DWR_CHDIR _chdir
+#else
+#include <unistd.h>
+#define DWR_CHDIR chdir
+#endif
 #include <string>
 #include <vector>
 #include "resource/provider.hpp"
@@ -377,6 +384,11 @@ static std::uint8_t tile_color(std::uint8_t t) {
 }
 
 int main(int argc, char** argv) {
+  // DWR_ASSET_DIR:指向「含 assets/ 的目錄」(Android 把 APK assets 解壓到 internal storage
+  //   後設此環境變數;桌面啟動器亦可用)。設了就 chdir 過去,讓相對路徑 assets/ 生效。
+  if (const char* ad = std::getenv("DWR_ASSET_DIR"); ad && *ad) {
+    if (DWR_CHDIR(ad) != 0) std::fprintf(stderr, "DWR_ASSET_DIR chdir failed: %s\n", ad);
+  }
   std::string bundle = "assets/bundle";
   std::string start_theme;   // --theme NAME:啟動即套指定 UI 主題(dos/amiga/x68000;headless 驗證用)
   std::string font_raw = "assets/fonts/dw8x8.bin";
