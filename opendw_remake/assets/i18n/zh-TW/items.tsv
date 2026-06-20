@@ -38,3 +38,11 @@ Item transferred.	物品已轉移。
 Transfer to:	轉移給:
 Target pack is full.	目標背包已滿。
 No one to transfer to.	沒有其他人可轉移。
+# 寶箱/掉落物 物品專有名(items.bin 內嵌 7-bit 英文名 → 在地化)
+Air Talons	風爪
+Air Armor	風之甲
+Earth Shield	大地之盾
+Fire Shield	烈焰之盾
+Aura Shield	靈光之盾
+Water Wings	水翼
+Dragon Stone	龍寶石

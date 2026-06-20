@@ -2410,7 +2410,7 @@ int main(int argc, char** argv) {
       ++shown;
       // 名稱(白;已裝備亮綠;游標列前加 >)。
       std::uint8_t ncol = it.equipped ? 10 : 15;
-      std::string nm = (cur ? "> " : "  ") + (it.name.empty() ? tr.tr("(empty)") : it.name);
+      std::string nm = (cur ? "> " : "  ") + (it.name.empty() ? tr.tr("(empty)") : tr.tr(it.name));
       tl.add(tx, y, nm, cur ? 15 : ncol, PX_BODY);
       // 類型(灰)+ AV/AC 修正 + 已裝備標記。
       char meta[96];
@@ -2495,7 +2495,7 @@ int main(int argc, char** argv) {
           if (!inv[s].present) continue;
           bool cur = (shown == shop_ui.cursor);
           ++shown;
-          std::string nm = inv[s].name.empty() ? tr.tr(game::item_type_key(inv[s].type)) : inv[s].name;
+          std::string nm = inv[s].name.empty() ? tr.tr(game::item_type_key(inv[s].type)) : tr.tr(inv[s].name);
           char row[96];
           std::snprintf(row, sizeof row, "%s%s", cur ? "> " : "  ", nm.c_str());
           tl.add(tx, y, row, cur ? 15 : (inv[s].equipped ? 10 : 7), PX_BODY);
@@ -4260,8 +4260,9 @@ int main(int argc, char** argv) {
             chest_here = false;
             g_sound.play(audio::SoundId::DoorOpen);
             std::string itname = game::parse_item(chest_pool[idx].data(), 23).name;   // 物品名(7-bit 解碼)
+            itname = itname.empty() ? tr.tr("item") : tr.tr(itname);                   // 專有名在地化(items.tsv;無譯回退英文)
             if (slot >= 0)
-              open_msg(party.at(0).name + tr.tr(" gets the ") + (itname.empty() ? tr.tr("item") : itname) + "!");
+              open_msg(party.at(0).name + tr.tr(" gets the ") + itname + "!");
             else
               open_msg(party.at(0).name + tr.tr(" can't carry any more."));
             std::fprintf(stderr, "chest opened @(%d,%d) → item idx=%zu slot=%d '%s'\n",
