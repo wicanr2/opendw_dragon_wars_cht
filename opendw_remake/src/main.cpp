@@ -1389,6 +1389,29 @@ int main(int argc, char** argv) {
 
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
   render::ComponentStore comps(bundle + "/components");
+  // 區域攻略提示(bundle/hints.tsv:area<TAB>提示;來源《軟體世界》1991 攻略,見
+  //   docs/walkthrough/38)。開區域地圖(?)時於下方顯示。缺檔則無提示(不影響執行)。
+  std::map<int, std::string> area_hints;
+  if (std::FILE* hf = std::fopen((bundle + "/hints.tsv").c_str(), "rb")) {
+    std::string line;
+    int ch;
+    auto flush = [&]() {
+      if (line.empty() || line[0] == '#') { line.clear(); return; }
+      auto tab = line.find('\t');
+      if (tab != std::string::npos) {
+        int a = std::atoi(line.substr(0, tab).c_str());
+        area_hints[a] = line.substr(tab + 1);
+      }
+      line.clear();
+    };
+    while ((ch = std::fgetc(hf)) != EOF) {
+      if (ch == '\n') flush();
+      else if (ch != '\r') line.push_back((char)ch);
+    }
+    flush();
+    std::fclose(hf);
+    std::fprintf(stderr, "hints: loaded %zu area hints\n", area_hints.size());
+  }
   // 註:Amiga 原生 viewport 圖塊(themes/amiga/components,AmigaComponentStore)已抽出並按
   //   slot 對映,但重組落點仍受阻(見 draw_explore 內 Amiga FP 說明)→ Amiga 第一人稱改用
   //   DOS golden 透視 + kAmigaViewportPalette,暫不實際組裝原生圖塊(成果保留待後續逆向)。
@@ -3294,7 +3317,27 @@ int main(int argc, char** argv) {
     if (minimap_ok) minimap.to_framebuffer(fb, /*ox=*/1, /*oy=*/8, /*rows=*/0xC0);
     if (!para.active) tl.add(8, 2, area_name_tr(current_area, level->name), 14, PX_UI);   // 文字層:關卡名
     add_lang_badge();
-    tl.add(8, 188, tr.tr("Map  -  Esc: back"), 7, PX_UI);     // 圖例(i18n)
+    // ── 區域攻略提示(《軟體世界》1991):有提示則於下方壓暗面板自動顯示 ──
+    auto hint_it = area_hints.find(current_area);
+    if (!para.active && hint_it != area_hints.end()) {
+      int hint_px = PX_BODY * 3 / 4;                 // ~18px CJK,塞更多字
+      std::vector<std::string> lines = tl.wrap(hint_it->second, render::kW - 12, hint_px);
+      int line_h = hint_px / eff_scale + 2;
+      int hdr_h = PX_UI / eff_scale + 3;
+      int box_top = render::kH - ((int)lines.size() * line_h + hdr_h + 8);
+      if (box_top < 92) box_top = 92;                // 不超過上半(地圖上半仍可見)
+      for (int y = box_top; y < render::kH; ++y)     // 棋盤壓暗底
+        for (int x = 0; x < render::kW; ++x)
+          if (((x + y) & 1) == 0) fb.put(x, y, 0);
+      tl.add(6, box_top + 3, tr.tr("Guide hint (Softworld):"), 14, PX_UI * 3 / 4);
+      int y = box_top + 3 + hdr_h;
+      for (const std::string& ln : lines) {
+        if (y + line_h > render::kH - 2) break;      // 超出畫面停(極長提示)
+        tl.add(6, y, ln, 15, hint_px); y += line_h;
+      }
+    } else {
+      tl.add(8, 188, tr.tr("Map  -  Esc: back"), 7, PX_UI);   // 無提示:原圖例
+    }
   };
   // sprite/scene/viewport 靜態檢視:像素層已於前面建好;文字層每幀補上標籤。
   auto draw_static_text = [&]() {
