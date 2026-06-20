@@ -337,6 +337,13 @@ target_link_libraries(verify_shop PRIVATE dwr_game)
 add_test(NAME verify_shop
          COMMAND verify_shop ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# tools/verify:grounded 寶箱開箱端到端持久(items.bin 物品池 → Party::add_item →
+#   raw_records round-trip 後物品仍在背包;二次給落在不同空格不覆寫)。
+add_executable(verify_chest_acquire tools/verify/verify_chest_acquire.cpp)
+target_link_libraries(verify_chest_acquire PRIVATE dwr_game)
+add_test(NAME verify_chest_acquire
+         COMMAND verify_chest_acquire ${CMAKE_SOURCE_DIR}/assets/bundle)
+
 # tools/verify:酒館招募確定性 PASS/FAIL(NPC 入隊 + identifier[77] gate 防重複 +
 #   隊伍上限 7 + 未知 id 擋下 + 隊伍 round-trip byte-for-byte + 招募後 raw[77] 正確)。
 #   grounded:512B 格式 + identifier[77] + NPC 名(fraterrisus);NPC 屬性/招募邏輯=remake 設計(誠實標)。

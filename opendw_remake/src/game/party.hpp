@@ -149,6 +149,11 @@ public:
   //   搬移整 23B(含裝備位元 / 名);搬移後清來源格。同步雙方 raw[]。
   bool transfer_item(std::size_t from, int slot, std::size_t to);
 
+  // 給物品:把 23B 物品記錄寫進第 owner 名第一個空背包格(寶箱開箱 / NPC 給予 / 拾取用)。
+  //   回傳 slot 索引(0..12)成功;背包已滿 / 越界回 -1。同步 raw[](→ raw_records → 存檔持久)。
+  //   新給物品預設未裝備(清 bit[00])。
+  int add_item(std::size_t owner, const std::array<std::uint8_t, CharacterRecord::kItemStride>& bytes);
+
   std::size_t size() const { return members_.size(); }
   const CharacterRecord& at(std::size_t i) const { return members_.at(i); }
   // 可變存取(供成長 / 戰後結算改角色;progression 模組用)。越界丟例外。

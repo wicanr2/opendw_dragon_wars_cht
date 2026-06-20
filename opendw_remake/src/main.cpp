@@ -26,6 +26,7 @@
 #include <cstring>
 #include <cctype>
 #include <optional>
+#include <set>
 #if defined(_WIN32)
 #include <direct.h>
 #define DWR_CHDIR _chdir
@@ -714,6 +715,34 @@ int main(int argc, char** argv) {
   std::array<std::uint8_t, 256> game_state{};
   std::string event_msg;          // 踩到事件格時跑 script emit 的文字(原文,F4 重排用)
   int last_event_tile = -1;       // 對拍 op_71:tile 值變了才觸發
+  // ── 寶箱開箱(grounded)──────────────────────────────────────────────────
+  //   原版寶箱 = tile 事件 emit「locked chest」;開鎖→給物品在 script 11 深度糾纏
+  //   (lock 機率 vs 物品 id 共用 gs[0x41],byte-exact 屬深層 RE)。grounded 設計:踩到
+  //   寶箱格 → K 開鎖檢定(remake try_lockpick)→ 成功給一件**真實 Dragon Wars 物品**
+  //   (items.bin 物品池,依位置決定性選一件)→ add_item 持久;每箱限開一次。
+  std::vector<std::array<std::uint8_t, 23>> chest_pool;   // items.bin 物品記錄池
+  std::set<long> opened_chests;   // 已開寶箱(key=area*1e6+x*1e3+y),避免重複給
+  bool chest_here = false;        // 當前格是未開的寶箱(K 可開)
+  {  // 載入 items.bin 物品池(寶箱給物品來源;與 --demo-items 同格式)。
+    std::string ip = bundle + "/items/items.bin";
+    if (std::FILE* f = std::fopen(ip.c_str(), "rb")) {
+      std::fseek(f, 0, SEEK_END); long n = std::ftell(f); std::fseek(f, 0, SEEK_SET);
+      std::vector<std::uint8_t> blob(n > 0 ? (std::size_t)n : 0);
+      if (!blob.empty() && std::fread(blob.data(), 1, blob.size(), f) == blob.size() &&
+          blob.size() >= 10 && blob[0]=='D'&&blob[1]=='W'&&blob[2]=='I'&&blob[3]=='T'&&blob[4]=='M') {
+        std::uint16_t cnt = (std::uint16_t)(blob[8] | (blob[9] << 8));
+        std::size_t off = 10;
+        for (std::uint16_t k = 0; k < cnt && off + 4 + 23 <= blob.size(); ++k) {
+          off += 4;  // skip data1_off
+          std::array<std::uint8_t, 23> rec{};
+          for (int b = 0; b < 23; ++b) rec[(std::size_t)b] = blob[off + b];
+          chest_pool.push_back(rec);
+          off += 23;
+        }
+      }
+      std::fclose(f);
+    }
+  }
   MsgViewer msg;                  // 一般事件訊息檢視器(下半部分頁;active 時暫停移動)
   ParaViewer para;                // Read Paragraph 長段落捲動檢視器(全螢幕 overlay;active 時暫停移動)
   CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
@@ -730,6 +759,9 @@ int main(int argc, char** argv) {
   // run_event 攔到「Read paragraph N」時,把 N 寫進此處(>=0 表示本次事件是段落觸發);
   // main 偵測後改開 ParaViewer(長段落捲動)而非一般訊息框。-1 = 非段落事件。
   int event_para_n = -1;
+  // 本次事件是否為「上鎖寶箱」(在 message_sink 比對英文原文設定,locale 無關;
+  // 不可改用翻譯後的 event_msg 比對 "locked chest" —— zh-TW 下會永遠落空)。
+  bool event_is_chest = false;
 
   // ── 遭遇 / 戰鬥畫面狀態(S_COMBAT)──
   // 怪物圖渲染對齊 oracle:畫進 160×136 viewport 區、blit 到 framebuffer (16,8)
@@ -785,6 +817,7 @@ int main(int argc, char** argv) {
   // 對齊 level_events:設 script_res/data_res = level_res,並掛 resource_provider 讓 op_58 能跑。
   auto run_event = [&](std::uint8_t tv) -> std::string {
     event_para_n = -1;            // 預設:本次非段落事件(命中 op_81 數字 sink 才設)
+    event_is_chest = false;       // 預設:本次非寶箱(sink 比對英文原文才設)
     if (!level) return "";
     // ── 世界圖 / 樞紐「踩格進區」(DRAGON.COM 反組譯反推,opendw 未實作)──────
     //   area 0 Dilmun 世界圖的城鎮/地點格事件腳本固定走 op_58→資源8→op_6x<IDX>,
@@ -873,6 +906,8 @@ int main(int argc, char** argv) {
       std::string t = tr.tr(s);
       // 偵測「Read paragraph 」前綴(原文判定,翻譯前):此後緊接的數字即段落號。
       if (s.rfind("Read paragraph", 0) == 0) read_para_pending = true;
+      // 寶箱偵測走英文原文(locale 無關):事件 emit 含 "locked chest" → 本格為上鎖寶箱。
+      if (s.find("locked chest") != std::string::npos) event_is_chest = true;
       if (!out.empty()) out += ' ';
       out += t;
     });
@@ -1249,7 +1284,12 @@ int main(int argc, char** argv) {
         std::fprintf(stderr, "at (%d,%d) tile=0x%02X = area27 終戰格(移動觸發 Namtar)\n", px, py, tv);
       } else if (tv > 1) {
         event_msg = run_event((std::uint8_t)tv); last_event_tile = tv;
-        std::fprintf(stderr, "at (%d,%d) tile=0x%02X event=\"%s\"\n", px, py, tv, event_msg.c_str());
+        // 寶箱偵測(grounded):--at 直接落在寶箱格時也標記可 K 開箱(headless 驗證;
+        //   真實遊玩走移動迴圈的同名偵測,此處對齊)。
+        chest_here = (event_is_chest) &&
+                     !opened_chests.count((long)current_area * 1000000 + (long)px * 1000 + py);
+        std::fprintf(stderr, "at (%d,%d) tile=0x%02X event=\"%s\" chest_here=%d\n",
+                     px, py, tv, event_msg.c_str(), chest_here ? 1 : 0);
         sync_relocation();   // 事件可能換 area / 傳送(headless 也套用,供 --map+--at 驗證)
       }
     }
@@ -4197,6 +4237,38 @@ int main(int argc, char** argv) {
           // 撞牆:前進被擋(牆/門/石牆閘)→ 撞牆音效(func_5060[3] play_sound_wall_bump)。
           if (!moved) g_sound.play(audio::SoundId::WallBump);
         }
+        // K:寶箱開箱(grounded)優先 —— 站在未開寶箱格按 K → 開鎖檢定 → 成功給真實物品 + 持久。
+        if (in.key == 'K' && party.size() > 0 && chest_here && !chest_pool.empty()) {
+          // 最高 Lockpick 者做檢定(同門邏輯;難度 10 remake 設計)。
+          std::size_t bi = 0; int best = -1;
+          for (std::size_t i = 0; i < party.size(); ++i) {
+            if (party.at(i).status & 0x01) continue;
+            int lp = (int)party.at(i).skills[game::progression::kLockpick];
+            if (lp > best) { best = lp; bi = i; }
+          }
+          auto res = game::try_lockpick(party.at(bi), 10, terrain_rng);
+          if (party_best_lockpick() <= 0 || !res.success) {
+            open_msg(tr.tr("The chest remains locked."));
+            std::fprintf(stderr, "chest locked @(%d,%d) lockpick=%d roll=%d\n",
+                         px, py, party_best_lockpick(), res.roll);
+          } else {
+            // 決定性選一件真實物品(依位置;同箱恆給同物)。grounded:items.bin 為真實 DW 物品,
+            //   非原版該箱 byte-exact 內容(深層 RE);add_item → raw_records → 存檔持久。
+            std::size_t idx = (std::size_t)((current_area + px * 7 + py * 13) % (int)chest_pool.size());
+            int slot = party.add_item(0, chest_pool[idx]);
+            opened_chests.insert((long)current_area * 1000000 + (long)px * 1000 + py);
+            chest_here = false;
+            g_sound.play(audio::SoundId::DoorOpen);
+            std::string itname = game::parse_item(chest_pool[idx].data(), 23).name;   // 物品名(7-bit 解碼)
+            if (slot >= 0)
+              open_msg(party.at(0).name + tr.tr(" gets the ") + (itname.empty() ? tr.tr("item") : itname) + "!");
+            else
+              open_msg(party.at(0).name + tr.tr(" can't carry any more."));
+            std::fprintf(stderr, "chest opened @(%d,%d) → item idx=%zu slot=%d '%s'\n",
+                         px, py, idx, slot, itname.c_str());
+          }
+          last_event_tile = -1;
+        } else
         // K:打開關閉的門 / 粉碎牆中密門(手冊 p176/184;遊戲層動作,opendw 未反編 → remake 設計)。
         if (in.key == 'K' && party.size() > 0) {
           using DA = game::DoorAction;
@@ -4239,6 +4311,9 @@ int main(int argc, char** argv) {
           } else
           if (tv > 1 && tv != last_event_tile) {
             event_msg = run_event((std::uint8_t)tv); last_event_tile = tv;
+            // 寶箱偵測(grounded):事件 emit「locked chest」且此格未開過 → 標記可 K 開箱。
+            chest_here = (event_is_chest) &&
+                         !opened_chests.count((long)current_area * 1000000 + (long)px * 1000 + py);
             // 對拍 load_level_resources:事件可能寫 gs[2]/gs[0..1]/gs[3] → 換 area 或傳送。
             int reloc = sync_relocation();   // 2=換 area(已重載) 1=同區傳送 -1=wrap 跳過
             if (reloc == 2) {

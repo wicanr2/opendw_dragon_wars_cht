@@ -268,6 +268,20 @@ int slot_base(int slot) {
 }
 }  // namespace
 
+int Party::add_item(std::size_t owner, const std::array<std::uint8_t, CharacterRecord::kItemStride>& bytes) {
+  if (owner >= members_.size()) return -1;
+  auto& m = members_[owner];
+  for (int slot = 0; slot < CharacterRecord::kInventorySlots; ++slot) {
+    int base = slot_base(slot);
+    if (base < 0) break;                         // 越界(13 格中末格起點超 512)→ 停
+    if (m.item_at(slot).present) continue;       // 已占用
+    for (int b = 0; b < CharacterRecord::kItemStride; ++b) m.raw[base + b] = bytes[(std::size_t)b];
+    m.raw[base] &= ~0x01;                         // 新給物品預設未裝備
+    return slot;
+  }
+  return -1;                                      // 背包已滿
+}
+
 bool Party::discard_item(std::size_t owner, int slot) {
   if (owner >= members_.size()) return false;
   int base = slot_base(slot);
