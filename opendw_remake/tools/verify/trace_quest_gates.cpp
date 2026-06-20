@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
         if (al < 0 || pcb < 0) continue;
         int gb = pcb + (al >> 3);
         int bit = al & 7;
-        FlagOp f{area, v, r.pc, kind, gb, bit, r.op};
+        FlagOp f{area, v, (std::uint16_t)r.pc, kind, gb, bit, r.op};   // r.pc 為 size_t → 明確窄化(AppleClang 嚴格,不容隱式)
         tileops.push_back(f);
         all.push_back(f);
         if (kind == 'S' || kind == 'C') setters[{gb, bit}].insert(area);
