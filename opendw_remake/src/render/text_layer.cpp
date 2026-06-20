@@ -25,7 +25,7 @@ bool TextLayer::open(SDL_Renderer* renderer, const std::string& ttf_path, int sc
   return font_for(default_px_) != nullptr;
 }
 
-TTF_Font* TextLayer::font_for(int px) const {
+void* TextLayer::font_for(int px) const {   // 回傳不透明 void*(實為 TTF_Font*;見 hpp 檔頭註)
   if (px <= 0) px = default_px_;
   auto it = fonts_.find(px);
   if (it != fonts_.end()) return it->second;
@@ -43,7 +43,7 @@ TTF_Font* TextLayer::font_for(int px) const {
 void TextLayer::close() {
   for (auto& kv : cache_) if (kv.second.tex) SDL_DestroyTexture(kv.second.tex);
   cache_.clear();
-  for (auto& kv : fonts_) if (kv.second) TTF_CloseFont(kv.second);
+  for (auto& kv : fonts_) if (kv.second) TTF_CloseFont((TTF_Font*)kv.second);
   fonts_.clear();
   if (TTF_WasInit()) TTF_Quit();
   ren_ = nullptr;
@@ -62,7 +62,7 @@ TextLayer::CachedTex* TextLayer::get_texture(const std::string& utf8, std::uint8
   auto it = cache_.find(key);
   if (it != cache_.end()) return &it->second;
 
-  TTF_Font* font = font_for(px);
+  TTF_Font* font = (TTF_Font*)font_for(px);
   if (!font) return nullptr;
   const Rgb& rgb = kDosPalette[color & 0x0F];
   SDL_Color c{rgb.r, rgb.g, rgb.b, 255};
@@ -90,7 +90,7 @@ void TextLayer::flush() {
 }
 
 int TextLayer::measure_vwidth(const std::string& utf8, int px) const {
-  TTF_Font* font = font_for(px);
+  TTF_Font* font = (TTF_Font*)font_for(px);
   if (!font || utf8.empty()) return 0;
   int w = 0, h = 0;
   if (TTF_SizeUTF8(font, utf8.c_str(), &w, &h) != 0) return 0;

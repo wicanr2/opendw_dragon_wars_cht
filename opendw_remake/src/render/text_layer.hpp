@@ -17,7 +17,10 @@
 
 struct SDL_Renderer;
 struct SDL_Texture;
-typedef struct _TTF_Font TTF_Font;
+// 註:不前向宣告 TTF_Font。SDL_ttf 不透明型別的 struct tag 跨版本不同(2.0.x = _TTF_Font、
+//     2.20+ = TTF_Font),自行 typedef 會與某版 SDL_ttf.h 衝突(clang 報 error)。本 header
+//     被非 SDL TU(party.hpp)間接 include,亦不宜直接 include <SDL_ttf.h>。故字型以不透明
+//     void* 存放(font_for/fonts_ 私有),只在 text_layer.cpp 轉回真 TTF_Font*。
 
 namespace dw::render {
 
@@ -71,8 +74,8 @@ public:
   void set_default_px(int v) { default_px_ = v; }
 
 private:
-  // 取得(或惰性建立)對應原生字級 px 的 TTF_Font。
-  TTF_Font* font_for(int px) const;
+  // 取得(或惰性建立)對應原生字級 px 的字型。回傳不透明 void*(實為 TTF_Font*;見檔頭註)。
+  void* font_for(int px) const;
 
   SDL_Renderer* ren_ = nullptr;
   int scale_ = 3;
@@ -80,8 +83,8 @@ private:
   int default_px_ = 24;           // 預設原生字級(CJK≈24px 視窗像素)
   std::string ttf_path_;
 
-  // 原生字級 px → 已開字型。mutable:惰性建立。
-  mutable std::unordered_map<int, TTF_Font*> fonts_;
+  // 原生字級 px → 已開字型(不透明 void*,實為 TTF_Font*)。mutable:惰性建立。
+  mutable std::unordered_map<int, void*> fonts_;
 
   // glyph/run 快取:key = px | color | (hash of text)。值為已渲染 texture + 尺寸。
   struct CachedTex { SDL_Texture* tex; int w; int h; };
