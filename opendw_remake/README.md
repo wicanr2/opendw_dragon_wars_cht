@@ -30,7 +30,7 @@
 | `src/entities/` | player / party / monster / item / spell(對照原版 `player.c` 結構) |
 | `src/i18n/` | 翻譯表、Read Paragraph DB、glyph cache;中文化是一等公民,不是事後 patch |
 | `src/game/` | scene 狀態機:title / explore / combat / dialogue / shop / 建角 / 結局 |
-| `src/audio/` | 音訊邊界(目前 `op_90` 忠實 no-op,無音訊子系統) |
+| `src/audio/` | 音效子系統:SDL2 方波合成(門/撞牆頻率由 opendw `dx/bx` 推導)+ Amiga/X68000 真實 PCM 取樣播放;`op_90` 接 `func_5060` dispatch + 門/撞牆/命中/施法事件音 |
 | `src/platform/` | OS adapter(file / time / input)—— 只在邊界放 adapter |
 
 ---
@@ -149,7 +149,7 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 | 門 K-on-wall / 部分非戰鬥技能觸發 | 落在尚未反編的 walking-engine → remake 設計(grounded 手冊),非 bytecode 真值 |
 | Namtar Boss 屬性、自由之劍祝福加成、結局序列 | remake 平衡 / 組合設計(原版勝利畫面 script 逆不出) |
 | Phoebus(area 6)/ area 33 | 入口資料層隔離,為隔離分量 |
-| 音訊 | 無音訊子系統(`op_90` 忠實 no-op),全程靜音 |
+| 音樂(背景配樂) | **音效已實作**(SDL2 方波 + Amiga/X68000 真實 PCM 取樣,接門/撞牆/命中/施法/`op_90`);僅**背景音樂**未還原 —— Amiga `.tune` 為 68k 機械碼播放器、DOS 為 PC speaker 音符序列,需模擬 / 音符表逆向,本輪未做 |
 
 量化完成度與缺口稽核見上層 [`../docs/assessment/57_PM_REVIEW.md`](../docs/assessment/57_PM_REVIEW.md)(技術 ~75% / 玩家內容 ~45–50%)、[`../docs/assessment/49_GAP_AUDIT.md`](../docs/assessment/49_GAP_AUDIT.md)、[`../docs/assessment/48_COMPLETABILITY_ROADMAP.md`](../docs/assessment/48_COMPLETABILITY_ROADMAP.md)。
 

@@ -82,11 +82,28 @@ struct Voice {
 };
 
 // 一個進行中的 PCM 取樣播放(SDL callback 線程消費)。指向全域 sample bank 的 float 緩衝。
+//   SFX 化:原始樣本是 1.4–3.3s 的持續音,當門/撞牆/命中等事件音太長 → 只播前段 [0,end)
+//   並在尾端淡出(避免 click)。end 由 play() 依事件設(remake 設計;保留完整 WAV 不改檔)。
 struct SampleVoice {
   const std::vector<float>* data = nullptr;  // 取樣資料(22050Hz mono float -1..1)
   std::size_t pos = 0;
+  std::size_t end = 0;                        // 播放上限(≤ data->size();SFX 截短)
   bool active = false;
 };
+
+// 尾端淡出長度(~12ms @22050;避免截斷 click)。
+constexpr std::size_t kFadeSamples = 256;
+
+// 各事件的取樣播放上限(ms;SFX 化,remake 設計)。0 = 不截(整段播)。
+int sample_cap_ms(SoundId id) {
+  switch (id) {
+    case SoundId::WallBump: return 320;   // 撞牆:短促衝擊
+    case SoundId::Hit:      return 350;   // 命中:短促打擊
+    case SoundId::DoorOpen: return 500;   // 開門:略長
+    case SoundId::Cast:     return 700;   // 施法:強擊 + 短衰減尾
+    default:                return 600;   // op_90 PCM:泛用 0.6s
+  }
+}
 
 // ── 真實 PCM 取樣 bank(remake 載入原版平台音效;見 bundle/audio/README.md)──
 //
@@ -137,12 +154,16 @@ void audio_callback(void* /*userdata*/, std::uint8_t* stream, int len) {
       if (v.phase >= 1.0) v.phase -= 1.0;
       if (--v.remaining <= 0) v.active = false;
     }
-    // PCM 取樣:逐樣本讀出(取樣率已對齊 kSampleRate,不需 runtime resample)。
+    // PCM 取樣:逐樣本讀出(取樣率已對齊 kSampleRate,不需 runtime resample);播到 end 截止,
+    //   尾端淡出避免 click。
     for (auto& sv : g_sample_voices) {
       if (!sv.active || sv.data == nullptr) continue;
-      if (sv.pos >= sv.data->size()) { sv.active = false; continue; }
-      sample += (*sv.data)[sv.pos] * kSampleGain;
-      if (++sv.pos >= sv.data->size()) sv.active = false;
+      if (sv.pos >= sv.end) { sv.active = false; continue; }
+      float v = (*sv.data)[sv.pos] * kSampleGain;
+      std::size_t left = sv.end - sv.pos;
+      if (left < kFadeSamples) v *= (float)left / (float)kFadeSamples;  // 線性淡出
+      sample += v;
+      if (++sv.pos >= sv.end) sv.active = false;
     }
     // 軟性夾限,避免多聲疊加爆音。
     if (sample > 1.0f) sample = 1.0f;
@@ -166,8 +187,10 @@ void start_voice(int freq, int dur_ms) {
 }
 
 // 啟動一個 PCM 取樣聲部(指向共享 sample bank)。聲部滿 → 覆蓋最舊(最大 pos)。
-void start_sample(const std::shared_ptr<std::vector<float>>& data) {
+//   end = 播放上限樣本數(SFX 截短;尾端由 callback 淡出)。
+void start_sample(const std::shared_ptr<std::vector<float>>& data, std::size_t end) {
   if (!data || data->empty()) return;
+  if (end == 0 || end > data->size()) end = data->size();
   std::lock_guard<std::mutex> lk(g_mtx);
   SampleVoice* slot = nullptr;
   for (auto& sv : g_sample_voices) {
@@ -182,6 +205,7 @@ void start_sample(const std::shared_ptr<std::vector<float>>& data) {
   }
   slot->data = data.get();
   slot->pos = 0;
+  slot->end = end;
   slot->active = true;
 }
 
@@ -344,9 +368,11 @@ bool Sound::play(SoundId id) {
   if (!opened_) return false;
   if ((int)id >= (int)SoundId::Count) return false;
   if (muted_ || dev_handle_ == nullptr) return false;  // 合法 no-op(已派發但不出聲)
-  // 有真實 PCM 取樣 → 播放取樣;否則退回方波合成。
+  // 有真實 PCM 取樣 → 播放取樣(依事件截短成 SFX);否則退回方波合成。
   if (g_samples[(int)id] && !g_samples[(int)id]->empty()) {
-    start_sample(g_samples[(int)id]);
+    int cap_ms = sample_cap_ms(id);
+    std::size_t end = cap_ms > 0 ? (std::size_t)((long long)kSampleRate * cap_ms / 1000) : 0;
+    start_sample(g_samples[(int)id], end);
     return true;
   }
   const Entry& e = entry_of(id);

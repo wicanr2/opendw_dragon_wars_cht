@@ -6,6 +6,14 @@
 > 基準文件:`docs/assessment/65_GAME_EVALUATION.md`(06-19)、`57_PM_REVIEW.md`(06-16)、`49_GAP_AUDIT.md` / `48_COMPLETABILITY_ROADMAP.md`(06-15 快照)、`docs/gameplay/54`(連通)/`56`(結局鏈)。
 > 誠實分級沿用四級:**bytecode 真值** / **best-fit** / **remake 設計(grounded 手冊)** / **受阻**。
 
+> **📌 校正附註(2026-06-20,評估後同日補上)**:本報告多處把音訊列為「全程靜音 / R6 最大缺口」。
+> 該判斷源於評估全程 `SDL_AUDIODRIVER=dummy` 無實體裝置、且單幀 headless dump 未推進到觸發事件。
+> 經覆核原始碼:**音效其實已完整實作並接上事件** —— `src/audio/sound.cpp`(SDL2 方波合成 +
+> Amiga `data5/6` / X68000 `DW.SND` 真實 8-bit PCM 取樣)在 `main.cpp` 已接 `op_90` dispatch、
+> 開門、撞牆、命中、施法,並於本輪把 PCM 截短成俐落 SFX(尾端淡出)。`--mute` 可關;`verify_audio`
+> ctest 通過。**仍受阻的只剩「背景音樂」**(Amiga `.tune` 68k 播放器 / DOS PC speaker 音符序列)。
+> 故下文凡稱「全程靜音」應讀作「**有事件音效、缺背景音樂**」;「重回童年」實際略高於 7 成。
+
 ---
 
 ## 1. 總評(BLUF)
