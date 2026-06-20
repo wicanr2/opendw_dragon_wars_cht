@@ -172,7 +172,7 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 | 主題 | 完整度 | 內容 |
 |---|---|---|
 | **DOS** | 完整 | 原生綠龍標題（res29）、DOS 16 色標準盤、res 24–28 結局五場景、第一人稱 viewport 對 oracle byte-for-byte |
-| **Amiga** | **接近完整** | 原生金龍標題、結局圖、**50 隻怪物 sprite**（data4 4-bitplane，全偶數資源，權威 `sprite_res()=(attr[0x0B]<<1)+0x8A` 對映接進戰鬥）、**第一人稱地牢**（DOS byte-for-byte 精確透視幾何 + Amiga 風格**青藍石牆配色**：青藍正面牆 + 棕地板天花）。全程 planar 解碼 |
+| **Amiga** | **接近完整** | 原生金龍標題、結局圖、**50 隻怪物 sprite**（data4 4-bitplane，全偶數資源，權威 `sprite_res()=(attr[0x0B]<<1)+0x8A` 對映接進戰鬥）、**第一人稱地牢**（DOS byte-for-byte 精確透視幾何 + **校準自真機官方截圖的灰石牆配色**：灰石牆 + 灰地板天花 + 綠柱）。全程 planar 解碼 |
 | **X68000** | **partial** | 目前只有怪物 / 場景 contact sheet（未切圖），**無原生標題 → 回退 DOS res29**，**palette 為 DOS placeholder**（原生 X68000 盤尚未萃取，`.PKH` 壓縮未破解）。誠實標示,toast 也標 partial |
 | **VGA-256** | 增強 | DOS 版面演算法化擴成 256 色「真 VGA」增強盤（remake 加值,原版無此版本;非逐像素手繪重畫,誠實標示） |
 
@@ -180,9 +180,15 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 
 ![amiga-vs-dos-fp](docs/media/remake/showcase/themes/amiga_vs_dos_fp.png)
 
-兩側是**同一條 byte-for-byte 對拍的 DOS 精確透視幾何**——側牆完美收斂、近大遠小一致。差別只在配色：左為 DOS 標準 16 色盤（灰／青石牆 + 紅地板天花），右套 Amiga 風格青藍石牆盤（青藍正面牆 + 棕地板天花），呈現 Amiga 地城氛圍而透視 100% 收斂、不破碎。
+兩側是**同一條 byte-for-byte 對拍的 DOS 精確透視幾何**——側牆完美收斂、近大遠小一致。差別在配色：左為 DOS 標準 16 色盤（灰／青石牆 + 紅地板天花 + 藍磚框），右套**校準自真機官方截圖**的 Amiga 配色（灰石牆 + 灰地板天花 + 綠柱），呈現 Amiga 地城氛圍而透視 100% 收斂、不破碎。
 
-> 受阻誠實標示：Amiga 原生 viewport 圖塊（data3，已抽出並按 slot 對映存於 `themes/amiga/components`）的**重組落點**需逆出 Amiga 引擎 blit 錨點演算法（圖塊尺寸 ≠ DOS sprite，直接套 DOS 落點會破碎），屬無界逆向,暫擱置。第一人稱因此改採「DOS 透視幾何 + Amiga 青藍石牆盤」這條乾淨方案（remake 加值,非原生圖塊重繪）。
+**配色校準佐證：remake vs 真機官方截圖**
+
+![amiga-real-vs-remake](docs/media/remake/showcase/themes/amiga_real_vs_remake.png)
+
+左為真機 Amiga 版「Mines」地牢第一人稱官方截圖，右為 remake 的 Amiga 主題。石牆灰階、綠柱、灰地板天花的色調**直接取樣自左圖**（直方圖實測：石牆 67/102/136 灰、地板天花灰、柱綠、木門棕）——不是憑空調色，而是對著真機畫面校準。
+
+> 受阻誠實標示：Amiga 原生 viewport 圖塊（data3，已抽出並按尺寸/角色辨識存於 `themes/amiga/components`：正面牆 96/64/32/16 隨距離縮 + 側牆 trapezoid）的**重組落點**需逆出 Amiga 引擎 blit 錨點演算法；且官方截圖**無「長走廊」**可作側牆遞遠的對位真值，三種啟發式（slot 對映 / size-match＋置中 / 寬度優先）皆未收斂 → 原生圖塊組裝暫擱置。第一人稱因此採「DOS byte-faithful 透視幾何 + **校準自真機**的 Amiga 灰石配色」——配色忠於真機，幾何 100% 收斂（remake 加值,非原生圖塊重繪）。
 
 **Amiga 戰鬥怪物（原生 sprite）**
 
@@ -192,7 +198,7 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 | `--theme amiga --encounter 13`：怪物圖換成 Amiga 原生 4-bitplane 立繪（紅底為各怪物自帶盤的透明色 index 8），下方繁中戰鬥指令列 |
 
 > 誠實邊界
-> - **Amiga**（接近完整,仍有受阻項）：第一人稱地牢採「DOS byte-faithful 透視幾何 + Amiga 青藍石牆配色」（透視 100% 收斂；原生 viewport 圖塊已抽出但**重組落點受阻**——需逆出 Amiga 引擎 blit 錨點演算法,暫擱置）；怪物 sprite 只切**主格**,多動畫格因無可靠 frame 邊界表未切。
+> - **Amiga**（接近完整,仍有受阻項）：第一人稱地牢採「DOS byte-faithful 透視幾何 + **校準自真機官方截圖**的 Amiga 灰石配色」（透視 100% 收斂、配色忠於真機；原生 viewport 圖塊已抽出辨識但**重組落點受阻**——需逆出 Amiga 引擎 blit 錨點演算法,且官方截圖無長走廊可作對位真值,暫擱置）；怪物 sprite 只切**主格**,多動畫格因無可靠 frame 邊界表未切。
 > - **X68000** 是 partial（無原生標題、palette 為 placeholder、sprite 未切;`.PKH` 壓縮未破解）。日版《火龍之戰》當年只在 **X68000** 發行,**沒有 PC-98 版本**——本專案不會憑空生出一套不存在的 PC-98 美術。
 
 ### VGA-256：把 16 色版面演算法化擴成「真 VGA」

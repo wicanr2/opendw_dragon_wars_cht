@@ -110,28 +110,29 @@ struct UiTheme {
   bool vga256 = false;
 };
 
-// Amiga 第一人稱 viewport 配色盤(remake 加值,誠實標示):
-//   原生 Amiga viewport 圖塊的「重組落點」需逆出 Amiga 引擎 blit 錨點演算法(圖塊尺寸 ≠ DOS
-//   sprite,直接套 DOS xpos/ypos 會破碎),屬無界 RE → 暫擱置(見 viewport_amiga.hpp / docs/61)。
-//   改採有界乾淨方案:沿用 **DOS golden 精確透視幾何**(byte-for-byte 對拍那條),只把調色盤
-//   換成 Amiga 風格 —— 石牆轉青藍、地板/天花轉棕,呈現 Amiga 地城氛圍且透視 100% 收斂。
-//   索引語意對齊 DOS viewport 實際用色(直方圖實測:idx3/7/8/11=石牆、idx4/12=地板天花)。
+// Amiga 第一人稱 viewport 配色盤(校準自真機官方截圖,誠實標示):
+//   原生 Amiga viewport 圖塊的「重組落點」需逆出 Amiga 引擎 blit 錨點演算法,且官方截圖
+//   無「長走廊」可作側牆遞遠的對位真值 → 原生圖塊組裝暫擱置(見 viewport_amiga.hpp / docs/61)。
+//   改採有界方案:沿用 **DOS golden 精確透視幾何**(byte-for-byte 對拍那條),調色盤**校準自
+//   真機 Amiga「Mines」地牢 FP 截圖**(amiga_screenshot_official/dragon-wars_11.png,直方圖實測:
+//   石牆灰階 67/102/136、地板/天花灰、木門棕、柱綠)→ 透視 100% 收斂且配色忠於真 Amiga。
+//   索引語意對齊 DOS viewport 實際用色(idx3/7/8/11=石牆、idx4/12=地板天花)。
 inline constexpr std::array<Rgb, 16> kAmigaViewportPalette = {{
-  {0x00,0x00,0x00},  // 0 黑(遠景開口/陰影)
+  {0x00,0x00,0x00},  // 0 黑(遠景開口/門凹/陰影)
   {0x00,0x00,0xAA},  // 1
-  {0x00,0xAA,0x00},  // 2
-  {0x28,0xB4,0xC8},  // 3 青藍石牆(主面;原 DOS teal)
-  {0x5F,0x3E,0x20},  // 4 棕地板/天花(原 DOS 紅)
+  {0x00,0x99,0x00},  // 2 綠(柱/裝飾;真機綠 0,153,0)
+  {0x88,0x88,0x88},  // 3 中灰石牆(原 DOS teal → 真機 136 灰)
+  {0x43,0x43,0x43},  // 4 暗灰地板/天花(原 DOS 紅 → 真機灰,非紅非棕)
   {0xAA,0x00,0xAA},  // 5
-  {0x8C,0x5F,0x32},  // 6 棕側牆
-  {0x5F,0x96,0xBE},  // 7 藍灰石牆(原 DOS 亮灰)
-  {0x28,0x55,0x78},  // 8 深藍石牆(原 DOS 暗灰)
+  {0x8B,0x69,0x00},  // 6 木門棕(真機門 139,105,0)
+  {0x88,0x88,0x88},  // 7 亮灰石牆(原 DOS 亮灰;真機 136)
+  {0x43,0x43,0x43},  // 8 暗灰石牆(原 DOS 暗灰;真機 67)
   {0x55,0x55,0xFF},  // 9
-  {0x55,0xFF,0x55},  // 10
-  {0x82,0xDC,0xEB},  // 11 亮青石牆高光(原 DOS 亮青)
-  {0xA5,0x6E,0x41},  // 12 淺棕地板(原 DOS 亮紅)
+  {0x00,0x99,0x00},  // 10 綠
+  {0x66,0x66,0x66},  // 11 中灰石牆高光(原 DOS 亮青 → 真機 102 灰)
+  {0x66,0x66,0x66},  // 12 中灰地板(原 DOS 亮紅 → 真機灰)
   {0xFF,0x55,0xFF},  // 13
-  {0xFF,0xFF,0x55},  // 14
+  {0xCC,0xBC,0x00},  // 14 木門金黃細節(真機 204,188,0)
   {0xFF,0xFF,0xFF}}};// 15 白(邊緣高光)
 
 // 結局過場各場景的英文敘事鍵(經 tr() 在地化 → 繁中/日;查無回退英文)。
