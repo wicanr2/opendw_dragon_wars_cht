@@ -116,6 +116,9 @@ public:
   // 該曲目是否已載入(供測試 / 診斷)。
   bool has_music(MusicId id) const;
 
+  // 清空全域取樣 / 音樂快取(僅供測試隔離;主程式單一實例不需要)。需先 close() 所有實例。
+  static void reset_caches();
+
 private:
   void* dev_handle_ = nullptr;   // SDL_AudioDeviceID(以 void* 隱藏 SDL 型別)
   bool opened_ = false;

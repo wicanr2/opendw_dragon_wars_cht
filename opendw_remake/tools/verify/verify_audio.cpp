@@ -151,6 +151,17 @@ int main(int argc, char** argv) {
     // play() 在 dummy device 下對取樣 / 方波皆回報已派發,且不崩。
     CHECK(snd.play(audio::SoundId::DoorOpen), "play(DoorOpen) 派發真實取樣");
     CHECK(snd.play(audio::SoundId::EffectB2), "play(EffectB2) 派發方波(退回)");
+    // 背景音樂:bundle/audio/music/*.wav 存在時(本機已 UADE 渲染)實檢 4 曲載入。
+    //   著作不入庫 → CI / 他機缺檔時跳過(informational,不 FAIL)。
+    if (snd.has_music(audio::MusicId::Title)) {
+      CHECK(snd.has_music(audio::MusicId::Title),  "title.wav 載入(UADE 渲染)");
+      CHECK(snd.has_music(audio::MusicId::Game),   "game.wav 載入");
+      CHECK(snd.has_music(audio::MusicId::Combat), "combat.wav 載入");
+      CHECK(snd.has_music(audio::MusicId::End),    "end.wav 載入");
+      CHECK(snd.play_music(audio::MusicId::Title), "play_music(Title) 啟動真實曲目");
+    } else {
+      std::printf("(skip bundle 音樂檢查:music/*.wav 未渲染;見 music/README.md)\n");
+    }
     snd.close();
     CHECK(!snd.is_open(), "載取樣後 close() 乾淨退出");
   } else {
@@ -158,6 +169,8 @@ int main(int argc, char** argv) {
   }
 
   // 7) 背景音樂頻道:合成測試曲 → 驗載入 / 切曲 / idempotent / 缺檔 no-op。
+  //    先清全域快取(section 6 若載過 bundle 音樂,需重置才能驗「缺檔」路徑)。
+  audio::Sound::reset_caches();
   {
     const std::string mdir = "/tmp/dwr_music_test";
     ::mkdir(mdir.c_str(), 0777);

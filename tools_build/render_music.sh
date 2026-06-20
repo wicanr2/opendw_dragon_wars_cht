@@ -14,17 +14,20 @@ set -eu
 
 TUNE_DIR="${1:?用法: render_music.sh <tune 目錄> [out 目錄]}"
 OUT_DIR="${2:-opendw_remake/assets/bundle/audio/music}"
-SECS="${MUSIC_SECS:-180}"   # 各曲擷取秒數(夠長含完整一輪;循環由引擎處理)
+SECS="${MUSIC_SECS:-100}"   # 各曲擷取秒數(夠長含完整一輪;循環由引擎處理)
+UADE123="${UADE123:-uade123}"          # uade123 路徑(源碼建置 = src/frontends/uade123/uade123)
+UADE_BASEDIR="${UADE_BASEDIR:-}"       # uade 資料夾(源碼 prefix 的 share/uade2);裝在系統可留空
 
-command -v uade123 >/dev/null 2>&1 || { echo "缺 uade123(見 $OUT_DIR/README.md)"; exit 1; }
+command -v "$UADE123" >/dev/null 2>&1 || [ -x "$UADE123" ] || { echo "缺 uade123(見 $OUT_DIR/README.md;可設 UADE123=路徑)"; exit 1; }
 command -v ffmpeg  >/dev/null 2>&1 || { echo "缺 ffmpeg"; exit 1; }
 mkdir -p "$OUT_DIR"
+[ -n "$UADE_BASEDIR" ] && BASEDIR_ARG="--basedir=$UADE_BASEDIR" || BASEDIR_ARG=""
 
 for t in title game combat end; do
   src="$TUNE_DIR/$t.tune"
   [ -f "$src" ] || { echo "略過 $t(找不到 $src)"; continue; }
   echo "渲染 $t.tune → $OUT_DIR/$t.wav"
-  uade123 -t "$SECS" --write-audio="/tmp/dwmusic_$t.raw.wav" "$src"
+  "$UADE123" $BASEDIR_ARG -t "$SECS" -1 -f "/tmp/dwmusic_$t.raw.wav" "$src" >/dev/null 2>&1
   ffmpeg -y -loglevel error -i "/tmp/dwmusic_$t.raw.wav" -ac 1 -ar 22050 -c:a pcm_s16le "$OUT_DIR/$t.wav"
   rm -f "/tmp/dwmusic_$t.raw.wav"
 done

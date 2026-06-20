@@ -26,8 +26,11 @@ resampler)。缺檔的曲目自動靜默 no-op(不影響執行 / ctest)。
 
 ```sh
 # 1) 取得 UADE(任一)
-#    源碼:git clone https://gitlab.com/heikkiorsila/uade && cd uade \
-#          && ./configure && make && sudo make install
+#    ★ 實測可用:官網 release tarball(gitlab/github 抓取常被 Cloudflare/auth 擋,官網最穩):
+#       curl -sSLO https://zakalwe.fi/uade/uade2/uade-2.13.tar.bz2
+#       tar xjf uade-2.13.tar.bz2 && cd uade-2.13 && ./configure --prefix=$PWD/inst && make && make install
+#       # uade123 在 src/frontends/uade123/uade123;資料在 inst/share/uade2、uadecore 在 inst/lib/uade2
+#    源碼(git):https://gitlab.com/heikkiorsila/uade
 #    (部分發行版有 uade123 套件,可直接裝)
 
 # 2) 取出 .tune(從 Amiga 版,素材不入庫)

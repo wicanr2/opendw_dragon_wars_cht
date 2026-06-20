@@ -397,6 +397,14 @@ bool Sound::has_sample(SoundId id) const {
   return g_samples[(int)id] && !g_samples[(int)id]->empty();
 }
 
+void Sound::reset_caches() {
+  std::lock_guard<std::mutex> lk(g_mtx);
+  for (auto& s : g_samples) s.reset();
+  for (auto& m : g_music) m.reset();
+  g_music_active = 0;
+  g_music_pos = 0;
+}
+
 bool Sound::has_music(MusicId id) const {
   if ((int)id <= 0 || (int)id >= (int)MusicId::Count) return false;
   return g_music[(int)id] && !g_music[(int)id]->empty();

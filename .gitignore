@@ -44,3 +44,8 @@ DRAGON.X
 
 # Claude Code session / worktree(不入庫)
 .claude/
+
+# 背景音樂 WAV(MANIACS of NOISE / Interplay 著作;本機渲染,不散布)
+opendw_remake/assets/bundle/audio/music/*.wav
+__pycache__/
+*.pyc
