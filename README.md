@@ -45,7 +45,15 @@
 
 這條血緣與本專案直接相關：本 remake 的反組譯基準 [opendw](https://github.com/dswban/opendw) 由 Devin Smith 製作，對應的正是 **Heineman 1989 年《火龍之戰》原版 16-bit x86 引擎**。逐指令研究這套引擎，等於在研究 Bard's Tale 技術脈絡的成熟形態。
 
-> 誠實邊界：法律與品牌意義上，《火龍之戰》是獨立 IP，**不是官方第四部 Bard's Tale**——商標問題使它無法掛上舊招牌。「精神續作」一說有 Heineman 本人受訪佐證（本來就是 BT IV、同一批人、可匯入角色、共用設計語彙），不只是後人的浪漫化標籤。完整考證、時間線與信心標示見 [docs/reference/66 — Bard's Tale 血緣脈絡](docs/reference/66_BARDS_TALE_LINEAGE.md)。
+> #### 🐉 那為什麼它叫《火龍之戰》，而不是《吟遊詩人傳說 IV》？
+>
+> 這背後是一段被商標律師改寫的家族史——一款做到最後一個月才被迫改名的遊戲、一條從 1985 年初代《吟遊詩人傳說》一路長到 1989 年的技術血脈、以及一個橫跨兩個系列當主程式的傳奇程式設計師。三部曲（BT1/BT2/BT3）究竟和《火龍之戰》是什麼關係？「精神續作」的說法有幾分是史實、幾分是浪漫化？
+>
+> ### 👉 [這條被改名抹掉的血緣，完整時間線一次講清楚 →](docs/reference/66_BARDS_TALE_LINEAGE.md)
+>
+> *內含：三部曲繼承關係 · Heineman 在每一作的角色 · 「Bard's Tale IV」改名始末 · 受訪佐證與信心標示*
+
+> 誠實邊界：法律與品牌意義上，《火龍之戰》是獨立 IP，**不是官方第四部 Bard's Tale**——商標問題使它無法掛上舊招牌。「精神續作」一說有 Heineman 本人受訪佐證（本來就是 BT IV、同一批人、可匯入角色、共用設計語彙），不只是後人的浪漫化標籤。
 
 ### 這個專案做兩件事
 
@@ -164,15 +172,17 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 | 主題 | 完整度 | 內容 |
 |---|---|---|
 | **DOS** | 完整 | 原生綠龍標題（res29）、DOS 16 色標準盤、res 24–28 結局五場景、第一人稱 viewport 對 oracle byte-for-byte |
-| **Amiga** | **接近完整** | 原生金龍標題、結局圖、**50 隻怪物 sprite**（data4 4-bitplane，全偶數資源，權威 `sprite_res()=(attr[0x0B]<<1)+0x8A` 對映接進戰鬥）、**第一人稱地牢牆面**（data3 viewport 圖塊 + 從 `dw` 主程式 CLUT 抽出的**原生 Amiga 16 色盤**：青藍石塊 + 棕側牆 + 綠頂條）。全程 planar 解碼 |
+| **Amiga** | **接近完整** | 原生金龍標題、結局圖、**50 隻怪物 sprite**（data4 4-bitplane，全偶數資源，權威 `sprite_res()=(attr[0x0B]<<1)+0x8A` 對映接進戰鬥）、**第一人稱地牢**（DOS byte-for-byte 精確透視幾何 + Amiga 風格**青藍石牆配色**：青藍正面牆 + 棕地板天花）。全程 planar 解碼 |
 | **X68000** | **partial** | 目前只有怪物 / 場景 contact sheet（未切圖），**無原生標題 → 回退 DOS res29**，**palette 為 DOS placeholder**（原生 X68000 盤尚未萃取，`.PKH` 壓縮未破解）。誠實標示,toast 也標 partial |
 | **VGA-256** | 增強 | DOS 版面演算法化擴成 256 色「真 VGA」增強盤（remake 加值,原版無此版本;非逐像素手繪重畫,誠實標示） |
 
-**Amiga 第一人稱地牢（原生盤）vs DOS 對照**
+**Amiga 第一人稱地牢 vs DOS 對照**
 
 ![amiga-vs-dos-fp](docs/media/remake/showcase/themes/amiga_vs_dos_fp.png)
 
-左為 DOS 精確透視（紅地板 / 天花完美收斂），右為 Amiga 原生 viewport 盤的石牆美術（青藍石塊 + 棕側牆 trapezoid + 綠頂裝飾條 + 青藍 water tile）。Amiga 牆面用的是遊戲實際資料的原生盤、結構可辨,但中央遠景的透視收斂為**維度匹配近似**,非 DOS 那條 byte-faithful perspective decode。
+兩側是**同一條 byte-for-byte 對拍的 DOS 精確透視幾何**——側牆完美收斂、近大遠小一致。差別只在配色：左為 DOS 標準 16 色盤（灰／青石牆 + 紅地板天花），右套 Amiga 風格青藍石牆盤（青藍正面牆 + 棕地板天花），呈現 Amiga 地城氛圍而透視 100% 收斂、不破碎。
+
+> 受阻誠實標示：Amiga 原生 viewport 圖塊（data3，已抽出並按 slot 對映存於 `themes/amiga/components`）的**重組落點**需逆出 Amiga 引擎 blit 錨點演算法（圖塊尺寸 ≠ DOS sprite，直接套 DOS 落點會破碎），屬無界逆向,暫擱置。第一人稱因此改採「DOS 透視幾何 + Amiga 青藍石牆盤」這條乾淨方案（remake 加值,非原生圖塊重繪）。
 
 **Amiga 戰鬥怪物（原生 sprite）**
 
@@ -182,8 +192,21 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 | `--theme amiga --encounter 13`：怪物圖換成 Amiga 原生 4-bitplane 立繪（紅底為各怪物自帶盤的透明色 index 8），下方繁中戰鬥指令列 |
 
 > 誠實邊界
-> - **Amiga**（接近完整,仍有受阻項）：第一人稱 viewport 透視為近似（維度匹配 + DOS 落點,非 byte-faithful perspective decode）；怪物 sprite 只切**主格**,多動畫格因無可靠 frame 邊界表未切;原生 viewport 盤全檔僅找到一份,推定為**單一全域世界盤**（若分區切換盤,其載入邏輯未 trace）。
+> - **Amiga**（接近完整,仍有受阻項）：第一人稱地牢採「DOS byte-faithful 透視幾何 + Amiga 青藍石牆配色」（透視 100% 收斂；原生 viewport 圖塊已抽出但**重組落點受阻**——需逆出 Amiga 引擎 blit 錨點演算法,暫擱置）；怪物 sprite 只切**主格**,多動畫格因無可靠 frame 邊界表未切。
 > - **X68000** 是 partial（無原生標題、palette 為 placeholder、sprite 未切;`.PKH` 壓縮未破解）。日版《火龍之戰》當年只在 **X68000** 發行,**沒有 PC-98 版本**——本專案不會憑空生出一套不存在的 PC-98 美術。
+
+### VGA-256：把 16 色版面演算法化擴成「真 VGA」
+
+原版 DOS 是 16 色 EGA/MCGA。1990 年那批 256 色 VGA 大作（《創世紀 VI》《魔法門》）的畫面，《火龍之戰》沒趕上。VGA-256 是 remake 的「如果它當年做了 256 色版會怎樣」加值主題——**不是逐像素手繪重畫 tile**，而是把引擎照常畫出的 16 色 framebuffer，在輸出前做一道演算法化後製：非線性 gamma ramp 拉開層次、同色區直向漸層（天空愈上愈亮、地面愈近愈深）、色塊交界壓暗描邊、Bayer ordered dither 柔化。同一份 16 色像素資料，換上一層 256 色的光影。
+
+| VGA-256 第一人稱地牢 | VGA-256 世界地圖 |
+|:---:|:---:|
+| ![vga-fp](docs/media/remake/showcase/vga256/02_viewport_vga256.png) | ![vga-world](docs/media/remake/showcase/vga256/04_world_vga256.png) |
+| 漸層天空 + 立體石牆 + 紅熔岩地板，綠石華麗邊框（原版 UI piece）+ 金色立繪 logo | 漸層海洋（橫向藍階）+ 綠地塊立體化 + 各色地點圖示，24 個繁中地名 |
+
+`F8` 循環到 VGA-256 時，畫面下緣彈出 `主題：vga (256色)` toast；只有此主題走 256 色後製路徑，DOS/Amiga/X68000 維持 16 色（golden 對拍不破）。
+
+> 誠實邊界：VGA-256 是**演算法化增強**，非考古抽取的原生美術（原版根本沒有 256 色版）。底層仍是同一份 16 色 framebuffer，256 色只加在 present/dump 前的後製層；關掉後製即回到原生 16 色,逐像素資料一致。
 
 ---
 
@@ -194,12 +217,12 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 
 ![worldmap](docs/assessment/dos_compare/wm_app_a0.png)
 
-**結局過場：Namtar 被擲回深淵。** 戰勝終戰 Boss 後跑結局序列——DOS 主題為 res **24–28** 五張全螢幕場景（Namtar 墜淵 → 慘叫 → 焚城 → 和平新時代 → 全劇終），每張底部疊一條半透明襯底條承載**繁中敘事**（場景烤進的原版英文立繪保留，下方壓繁中譯文，兩層並陳）。
+**結局過場：Namtar 被擲回深淵。** 戰勝終戰 Boss 後跑結局序列——DOS 主題為 res **24–28** 五張全螢幕場景（Namtar 墜淵 → 慘叫 → 焚城 → 和平新時代 → 全劇終）。繁中採「**換字不換版**」：把原版烤進圖裡的英文敘事**實心擦除**（那塊本就是黑底），在**原位**用銳利向量文字層畫繁中——不再是底部小字幕條，中文落在原版英文的構圖位置、英文不再透出。英文語系則維持原版 art 原樣呈現。
 
-| Namtar 墜淵（結局首場） |
+| Namtar 墜淵（結局首場・換字不換版） |
 |:---:|
 | ![ending](docs/media/remake/showcase/themes/ending_namtar_pit.png) |
-| 「你們奮力一擲，將納達擲回他當初竄出的那座深淵……」原版英文立繪 + 繁中襯底敘事 |
+| 右側原本的英文敘事被擦除，原位畫上「你們奮力一擲，將納達拋回牠當初竄出的那座深淵……」——構圖不動、字隨語系換 |
 
 ---
 

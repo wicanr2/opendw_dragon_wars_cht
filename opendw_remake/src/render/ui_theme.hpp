@@ -59,6 +59,12 @@ struct EndingScene {
   std::string ref;          // kDosScene:場景名("24");kAmigaPic:themes/ 下相對路徑
   TitleSource source = TitleSource::kDosScene;
   std::string narrative_en; // 疊字英文鍵(tr 在地化);空 = 不疊敘事
+  // 「英文擦除框」(viewport 320×200 座標):原版把英文敘事烤進此塊黑底區。
+  //   非英文語系時:把此框實心填黑(徹底擦掉原版英文)→ 銳利文字層在框內畫在地化敘事
+  //   (對齊原版英文的位置 = 沿用 scene_localize.py 「換字不換版」的作法,取代底部字幕條)。
+  //   ew==0 → 無擦除框 → 回退舊版「底部襯底條疊字幕」(Amiga 單張結局 / 末張 The End 用)。
+  //   英文語系永遠走 art 原樣(英文已烤進圖,不疊任何敘事)。
+  int ex = 0, ey = 0, ew = 0, eh = 0;
 };
 
 // 一個完整 UI 主題:title art 來源 + per-theme 16 色 palette + 戰鬥 backdrop + 覆蓋框配色。
@@ -104,6 +110,30 @@ struct UiTheme {
   bool vga256 = false;
 };
 
+// Amiga 第一人稱 viewport 配色盤(remake 加值,誠實標示):
+//   原生 Amiga viewport 圖塊的「重組落點」需逆出 Amiga 引擎 blit 錨點演算法(圖塊尺寸 ≠ DOS
+//   sprite,直接套 DOS xpos/ypos 會破碎),屬無界 RE → 暫擱置(見 viewport_amiga.hpp / docs/61)。
+//   改採有界乾淨方案:沿用 **DOS golden 精確透視幾何**(byte-for-byte 對拍那條),只把調色盤
+//   換成 Amiga 風格 —— 石牆轉青藍、地板/天花轉棕,呈現 Amiga 地城氛圍且透視 100% 收斂。
+//   索引語意對齊 DOS viewport 實際用色(直方圖實測:idx3/7/8/11=石牆、idx4/12=地板天花)。
+inline constexpr std::array<Rgb, 16> kAmigaViewportPalette = {{
+  {0x00,0x00,0x00},  // 0 黑(遠景開口/陰影)
+  {0x00,0x00,0xAA},  // 1
+  {0x00,0xAA,0x00},  // 2
+  {0x28,0xB4,0xC8},  // 3 青藍石牆(主面;原 DOS teal)
+  {0x5F,0x3E,0x20},  // 4 棕地板/天花(原 DOS 紅)
+  {0xAA,0x00,0xAA},  // 5
+  {0x8C,0x5F,0x32},  // 6 棕側牆
+  {0x5F,0x96,0xBE},  // 7 藍灰石牆(原 DOS 亮灰)
+  {0x28,0x55,0x78},  // 8 深藍石牆(原 DOS 暗灰)
+  {0x55,0x55,0xFF},  // 9
+  {0x55,0xFF,0x55},  // 10
+  {0x82,0xDC,0xEB},  // 11 亮青石牆高光(原 DOS 亮青)
+  {0xA5,0x6E,0x41},  // 12 淺棕地板(原 DOS 亮紅)
+  {0xFF,0x55,0xFF},  // 13
+  {0xFF,0xFF,0x55},  // 14
+  {0xFF,0xFF,0xFF}}};// 15 白(邊緣高光)
+
 // 結局過場各場景的英文敘事鍵(經 tr() 在地化 → 繁中/日;查無回退英文)。
 //   鍵文字與原版場景烤進點陣圖的英文一致,已於 i18n events.tsv 提供繁中譯文。
 //   集中為具名常數供 theme 結局序列與測試共用,避免散落多處。
@@ -139,11 +169,13 @@ inline const std::vector<UiTheme>& theme_list() {
     // [0] DOS(預設;完整)。結局過場 = res 24..28 五張 DOS 全螢幕場景,各配在地化敘事。
     //   敘事鍵與場景烤進的原版英文一致(已於 i18n events.tsv 在地化),底部襯底條疊繁中。
     UiTheme dos;
+    // 擦除框 = 原版英文敘事烤進的黑底區(座標沿用 tools_build/scene_localize.py 實測):
+    //   24 英文在右側、25/26/27 在下方。非英文語系填黑該框 + 框內畫在地化敘事(取代字幕條)。
     dos.ending = {
-      {"24", TitleSource::kDosScene, kEndingNarr24},
-      {"25", TitleSource::kDosScene, kEndingNarr25},
-      {"26", TitleSource::kDosScene, kEndingNarr26},
-      {"27", TitleSource::kDosScene, kEndingNarr27},
+      {"24", TitleSource::kDosScene, kEndingNarr24, 196, 30, 124, 150},
+      {"25", TitleSource::kDosScene, kEndingNarr25,   0, 140, 320,  60},
+      {"26", TitleSource::kDosScene, kEndingNarr26,   0, 128, 320,  72},
+      {"27", TitleSource::kDosScene, kEndingNarr27,   0, 116, 320,  84},
       // The End logo 自帶英文立繪;narrative 空 → 只疊在地化收尾標題(全劇終)。
       {"28", TitleSource::kDosScene, ""},
     };

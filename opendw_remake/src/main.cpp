@@ -1389,8 +1389,9 @@ int main(int argc, char** argv) {
 
   // 第一人稱 viewport 資源(--fp 或選單 B 進遊戲時用):元件 bundle + 靜態框架模板。
   render::ComponentStore comps(bundle + "/components");
-  // Amiga 地牢牆面元件(theme=Amiga 第一人稱走此;見 render/viewport_amiga.hpp)。
-  render::AmigaComponentStore amiga_comps(bundle + "/themes/amiga/components");
+  // 註:Amiga 原生 viewport 圖塊(themes/amiga/components,AmigaComponentStore)已抽出並按
+  //   slot 對映,但重組落點仍受阻(見 draw_explore 內 Amiga FP 說明)→ Amiga 第一人稱改用
+  //   DOS golden 透視 + kAmigaViewportPalette,暫不實際組裝原生圖塊(成果保留待後續逆向)。
 
   // area 0(Dilmun)專屬美化世界地圖 view(旋轉 90° landscape + 地形美化 + 地點標記)。
   //   與 oracle automap(下方 minimap)分工:area 0 走美化版、其餘 39 關走 oracle automap。
@@ -2015,12 +2016,33 @@ int main(int argc, char** argv) {
           if (((x + y) & 1) == 0) fb.put(x, y, 0);
     };
     const auto& seq = render::theme_ending_scenes(theme);
+    const render::EndingScene* sc =
+        (ending_idx >= 0 && ending_idx < (int)seq.size()) ? &seq[ending_idx] : nullptr;
+    // 非英文語系才疊在地化敘事;英文語系直接呈現原版 art(英文已烤進圖,不疊任何字)。
+    const bool localized = (locale_tag != "[EN]");
     std::string narr;
-    if (ending_idx >= 0 && ending_idx < (int)seq.size() && !seq[ending_idx].narrative_en.empty())
-      narr = tr.tr(seq[ending_idx].narrative_en);   // 在地化敘事(查無回退英文)
+    if (sc && localized && !sc->narrative_en.empty())
+      narr = tr.tr(sc->narrative_en);   // 在地化敘事(查無回退英文)
     const bool is_last = (ending_idx == (int)seq.size() - 1);
-    if (!narr.empty()) {
-      // 底部敘事條:換行後置於畫面下緣;條高隨行數動態(最多覆蓋下半 ~88px)。
+    if (!narr.empty() && sc->ew > 0) {
+      // ── 「換字不換版」:擦掉原版英文烤字區(實心填黑)→ 在原位畫銳利在地化敘事 ──
+      //   取代舊版底部字幕條:英文不再透出、中文落在原版英文的構圖位置(沿用 scene_localize)。
+      int bx = sc->ex, by = sc->ey, bw = sc->ew, bh = sc->eh;
+      for (int y = by; y < by + bh && y < render::kH; ++y)
+        for (int x = bx; x < bx + bw && x < render::kW; ++x)
+          if (x >= 0 && y >= 0) fb.put(x, y, 0);   // 實心黑(= 還原英文後方黑底)
+      std::vector<std::string> lines = tl.wrap(narr, bw - 8, PX_BODY);
+      int line_h = PX_BODY / eff_scale + 2;
+      int total_h = (int)lines.size() * line_h;
+      int y = by + (bh - total_h) / 2; if (y < by + 2) y = by + 2;   // 框內垂直置中
+      for (const std::string& ln : lines) {
+        int w = tl.measure_vwidth(ln, PX_BODY);
+        int x = bx + (bw - w) / 2; if (x < bx + 2) x = bx + 2;       // 框內水平置中
+        tl.add(x, y, ln, 15, PX_BODY);   // 白字
+        y += line_h;
+      }
+    } else if (!narr.empty()) {
+      // 無擦除框(Amiga 單張結局等):沿用底部襯底條疊字幕。
       const int band_top0 = 110;
       std::vector<std::string> lines = tl.wrap(narr, render::kW - 16, PX_BODY);
       int line_h = PX_BODY / eff_scale + 2;
@@ -3173,42 +3195,14 @@ int main(int argc, char** argv) {
   auto draw_game_fp = [&]() {
     fb.clear(0);
     if (!level) return;
-    // ── theme=Amiga:地牢牆面走 Amiga 美術(render_first_person_amiga;不經 DOS golden)──
-    //   元件選擇/落點仍用 DOS golden compose_draw_sequence(read-only);只換像素來源 +
-    //   套原生 viewport 盤(dw CLUT)。Amiga 元件缺失時誠實回退下方 DOS 路徑。
-    if (!theme.component_dir.empty() &&
-        render::amiga_viewport_available(amiga_comps)) {
-      if (auto sp = amiga_comps.viewport_palette()) vid.set_palette(*sp);
-      bool ok = render::render_first_person_amiga(*level, px, py, dir, fb, comps,
-                                                  amiga_comps);
-      if (ok) {
-        // 透視框線(perspective frame)仍以 DOS 模板畫在 Amiga 牆面上,維持景深結構。
-        if (vpt_ok) {
-          render::ViewportDecoder fdec;
-          fdec.reset(0);
-          fdec.compose_frame(vpt[0].data(), vpt[1].data(), vpt[2].data(), vpt[3].data());
-          // 框線非零處疊白(viewport 盤 index 1 = 白),勾出透視邊。
-          const std::uint8_t* m = fdec.mem.data();
-          for (int yy = 0; yy < 136; ++yy)
-            for (int bx2 = 0; bx2 < 80; ++bx2) {
-              std::uint8_t b = m[yy * 80 + bx2];
-              if ((b >> 4) & 0xF) fb.put(16 + bx2 * 2, 8 + yy, 1);
-              if (b & 0xF) fb.put(16 + bx2 * 2 + 1, 8 + yy, 1);
-            }
-        }
-        // 右側面板/關卡名等仍照 DOS 流程畫(下方共用)。
-        if (!para.active) {
-          draw_explore_chrome();
-          party.draw_status_panel(fb, tl, PX_UI);
-          tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);
-        }
-        add_lang_badge();
-        if (!para.active && !msg.active && !sheet.active)
-          draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7);
-        return;
-      }
-      vid.set_palette(theme.palette);  // Amiga 元件不可用 → 還原 theme 盤,回退 DOS 路徑
-    }
+    // ── theme=Amiga:第一人稱地牢 = DOS golden 精確透視 + Amiga 風格青藍石牆配色 ──
+    //   原生 Amiga viewport 圖塊(data3)已抽出並按 slot 對映,但「重組落點」需逆出 Amiga
+    //   引擎 blit 錨點演算法(圖塊尺寸 ≠ DOS sprite → 直接套 DOS xpos/ypos 會破碎),屬無界
+    //   RE,暫擱置(成果保留於 themes/amiga/components,見 viewport_amiga.hpp 註)。改採有界
+    //   乾淨方案:沿用 byte-for-byte 對拍的 DOS 透視幾何,只把調色盤換成 kAmigaViewportPalette
+    //   (石牆青藍 / 地板天花棕)→ 透視 100% 收斂、呈現 Amiga 地城氛圍。
+    bool amiga_fp = !theme.component_dir.empty();
+    if (amiga_fp) vid.set_palette(render::kAmigaViewportPalette);
     render::ViewportDecoder dec;
     // 牆面/地面/天空 sprite blit 進 viewport_memory(已對拍 golden 10880B)。
     render::render_first_person(*level, px, py, dir, dec, comps);
