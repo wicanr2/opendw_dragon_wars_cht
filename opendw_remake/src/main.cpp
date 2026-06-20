@@ -3082,7 +3082,7 @@ int main(int argc, char** argv) {
     // 第二列:特殊攻擊熱鍵(手冊 §戰鬥;remake 設計結算)。群戰才顯示(單怪 demo 不支援)。
     if (enc.group && !enc.over)
       tl.add(kMsgStripX0 + 4, menu_y + 11,
-             tr.tr("M:Mighty D:Disarm A:Advance Q:Quick E:Dodge"), 9, PX_UI);
+             tr.tr("M:Mighty D:Disarm A:Advance Q:Quick E:Dodge"), 14, PX_UI);  // 黃(14):特殊招式列,亮且與基本列(青)區隔(文字層用固定 DOS 盤,9=藍在黑底偏暗)
     // 施法選單(C 開啟)/戰報 log:放右側面板下方空白區(對齊原版「逐人動作選單在右側面板區」),
     //   不擠進底部訊息列(訊息列高度有限)。rx 對齊隊伍面板 x;ry 落在面板狀態條下方。
     int rx = kVpX + kVpW + 8;     // 184,右側欄起點(對齊隊伍面板 x≈216 左側留邊)
