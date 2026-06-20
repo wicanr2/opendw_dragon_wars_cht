@@ -128,6 +128,9 @@ if(SDL2_FOUND)
 
   if(DWR_HAVE_TTF)
     target_include_directories(opendw_remake PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
+    # pkg-config 的 -L 路徑(SDL2_TTF_LIBRARY_DIRS):Linux 標準路徑無害,macOS Homebrew
+    #   (/opt/homebrew/lib 等非標準 prefix)必需,否則 ld 找不到 SDL2_ttf。
+    target_link_directories(opendw_remake PRIVATE ${SDL2_TTF_LIBRARY_DIRS})
     target_link_libraries(opendw_remake PRIVATE ${SDL2_TTF_LIBRARIES})
     message(STATUS "SDL2 + SDL2_ttf found: opendw_remake two-layer renderer enabled")
   else()
@@ -546,6 +549,7 @@ if(SDL2_FOUND AND DWR_HAVE_TTF)
     src/game/party_panel.cpp)
   target_link_libraries(verify_party_panel PRIVATE dwr_game SDL2::SDL2)
   target_include_directories(verify_party_panel PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
+  target_link_directories(verify_party_panel PRIVATE ${SDL2_TTF_LIBRARY_DIRS})   # macOS Homebrew -L 路徑
   target_link_libraries(verify_party_panel PRIVATE ${SDL2_TTF_LIBRARIES})
 endif()
 
