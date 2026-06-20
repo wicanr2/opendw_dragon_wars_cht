@@ -274,11 +274,11 @@ Column key / 欄位說明:
 | 0x61 | 0x43A6 | ✅ | `test_player_property` | TEST character attribute bit; set flags | TEST 角色屬性某 bit，設旗標 | D |
 | 0x62 | 0x43BF | ✅ | `op_scan_for_char` | Scan characters for attribute value >= arg; set flags | 掃描角色找屬性值 >= arg，設旗標 | D |
 | 0x63 | 0x43F7 | ✅ | `op_set_char_data_word` | Set character word attribute (data_CA4C) | 設定角色 word 屬性（data_CA4C） | D |
-| 0x64 | 0x446E | ❌ | *(inferred)* get_char_data_word | (inferred) Read character data_CA4C word — complement of op_63 | 推測：讀取角色 data_CA4C（get_char_data_word），與 op_63 互補 | D |
-| 0x65 | 0x44B8 | ❌ | *(inferred)* clear/test char data | (inferred) Clear or test character data_CA4C | 推測：清除或測試角色 data_CA4C | D |
+| 0x64 | 0x446E | ✅ | `op_give_item` | GIVE_ITEM: copy 23B item template (word_3ADF @ r2) into first empty inventory slot; gs[7]=slot | 給物品：把物品模板（word_3ADF@r2）23B 複製進角色第一個空物品欄；gs[7]=槽（見 docs/RE 67） | D |
+| 0x65 | 0x44B8 | ⚠️ | `op_has_item` *(partial)* | HAS_ITEM check: al=word_3AE2 → call 0x4754 signature compare → carry. Addressing known; 0x4754 compare not yet ported | 持有檢查：定址已逆出，0x4754 簽章比對子程式尚未移植（見 docs/RE 67） | D |
 | 0x66 | 0x40C1 | ✅ | `op_66` | Load game_state[arg]; set ZF/SF flags (like TEST) | game_state[arg] 載入，設 ZF/SF 旗標（類似 TEST） | D |
-| 0x67 | 0x44CB | ❌ | *(inferred)* char attr / bit clear | (inferred) Character attribute / data_CA4C bit-clear operation | 推測：角色屬性/data_CA4C 相關，可能是清除某 bit | D |
-| 0x68 | 0x450A | ❌ | *(inferred)* char data / map coord | (inferred) Character data operation or map coordinate pre-op | 推測：角色資料操作或地圖座標相關前置操作 | D |
+| 0x67 | 0x44CB | ✅ | `op_remove_item` | REMOVE_ITEM: from gs[7] slot, shift later slots up 23B (compact), clear last slot | 移除物品：從 gs[7] 槽起把後格往前壓 23B、末槽清 0（見 docs/RE 67） | D |
+| 0x68 | 0x450A | ✅ | `op_get_char_ext` | Read char_ext[(sel<<8)+u4456[gs[7]]+op] → r2 (byte/word); item record field read | 讀物品記錄欄位 char_ext[...] → r2（武器傷害骰等） | D |
 | 0x69 | 0x453F | ✅ | `op_69` | Write character data_CA4C | 寫入角色 data_CA4C 資料 | D |
 | 0x6A | 0x4573 | ✅ | `op_6A` | Check if game_state[0,1] is within 4-byte rectangle; set sign flag | 檢查 game_state[0,1] 是否在 4-byte 矩形範圍內，設 sign flag | D |
 | 0x6B | 0x45A1 | ❌ | *(inferred)* coord range check or move | (inferred) Another coordinate range check, or movement pre-step | 推測：另一種座標範圍檢查，或移動玩家的前置動作 | D |
@@ -425,28 +425,33 @@ All semantics are **inferred** from position between neighbouring implemented op
 - **Neighbour pattern / 相鄰模式**: 0x35=DIV game_state, 0x36=DIV imm, 0x37=?, 0x38=AND — arithmetic group
 - **Category / 分類**: D
 
-### 0x64 — ASM: 0x446E
+### 0x64 — ASM: 0x446E — ✅ `op_give_item`（已實作）
 
-- **Position / 位置**: Between `op_set_char_data_word` (0x43F7) and NULL 0x65 (0x44B8)
-- **Inferred semantic / 推測語意**: Read character data_CA4C word (`get_char_data_word`) — read complement of op_63 (write)
+- **語意（真值,DRAGON.COM 0x446E 反組譯;opendw targets[] 標 NULL,2026-06-20 首逆出）**:
+  GIVE_ITEM。在當前角色 12 格物品欄(char_ext/data_CA4C)找第一個空格(該格 offset 0x0B 的 byte==0),
+  從物品模板資源 word_3ADF(=data_bytes)offset word_3AE2(=r2)複製 **23 byte** 物品記錄進去;設 gs[7]=填入槽。
+  12 格全滿則放棄。**無 operand**。定址同 op_68/69:base=(selector<<8)+unknown_4456[slot]。
+- 舊「推測:讀 data_CA4C word」已**作廢**。詳見 [docs/reverse-engineering/67](67_ITEM_ACQUISITION_RE.md);
+  自證 `tests/vm_selftest.cpp`(op64 give_item / 全滿不給)。
 - **Category / 分類**: D
 
-### 0x65 — ASM: 0x44B8
+### 0x65 — ASM: 0x44B8 — ⚠️ `op_has_item`（部分:定址已逆,0x4754 比對待移植）
 
-- **Position / 位置**: Between NULL 0x64 (0x446E) and op_66 (0x44CB → actual 0x40C1)
-- **Inferred semantic / 推測語意**: Clear or test character data_CA4C
+- **語意（部分真值）**:HAS_ITEM 持有檢查。`al=word_3AE2` → call **0x4754**(物品簽章比對子程式,op_72 也用)
+  → jb 分支(carry 表持有與否)。定址鏈已逆出,但 0x4754 比對子程式尚未移植 → remake 暫未接(仍 halt)。
 - **Category / 分類**: D
 
-### 0x67 — ASM: 0x44CB
+### 0x67 — ASM: 0x44CB — ✅ `op_remove_item`（已實作）
 
-- **Position / 位置**: After op_66 area
-- **Inferred semantic / 推測語意**: Character attribute bit-clear operation on data_CA4C
+- **語意（真值,DRAGON.COM 0x44CB 反組譯;opendw NULL,2026-06-20 首逆出）**:REMOVE_ITEM。從 gs[7] 指定槽起,
+  把後面每格往前搬 23 byte(壓實物品欄),末槽(slot 0x0B)清 0。= 移除一件物品並壓實。定址同 op_64。
+- 舊「推測:bit-clear」已作廢。自證 `tests/vm_selftest.cpp`(op67 remove_item)。
 - **Category / 分類**: D
 
-### 0x68 — ASM: 0x450A
+### 0x68 — ASM: 0x450A — ✅ `op_get_char_ext`（已實作）
 
-- **Position / 位置**: Between NULL 0x67 (0x44CB) and op_69 (0x453F)
-- **Inferred semantic / 推測語意**: Character data operation or map coordinate pre-operation
+- **語意（真值）**:讀 char_ext[(selector<<8)+unknown_4456[gs[7]]+operand] → r2(byte/word)。物品記錄欄位讀取
+  (武器主傷害骰 byte[8] 等,餵戰鬥骰子子程式)。op_69 的讀孿生。
 - **Category / 分類**: D
 
 ### 0x6B — ASM: 0x45A1

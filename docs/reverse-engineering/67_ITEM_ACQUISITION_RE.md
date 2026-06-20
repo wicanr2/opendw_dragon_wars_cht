@@ -85,7 +85,9 @@ curated 子集 7 件,含 Dragon Stone @DATA1 0x5369)。**無 operand**(來源 of
   到第 0x0B 格後把末槽清 0。= 「移除一件物品並把欄位壓實」(交物品給 NPC / 消耗任務物品)。
 
 > 三者(op_64/65/67)+ op_68(讀欄)+ op_69(寫欄)構成完整 CRUD:**給 / 查 / 刪 / 讀 / 改物品**。
-> opendw 把 0x64/0x65/0x67 標 NULL(未實作),remake 也未實作 → 任何 script 跑到它們會 halt(last_unimpl)。
+> opendw 把 0x64/0x65/0x67 標 NULL(未實作)。**remake 已於 2026-06-20 接上 op_64(GIVE_ITEM)、op_67
+> (REMOVE_ITEM)**(本文 §1.1/§1.2 反組譯為真值,`tests/vm_selftest.cpp` 自證、ctest 34/34);**op_65
+> (HAS_ITEM)仍待 0x4754 簽章比對子程式移植**。即「給物品 / 刪物品」原語已可跑,持有檢查 gate 還會 halt。
 
 ### 1.3 op_5F = 設祝福旗標(0x4372,已實作)
 

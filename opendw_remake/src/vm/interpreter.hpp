@@ -234,6 +234,8 @@ private:
   void op61_test_char_prop();  // 0x61  test char_data[player*512 + bx] & bitmask → 設 sf/zf/cf
   void op63_set_char_ext_word();// 0x63 set_char_data_word:mode=ax高位;讀2B operand;
                                 //      檢查 char_ext[sel<<8 + u4456[0]];=0 → clc(本切片路徑)
+  void op64_give_item();       // 0x64  GIVE_ITEM(0x446E):當前角色物品欄找空格 → 複製 23B 物品模板(word_3ADF@r2)
+  void op67_remove_item();     // 0x67  REMOVE_ITEM(0x44CB):從 gs[7] 槽起把後格往前壓 23B,末槽清 0
   void op68_get_char_ext();    // 0x68  r2 = char_ext[sel<<8 + u4456[gs[7]] + op](byte/word);讀裝備記錄欄位
   void op69_set_char_ext();    // 0x69  char_ext[sel<<8 + u4456[gs[7]] + op] = r2(byte/word)
   void op6B_move_reverse();    // 0x6B  move_party_reverse(0x45A1):adjust_position(gs[3]^2)

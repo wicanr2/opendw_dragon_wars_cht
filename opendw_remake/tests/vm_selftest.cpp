@@ -242,6 +242,42 @@ int main() {
     check("op69 char_ext[(2<<8)+1]==0x55", s.char_ext[0x201]==0x55 && s.halted);
   }
 
+  // Z2: op_64 GIVE_ITEM:把物品模板(data_bytes @ r2)的 23 byte 複製進角色第一個空物品欄。
+  //     sel=gs[0x0A]=2 → slot0 base=(2<<8)=0x200;空欄(char_ext 全 0,offset 0x0B==0)→ 填 slot0。
+  //     gs[7] 應 = 0(填入槽)。對照 DRAGON.COM 0x446E。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2;
+    s.data_bytes.assign(0x40, 0);
+    for (int k=0;k<0x17;++k) s.data_bytes[0x10+k]=(std::uint8_t)(0xA0+k);   // 模板 23B
+    s.script={0x09,0x10, 0x64, 0x5A};                                       // r2=0x10(模板 offset);op_64;halt
+    Interpreter(s).run();
+    bool ok = s.halted && s.game_state[7]==0;
+    for (int k=0;k<0x17;++k) ok = ok && (s.char_ext[0x200+k]==(std::uint8_t)(0xA0+k));
+    check("op64 give_item:23B 模板 → 空物品欄 slot0、gs[7]=0", ok);
+  }
+
+  // Z3: op_64 全滿放棄:12 格都非空(各槽 offset 0x0B != 0)→ 不給物品、char_ext slot0 不被覆寫。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2;
+    static const std::uint16_t u[]={0,0x17,0x2E,0x45,0x5C,0x73,0x8A,0xA1,0xB8,0xCF,0xE6,0xFD};
+    for (int i=0;i<12;++i) s.char_ext[0x200+u[i]+0x0B]=0xFF;                // 每槽標非空
+    s.char_ext[0x200]=0x11;                                                 // slot0 既有資料
+    s.data_bytes.assign(0x40, 0); s.data_bytes[0x10]=0xA0;
+    s.script={0x09,0x10, 0x64, 0x5A};
+    Interpreter(s).run();
+    check("op64 全滿 → 不給(slot0 保持 0x11)", s.halted && s.char_ext[0x200]==0x11);
+  }
+
+  // Z4: op_67 REMOVE_ITEM:從 gs[7]=0 槽起把後格往前壓 → slot1(0xBB)壓到 slot0。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2; s.game_state[7]=0;
+    s.char_ext[0x200+0]=0xAA;        // slot0 item A
+    s.char_ext[0x200+0x17]=0xBB;     // slot1 item B(base=0x217)
+    s.script={0x67, 0x5A};
+    Interpreter(s).run();
+    check("op67 remove_item:slot1 壓到 slot0(0xBB)", s.halted && s.char_ext[0x200]==0xBB);
+  }
+
   // AA: op_63 char_ext=0 路徑:讀 2B operand、清 carry(char_ext 全 0 → 非 exit 分支)。
   {
     VmState s; s.game_state[6]=0; s.game_state[0x0A]=2;

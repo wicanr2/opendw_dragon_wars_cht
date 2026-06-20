@@ -1662,6 +1662,59 @@ void Interpreter::op68_get_char_ext() {
   }
 }
 
+// op_64(GIVE_ITEM @0x446E;DRAGON.COM 反組譯 — opendw targets[] 標 NULL,本次首實作)。
+//   在當前角色 12 格物品欄(char_ext)找第一個空格(該格 offset 0x0B 的 byte == 0),
+//   從物品模板資源 word_3ADF(= data_bytes)offset word_3AE2(= r2)複製 **23 byte** 進去;
+//   設 gs[7] = 填入的 slot。12 格全滿則放棄(不給)。**無 operand**(來源 offset 由呼叫端先設 r2)。
+//   定址同 op_68/69:base = (selector<<8) + unknown_4456[slot],selector = gs[gs[6]+0x0A]。
+void Interpreter::op64_give_item() {
+  std::uint8_t player_idx = s_.game_state[6];
+  std::uint8_t sel = s_.game_state[(player_idx + 0x0A) & 0xFF];
+  int slot = 0;
+  std::uint32_t base = 0;
+  for (; slot < 0x0C; ++slot) {                         // 12 格(對照 cmp dx,0x0C)
+    base = ((std::uint32_t)sel << 8) + unknown_4456((std::uint8_t)slot);
+    std::size_t mark = (std::size_t)base + 0x0B;          // cmp byte[di+0x0B],0
+    if (mark >= s_.char_ext.size()) break;                // 越界 → 視為不可用,停
+    if (s_.char_ext[mark] == 0) break;                    // == 0 → 空格(je fill)
+  }
+  if (slot >= 0x0C) return;                              // 全滿 → 放棄(jmp 0x4498)
+  for (int k = 0; k < 0x17; ++k) {                       // 複製 23 byte 物品記錄
+    std::size_t src = (std::size_t)s_.r2 + k;             // es:[word_3AE2 + k]
+    std::size_t dst = (std::size_t)base + k;
+    std::uint8_t v = (src < s_.data_bytes.size()) ? s_.data_bytes[src] : 0;
+    if (dst < s_.char_ext.size()) s_.char_ext[dst] = v;
+  }
+  s_.game_state[7] = (std::uint8_t)slot;                 // [0x3867] = slot
+}
+
+// op_67(REMOVE_ITEM @0x44CB;DRAGON.COM 反組譯 — opendw NULL,本次首實作)。
+//   從 gs[7] 指定的槽起,把後面每一格往前搬 23 byte(壓實欄位),最後把末槽(slot 0x0B)清 0。
+//   = 「移除一件物品並壓實物品欄」(交物品給 NPC / 消耗任務物品)。定址同上。
+void Interpreter::op67_remove_item() {
+  std::uint8_t player_idx = s_.game_state[6];
+  std::uint8_t sel = s_.game_state[(player_idx + 0x0A) & 0xFF];
+  auto slot_base = [&](int slot) -> std::uint32_t {
+    return ((std::uint32_t)sel << 8) + unknown_4456((std::uint8_t)slot);
+  };
+  int start = s_.game_state[7] & 0xFF;
+  if (start < 0) start = 0;
+  for (int slot = start; slot < 0x0B; ++slot) {          // 0x0B = 末槽 index(0..0x0B 共 12)
+    std::uint32_t dst = slot_base(slot);
+    std::uint32_t srcb = slot_base(slot + 1);
+    for (int k = 0; k < 0x17; ++k) {
+      std::size_t d = (std::size_t)dst + k, srk = (std::size_t)srcb + k;
+      std::uint8_t v = (srk < s_.char_ext.size()) ? s_.char_ext[srk] : 0;
+      if (d < s_.char_ext.size()) s_.char_ext[d] = v;
+    }
+  }
+  std::uint32_t last = slot_base(0x0B);                  // 末槽清 0
+  for (int k = 0; k < 0x17; ++k) {
+    std::size_t d = (std::size_t)last + k;
+    if (d < s_.char_ext.size()) s_.char_ext[d] = 0;
+  }
+}
+
 // op_69(@0x453F):char_ext[(selector<<8) + unknown_4456[gs[7]] + operand] = r2(byte/word)。
 void Interpreter::op69_set_char_ext() {
   std::uint16_t bx = s_.game_state[7];
@@ -2066,6 +2119,8 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x60] = &Interpreter::op60_and_char_data;
   t[0x61] = &Interpreter::op61_test_char_prop;
   t[0x63] = &Interpreter::op63_set_char_ext_word;
+  t[0x64] = &Interpreter::op64_give_item;     // DRAGON.COM 0x446E:GIVE_ITEM(opendw NULL,本次首實作)
+  t[0x67] = &Interpreter::op67_remove_item;   // DRAGON.COM 0x44CB:REMOVE_ITEM(opendw NULL,本次首實作)
   t[0x68] = &Interpreter::op68_get_char_ext;
   t[0x69] = &Interpreter::op69_set_char_ext;
   t[0x6B] = &Interpreter::op6B_move_reverse;  // DRAGON.COM 0x45A1:move_party_reverse
