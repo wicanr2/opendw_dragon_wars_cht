@@ -174,7 +174,7 @@ inline const std::vector<UiTheme>& theme_list() {
     // 擦除框 = 原版英文敘事烤進的黑底區(座標沿用 tools_build/scene_localize.py 實測):
     //   24 英文在右側、25/26/27 在下方。非英文語系填黑該框 + 框內畫在地化敘事(取代字幕條)。
     dos.ending = {
-      {"24", TitleSource::kDosScene, kEndingNarr24, 196, 30, 124, 150},
+      {"24", TitleSource::kDosScene, kEndingNarr24, 224, 42, 96, 112},
       {"25", TitleSource::kDosScene, kEndingNarr25,   0, 140, 320,  60},
       {"26", TitleSource::kDosScene, kEndingNarr26,   0, 128, 320,  72},
       {"27", TitleSource::kDosScene, kEndingNarr27,   0, 116, 320,  84},
