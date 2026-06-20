@@ -25,3 +25,7 @@ item_full_plate	Full Plate
 item_helmet	Helmet
 item_scroll	Scroll
 item_boots	Boots
+# grounded quest 物品:slot 存 ≤12 穩定 ID,顯示走 i18n 全名(突破 12-byte 槽限制)
+Pilgrim Garb	Pilgrim's Garb
+Signet Ring	King's Signet Ring
+Free Sword	Sword of Freedom
