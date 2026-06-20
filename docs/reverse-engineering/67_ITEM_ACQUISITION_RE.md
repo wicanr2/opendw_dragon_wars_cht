@@ -222,6 +222,35 @@ opendw `player.c` 的 `struct player_record` 把 `[0x55..0x58]` 標成 `unsigned
 
 ---
 
+## 5b. 給物品「常式」逆出(2026-06-20,攻略反推法 — 連通修復 + op_64 實作後重查)
+
+連通修復(40/40)+ op_64/65/67 實作後,**用攻略反推法**(如找菲巴斯位置)重查共享 script,逆出**給物品的
+集中常式 = `scripts/11.bin`**(寶箱/物品處理 script):
+
+```
+11.bin @0x0012 (give-item routine):
+  load_resource res:0x0B off:0x3F   ; 載物品定義資源
+  for_call over party                ; 對隊伍迴圈
+    w3AE4 = gs[0xD9]                  ; gs[0xD9] = 物品資源 id(呼叫端設)
+    data_res = res(w3AE4)
+    w3AE2 = gs[0xD7]                  ; gs[0xD7] = 物品模板 offset(呼叫端設)★
+    op_64                            ; GIVE_ITEM(從 word_3ADF[w3AE2] 複製 23B)
+    jnz full                         ; 背包滿 → " can't carry any more."
+    emit: <charname>" gets the "<item>  ; 給物品訊息
+```
+
+**關鍵 binding 變數**:呼叫端在 `op_58 res11@0` 前設 **`gs[0xD7]` = 物品模板 offset**(+ `gs[0xD9]` = 物品資源),
+即決定「給哪件物品」。op_64 散布在 scripts 11(×4)/3(×2)/31/6;op_5F(設祝福旗標)在 scripts 18/3(×2)/6/8。
+
+**攻略反推可行性(回答「能不能像找菲巴斯一樣反推」)= 可行**:攻略 38 各區「事件/圖例表」明寫哪地點給哪物品
+(翠玉之眼@海盜竊穴、骷髏→矮人鑄爐、龍寶石@龍谷…);要釘死 binding = 找各 op_58 res11 呼叫端 + 其 `gs[0xD7]`
+設值 → 對物品資源解出物品名 → 對攻略地點。**機制已逆出,剩「逐呼叫端 gs[0xD7] 列舉」的工**(屬內容工,非阻斷)。
+
+**已落地**:`scripts/11.bin` 的玩家可見訊息(`" gets the "` 給物品、`" can't carry any more."` 背包滿、寶箱訊息)
+本輪補繁中(events.tsv)→ 物品取得/開寶箱回饋顯示繁中。
+
+---
+
 ## 6. 還卡在哪(精確,不臆造)
 
 1. **互動式 walking-engine 指令迴圈(TAKE / USE / 商店交換)opendw 未重製**:玩家在地板物品格按 TAKE → 開
