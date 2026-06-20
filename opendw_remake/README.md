@@ -149,7 +149,7 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 | 門 K-on-wall / 部分非戰鬥技能觸發 | 落在尚未反編的 walking-engine → remake 設計(grounded 手冊),非 bytecode 真值 |
 | Namtar Boss 屬性、自由之劍祝福加成、結局序列 | remake 平衡 / 組合設計(原版勝利畫面 script 逆不出) |
 | Phoebus(area 6)/ area 33 | 入口資料層隔離,為隔離分量 |
-| 音樂(背景配樂) | **音效已實作**(SDL2 方波 + Amiga/X68000 真實 PCM 取樣,接門/撞牆/命中/施法/`op_90`);僅**背景音樂**未還原 —— Amiga `.tune` 為 68k 機械碼播放器、DOS 為 PC speaker 音符序列,需模擬 / 音符表逆向,本輪未做 |
+| 音樂素材渲染 | **音效已實作**(SDL2 方波 + Amiga/X68000 真實 PCM,接門/撞牆/命中/施法/`op_90`);**背景音樂引擎端就緒**(`sound.cpp` music 頻道 + 依 state 切 title/game/combat/end);僅缺把 Amiga `.tune` 經 **UADE** 渲染成 WAV(沙箱網路受限抓不到 UADE,留給本機渲染,見 `assets/bundle/audio/music/README.md`)。WAV 放進去即循環播放。DOS 版原本無背景音樂 |
 
 量化完成度與缺口稽核見上層 [`../docs/assessment/57_PM_REVIEW.md`](../docs/assessment/57_PM_REVIEW.md)(技術 ~75% / 玩家內容 ~45–50%)、[`../docs/assessment/49_GAP_AUDIT.md`](../docs/assessment/49_GAP_AUDIT.md)、[`../docs/assessment/48_COMPLETABILITY_ROADMAP.md`](../docs/assessment/48_COMPLETABILITY_ROADMAP.md)。
 

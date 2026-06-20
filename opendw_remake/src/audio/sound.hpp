@@ -54,6 +54,17 @@ enum class SoundId : std::uint8_t {
   Count
 };
 
+// 背景音樂曲目(remake 加值:原版 Amiga MANIACS of NOISE `.tune` 經 UADE 渲染成 WAV,
+//   依遊戲狀態循環播放;缺檔則靜默 no-op)。見 bundle/audio/music/README.md。
+enum class MusicId : std::uint8_t {
+  None = 0,   // 停止
+  Title,      // 標題 / 選單(title.tune)
+  Game,       // 探索(game.tune)
+  Combat,     // 戰鬥(combat.tune)
+  End,        // 結局(end.tune)
+  Count
+};
+
 // op_90 dispatch 表大小(對照 NUM_FUNCS:func_5060 11 個項目)。
 inline constexpr int kNumDispatchSounds = 11;
 
@@ -95,6 +106,15 @@ public:
 
   // 該 id 是否已有真實 PCM 取樣可播(供測試 / 診斷)。
   bool has_sample(SoundId id) const;
+
+  // ── 背景音樂(循環)──
+  // 切換背景音樂曲目(idempotent:同曲不重啟;None = 停止)。缺檔 / 靜音 / 未開啟 → no-op。
+  //   曲目於 open() 時從 audio_dir/music/{title,game,combat,end}.wav 預載(缺檔該曲靜默)。
+  //   回傳 true 表示該曲有載入資料(實際會出聲);false = 缺檔或停止(靜默)。
+  bool play_music(MusicId id);
+  void stop_music() { play_music(MusicId::None); }
+  // 該曲目是否已載入(供測試 / 診斷)。
+  bool has_music(MusicId id) const;
 
 private:
   void* dev_handle_ = nullptr;   // SDL_AudioDeviceID(以 void* 隱藏 SDL 型別)

@@ -3302,6 +3302,16 @@ int main(int argc, char** argv) {
     else draw_branch();
   };
   auto render_now = [&]() {
+    // 背景音樂:依當前 state 切曲(idempotent;缺檔 / headless 無裝置時 no-op)。
+    //   標題/選單/建角 → Title;探索/地圖 → Game;戰鬥 → Combat;結局 → End。
+    audio::MusicId mus = audio::MusicId::Game;
+    switch (state) {
+      case S_TITLE: case S_MENU: case S_BRANCH: case S_CREATE: mus = audio::MusicId::Title; break;
+      case S_COMBAT: mus = audio::MusicId::Combat; break;
+      case S_ENDING: mus = audio::MusicId::End; break;
+      default: mus = audio::MusicId::Game; break;   // S_GAME / S_MAP
+    }
+    g_sound.play_music(mus);
     tl.clear();                                      // 每幀重建文字層
     draw_base();
     // 頂層全域覆蓋層(任何狀態之上):theme toast → Help → 離開確認(確認最上)。

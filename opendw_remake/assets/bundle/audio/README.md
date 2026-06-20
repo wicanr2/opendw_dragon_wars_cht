@@ -24,12 +24,15 @@ remake 在 PC speaker 風格方波合成之外,額外載入原版平台的真實
   (見 `src/audio/sound.cpp` `kSampleMap`),屬 remake 設計,**不謊稱為原版真值**。樣本缺檔時自動
   退回方波合成(door/wall/effect_88 的方波頻率由 opendw 反組譯 dx/bx 推導,見 `sound.hpp`)。
 
-## 未納入(誠實標示受阻)
+## 背景音樂(引擎就緒,素材待渲染)
 
-- **Amiga 音樂**(`title/game/combat/end.tune`):為 68000 機械碼播放器 + 內嵌曲目資料
-  ("Music by MANIACS of NOISE"),非 raw PCM;需 68k 模擬器逐指令執行才能還原,本輪未做。
-- **DOS PC speaker 音樂**(`DRAGON.COM 0x5C3B-0x5D1D`):PIT 方波音符序列(非 PCM),
-  需另解音符表;本輪聚焦真實 PCM 取樣,未納入。
+- **Amiga 音樂**(`title/game/combat/end.tune`,"Music by MANIACS of NOISE"):68000 機械碼
+  播放器 + 內嵌曲目,非 raw PCM。**引擎端循環播放已就緒**(`sound.cpp` music 頻道 + `main.cpp`
+  依 state 切 title/game/combat/end);用 **UADE**(不需 Kickstart)渲染成 WAV 放進
+  [`music/`](music/README.md) 即自動循環。開發沙箱網路受限抓不到 UADE → 渲染留本機
+  (見 `music/README.md` / `tools_build/render_music.sh`)。
+- **DOS PC speaker**(`DRAGON.COM 0x5C3B`):反組譯確認為 **PC speaker 音效播放碼**
+  (OUT 到 PIT 0x43/0x40),**非背景音樂** —— DOS 版本來就沒有背景音樂。
 
 ## 重新產生
 

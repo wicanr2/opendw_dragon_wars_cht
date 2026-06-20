@@ -140,12 +140,39 @@ SampleVoice g_sample_voices[kMaxSampleVoices];
 // 每個 SoundId 的取樣資料(空 = 無樣本,該 id 退回方波)。共享於整個程式。
 std::shared_ptr<std::vector<float>> g_samples[(int)SoundId::Count];
 
+// ── 背景音樂(循環)──
+constexpr float kMusicGain = 0.32f;   // 背景音樂增益(壓在 SFX 之下,不蓋過音效)
+std::shared_ptr<std::vector<float>> g_music[(int)MusicId::Count];  // 各曲 PCM(mono 22050 float)
+int g_music_active = 0;        // 當前曲目(MusicId;0=None);g_mtx 保護
+std::size_t g_music_pos = 0;   // 當前曲播放位置;g_mtx 保護
+
+// MusicId → 檔名(music/ 子目錄;None 無檔)。
+const char* music_file(MusicId id) {
+  switch (id) {
+    case MusicId::Title:  return "title.wav";
+    case MusicId::Game:   return "game.wav";
+    case MusicId::Combat: return "combat.wav";
+    case MusicId::End:    return "end.wav";
+    default:              return nullptr;
+  }
+}
+
 void audio_callback(void* /*userdata*/, std::uint8_t* stream, int len) {
   float* out = reinterpret_cast<float*>(stream);
   int frames = len / (int)sizeof(float) / kChannels;
   std::lock_guard<std::mutex> lk(g_mtx);
+  // 當前背景音樂(循環);active=0 或無資料 → 不混。
+  const std::vector<float>* music =
+      (g_music_active > 0 && g_music_active < (int)MusicId::Count && g_music[g_music_active])
+          ? g_music[g_music_active].get()
+          : nullptr;
   for (int i = 0; i < frames; ++i) {
     float sample = 0.0f;
+    // 背景音樂:循環讀出(到尾回 0),壓在 SFX 之下。
+    if (music && !music->empty()) {
+      sample += (*music)[g_music_pos] * kMusicGain;
+      if (++g_music_pos >= music->size()) g_music_pos = 0;
+    }
     for (auto& v : g_voices) {
       if (!v.active) continue;
       // 方波:相位前半 +amp,後半 -amp。
@@ -307,6 +334,12 @@ bool Sound::open(bool muted, const std::string& audio_dir) {
       if (!shared) shared = load_wav_mono16(audio_dir + "/" + m.file);
       g_samples[slot] = shared;  // 可能為 nullptr(缺檔 → 退回方波)
     }
+    // 背景音樂曲目(audio_dir/music/*.wav;缺檔該曲靜默)。
+    for (int id = 1; id < (int)MusicId::Count; ++id) {
+      if (g_music[id]) continue;  // 已載
+      const char* fn = music_file((MusicId)id);
+      if (fn) g_music[id] = load_wav_mono16(audio_dir + "/music/" + fn);
+    }
   }
 
   if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
@@ -362,6 +395,22 @@ void Sound::close() {
 bool Sound::has_sample(SoundId id) const {
   if ((int)id >= (int)SoundId::Count) return false;
   return g_samples[(int)id] && !g_samples[(int)id]->empty();
+}
+
+bool Sound::has_music(MusicId id) const {
+  if ((int)id <= 0 || (int)id >= (int)MusicId::Count) return false;
+  return g_music[(int)id] && !g_music[(int)id]->empty();
+}
+
+bool Sound::play_music(MusicId id) {
+  if (!opened_ || muted_ || dev_handle_ == nullptr) return false;  // 合法 no-op
+  int want = (int)id;
+  if (want < 0 || want >= (int)MusicId::Count) want = 0;
+  std::lock_guard<std::mutex> lk(g_mtx);
+  if (want == g_music_active) return has_music(id);  // 同曲 → 不重啟
+  g_music_active = want;
+  g_music_pos = 0;
+  return want > 0 && g_music[want] && !g_music[want]->empty();
 }
 
 bool Sound::play(SoundId id) {

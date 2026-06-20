@@ -344,7 +344,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 - ⚠️ **門 K-on-wall 與部分非戰鬥技能觸發**落在尚未反編的 walking-engine，屬 remake 設計（grounded 手冊），非 bytecode 真值。
 - ⚠️ **Namtar Boss 屬性、自由之劍祝福加成、結局序列** = remake 平衡 / 組合設計（原版勝利畫面 script 逆不出）。
 - ⚠️ **Phoebus（area 6）/ area 33** 入口資料層隔離，為隔離分量。
-- ⚠️ **音樂未還原**：**音效已實作**（見上「已落地」），但**背景音樂**尚未——Amiga `.tune` 是 68000 機械碼播放器 + 內嵌曲目（"Music by MANIACS of NOISE"），DOS 是 PC speaker PIT 音符序列，皆需 68k 模擬 / 音符表逆向，本輪未做。
+- ⚠️ **背景音樂：引擎就緒、待渲染素材**。**音效已實作**（見上「已落地」）。背景音樂的**引擎端循環播放系統也已就緒**（`sound.cpp` music 頻道 + 依遊戲狀態切 title/game/combat/end 四曲）；缺的是把 Amiga `.tune`（"Music by MANIACS of NOISE"，68k 機械碼播放器 + 內嵌曲目）渲染成 WAV——標準作法是 **UADE**（不需 Kickstart ROM），但開發沙箱網路受限無法在此抓取 UADE，故渲染步驟留給有網路的環境（見 [`bundle/audio/music/README.md`](opendw_remake/assets/bundle/audio/music/README.md) + `tools_build/render_music.sh`）。**WAV 放進 `bundle/audio/music/` 即自動循環播放**。（DOS 版原本就無背景音樂——其 `0x5C3B` 為 PC speaker 音效碼，非音樂。）
 
 完整分級量化見 [docs/gameplay/57 PM review](docs/assessment/57_PM_REVIEW.md)（技術 ~75% / 玩家內容 ~45–50%）、[docs/assessment/49 缺口稽核](docs/assessment/49_GAP_AUDIT.md)、[docs/assessment/48 可通關 roadmap](docs/assessment/48_COMPLETABILITY_ROADMAP.md)。
 
