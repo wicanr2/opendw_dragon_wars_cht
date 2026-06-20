@@ -2986,75 +2986,83 @@ int main(int argc, char** argv) {
     //   Amiga 怪物 sprite 每隻自帶 palette(spider 綠金 / wolf 棕 / fanatic 藍紅),
     //   故 combat 整畫面以此 sprite 盤呈現(index 0=黑 1=白 8=紅 各盤一致,UI/backdrop
     //   仍可讀)。無 Amiga sprite 時維持 theme.palette(F8 切回時亦由下方 set_palette 還原)。
-    if (theme.sprite_own_palette && enc.sprite && enc.sprite->palette.size() >= 16) {
-      std::array<render::Rgb, 16> sp{};
-      for (int i = 0; i < 16; ++i) sp[i] = enc.sprite->palette[(std::size_t)i];
-      vid.set_palette(sp);
+    // 像素層(UI chrome / 面板 / 邊框)palette:Amiga 用 viewport 盤(與探索畫面一致的藍框/青柱),
+    //   DOS 用主題盤(golden byte-for-byte 不動)。Amiga viewport 內部另由 region RGB 覆寫(見下)。
+    const bool amiga_combat = theme.sprite_own_palette;  // Amiga = true
+    vid.set_palette(amiga_combat ? render::kAmigaViewportPalette : theme.palette);
+    int ph = anim_tick % 48;
+    int bob = (ph < 24) ? (ph / 12) : ((47 - ph) / 12);   // idle 呼吸 0,0..1,1..0 三角波(±1px)
+    bool flash = (enc.hit_flash > 0) && ((enc.hit_flash / 2) % 2 == 0);  // 受擊閃白相位
+    if (amiga_combat) {
+      // ── remake 加值:viewport 在 RGB 層合成「土黃地牢牆 + 鮮豔怪物」,突破 16 色單盤隔閡 ──
+      //   牆面:render_first_person → 暫存 fb,以 kAmigaViewportPalette(校準自真機)轉 RGB。
+      //   怪物:sprite 自帶盤逐像素轉 RGB,置中疊在牆 RGB 上(bob + 受擊閃白)。透明色跳過 →
+      //   露出牆。最後 set_region_rgb 覆寫 viewport 矩形(SdlVideo compose 套用)。
+      std::vector<render::Rgb> vrgb((std::size_t)kVpW * kVpH, render::Rgb{0, 0, 0});
+      if (level) {
+        render::Framebuffer wfb; wfb.clear(0);
+        render::ViewportDecoder bdec;
+        render::render_first_person(*level, px, py, dir, bdec, comps);
+        if (vpt_ok)
+          bdec.compose_frame(vpt[0].data(), vpt[1].data(), vpt[2].data(), vpt[3].data());
+        bdec.to_framebuffer(wfb);
+        for (int yy = 0; yy < kVpH; ++yy)
+          for (int xx = 0; xx < kVpW; ++xx)
+            vrgb[(std::size_t)yy * kVpW + xx] =
+                render::kAmigaViewportPalette[wfb.idx[(std::size_t)(kVpY + yy) * render::kW + (kVpX + xx)] & 0xF];
+      }
+      if (enc.sprite) {
+        const auto& s = *enc.sprite;
+        int bx = (kVpW - (int)s.w) / 2; if (bx < 0) bx = 0;
+        int by = (kVpH - (int)s.h) / 2 - bob; if (by < 0) by = 0;
+        for (int yy = 0; yy < (int)s.h; ++yy) {
+          int vy = by + yy; if (vy < 0 || vy >= kVpH) continue;
+          for (int xx = 0; xx < (int)s.w; ++xx) {
+            int vx = bx + xx; if (vx < 0 || vx >= kVpW) continue;
+            std::uint8_t i = s.idx[(std::size_t)yy * s.w + xx];
+            if (theme.sprite_transparent >= 0 && i == (std::uint8_t)theme.sprite_transparent) continue;
+            vrgb[(std::size_t)vy * kVpW + vx] =
+                flash ? render::Rgb{0xFF, 0xFF, 0xFF}
+                      : (i < (int)s.palette.size() ? s.palette[(std::size_t)i] : render::Rgb{0, 0, 0});
+          }
+        }
+      }
+      vid.set_region_rgb(std::move(vrgb), kVpX, kVpY, kVpW, kVpH);
     } else {
-      vid.set_palette(theme.palette);
-    }
-    // ── viewport backdrop(theme-aware;取代純黑)──
-    //   對齊 DOS 戰鬥畫面(docs/audit/dos_compare/06_combat_encounter.png):viewport 內
-    //   上半天空 + 下半地面(石礫質感),讓怪物立繪站在場景中而非浮在純黑上。
-    //   只填 viewport 內部 [16,176)×[8,144);四周 UI chrome 由 draw_explore_chrome 補。
-    // ── Amiga theme(sprite 自帶盤):sky/ground 索引在 sprite 盤下會變橘 → 改純黑底,
-    //   立繪置中呈現(像 portrait);DOS theme 維持天空+地面 backdrop(golden 不動)。
-    const bool spr_center = theme.sprite_own_palette;  // Amiga = true
-    if (spr_center) {
-      for (int y = kVpY; y < kVpY + kVpH; ++y)
-        for (int x = kVpX; x < kVpX + kVpW; ++x)
-          fb.put(x, y, 0);   // index 0 = 黑(各盤一致)
-    } else {
+      // ── DOS:viewport 上半天空 + 下半地面(石礫網點)backdrop,怪物畫進 fb(golden 不動)──
       const auto& bd = theme.combat;
       int hy = kVpY + bd.horizon;   // 天空/地面分界(絕對 y)
       for (int y = kVpY; y < kVpY + kVpH; ++y) {
         bool ground = (y >= hy);
         for (int x = kVpX; x < kVpX + kVpW; ++x) {
           std::uint8_t c = ground ? bd.ground : bd.sky;
-          // 地面:棋盤式點綴成石礫質感(對齊 DOS 紅磚地面網點);天空純色。
           if (ground && (((x + y) & 1) == 0)) c = bd.ground_dot;
           fb.put(x, y, c);
         }
       }
-    }
-    // 怪物圖:畫進 framebuffer (16,8),裁切限制在 160×136 viewport 框內
-    //   (docs/gameplay/59 #4:避免立繪溢出蓋到右側面板)。clip = [16,176) × [8,144)。
-    // ── idle 呼吸 + 受擊閃白(單格程序化動畫;無真動畫格,見 EncounterState::hit_flash 註)──
-    //   呼吸:y 以三角波 ±1px 緩慢起伏(週期 ~48 幀);headless 同 anim_tick → dump 相位穩定。
-    //   受擊:hit_flash>0 期間立繪整體閃白(index 1),最後 1px 著地後回正常立繪。
-    if (enc.sprite) {
-      int ph = anim_tick % 48;
-      int bob = (ph < 24) ? (ph / 12) : ((47 - ph) / 12);   // 0,0..1,1..0 三角波(±1px)
-      // 立繪落點:Amiga(spr_center)置中於 160×136 viewport;DOS 維持 (16,8)(golden)。
-      int spw = (int)enc.sprite->w, sph = (int)enc.sprite->h;
-      int base_x = spr_center ? kVpX + (kVpW - spw) / 2 : 16;
-      int base_y = spr_center ? kVpY + (kVpH - sph) / 2 : 8;
-      if (base_x < kVpX) base_x = kVpX;
-      if (base_y < kVpY) base_y = kVpY;
-      int sy = base_y - bob;                                  // 上浮 = y 減
-      bool flash = (enc.hit_flash > 0) && ((enc.hit_flash / 2) % 2 == 0);  // 閃爍相位
-      if (flash) {
-        // 受擊閃白:非透明像素一律畫白(index 1),只蓋立繪輪廓(不動 backdrop / golden)。
-        const auto& s = *enc.sprite;
-        for (int y = 0; y < (int)s.h; ++y) {
-          int fy = sy + y;
-          if (fy < kVpY || fy >= kVpY + kVpH) continue;
-          for (int x = 0; x < (int)s.w; ++x) {
-            int fx = base_x + x;
-            if (fx < kVpX || fx >= kVpX + kVpW) continue;
-            std::uint8_t i = s.idx[(std::size_t)y * s.w + x];
-            if (theme.sprite_transparent >= 0 && i == (std::uint8_t)theme.sprite_transparent) continue;
-            fb.put(fx, fy, 1);                                // index 1 = 白(各盤一致)
+      if (enc.sprite) {
+        int sy = 8 - bob;   // DOS 立繪落點固定 (16,8)(golden);上浮 = y 減
+        if (flash) {
+          const auto& s = *enc.sprite;
+          for (int y = 0; y < (int)s.h; ++y) {
+            int fy = sy + y;
+            if (fy < kVpY || fy >= kVpY + kVpH) continue;
+            for (int x = 0; x < (int)s.w; ++x) {
+              int fx = 16 + x;
+              if (fx < kVpX || fx >= kVpX + kVpW) continue;
+              std::uint8_t i = s.idx[(std::size_t)y * s.w + x];
+              if (theme.sprite_transparent >= 0 && i == (std::uint8_t)theme.sprite_transparent) continue;
+              fb.put(fx, fy, 1);                                // index 1 = 白
+            }
           }
+        } else {
+          enc.sprite->blit_clipped(fb, 16, sy, theme.sprite_transparent,
+                                   kVpX, kVpY, kVpX + kVpW, kVpY + kVpH);
         }
-      } else {
-        enc.sprite->blit_clipped(fb, base_x, sy, theme.sprite_transparent,  // 透明色:DOS=6 棕 / Amiga=8 紅
-                                 kVpX, kVpY, kVpX + kVpW, kVpY + kVpH);
+      } else { // 無 sprite → 畫空框(像素層),維持版面對齊。
+        for (int x = 16; x < 16 + 160; ++x) { fb.put(x, 8, 8); fb.put(x, 8 + 135, 8); }
+        for (int y = 8; y < 8 + 136; ++y) { fb.put(16, y, 8); fb.put(16 + 159, y, 8); }
       }
-    }
-    else { // 無 sprite → 畫空框(像素層),維持版面對齊。
-      for (int x = 16; x < 16 + 160; ++x) { fb.put(x, 8, 8); fb.put(x, 8 + 135, 8); }
-      for (int y = 8; y < 8 + 136; ++y) { fb.put(16, y, 8); fb.put(16 + 159, y, 8); }
     }
     // UI chrome(藍外框 + logo;docs/gameplay/59 #1/#2)。畫在 viewport / 面板框外,不蓋立繪。
     draw_explore_chrome();

@@ -91,6 +91,22 @@ void SdlVideo::compose(const Framebuffer& fb) {
   } else {
     rgb = to_rgb(fb, active_palette_);   // per-theme 16 色盤(set_palette;預設 DOS 盤)
   }
+  // 區域 RGB 覆寫(remake 加值):把 region 矩形的像素直接換成提供的 RGB(突破單盤限制),
+  //   用後清除(只影響本幀)。裁切到 320×200 內。
+  if (region_w_ > 0 && region_rgb_.size() == (std::size_t)region_w_ * region_h_) {
+    for (int ry = 0; ry < region_h_; ++ry) {
+      int y = region_y_ + ry;
+      if (y < 0 || y >= kH) continue;
+      for (int rx = 0; rx < region_w_; ++rx) {
+        int x = region_x_ + rx;
+        if (x < 0 || x >= kW) continue;
+        const Rgb& c = region_rgb_[(std::size_t)ry * region_w_ + rx];
+        std::size_t o = ((std::size_t)y * kW + x) * 3;
+        rgb[o] = c.r; rgb[o + 1] = c.g; rgb[o + 2] = c.b;
+      }
+    }
+    region_w_ = 0;  // 清除(僅本幀有效)
+  }
   SDL_UpdateTexture(tex_, nullptr, rgb.data(), kW * 3);
   SDL_RenderClear(ren_);   // 預設黑底 → letterbox 黑邊
   if (mode640_) {

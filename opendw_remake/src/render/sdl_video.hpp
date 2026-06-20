@@ -76,6 +76,15 @@ public:
   void set_vga256(bool on) { vga256_ = on; }
   bool is_vga256() const { return vga256_; }
 
+  // 區域 RGB 覆寫(remake 加值,「打破單盤隔閡」):set 後,下一次 present/dump 時把該矩形
+  //   (320×200 像素座標)的像素以提供的 RGB 直接覆蓋(隨 texture 一起整數放大),然後自動清除。
+  //   用途:Amiga 戰鬥 viewport —— 牆/UI 用主題盤、怪物用自帶盤,各自轉 RGB 後在此合成,
+  //   讓「鮮豔怪物 + 土黃地牢牆」同框(原版受 16 色單盤所限,remake 不必)。rgb 長度需 = w*h。
+  void set_region_rgb(std::vector<Rgb> rgb, int x, int y, int w, int h) {
+    region_rgb_ = std::move(rgb);
+    region_x_ = x; region_y_ = y; region_w_ = w; region_h_ = h;
+  }
+
   void present(const Framebuffer& fb);   // 像素層放大 + 文字層合成 → 顯示
   Input poll();                          // 收集本幀事件(in.quit=true 表示要結束)
   void close();
@@ -117,6 +126,9 @@ private:
   bool mode640_ = false;         // true = 640×480 letterbox 模式
   std::array<Rgb, 16> active_palette_ = kDosPalette;  // 目前生效的 16 色盤(per-theme;set_palette)
   bool vga256_ = false;                              // true = 256 色增強路徑(VGA-256 theme)
+  // 區域 RGB 覆寫(set_region_rgb;compose 套用後清除)。region_w_==0 = 無覆寫。
+  std::vector<Rgb> region_rgb_;
+  int region_x_ = 0, region_y_ = 0, region_w_ = 0, region_h_ = 0;
   TextLayer text_;
 };
 

@@ -190,12 +190,12 @@ F8 循環順序為 **DOS → Amiga → X68000 → VGA-256 → DOS**，四套主�
 
 > 受阻誠實標示：Amiga 原生 viewport 圖塊（data3，已抽出並按尺寸/角色辨識存於 `themes/amiga/components`：正面牆 96/64/32/16 隨距離縮 + 側牆 trapezoid）的**重組落點**需逆出 Amiga 引擎 blit 錨點演算法；且官方截圖**無「長走廊」**可作側牆遞遠的對位真值，三種啟發式（slot 對映 / size-match＋置中 / 寬度優先）皆未收斂 → 原生圖塊組裝暫擱置。第一人稱因此採「DOS byte-faithful 透視幾何 + **校準自真機**的 Amiga 土黃磚牆配色」——配色忠於真機起始區，幾何 100% 收斂（remake 加值,非原生圖塊重繪）。
 
-**Amiga 戰鬥怪物（原生 sprite）**
+**Amiga 戰鬥怪物（原生 sprite + 土黃地牢牆背景）**
 
 | Amiga 藍蜘蛛遭遇 |
 |:---:|
 | ![amiga-combat](docs/media/remake/showcase/themes/amiga_combat_spider.png) |
-| `--theme amiga --encounter 13`：怪物圖換成 Amiga 原生 4-bitplane 立繪（紅底為各怪物自帶盤的透明色 index 8），下方繁中戰鬥指令列 |
+| 鮮豔藍蜘蛛（Amiga 原生 4-bitplane 立繪，自帶盤）站在**當前區域的土黃地牢牆**前，對齊真機 Amiga 戰鬥構圖（`dragon-wars_7.png`）。**打破 16 色單盤隔閡**：牆/UI 用 viewport 盤、怪物用自帶盤，各自轉 RGB 後在 viewport 區合成（`SdlVideo::set_region_rgb`）——原版受單盤所限只能二選一，remake 不必。下方亮黃特殊招式列 + 繁中指令 |
 
 > 誠實邊界
 > - **Amiga**（接近完整,仍有受阻項）：第一人稱地牢採「DOS byte-faithful 透視幾何 + **校準自真機官方截圖**的 Amiga 土黃磚牆配色」（透視 100% 收斂、配色忠於真機起始區；原生 viewport 圖塊已抽出辨識但**重組落點受阻**——需逆出 Amiga 引擎 blit 錨點演算法,且官方截圖無長走廊可作對位真值,暫擱置）；怪物 sprite 只切**主格**,多動畫格因無可靠 frame 邊界表未切。
