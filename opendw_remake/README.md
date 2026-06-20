@@ -126,8 +126,8 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 | 平台 | 產物 | 狀態 |
 |---|---|---|
 | **Linux tarball** | `opendw-remake-*.tar.gz`(binary + 啟動器 + assets) | ✅ 本機 docker 實機驗證(build + ctest 37 + package + headless) |
-| **Linux AppImage** | `*.AppImage`(雙擊即玩,打包 SDL2 依賴;`tools/package/build_appimage.sh`) | ✅ AppDir 結構本機驗證;appimagetool 打包於 CI |
-| **Windows x64** | `opendw-remake-windows-x64/`(exe + SDL2/SDL2_ttf DLL + assets) | ⏳ vcpkg/MSVC CI 設定完整,GitHub Actions 實跑產出 |
+| **Linux AppImage** | `*.AppImage`(雙擊即玩,打包 SDL2 依賴;`tools/package/build_appimage.sh`) | ✅ 本機 docker 實機驗證(appimagetool 打包 + headless smoke,22M) |
+| **Windows x64** | `opendw-remake-*-windows-x64.zip`(exe + SDL2/SDL2_ttf/libwinpthread DLL + assets;`tools/package/build_windows.sh`) | ✅ 本機 mingw-w64 交叉編譯 + DLL 相依完整性檢查 + **wine+xvfb headless 實機 smoke**(i18n/段落/quest 載入 + 畫面 dump,35M) |
 | **macOS** | `opendw-remake-macos/`(binary + SDL dylib + assets + 啟動器) | ⏳ Homebrew CI 設定完整,GitHub Actions 實跑產出 |
 | **Android APK** | scaffold(`android/`;Gradle + NDK + SDLActivity) | 🚧 建置 scaffold + 移植計畫已備;引擎端 `DWR_ASSET_DIR` 資產載入已通;**需放入 SDL2 原始碼 + 觸控 UX + 實機測試**(見 `android/README.md`) |
 

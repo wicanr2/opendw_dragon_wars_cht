@@ -31,7 +31,8 @@ bool SdlVideo::init_common(int win_w, int win_h, const char* title,
   if (headless) {
     // headless 合成:dummy video driver(不開實體視窗),供 --dump 讀回高解析畫面。
     // SDL 2.0.x 無 SDL_HINT_VIDEODRIVER,改用環境變數(SDL_Init 前設定)。
-    setenv("SDL_VIDEODRIVER", "dummy", 1);
+    // 用 SDL_setenv(跨平台;Windows mingw 無 POSIX setenv)。
+    SDL_setenv("SDL_VIDEODRIVER", "dummy", 1);
   }
   if (SDL_Init(SDL_INIT_VIDEO) != 0) return false;
   Uint32 wflags = headless ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN;
