@@ -440,7 +440,23 @@ area 14→18(奈羅波裡→瑪根)、area 25→36(京雄→京雄地牢)、area
 7. 因 `.lvl` 與 DATA1 byte-for-byte,**此「未放置」忠於原版資料**;美化世界圖(`WorldMap`)也因此放不出菲巴斯
    標記(它依 grid tile 的 worldmap_dest 定位)→ 原版資料根本未給菲巴斯世界圖座標。
 
-**即**:`{6,33}` 隔離的根因 = **菲巴斯世界圖地點 tile(0x07→6)在 area 0 資料中未放置**(原版 DATA1 的既有狀態),
-非 remake 解碼缺漏。攻略把菲巴斯當太陽島正常城市(段落 25 進城歡迎),但 overworld 資料未含其落點。
-**要讓菲巴斯可達 = remake 設計層「還原」一個 0x07 落點**(原版資料無座標 → 需設計決定),屬 player-facing
-設計選擇;`{6,33}` 非主線必經,維持現狀亦不阻通關。
+**即**:`{6,33}` 隔離的根因 = **菲巴斯世界圖地點 tile(0x07→6)在 area 0 資料中未放置**(原版 DATA1 的既有狀態,
+bundle==DATA1 byte-for-byte 確認),非 remake 解碼缺漏。
+
+### F. 菲巴斯入口 remake 還原(2026-06-20,已實作 → 連通 40/40)
+
+權威 Dilmun 地圖(`org_map/dragon-wars-map-dilmun.jpg`)清楚標示菲巴斯在**太陽島(Isle of the Sun)左側**。
+交叉三項證據定位其落點:
+
+1. **地圖↔grid 座標轉換**(各城市 grid 座標 vs 地圖位置三角定位,area 0 旋轉 90° CCW):菲巴斯 ≈ grid (10,5) 一帶。
+2. **placed 的菲巴斯歡迎事件 tile 0x24 @(10,5)**:其 script(`9d 7f` 測旗標 → `58 01 02` 呼叫共享 script
+   顯示段落 25/26「歡迎光臨菲巴斯太陽之城」→ `9b 7f` 設旗標)= 首訪菲巴斯的歡迎事件,**正落在地圖菲巴斯處**;
+   但它只播歡迎詞、不進城(gs[2] 不變)。
+3. 即原版疏漏 = **菲巴斯歡迎事件(0x24)有放,相鄰的「進城入口」tile 0x07 卻沒放**。
+
+**還原**(`Level::restore_phoebus_entrance`,僅 area 0):把入口 tile 0x07 放到歡迎事件正北的陸地格 **(10,4)**,
+玩家走到太陽島此處即經 `worldmap_dest=6` 進菲巴斯。**只改 in-memory grid、不動 .lvl**(bundle==DATA1 不破;
+`verify_provider` / 全 ctest 34/34 綠);main.cpp + `verify_mainline_reachable` 載 area 0 時套用。誠實標示:
+remake 設計還原(補原版疏漏的進城格),非原版資料原狀。
+
+**結果**:`verify_mainline_reachable` 從波卡城 BFS **40/40**(原 38/40);世界圖渲染顯示菲巴斯標記;完整世界連通。

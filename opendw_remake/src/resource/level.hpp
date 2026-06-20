@@ -22,6 +22,17 @@ public:
 
   // tile 型(word_11C8 第 3 byte):0=void、1=地面、其他=特殊/事件。
   std::uint8_t tile(int x, int y) const;
+  // 覆寫 in-memory grid 的一格 tile value(不動 .lvl 檔;供 remake 還原 overlay,見
+  //   restore_phoebus_entrance)。越界則 no-op。
+  void set_tile(int x, int y, std::uint8_t v);
+  // ── remake 還原:菲巴斯(area 6)世界圖入口 ───────────────────────────────
+  //   原版 DATA1 area 0 定義了菲巴斯入口 tile 0x07(worldmap_dest=6)卻**未放置在 grid**
+  //   (唯一未放置的城市 tile;bundle==DATA1 byte-for-byte 確認)。但地圖(Dilmun)與
+  //   placed 的菲巴斯歡迎事件 tile 0x24 @(10,5)(首訪播段落 25/26)都標示菲巴斯在太陽島此處。
+  //   本還原把入口 tile 0x07 放到歡迎事件旁的陸地格 (10,4),讓玩家走到太陽島即可進菲巴斯
+  //   (補回原版疏漏的「進城格」)。誠實標示:remake 設計還原,非原版資料原狀;只改 in-memory
+  //   grid、不動 .lvl(bundle==DATA1 不破)。僅 area 0 呼叫。
+  void restore_phoebus_entrance();
   // 牆屬性(word_11C6,2 byte)。
   std::uint16_t wall(int x, int y) const;
   bool in_bounds(int x, int y) const { return x >= 0 && y >= 0 && x < w && y < h; }

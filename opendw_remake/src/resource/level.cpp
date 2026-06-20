@@ -44,6 +44,19 @@ std::uint8_t Level::tile(int x, int y) const {
   return (o + 2 < b_.size()) ? b_[o + 2] : 0;
 }
 
+void Level::set_tile(int x, int y, std::uint8_t v) {
+  if (!in_bounds(x, y)) return;
+  std::size_t o = off(x, y);
+  if (o + 2 < b_.size()) b_[o + 2] = v;
+}
+
+void Level::restore_phoebus_entrance() {
+  // 僅當 0x07 確為菲巴斯入口(worldmap_dest==6)且目標格目前為陸地(0x00,不覆蓋特殊格)時還原。
+  //   (10,4) = 太陽島、菲巴斯歡迎事件 tile 0x24 @(10,5) 正北的陸地格(見 docs/gameplay/54 §E)。
+  if (worldmap_dest(0x07) != 6) return;        // 防呆:此 area 的 0x07 非菲巴斯入口則不動
+  if (tile(10, 4) == 0x00) set_tile(10, 4, 0x07);
+}
+
 std::uint16_t Level::wall(int x, int y) const {
   std::size_t o = off(x, y);
   return (o + 1 < b_.size()) ? (std::uint16_t)(b_[o] | (b_[o + 1] << 8)) : 0;

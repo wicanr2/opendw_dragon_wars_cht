@@ -62,6 +62,7 @@ int main(int argc, char** argv) {
   for (int area = 0; area <= 39; ++area) {
     auto lvl = res::Level::load_file(bundle + "/maps/" + std::to_string(area) + ".lvl");
     if (!lvl) continue;
+    if (area == 0) lvl->restore_phoebus_entrance();   // remake 還原:菲巴斯入口 tile 0x07 @(10,4)
     int level_res = area + 0x46;
     std::set<int> vals;
     for (int y = 0; y < lvl->h; ++y) for (int x = 0; x < lvl->w; ++x) {

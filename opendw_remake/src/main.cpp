@@ -874,6 +874,7 @@ int main(int argc, char** argv) {
   auto enter_map = [&](int area) {
     level = res::Level::load_file(bundle + "/maps/" + std::to_string(area) + ".lvl");
     if (!level) { std::fprintf(stderr, "level load failed: area %d\n", area); return false; }
+    if (area == 0) level->restore_phoebus_entrance();   // remake 還原:菲巴斯入口 tile 0x07 @(10,4)(原版疏漏未放置;見 docs/gameplay/54 §E)
     level_res = area + 0x46;       // 關卡資源 index(對拍 level_events:word_3AE8)
     current_area = area;
     px = py = 0; dir = 1;
