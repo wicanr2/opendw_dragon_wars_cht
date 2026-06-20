@@ -1825,6 +1825,7 @@ int main(int argc, char** argv) {
       {"C", "Cast spell (explore)"},
       {"P  /  T", "Shop / Tavern"},
       {"?", "Overhead map"},
+      {"G", "Main quest guide"},
       {"S", "Save game"},
       {"F1", "This help"},
       {"F4", "Cycle language"},
@@ -1980,6 +1981,43 @@ int main(int argc, char** argv) {
     std::fprintf(stderr, "ENDING doc opened (lines=%d, page_count=%d)\n",
                  para.total_lines(), para.page_count());
   };
+  // ── 主線指引(quest guide;remake 加值,按 G 開)──────────────────────────────
+  //   內容 = 已逆出的勝利條件鏈(docs/gameplay/55,bytecode trace + 攻略真值);讓中後期
+  //   不再「亂走撞事件」。誠實標示:這是 remake 依逆向結果整理的指引,非原版內建系統。
+  //   可選性開啟(不強迫提示);純粹派可不按。
+  auto build_quest_guide = [&]() -> std::string {
+    std::string g;
+    g += "《火龍之戰》主線指引\n";
+    g += "(remake 依逆向勝利鏈整理;迷路時參考,不強迫使用)\n\n";
+    g += "最終目標:擊敗納達(Namtar)—— 需「受祝福的自由之劍」+ 召喚龍后助戰。\n\n";
+    g += "── 開局 ──\n";
+    g += "你在波卡城(Purgatory)被裸身丟入。先在城內探索、招募隊員(T)、買裝備(P)、\n";
+    g += "練等;按 ? 看平面地圖,I 前進 / J·L 轉向,K 開門破密門。\n\n";
+    g += "── 1. 鑄造自由之劍 ──\n";
+    g += "· 取得骷髏(Skull)。\n";
+    g += "· 到矮人城堡(area 16)的鑄爐(Dwarf Forge)交骷髏鑄劍。\n";
+    g += "· 經地獄之火(Inferno)+ 英雄羅拔精神 + 阿普蘇之水(Apsu Waters)淬煉重生\n";
+    g += "  (對應段落書第 138 段)。\n\n";
+    g += "── 2. 為劍祝福(祝福後一擊可削納達約 100 HP)──\n";
+    g += "· 伊爾卡拉(Irkalla)祝福:到瑪根地底世界(area 18),解除被銀鍊綁住的伊爾卡拉\n";
+    g += "  之詛咒(段落書第 137 段)。\n";
+    g += "· 永恆之神(Universal God)祝福:全屬性 +3。\n\n";
+    g += "── 3. 召龍 ──\n";
+    g += "· 到龍谷(area 32)取得龍寶石(Dragon Gem)—— 決戰時可召喚龍后(Dragon Queen)×3 助戰。\n\n";
+    g += "── 其他關鍵 ──\n";
+    g += "· 沉沒之城(area 22,水下):需水中呼吸藥水;取英雄魂(角色祝福)。\n\n";
+    g += "── 4. 終戰與結局 ──\n";
+    g += "· 到尼塞山腹(Depths of Nisir,area 27)決戰納達。\n";
+    g += "· 擊敗後,將納達屍體送到靈魂之泉(Well of Souls),再投入納達之坑(Namtar's Pit)。\n\n";
+    g += "(按 ▲▼ / PgUp·PgDn 捲動;Esc 關閉)";
+    return g;
+  };
+  auto open_quest_guide = [&]() {
+    para.open(-1, tl.wrap(build_quest_guide(), PB_TEXT_W, PX_BODY), PB_LINES);
+    std::fprintf(stderr, "QUEST GUIDE opened (lines=%d, pages=%d)\n",
+                 para.total_lines(), para.page_count());
+  };
+
   // 結局過場序列「最後一張」索引(The End / Amiga 單張結局):末張只疊收尾標題,無段落。
   auto ending_last_idx = [&]() -> int {
     return (int)render::theme_ending_scenes(theme).size() - 1;
@@ -4039,6 +4077,7 @@ int main(int argc, char** argv) {
       else if (in.key == 'P' && party.size() > 0) { shop_ui.open(); }
       else if (in.key == 'T' && party.size() > 0) { tavern_ui.open(); }
       else if (in.key == 'O' && party.size() > 0) { reorder_ui.open(); }  // O:重排隊伍順序(手冊)
+      else if (in.key == 'G') { open_quest_guide(); }   // G:主線指引(remake 加值;迷路時看下一步)
       else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
         sheet.open((int)party.size(), in.key - '1');
       else {
