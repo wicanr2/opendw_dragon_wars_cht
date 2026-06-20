@@ -13,12 +13,36 @@
 #include "vm/interpreter.hpp"
 #include "vm/vm_state.hpp"
 
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <string>
+#include <sys/stat.h>
 #include <vector>
 
 using namespace dw;
+
+// 寫一個極簡 mono / 16-bit / 22050Hz WAV(供音樂頻道測試;~0.2s 方波音)。
+static bool write_test_wav(const std::string& path, int ms = 200, int freq = 330) {
+  const int rate = 22050;
+  const int n = rate * ms / 1000;
+  std::vector<std::int16_t> s((std::size_t)n);
+  for (int i = 0; i < n; ++i) s[(std::size_t)i] = ((i * freq / rate) % 2) ? 8000 : -8000;
+  std::uint32_t data_bytes = (std::uint32_t)(s.size() * 2);
+  std::uint32_t riff = 36 + data_bytes;
+  std::FILE* f = std::fopen(path.c_str(), "wb");
+  if (!f) return false;
+  auto w32 = [&](std::uint32_t v) { std::fputc(v & 0xFF, f); std::fputc((v >> 8) & 0xFF, f);
+                                     std::fputc((v >> 16) & 0xFF, f); std::fputc((v >> 24) & 0xFF, f); };
+  auto w16 = [&](std::uint16_t v) { std::fputc(v & 0xFF, f); std::fputc((v >> 8) & 0xFF, f); };
+  std::fwrite("RIFF", 1, 4, f); w32(riff); std::fwrite("WAVE", 1, 4, f);
+  std::fwrite("fmt ", 1, 4, f); w32(16); w16(1); w16(1); w32(rate); w32(rate * 2); w16(2); w16(16);
+  std::fwrite("data", 1, 4, f); w32(data_bytes);
+  std::fwrite(s.data(), 2, s.size(), f);
+  std::fclose(f);
+  return true;
+}
 
 static int g_fail = 0;
 #define CHECK(cond, msg)                                                  \
@@ -131,6 +155,33 @@ int main(int argc, char** argv) {
     CHECK(!snd.is_open(), "載取樣後 close() 乾淨退出");
   } else {
     std::printf("(skip PCM 取樣測試:未給 bundle 路徑)\n");
+  }
+
+  // 7) 背景音樂頻道:合成測試曲 → 驗載入 / 切曲 / idempotent / 缺檔 no-op。
+  {
+    const std::string mdir = "/tmp/dwr_music_test";
+    ::mkdir(mdir.c_str(), 0777);
+    ::mkdir((mdir + "/music").c_str(), 0777);
+    bool wrote = write_test_wav(mdir + "/music/title.wav");
+    CHECK(wrote, "合成測試音樂 title.wav");
+    // 只放 title.wav(game/combat/end 缺)→ 驗載入有/無皆正確。
+    audio::Sound snd;
+    bool ok = snd.open(/*muted=*/false, mdir);
+    CHECK(ok && snd.is_open(), "音樂頻道:Sound init OK(載 music/)");
+    CHECK(snd.has_music(audio::MusicId::Title), "title.wav 已載入(has_music)");
+    CHECK(!snd.has_music(audio::MusicId::Game), "game.wav 缺檔 → 未載入(no-op)");
+    CHECK(snd.play_music(audio::MusicId::Title), "play_music(Title) 啟動(有資料)");
+    CHECK(snd.play_music(audio::MusicId::Title), "play_music(Title) 再呼叫 idempotent(同曲)");
+    CHECK(!snd.play_music(audio::MusicId::Game), "play_music(Game) 缺檔 → 合法 no-op(不崩)");
+    snd.stop_music();   // 停止不崩
+    CHECK(true, "stop_music() 不崩");
+    snd.close();
+    // 靜音模式:music 為 no-op。
+    audio::Sound m;
+    m.open(/*muted=*/true, mdir);
+    CHECK(!m.play_music(audio::MusicId::Title), "靜音模式 play_music 為合法 no-op");
+    m.close();
+    std::remove((mdir + "/music/title.wav").c_str());
   }
 
   if (g_fail == 0) {
