@@ -35,7 +35,8 @@ bool SdlVideo::init_common(int win_w, int win_h, const char* title,
     SDL_setenv("SDL_VIDEODRIVER", "dummy", 1);
   }
   if (SDL_Init(SDL_INIT_VIDEO) != 0) return false;
-  Uint32 wflags = headless ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN;
+  // 一般視窗可自由縮放(RESIZABLE);headless 維持隱藏固定。
+  Uint32 wflags = headless ? SDL_WINDOW_HIDDEN : (SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
   win_ = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                           win_w, win_h, wflags);
   if (!win_) return false;
@@ -44,6 +45,15 @@ bool SdlVideo::init_common(int win_w, int win_h, const char* title,
   if (!ren_) return false;
   // 像素層 320×200 texture;nearest 放大維持像素正確性(整數倍)。
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");  // nearest
+  // ── 動態縮放:固定 logical 解析度,SDL 自動等比 letterbox 到任意視窗大小 ──────────
+  //   像素層與文字層都在 (win_w × win_h) 的 logical 座標繪製;使用者拉伸視窗時 SDL 每幀
+  //   依當前視窗大小重算縮放(維持比例、自動黑邊),無需手動處理 resize 事件。
+  //   nearest(SCALE_QUALITY=0)→ 像素藝術放大不糊;非整數倍時文字為 nearest 放大(仍可讀)。
+  //   headless 視窗 = logical(無縮放)→ ReadPixels dump 不受影響。
+  if (!headless) {
+    SDL_RenderSetLogicalSize(ren_, win_w, win_h);
+    SDL_SetWindowMinimumSize(win_, kW, kH);   // 最小 320×200,避免縮到 0
+  }
   tex_ = SDL_CreateTexture(ren_, SDL_PIXELFORMAT_RGB24,
                            SDL_TEXTUREACCESS_STREAMING, kW, kH);
   if (!tex_) return false;
