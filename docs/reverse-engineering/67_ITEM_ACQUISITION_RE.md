@@ -272,6 +272,21 @@ opendw `player.c` 的 `struct player_record` 把 `[0x55..0x58]` 標成 `unsigned
 **verify 工具(mainline_events/trace_quest_gates)用自有 VM setup、不經 run_event**,combat 走 party records、
 save 不跑事件 → 風險主要在「遊戲內事件行為」層,需實測。
 
+### ✅ 已實作並端到端驗證(2026-06-20)
+
+`run_event`(main.cpp)補上 char 同步:**事件前**把 party 512B records 載進 `char_data`(member i→record i,
+selector=i*2)、設 gs[6]=0/gs[0x1F]=人數、背包鏡射進 char_ext(char_ext[k]≡char_data[0xEC+k]);**事件後**
+char_ext→char_data[0xEC+]、逐欄比對寫回 party(只有實際變動才重建 Party,flavor 事件零副作用)。
+
+驗證:
+- **verify_item_persist**(新 ctest):op_64 給物品 → char_ext → 同步 → 512B record 背包 [236..258] 持久,PASS。
+- **ctest 35/35**(含 combat/save golden);實機 smoke test(探索+FP)exit 0、flavor 事件不誤改 char_data。
+- 完整鏈:op_64→char_ext(vm_selftest)→ record[236+](verify_item_persist)→ 背包 UI/存檔(同 `--demo-items`
+  位置、verify_save 涵蓋)。**給物品/祝福端到端持久化打通**(物品進背包、祝福旗標進 record)。
+
+殘留:**互動觸發層**(上鎖寶箱要 K 解鎖、NPC 給予要對話選擇)仍走未反編的 walking-engine,headless 難自動
+觸發 op_64;但「一旦事件跑到 op_64,物品就確實進背包並持久」已驗證。物品-地點逐一編目(攻略反推)為內容工。
+
 ---
 
 ## 6. 還卡在哪(精確,不臆造)

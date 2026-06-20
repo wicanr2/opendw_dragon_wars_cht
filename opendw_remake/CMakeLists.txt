@@ -37,6 +37,10 @@ add_executable(vm_selftest tests/vm_selftest.cpp)
 target_link_libraries(vm_selftest PRIVATE dwr_vm)
 add_test(NAME vm_selftest COMMAND vm_selftest)
 
+add_executable(verify_item_persist tools/verify/verify_item_persist.cpp)
+target_link_libraries(verify_item_persist PRIVATE dwr_vm)
+add_test(NAME verify_item_persist COMMAND verify_item_persist)
+
 # 差異測試:remake VM trace,與 opendw oracle 對拍(見 tools_build/diff_trace.sh)。
 add_executable(trace_remake tools/verify/trace_remake.cpp)
 target_link_libraries(trace_remake PRIVATE dwr_vm)

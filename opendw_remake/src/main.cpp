@@ -805,6 +805,24 @@ int main(int argc, char** argv) {
     // 進腳本前同步當前 px/py/dir 與 gs[2]=current_area,跑完由 sync_relocation 比對回寫。
     st.game_state[0] = (std::uint8_t)px; st.game_state[1] = (std::uint8_t)py;
     st.game_state[2] = (std::uint8_t)current_area; st.game_state[3] = (std::uint8_t)dir;
+    // ── 角色狀態同步(事件 ↔ 隊伍 records)──────────────────────────────────────
+    //   原版事件對「角色資料」的修改(op_64 給物品、op_5F 設祝福旗標)寫進 data_C960/
+    //   data_CA4C;remake 的 party 真值存於各 512B record。先把 party records 載進 VM
+    //   char_data(member i → record i,selector=i*2),並設角色 context(gs[6]/gs[0x1F])
+    //   讓 op_64 的隊伍迴圈與定址正確;背包(record 內偏移 0xEC 起)鏡射進 char_ext
+    //   (原版 data_CA4C = data_C960 + 0xEC 重疊)。事件跑完再同步回 party(見 ip.run() 後)。
+    auto evt_recs = party.raw_records();
+    const int evt_psz = (int)evt_recs.size();
+    st.game_state[0x1F] = (std::uint8_t)evt_psz;     // 隊伍人數(op_64 等 party 迴圈用)
+    st.game_state[6] = 0;                            // 當前角色預設第 0 名
+    for (int i = 0; i < evt_psz && i < 7; ++i) {
+      st.game_state[(0x0A + i) & 0xFF] = (std::uint8_t)(i * 2);   // selector = record_index*2
+      for (int b = 0; b < 512; ++b)
+        st.char_data[(std::size_t)i * 512 + b] = evt_recs[(std::size_t)i][(std::size_t)b];
+    }
+    // 背包重疊窗:char_ext[k] ≡ char_data[0xEC + k]。
+    for (std::size_t k = 0; k + 0xEC < st.char_data.size() && k < st.char_ext.size(); ++k)
+      st.char_ext[k] = st.char_data[k + 0xEC];
     // op_58 / 子 script / op_0F 跨資源讀:依 tag 從 bundle 載(自包含)。
     // 註:BundleProvider 現已能自行把 level-self tag(area+0x46)解析成 maps/*.lvl,
     //   所以下面的 `tag == level_res` 只是「直接用已載入的 level bytes」的快取捷徑
@@ -854,6 +872,24 @@ int main(int argc, char** argv) {
     });
     ip.run();
     game_state = st.game_state;   // 回寫:事件對遊戲狀態的修改持久保留
+    // ── 角色狀態回寫(事件給物品 / 設祝福 → 持久進 party records)──────────────
+    //   背包窗 char_ext → char_data[0xEC+],再逐欄比對寫回各 512B record;只有實際變動
+    //   才重建 party(flavor 事件不動 char_data → 無變動 → 不重建,零開銷 / 無副作用)。
+    {
+      for (std::size_t k = 0; k + 0xEC < st.char_data.size() && k < st.char_ext.size(); ++k)
+        st.char_data[k + 0xEC] = st.char_ext[k];
+      bool char_changed = false;
+      for (int i = 0; i < evt_psz && i < 7; ++i)
+        for (int b = 0; b < 512; ++b)
+          if (evt_recs[(std::size_t)i][(std::size_t)b] != st.char_data[(std::size_t)i * 512 + b]) {
+            evt_recs[(std::size_t)i][(std::size_t)b] = st.char_data[(std::size_t)i * 512 + b];
+            char_changed = true;
+          }
+      if (char_changed) {
+        party = game::Party::from_raw_records(evt_recs);
+        std::fprintf(stderr, "event: party char_data changed (item/blessing persisted)\n");
+      }
+    }
     return out;
   };
 
