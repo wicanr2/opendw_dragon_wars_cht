@@ -275,7 +275,7 @@ Column key / 欄位說明:
 | 0x62 | 0x43BF | ✅ | `op_scan_for_char` | Scan characters for attribute value >= arg; set flags | 掃描角色找屬性值 >= arg，設旗標 | D |
 | 0x63 | 0x43F7 | ✅ | `op_set_char_data_word` | Set character word attribute (data_CA4C) | 設定角色 word 屬性（data_CA4C） | D |
 | 0x64 | 0x446E | ✅ | `op_give_item` | GIVE_ITEM: copy 23B item template (word_3ADF @ r2) into first empty inventory slot; gs[7]=slot | 給物品：把物品模板（word_3ADF@r2）23B 複製進角色第一個空物品欄；gs[7]=槽（見 docs/RE 67） | D |
-| 0x65 | 0x44B8 | ⚠️ | `op_has_item` *(partial)* | HAS_ITEM check: al=word_3AE2 → call 0x4754 signature compare → carry. Addressing known; 0x4754 compare not yet ported | 持有檢查：定址已逆出，0x4754 簽章比對子程式尚未移植（見 docs/RE 67） | D |
+| 0x65 | 0x44B8 | ✅ | `op_has_item` | HAS_ITEM: 0x4754 byte-exact signature compare (slot gs[7] vs item template, skip byte 7, name hi-bit terminator) → set word_3AE6 bit 0x40 on match | 持有檢查：0x4754 簽章比對（跳 byte7、名稱高位元終止）符合即設 flags bit 0x40（模板資源 binding 視載入態,見 docs/RE 67） | D |
 | 0x66 | 0x40C1 | ✅ | `op_66` | Load game_state[arg]; set ZF/SF flags (like TEST) | game_state[arg] 載入，設 ZF/SF 旗標（類似 TEST） | D |
 | 0x67 | 0x44CB | ✅ | `op_remove_item` | REMOVE_ITEM: from gs[7] slot, shift later slots up 23B (compact), clear last slot | 移除物品：從 gs[7] 槽起把後格往前壓 23B、末槽清 0（見 docs/RE 67） | D |
 | 0x68 | 0x450A | ✅ | `op_get_char_ext` | Read char_ext[(sel<<8)+u4456[gs[7]]+op] → r2 (byte/word); item record field read | 讀物品記錄欄位 char_ext[...] → r2（武器傷害骰等） | D |
@@ -435,10 +435,16 @@ All semantics are **inferred** from position between neighbouring implemented op
   自證 `tests/vm_selftest.cpp`(op64 give_item / 全滿不給)。
 - **Category / 分類**: D
 
-### 0x65 — ASM: 0x44B8 — ⚠️ `op_has_item`（部分:定址已逆,0x4754 比對待移植）
+### 0x65 — ASM: 0x44B8 — ✅ `op_has_item`（已實作）
 
-- **語意（部分真值）**:HAS_ITEM 持有檢查。`al=word_3AE2` → call **0x4754**(物品簽章比對子程式,op_72 也用)
-  → jb 分支(carry 表持有與否)。定址鏈已逆出,但 0x4754 比對子程式尚未移植 → remake 暫未接(仍 halt)。
+- **語意（真值,DRAGON.COM 0x44B8 + 0x4754 反組譯;opendw NULL,2026-06-20 首逆出+實作）**:HAS_ITEM。
+  清 word_3AE6 bit 0x40(0x4ac6)→ item id=word_3AE2 低位 → **0x4754 簽章比對**:模板 vs 當前角色 gs[7]
+  槽記錄逐位元組比 —— **跳過 byte 7**(數量/充能)、bytes 1-6/8-10 須全等、bytes 11+ 為名稱(高位元 0x80
+  set=還有字、clear=結尾)、上限 byte 22;符合則設 word_3AE6 bit 0x40(0x4ac0,供 jz/jnz gate)。
+- **模板資源 binding(誠實標示)**:比對迴圈 + es:[6]+id*2 deref 結構皆 byte-exact;唯「哪個資源」原版由
+  [0x38ba]→[0x13c9] 段表選定、remake 用當前 word_3ADF(data_bytes)。當 word_3ADF 即物品定義資源時完全
+  byte-faithful;remake bundle 目前帶 curated items.bin,故此 binding 視 script 載入態而定(op_65 出現於
+  op_58 共享 script)。`tests/vm_selftest.cpp`(op65 相符/不符)在受控資源下自證比對演算法。
 - **Category / 分類**: D
 
 ### 0x67 — ASM: 0x44CB — ✅ `op_remove_item`（已實作）

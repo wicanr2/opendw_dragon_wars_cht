@@ -268,6 +268,36 @@ int main() {
     check("op64 全滿 → 不給(slot0 保持 0x11)", s.halted && s.char_ext[0x200]==0x11);
   }
 
+  // Z5: op_65 HAS_ITEM:0x4754 簽章比對(byte-exact)。
+  //     物品資源 data_bytes:[6]=ptab base 0x20;ptab+id*2(id=1)→ 0x22 存模板 offset 0x40;
+  //     模板 @0x40:bytes 1-6={A1..A6}、7=FF(跳過)、8-10={A8,A9,AA}、11=0x4B(名稱結尾,高位元清)。
+  //     char_ext slot0(sel=2→base 0x200):1-6 同、7=0x11(差但跳過)、8-10 同、11=0x4B。
+  //     → 命中 → flags bit 0x40 set。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2; s.game_state[7]=0;
+    s.data_bytes.assign(0x80, 0);
+    s.data_bytes[6]=0x20;                                   // ptab base
+    s.data_bytes[0x22]=0x40;                                // id=1 → 模板 offset 0x40
+    const std::uint8_t tmpl[12]={0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xFF,0xA8,0xA9,0xAA,0x4B};
+    for (int k=1;k<=11;++k) s.data_bytes[0x40+k]=tmpl[k];
+    const std::uint8_t slotb[12]={0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0x11,0xA8,0xA9,0xAA,0x4B};
+    for (int k=1;k<=11;++k) s.char_ext[0x200+k]=slotb[k];
+    s.script={0x09,0x01, 0x65, 0x5A};                       // r2=item id 1; op_65; halt
+    Interpreter(s).run();
+    check("op65 has_item:簽章相符(byte7 跳過)→ flags bit 0x40 set", s.halted && (s.flags&0x40)!=0);
+  }
+  // Z6: op_65 不符:模板 byte 1 改 0xB1(≠ slot 0xA1)→ cx=1 即不符 → flags bit 0x40 不設。
+  {
+    VmState s; s.game_state[6]=0; s.game_state[0x0A]=2; s.game_state[7]=0;
+    s.data_bytes.assign(0x80, 0);
+    s.data_bytes[6]=0x20; s.data_bytes[0x22]=0x40;
+    s.data_bytes[0x40+1]=0xB1;                              // 模板 byte1 ≠ slot
+    s.char_ext[0x200+1]=0xA1;
+    s.script={0x09,0x01, 0x65, 0x5A};
+    Interpreter(s).run();
+    check("op65 has_item:簽章不符 → flags bit 0x40 清", s.halted && (s.flags&0x40)==0);
+  }
+
   // Z4: op_67 REMOVE_ITEM:從 gs[7]=0 槽起把後格往前壓 → slot1(0xBB)壓到 slot0。
   {
     VmState s; s.game_state[6]=0; s.game_state[0x0A]=2; s.game_state[7]=0;

@@ -79,15 +79,48 @@ curated 子集 7 件,含 Dragon Stone @DATA1 0x5369)。**無 operand**(來源 of
 
 ### 1.2 op_65 / op_67(同區段,本文一併逆出)
 
-- **op_65(0x44B8)= 持有檢查**:`al=[word_3AE2]` → call 0x4754(物品簽章比對子程式,op_72 也用)→ jb 分支。
-  = 「隊伍是否持有某物品?」的判定;命中與否決定後續 call 0x4AC0(設旗標/分支)。
+- **op_65(0x44B8)= 持有檢查**:`al=[word_3AE2]` → call 0x4754(物品簽章比對子程式)→ jb 分支。
+  命中 → call 0x4AC0(`or [0x3ae6],0x40` = 設 word_3AE6 bit 0x40);起始 call 0x4AC6(`and [0x3ae6],0xbf`
+  = 清 bit 0x40)。即「隊伍是否持有某物品 → 設 zero-flag 供 jz/jnz gate」。
 - **op_67(0x44CB)= 刪除物品+壓縮**:從 gs[7] 指定槽起,把後面每格往前搬 23 byte(`[di]←[bx]`,bx=di+23),
   到第 0x0B 格後把末槽清 0。= 「移除一件物品並把欄位壓實」(交物品給 NPC / 消耗任務物品)。
 
+#### 0x4754 簽章比對子程式(完整反組譯;op_65 的核心,本文逆出)
+
+```
+4754  xor ah,ah; push es; push ax          ; ax = item id(al,來自 word_3AE2 低位)
+4758  di=6
+475b  bl=[0x38ba]; bh=0; bx<<=1
+4763  es=[bx+0x13c9]                        ; 段表選「物品定義資源」(由 [0x38ba] 索引)
+4767  di=es:[di]                            ; di = es:[6] = 指標表 base
+476a  pop ax; ax<<=1; di+=ax               ; di = ptab_base + item_id*2
+476f  di=es:[di]                            ; di = 模板 offset(資源內)
+4772  bl=[0x3867]; bh=0; bx<<=1             ; gs[7] = 當前物品槽
+477a  al=[0x3866]; ah=0; si=ax             ; gs[6] = 當前角色
+4781  ax=0xCA4C; ah+=[si+0x386a]; ax+=[bx+0x4456]; bx=ax  ; bx = char_ext 槽 base(同 op_64/68/69 定址)
+478e  cx=0
+4791  inc cx; inc di; inc bx                ; 逐 byte(template es:di vs slot [bx])
+4794  cmp cx,7; je 0x4791                   ; **跳過 byte index 7**(數量/充能,因實例而異)
+479a  al=es:[di]; cmp al,[bx]; jne 0x47b4   ; 不符 → stc(未命中)
+47a1  cmp cx,0x16; jae 0x47b1               ; cx>=22 → clc(命中,上限)
+47a6  cmp cx,0xb; jb 0x4791                 ; cx<11 → 下一 byte(type/id header)
+47ac  test [bx],0x80; jne 0x4791            ; bytes 11+ = 名稱:高位元 set → 還有字,續比
+47b1  clc; pop es; ret                      ; 名稱結尾且全符 → 命中
+47b4  stc; pop es; ret                      ; 未命中
+```
+
+**語意**:比對「物品模板(資源內 offset)」vs「當前角色 gs[7] 槽的 23-byte 記錄」。bytes 1-6/8-10 = type/id
+header 須全等(byte 7 跳過);bytes 11+ = 物品名(高位元 0x80 標「還有字」、清表結尾);全符回 carry-clear。
+**這是 Dragon Wars / Bard's Tale 系列「7-bit 名稱 + header」物品識別的通用簽章比對**。remake `op65_has_item`
+逐行對映此邏輯;模板資源 binding 的 byte-faithful 邊界見上方 note 與 §6。
+
 > 三者(op_64/65/67)+ op_68(讀欄)+ op_69(寫欄)構成完整 CRUD:**給 / 查 / 刪 / 讀 / 改物品**。
-> opendw 把 0x64/0x65/0x67 標 NULL(未實作)。**remake 已於 2026-06-20 接上 op_64(GIVE_ITEM)、op_67
-> (REMOVE_ITEM)**(本文 §1.1/§1.2 反組譯為真值,`tests/vm_selftest.cpp` 自證、ctest 34/34);**op_65
-> (HAS_ITEM)仍待 0x4754 簽章比對子程式移植**。即「給物品 / 刪物品」原語已可跑,持有檢查 gate 還會 halt。
+> opendw 把 0x64/0x65/0x67 標 NULL(未實作)。**remake 已於 2026-06-20 全數接上 op_64(GIVE_ITEM)、
+> op_65(HAS_ITEM,含 0x4754 簽章比對子程式)、op_67(REMOVE_ITEM)** —— 三者皆依 DRAGON.COM 反組譯為
+> 真值、`tests/vm_selftest.cpp` 逐指令自證、ctest 34/34。物品 CRUD(給/查/刪)原語**不再 halt**。
+> **唯一殘留**:op_65 的「模板資源 binding」—— 0x4754 從 [0x38ba]→[0x13c9] 段表選物品定義資源,remake
+> 改用當前 word_3ADF(比對迴圈與 es:[6]+id*2 deref 結構 byte-exact;binding 視 script 載入態,bundle 目前
+> 帶 curated items.bin 而非 raw DATA1 物品資源)。見 §6 與下方 0x4754 反組譯。
 
 ### 1.3 op_5F = 設祝福旗標(0x4372,已實作)
 

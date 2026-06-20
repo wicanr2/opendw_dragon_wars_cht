@@ -1668,6 +1668,7 @@ void Interpreter::op68_get_char_ext() {
 //   設 gs[7] = 填入的 slot。12 格全滿則放棄(不給)。**無 operand**(來源 offset 由呼叫端先設 r2)。
 //   定址同 op_68/69:base = (selector<<8) + unknown_4456[slot],selector = gs[gs[6]+0x0A]。
 void Interpreter::op64_give_item() {
+  s_.flags &= (std::uint16_t)~0x40u;   // 0x4ac6 housekeeping:清 word_3AE6 bit 0x40
   std::uint8_t player_idx = s_.game_state[6];
   std::uint8_t sel = s_.game_state[(player_idx + 0x0A) & 0xFF];
   int slot = 0;
@@ -1688,10 +1689,57 @@ void Interpreter::op64_give_item() {
   s_.game_state[7] = (std::uint8_t)slot;                 // [0x3867] = slot
 }
 
+// op_65(HAS_ITEM @0x44B8;DRAGON.COM 反組譯 — opendw NULL,本次首實作)。
+//   清 word_3AE6 bit 0x40(0x4ac6)→ item id = word_3AE2 低位 → 0x4754 簽章比對
+//   (當前角色 gs[7] 槽記錄 vs 物品模板)→ 符合則設 word_3AE6 bit 0x40(0x4ac0),供 jz/jnz gate。
+//
+//   0x4754 比對(byte-exact 反組譯真值):模板 vs char_ext 槽逐位元組比 —
+//     **跳過 byte index 7**(數量/充能,因物品實例而異);bytes 1-6、8-10 必須完全相等;
+//     bytes 11+ 為名稱(該 byte 高位元 0x80 set = 還有字、clear = 結尾)→ 比到名稱結尾且全符
+//     = 命中(clc);任一不符 = 未命中(stc);上限 byte 22(cx>=0x16 視為命中)。
+//
+//   模板來源(誠實標示):原版經 [0x38ba]→[0x13c9] 段表選「物品定義資源」,其 es:[6] 指標表
+//     + id*2 取模板 offset。remake 以當前資料資源 word_3ADF(data_bytes)為物品資源,byte-exact
+//     複製 es:[6]+id*2 deref —— 此 deref 結構與比對迴圈皆 byte-faithful;唯「哪個資源」原版由
+//     [0x38ba] 選定、remake 用 word_3ADF。當 word_3ADF 即物品定義資源時完全 byte-faithful。
+//     remake bundle 目前帶 curated items.bin(非 raw DATA1 物品資源),故此 binding 視 script 載入
+//     狀態而定(op_65 出現於 op_58 共享 script,尚未端到端跑通;見 docs/reverse-engineering/67)。
+void Interpreter::op65_has_item() {
+  s_.flags &= (std::uint16_t)~0x40u;          // 0x4ac6:清 word_3AE6 bit 0x40
+  std::uint8_t item_id = s_.r2 & 0xFF;        // al = [0x3ae2]
+  auto rd16 = [&](std::size_t o) -> std::size_t {
+    if (o + 1 >= s_.data_bytes.size()) return 0;
+    return (std::size_t)(s_.data_bytes[o] | (s_.data_bytes[o + 1] << 8));
+  };
+  std::size_t ptab = rd16(6);                                  // di = es:[6](指標表 base)
+  std::size_t tmpl_off = rd16(ptab + (std::size_t)item_id * 2); // di = es:[ptab + id*2](模板 offset)
+  std::uint8_t player_idx = s_.game_state[6];
+  std::uint8_t sel = s_.game_state[(player_idx + 0x0A) & 0xFF];
+  std::uint32_t slot_base = ((std::uint32_t)sel << 8) + unknown_4456(s_.game_state[7]);
+  // 0x4754 byte-exact 比對迴圈。
+  int cx = 0;
+  std::size_t di = tmpl_off;
+  std::uint32_t bx = slot_base;
+  bool match = false;
+  for (;;) {
+    ++cx; ++di; ++bx;
+    if (cx == 7) continue;                                     // 跳過 byte 7
+    std::uint8_t tb = (di < s_.data_bytes.size()) ? s_.data_bytes[di] : 0;
+    std::uint8_t sb = (bx < s_.char_ext.size()) ? s_.char_ext[bx] : 0;
+    if (tb != sb) { match = false; break; }                   // 0x47b4 stc(不符)
+    if (cx >= 0x16) { match = true; break; }                  // cx>=22 → clc(命中)
+    if (cx < 0x0B) continue;                                   // <11 → 下一 byte
+    if (sb & 0x80) continue;                                   // 名稱還有字 → 續比
+    match = true; break;                                       // 0x47b1 clc(命中)
+  }
+  if (match) s_.flags |= 0x40;                                 // 0x4ac0:設 word_3AE6 bit 0x40
+}
+
 // op_67(REMOVE_ITEM @0x44CB;DRAGON.COM 反組譯 — opendw NULL,本次首實作)。
 //   從 gs[7] 指定的槽起,把後面每一格往前搬 23 byte(壓實欄位),最後把末槽(slot 0x0B)清 0。
 //   = 「移除一件物品並壓實物品欄」(交物品給 NPC / 消耗任務物品)。定址同上。
 void Interpreter::op67_remove_item() {
+  s_.flags &= (std::uint16_t)~0x40u;   // 0x4ac6 housekeeping:清 word_3AE6 bit 0x40
   std::uint8_t player_idx = s_.game_state[6];
   std::uint8_t sel = s_.game_state[(player_idx + 0x0A) & 0xFF];
   auto slot_base = [&](int slot) -> std::uint32_t {
@@ -2120,6 +2168,7 @@ const std::array<Interpreter::Handler, 256> Interpreter::kImpl = [] {
   t[0x61] = &Interpreter::op61_test_char_prop;
   t[0x63] = &Interpreter::op63_set_char_ext_word;
   t[0x64] = &Interpreter::op64_give_item;     // DRAGON.COM 0x446E:GIVE_ITEM(opendw NULL,本次首實作)
+  t[0x65] = &Interpreter::op65_has_item;      // DRAGON.COM 0x44B8:HAS_ITEM(0x4754 簽章比對;opendw NULL)
   t[0x67] = &Interpreter::op67_remove_item;   // DRAGON.COM 0x44CB:REMOVE_ITEM(opendw NULL,本次首實作)
   t[0x68] = &Interpreter::op68_get_char_ext;
   t[0x69] = &Interpreter::op69_set_char_ext;
