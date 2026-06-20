@@ -4,7 +4,7 @@
 > C++20 + SDL2 乾淨重寫 ✦ 以 opendw（C 反組譯）為逐位元正確性 oracle ✦ 24px 銳利 CJK ✦ 繁中／英文／日文三語
 
 [![CI](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml/badge.svg)](https://github.com/wicanr2/opendw_dragon_wars_cht/actions/workflows/ci.yml)
-![ctest](https://img.shields.io/badge/ctest-35%2F35-success)
+![ctest](https://img.shields.io/badge/ctest-37%2F37-success)
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![SDL2](https://img.shields.io/badge/SDL2-ttf-blue)
 ![license](https://img.shields.io/badge/code-BSD-green)
@@ -105,7 +105,7 @@ cmake -S . -B build && cmake --build build --target opendw_remake
 ./build/opendw_remake --win640        # 640×480 視窗（固定 24/16px CJK）
 ./build/opendw_remake --read-para 88  # Read Paragraph 段落檢視器
 ./build/opendw_remake --fight-namtar  # 終戰 Namtar → 結局
-cd build && ctest                     # 回歸測試（36/36；CI 亦跑）
+cd build && ctest                     # 回歸測試（37/37；CI 亦跑）
 ```
 
 預設繁體中文，遊戲中 `F4` 循環切 繁中 / EN / 日。
@@ -252,7 +252,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 第一人稱 viewport 全 40 關逐像素對拍 opendw（`render_sweep` 154 case byte-for-byte）。整體版面、配色貼著原版 DOS，標題畫面幾乎逐像素還原（刻意保留英文 logo）。詳見[下節對照](#fidelity)與 [docs/assessment/60](docs/assessment/60_DOS_VS_REMAKE_VISUAL.md)。
 
 **自包含，工程化**
-資產萃取成 `assets/bundle/`，執行期不依賴原始磁碟檔；docker-first 建置；ctest **36/36**；GitHub Actions CI；Linux 可攜包已實機驗證，Windows / macOS CI 設定已備。
+資產萃取成 `assets/bundle/`，執行期不依賴原始磁碟檔；docker-first 建置；ctest **37/37**；GitHub Actions CI；Linux 可攜包已實機驗證，Windows / macOS CI 設定已備。
 
 ---
 
@@ -342,7 +342,8 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 
 - ⚠️ **怪物逐回合 HP 無法 byte-diff**：opendw 沒有獨立戰鬥入口，無法對拍怪物每回合具體 HP。終戰用 remake `combat_loop`（同 bytecode 真值公式），非 res3 全戰鬥閉環（後者卡 op_89 動作指派的遊戲層 context）。怪物 HP / AC 為暫定值。
 - ✅ **上鎖寶箱開箱已實作並端到端驗證**：踩寶箱格（全 40 關 18 處）→ K 開鎖檢定（失敗可重試）→ 給一件真實 Dragon Wars 物品 → `Party::add_item` 進 512B record 背包，`verify_chest_acquire` 證存檔 round-trip 後仍在；**商店購買**（`verify_shop`）、**NPC 入隊招募**（`verify_recruit`）亦持久。grounded：物品取自真實 DW 物品池，非該箱原版 byte-exact 內容（lock 機率與物品 id 在 script 11 共用 `gs[0x41]` 深層糾纏）。
-- ⚠️ **劇情物的「互動觸發層」**仍落在尚未完整反編的共享 script：**給物品機制本身已逆出並打通**（op_64/65/67 物品 CRUD + 0x4754 簽章比對、`verify_item_persist` 證 `run_event` 事件給物品同步進背包持久）；卡的是劇情物經共享 script 給予的觸發 binding（op_68/op_70 在 opendw 為 NULL，共享 script 控制流未完整逆出）。實測 40 關 level tile script 頂層無 op_64/op_69 直接給物品，皆為 op_8C 導航確認 / gate（內容編目可由攻略反推）。
+- ✅ **劇情物 grounded 給予（攻略驅動編目）已實作並驗證**：取得邏輯藏在 op_8C 確認 + 未完整逆出的共享 script（op_68/op_70 在 opendw 為 NULL，控制流未逆出），實測 40 關 tile script 頂層無 op_64 直接給物品 → **無法可靠自動抽取**，故依《軟體世界》攻略人工編目「地點→物品」（`assets/bundle/quest/grants.tsv`）。首次進該區且未持有 → 給真實 quest 物品（朝聖者之袍 / 光譜眼鏡 / 龍石 / 國王戒指 / 護身符…）並持久（中文名走 `items.tsv`），`party_has_item` 判重 → 存讀檔不重給；`verify_quest_grant` 證端到端。誠實標示：時機簡化為「進區即得」（原版多需先完成該區子任務），gate flag 因落在 game_state 低位元組（與位置欄重疊）暫不連動。
+- ✅ **給物品機制本身已逆出並打通**：op_64/65/67 物品 CRUD + 0x4754 簽章比對、`verify_item_persist` 證 `run_event` 事件給物品同步進 512B record 背包持久。
 - ⚠️ **Namtar Boss 屬性、自由之劍祝福加成、結局序列** = remake 平衡 / 組合設計（原版勝利畫面 script 逆不出）。
 - ✅ **~~Phoebus（area 6）/ area 33 隔離~~ 已解**：原版 DATA1 漏放菲巴斯的世界圖入口 tile（0x07→area 6，唯一未放置的城市 tile，bundle==DATA1 byte-for-byte 確認），remake 依權威 Dilmun 地圖在太陽島原位還原該入口落點 → 連通 **40/40**、菲巴斯內部事件繁中 24/24（誠實標示：remake 還原，非原版資料原狀；見 docs/gameplay/54 §F）。
 - ✅/©️ **背景音樂：已用 UADE 渲染、循環播放**（音檔屬著作,不入庫）。**音效**見上「已落地」。背景音樂取自 Amiga `.tune`（"Music by MANIACS of NOISE"，68k 機械碼播放器 + 內嵌曲目），用 **UADE**（不需 Kickstart ROM）渲染成 WAV，引擎依遊戲狀態循環切 title/game/combat/end 四曲（`sound.cpp` music 頻道;`verify_audio` 已驗 4 曲載入 + 切曲）。**渲染後音檔屬 MANIACS of NOISE / Interplay 著作 → gitignore 不散布**;自備 Amiga 版合法副本後跑 [`tools_build/render_music.sh`](tools_build/render_music.sh)（recipe 見 [`bundle/audio/music/README.md`](opendw_remake/assets/bundle/audio/music/README.md)）即生成並自動播放。（DOS 版原本無背景音樂——`0x5C3B` 為 PC speaker 音效碼,非音樂。）
@@ -351,7 +352,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 
 ### 跨平台狀態
 
-打包與各平台產物狀態見上方 [Build 與開發](#build) 的五 job 對照表（Linux tarball/AppImage ✅ 本機驗證、Windows/macOS CI 完整、Android scaffold）。Linux 已 docker 實機驗證 build + **ctest 36/36** + 產包 + headless 執行。
+打包與各平台產物狀態見上方 [Build 與開發](#build) 的五 job 對照表（Linux tarball/AppImage ✅ 本機驗證、Windows/macOS CI 完整、Android scaffold）。Linux 已 docker 實機驗證 build + **ctest 37/37** + 產包 + headless 執行。
 
 ---
 
@@ -362,7 +363,7 @@ menu / 角色 / 戰鬥 / 法術 / 物品 + 序盤事件繁中；events 212/283 �
 opendw_dragon_wars_cht/
 ├── opendw_remake/         # ★ 主產物：C++20 + SDL2 乾淨重寫的 runtime（可玩）
 │   ├── src/               #   resource / vm / render / game / i18n
-│   ├── tools/verify/      #   對拍 / 驗證工具（ctest 36 項）
+│   ├── tools/verify/      #   對拍 / 驗證工具（ctest 37 項）
 │   ├── tools/extract/     #   DATA1/DATA2 → 自包含 bundle 萃取
 │   ├── assets/bundle/     #   自包含資產（maps/sprites/scenes/scripts/monsters/items/…）
 │   ├── assets/i18n/       #   zh-TW / en / ja 在地化 TSV

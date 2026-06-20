@@ -24,17 +24,16 @@ int main(int argc, char** argv) {
     if (!lvl) continue;
     int lr = area + 0x46;
     const auto& sc = lvl->data();
-    // 逐「唯一 tile 值」跑一次(對拍 trace_quest_gates:不設玩家座標,讓 gate 測試分支被跑到);
-    // 取該 tile 值第一個出現的座標供編目定位。
+    // 逐格跑(設玩家座標,讓讀玩家位置的事件分支正確);只印每個 tile 值第一次出現以降噪。
     std::set<int> seen_vals;
     for (int y = 0; y < lvl->h; ++y) for (int x = 0; x < lvl->w; ++x) {
       int v = lvl->tile(x, y); if (v <= 1) continue;
-      if (seen_vals.count(v)) continue;
-      seen_vals.insert(v);
+      bool first = !seen_vals.count(v); seen_vals.insert(v);
       std::uint16_t pc = lvl->script_pc((std::uint8_t)v);
       if (pc == 0 || pc >= sc.size()) continue;
       vm::VmState st;
       st.script = sc; st.data_bytes = sc; st.script_res = lr; st.data_res = lr; st.pc = pc;
+      st.game_state[0] = (std::uint8_t)x; st.game_state[1] = (std::uint8_t)y;
       st.game_state[2] = (std::uint8_t)area; st.game_state[0x57] = (std::uint8_t)area;
       st.resource_provider = [&](int t) -> std::optional<std::vector<std::uint8_t>> {
         if (t == lr) return sc; return prov.load(t); };
@@ -65,7 +64,8 @@ int main(int argc, char** argv) {
         std::snprintf(buf, sizeof buf, "%c%02X.%d ", kind, pcb + (al >> 3), al & 7);
         flags += buf;
       }
-      // 只印「有 flag 操作或訊息像取得/通行」的格(降噪)。
+      // 全印(座標影響分支 → 同 tile 值不同格可能不同結果,不可去重);grep 自行篩。
+      (void)first;
       std::printf("a%d t0x%02X (%d,%d) | %s| %.70s\n",
                   area, v, x, y, flags.c_str(), out.c_str());
     }

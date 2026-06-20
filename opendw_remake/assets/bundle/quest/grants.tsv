@@ -1,0 +1,11 @@
+# grounded quest 物品給予表(攻略驅動;非 bytecode 自動抽取)。
+# 取得邏輯藏在 op_8C 確認 + 未完整逆出的共享 script(op_68/op_70 NULL),無法可靠自動抽取,
+# 故依《軟體世界》攻略人工編目「地點 → 物品」。觸發:首次進入該區且隊伍尚未持有該物品
+# (party_has_item 判重 → 物品本身持久 → 存讀檔不重給)。誠實標示:給予為 grounded 設計,
+# 取得時機簡化為「進區即得」(原版多需先完成該區子任務)。
+# 欄位: area <TAB> tile(-1=進區即給) <TAB> english_name <TAB> note
+25	-1	Pilgrim Garb	京雄城取得;赴尼塞山需著此袍推門
+31	-1	Spectacles	魔法學院七試煉之賞;看見地底世界入口
+32	-1	Dragon Stone	龍谷取得;決戰召喚龍后
+24	-1	Signet Ring	蛇窟密室皇家死者手上的國王戒指
+8	-1	Ankh	黃泥蟾蜍城酒店所藏護身符

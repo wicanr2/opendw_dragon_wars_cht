@@ -25,6 +25,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
+#include <fstream>
+#include <map>
 #include <optional>
 #include <set>
 #if defined(_WIN32)
@@ -743,6 +745,43 @@ int main(int argc, char** argv) {
       std::fclose(f);
     }
   }
+
+  // ── grounded quest 物品給予表(攻略驅動)──────────────────────────────────────
+  //   取得邏輯藏在 op_8C 確認 + 未完整逆出的共享 script(op_68/op_70 NULL),無法可靠自動抽取,
+  //   故依《軟體世界》攻略人工編目「地點 → 物品」(assets/bundle/quest/grants.tsv)。
+  //   觸發:首次進入該區且隊伍尚未持有該物品 → 給真實 quest 物品(中文名走 items.tsv)並持久。
+  //   誠實標示:給予為 grounded 設計,時機簡化為「進區即得」(原版多需先完成該區子任務)。
+  struct QuestGrant { int tile; std::string name; };       // tile=-1:進區即給
+  std::multimap<int, QuestGrant> quest_grants;             // area → grant(可多件)
+  {
+    std::ifstream gf(bundle + "/quest/grants.tsv");
+    std::string line;
+    while (std::getline(gf, line)) {
+      if (line.empty() || line[0] == '#') continue;
+      std::vector<std::string> f; std::string cur;
+      for (char c : line) { if (c == '\t') { f.push_back(cur); cur.clear(); } else cur.push_back(c); }
+      f.push_back(cur);
+      if (f.size() >= 3 && !f[2].empty())
+        quest_grants.emplace(std::atoi(f[0].c_str()), QuestGrant{std::atoi(f[1].c_str()), f[2]});
+    }
+    if (!quest_grants.empty())
+      std::fprintf(stderr, "quest grants: %zu entries loaded\n", quest_grants.size());
+  }
+  // 把英文物品名編成 23B 物品記錄(header 全 0 = 一般物品 / 未裝備;name 走 7-bit 高位元終止編碼,
+  //   對拍 read_item_name:非末字 |0x80、末字清高位元;offset 0x0B 為名首字 → 非 0 表示有物品)。
+  int quest_grant_pending = -1;   // >=0:該 area 待檢查 quest 物品給予(換區後延一輪,避開事件框)
+  auto make_quest_item = [](const std::string& name) -> std::array<std::uint8_t, 23> {
+    std::array<std::uint8_t, 23> rec{};
+    rec[6] = 0x80;   // magic_hi=0x80「無魔法效果」→ 11B header 非零 → parse_item present=true(否則背包不顯示);無副作用
+    std::size_t n = std::min<std::size_t>(name.size(), 12);
+    for (std::size_t i = 0; i < n; ++i) {
+      std::uint8_t b = (std::uint8_t)(name[i] & 0x7F);
+      if (i + 1 < n) b |= 0x80;                            // 非末字 → 還有字
+      rec[11 + i] = b;
+    }
+    return rec;
+  };
+
   MsgViewer msg;                  // 一般事件訊息檢視器(下半部分頁;active 時暫停移動)
   ParaViewer para;                // Read Paragraph 長段落捲動檢視器(全螢幕 overlay;active 時暫停移動)
   CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
@@ -977,6 +1016,7 @@ int main(int argc, char** argv) {
     real_traps = game::RealTraps::identify(*level, area);
     if (real_traps.count() > 0)
       std::fprintf(stderr, "real traps: area %d -> %zu cell(s)\n", area, real_traps.count());
+    quest_grant_pending = area;   // 進區 choke point → 延一輪檢查 grounded quest 物品給予(已持有則跳過)
     return true;
   };
   // 把玩家當前格標記為 seen(對齊 opendw refresh_viewport,engine.c:5688:
@@ -1882,6 +1922,38 @@ int main(int argc, char** argv) {
     if (z.empty()) return;
     msg.max_vw = MB_TEXT_W; msg.body_px = PX_BODY;
     msg.open(tl.wrap(z, MB_TEXT_W, PX_BODY), MB_LINES);
+  };
+
+  // 隊伍是否已持有某名稱物品(掃全員背包;判重 → quest 物品不重給,亦免存讀檔重複)。
+  auto party_has_item = [&](const std::string& name) -> bool {
+    for (std::size_t i = 0; i < party.size(); ++i)
+      for (int s = 0; s < game::CharacterRecord::kInventorySlots; ++s) {
+        auto it = party.at(i).item_at(s);
+        if (it.present && it.name == name) return true;
+      }
+    return false;
+  };
+
+  // grounded quest 物品給予:進區(或踩指定格)時,把該區攻略編目的 quest 物品給第 0 名並持久。
+  //   tile<0:進區即給;tile>=0:踩該 tile 才給。已持有則跳過(判重)。回傳本次新給件數。
+  auto try_grant_area = [&](int area, int cur_tile) -> int {
+    int n = 0; std::vector<std::string> got;
+    auto range = quest_grants.equal_range(area);
+    for (auto it = range.first; it != range.second; ++it) {
+      const QuestGrant& g = it->second;
+      if (g.tile >= 0 && g.tile != cur_tile) continue;     // 指定格才給
+      if (party_has_item(g.name)) continue;                // 已持有 → 不重給
+      if (party.add_item(0, make_quest_item(g.name)) < 0) continue;  // 背包滿 → 略過
+      got.push_back(tr.tr(g.name)); ++n;
+      std::fprintf(stderr, "quest grant: area %d '%s' -> party[0]\n", area, g.name.c_str());
+    }
+    if (n > 0) {
+      std::string z = party.at(0).name + tr.tr(" gets the ");
+      for (std::size_t i = 0; i < got.size(); ++i) z += (i ? "、" : "") + got[i];
+      open_msg(z + "!");
+      g_sound.play(audio::SoundId::DoorOpen);
+    }
+    return n;
   };
 
   // ── 半透明 + 優雅覆蓋框(theme-aware;見 render/ui_theme.hpp OverlayStyle)──
@@ -3710,6 +3782,11 @@ int main(int argc, char** argv) {
     }
     render::Input in = vid.poll();
     synth_input(in);   // headless --keys:有排隊 token 則覆蓋本幀輸入(否則保留 poll 結果)
+    // grounded quest 物品給予:換區後延一輪、待事件框/子畫面關閉時發放(避免覆蓋進區事件文字)。
+    if (state == S_GAME && quest_grant_pending >= 0 && !msg.active && !para.active && !sheet.active) {
+      try_grant_area(quest_grant_pending, -1);
+      quest_grant_pending = -1;
+    }
     // 建角命名階段:'q' 是合法名字字元(如 "Quinn"),不應觸發離開。
     //   poll 把 Q 同時設 quit 與 text_char='q'/'Q' → 命名時改當文字輸入,吃掉 quit。
     if (in.quit && state == S_CREATE && cg.active && cg.phase == CharGenUi::PhName &&

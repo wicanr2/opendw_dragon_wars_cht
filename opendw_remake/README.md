@@ -57,12 +57,12 @@ docker run --rm -v "$PWD":/app -w /app dwsdl bash -c \
 ```bash
 cd opendw_remake
 cmake -S . -B build && cmake --build build -j --target opendw_remake
-cd build && ctest --output-on-failure          # 回歸測試:36 項
+cd build && ctest --output-on-failure          # 回歸測試:37 項
 ```
 
-### 回歸測試(ctest 36 項)
+### 回歸測試(ctest 37 項)
 
-`CMakeLists.txt` 註冊 **36** 個 `add_test`,涵蓋 VM 自測、存讀檔 round-trip、戰鬥(公式 / loop / special / script / round / golden 怪物)、結局鏈、建角、升級、隊伍操作、法術、商店、招募、地形、area switch / city entry / wrap、op58、i18n、render_sweep(第一人稱全 40 關)、compose / fp / automap / seen viewport、smoke。CI 全綠才算數。
+`CMakeLists.txt` 註冊 **37** 個 `add_test`,涵蓋 VM 自測、存讀檔 round-trip、戰鬥(公式 / loop / special / script / round / golden 怪物)、結局鏈、建角、升級、隊伍操作、法術、商店、招募、地形、area switch / city entry / wrap、op58、i18n、render_sweep(第一人稱全 40 關)、compose / fp / automap / seen viewport、smoke。CI 全綠才算數。
 
 ### headless 開發旗標
 
@@ -125,7 +125,7 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 
 | 平台 | 產物 | 狀態 |
 |---|---|---|
-| **Linux tarball** | `opendw-remake-*.tar.gz`(binary + 啟動器 + assets) | ✅ 本機 docker 實機驗證(build + ctest 36 + package + headless) |
+| **Linux tarball** | `opendw-remake-*.tar.gz`(binary + 啟動器 + assets) | ✅ 本機 docker 實機驗證(build + ctest 37 + package + headless) |
 | **Linux AppImage** | `*.AppImage`(雙擊即玩,打包 SDL2 依賴;`tools/package/build_appimage.sh`) | ✅ AppDir 結構本機驗證;appimagetool 打包於 CI |
 | **Windows x64** | `opendw-remake-windows-x64/`(exe + SDL2/SDL2_ttf DLL + assets) | ⏳ vcpkg/MSVC CI 設定完整,GitHub Actions 實跑產出 |
 | **macOS** | `opendw-remake-macos/`(binary + SDL dylib + assets + 啟動器) | ⏳ Homebrew CI 設定完整,GitHub Actions 實跑產出 |
@@ -156,7 +156,7 @@ bash tools/package/build_package.sh    # → dist/opendw-remake-<版本>-Linux-x
 | 項目 | 受阻原因 |
 |------|----------|
 | 怪物逐回合 HP byte-diff | opendw 無獨立戰鬥入口,無法對拍每回合 HP;終戰用 remake `combat_loop`(同 bytecode 公式),非 res3 全戰鬥閉環(卡 op_89 動作指派的遊戲層 context);怪物 HP / AC 為暫定值 |
-| 物品取得「互動觸發層」 | **上鎖寶箱 K 開箱已實作並端到端驗證**:踩寶箱格(全 40 關 18 處,`tools/verify/find_chests.cpp` 可列)→ K 開鎖檢定(`try_lockpick`,失敗可重試)→ 給一件真實 Dragon Wars 物品(`items.bin`)→ `Party::add_item` 進 512B record 背包,`verify_chest_acquire` 證存檔 round-trip 後仍在(grounded:物品=真實 DW 物品池,非該箱原版 byte-exact 內容,因 lock 機率與物品 id 在 script 11 共用 `gs[0x41]` 深層糾纏)。**商店購買**(`verify_shop`)、**NPC 入隊招募**(`verify_recruit`)亦持久。**給物品機制本身**(op_64/65/67 + 0x4754 + `verify_item_persist` 證 `run_event` 事件給物品同步進背包)已逆出打通;仍卡的是**劇情物**經共享 script 給予的觸發 binding(op_68/op_70 在 opendw 為 NULL,共享 script 控制流未完整逆出)|
+| 物品取得「互動觸發層」 | **上鎖寶箱 K 開箱已實作並端到端驗證**:踩寶箱格(全 40 關 18 處,`tools/verify/find_chests.cpp` 可列)→ K 開鎖檢定(`try_lockpick`,失敗可重試)→ 給一件真實 Dragon Wars 物品(`items.bin`)→ `Party::add_item` 進 512B record 背包,`verify_chest_acquire` 證存檔 round-trip 後仍在(grounded:物品=真實 DW 物品池,非該箱原版 byte-exact 內容,因 lock 機率與物品 id 在 script 11 共用 `gs[0x41]` 深層糾纏)。**商店購買**(`verify_shop`)、**NPC 入隊招募**(`verify_recruit`)亦持久。**給物品機制本身**(op_64/65/67 + 0x4754 + `verify_item_persist` 證 `run_event` 事件給物品同步進背包)已逆出打通。**劇情物**經共享 script 給予的觸發 binding(op_68/op_70 在 opendw 為 NULL,控制流未逆出 → 無法自動抽取),改 **grounded 攻略驅動編目**(`assets/bundle/quest/grants.tsv`):首次進區且未持有 → 給真實 quest 物品(朝聖者之袍/光譜眼鏡/龍石/國王戒指/護身符)並持久,`party_has_item` 判重,`verify_quest_grant` 證端到端(誠實標示:時機簡化為進區即得)|
 | Namtar Boss 屬性、自由之劍祝福加成、結局序列 | remake 平衡 / 組合設計(原版勝利畫面 script 逆不出) |
 | ~~Phoebus(area 6)/ area 33~~ 已解 | 原版 DATA1 漏放菲巴斯世界圖入口 tile(0x07→6),remake 依 Dilmun 地圖原位還原 → 連通 40/40(誠實標示:remake 還原,非原版原狀;doc 54 §F) |
 | 背景音樂(已渲染,著作不入庫) | **音效**(SDL2 方波 + Amiga/X68000 真實 PCM)+ **背景音樂**(Amiga MANIACS of NOISE `.tune` 經 **UADE** 渲染成 WAV,引擎依 state 循環切 title/game/combat/end,`verify_audio` 驗 4 曲)皆已實作;音檔屬著作 → gitignore 不散布,跑 `tools_build/render_music.sh` 自備生成。DOS 版原本無背景音樂 |

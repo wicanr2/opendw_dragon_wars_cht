@@ -344,6 +344,13 @@ target_link_libraries(verify_chest_acquire PRIVATE dwr_game)
 add_test(NAME verify_chest_acquire
          COMMAND verify_chest_acquire ${CMAKE_SOURCE_DIR}/assets/bundle)
 
+# tools/verify:grounded quest 物品給予端到端(grants.tsv → make_quest_item → add_item →
+#   raw_records round-trip 持久 + party_has_item 判重 + items.tsv 譯名覆蓋)。
+add_executable(verify_quest_grant tools/verify/verify_quest_grant.cpp)
+target_link_libraries(verify_quest_grant PRIVATE dwr_game dwr_i18n)
+add_test(NAME verify_quest_grant
+         COMMAND verify_quest_grant ${CMAKE_SOURCE_DIR}/assets/bundle ${CMAKE_SOURCE_DIR}/assets/i18n)
+
 # tools/verify:酒館招募確定性 PASS/FAIL(NPC 入隊 + identifier[77] gate 防重複 +
 #   隊伍上限 7 + 未知 id 擋下 + 隊伍 round-trip byte-for-byte + 招募後 raw[77] 正確)。
 #   grounded:512B 格式 + identifier[77] + NPC 名(fraterrisus);NPC 屬性/招募邏輯=remake 設計(誠實標)。
