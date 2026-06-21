@@ -13,8 +13,17 @@ public class MainActivity extends SDLActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         try { extractAssets("", new File(getFilesDir(), "assets")); } catch (IOException e) { e.printStackTrace(); }
-        // 把資產根目錄傳給 native（main.cpp 可讀此環境變數決定 cwd）。
-        try { android.system.Os.setenv("DWR_ASSET_DIR", new File(getFilesDir(), "assets").getAbsolutePath(), true); } catch (Throwable t) {}
+        // DWR_ASSET_DIR 要指向「**含 assets/ 的目錄**」(main.cpp chdir 後找相對路徑 assets/bundle)。
+        //   extractAssets 把 APK assets/ 解到 getFilesDir()/assets/,故這裡傳 getFilesDir()(parent),
+        //   chdir 後 "assets/bundle" → getFilesDir()/assets/bundle(正確)。傳 .../assets 會變雙重 assets。
+        try { android.system.Os.setenv("DWR_ASSET_DIR", getFilesDir().getAbsolutePath(), true); } catch (Throwable t) {}
+        // 存檔目錄(feasibility §4.2):internal storage 下獨立 save/(可寫,不混進資產目錄)。
+        //   不設的話引擎在 Android 的 fallback 可能寫不到(無 APPDATA/XDG/可寫 HOME)。
+        try {
+            File saveDir = new File(getFilesDir(), "save");
+            saveDir.mkdirs();
+            android.system.Os.setenv("DWR_SAVE_DIR", saveDir.getAbsolutePath(), true);
+        } catch (Throwable t) {}
         super.onCreate(savedInstanceState);
     }
     // 遞迴把 APK assets/<path> 解壓到 dst（已存在則略過,加快二次啟動）。
