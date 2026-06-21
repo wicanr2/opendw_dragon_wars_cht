@@ -104,12 +104,15 @@ jobs:
           disable-animations: true
           script: |
             set -x
-            APK=$(find apk -name '*.apk' | head -1)
+            echo "cwd=$(pwd) GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+            find "$GITHUB_WORKSPACE" -name '*.apk' 2>/dev/null
+            APK=$(find "$GITHUB_WORKSPACE" -name '*.apk' | head -1)
+            echo "APK=[$APK]"
             adb install -r "$APK"
             adb shell am start -n cc.opendw.dragonwars/.MainActivity
             sleep 30   # 等首次解壓 assets(574 檔)+ SDL 起畫面
-            adb exec-out screencap -p > emulator-screen.png
-            adb logcat -d > emulator-logcat.txt
+            adb exec-out screencap -p > "$GITHUB_WORKSPACE/emulator-screen.png"
+            adb logcat -d > "$GITHUB_WORKSPACE/emulator-logcat.txt"
             # 簡單健康檢查:程序還活著 = 沒崩
             adb shell pidof cc.opendw.dragonwars && echo "PROCESS ALIVE" || echo "PROCESS DEAD (crashed?)"
 
