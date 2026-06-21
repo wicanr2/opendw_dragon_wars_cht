@@ -80,9 +80,12 @@ public:
   //   render() 仍保留供 golden 對拍(leaf-level 單趟 viewport_memory)。
   void render_full(const res::Level& level, int px, int py,
                    const ComponentStore& comps, Seed seed = Seed::kAll);
+  // view_cx/view_cy:平面地圖「視角中心」(可捲動觀察;預設 -1 = 以玩家 px,py 為中心)。
+  //   玩家標記仍畫在真實 (px,py),故捲動時玩家圖示會正確地偏離畫面中央(對齊原版捲動)。
   void render_full_with_seen(const res::Level& level, int px, int py,
                              const ComponentStore& comps,
-                             const std::uint8_t* seen, int seen_w, int seen_h);
+                             const std::uint8_t* seen, int seen_w, int seen_h,
+                             int view_cx = -1, int view_cy = -1);
 
   // 遊戲內 fog of war:用呼叫端維護的 seen bitmap (row-major, w*h bytes;
   // 非 0 = 該格已看過) 決定哪些格揭露。seen 累積對齊 oracle

@@ -39,6 +39,14 @@ struct FovSample {
 // facing: 0=N 1=E 2=S 3=W (game_state[3])。
 FovSample sample_fov(const res::Level& level, int x, int y, int facing);
 
+// 站在 (x,y) 面向 facing,正前緣是否被「實心牆」擋住(原版牆向移動模型)。
+//   依 move_player_on_map 旋轉後,當前格 wall nibble 低 2 bit = 前緣牆型:
+//   0=通、1=實心牆、2=門、3=密門。本函式只認「值==1 實心牆」(門/密門交給 terrain
+//   系統處理,避免誤擋已開門/已破密門 → 不會 soft-lock)。
+//   對拍 ground truth:(1,1)→W=0x41→擋、(0,1)→E=0x01→擋、(1,1)→N=0x04→通。
+//   修正「tile!=0 可走性忽略牆 → 穿牆進死角」(docs/gameplay 牆向移動)。
+bool wall_blocks_forward(const res::Level& level, int x, int y, int facing);
+
 // ---------------------------------------------------------------------------
 // Step 2:元件選擇 + 繪製指令序列 (refresh_viewport 的 draw 呼叫段)。
 //

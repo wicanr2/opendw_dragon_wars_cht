@@ -273,6 +273,20 @@ FovSample sample_fov(const res::Level& level, int x, int y, int facing) {
   return out;
 }
 
+bool wall_blocks_forward(const res::Level& level, int x, int y, int facing) {
+  // 該格原始 word_11C6(未旋轉)= 四方向各一 nibble,低→高排列為 [S, E, N, W]
+  //   (S=bits0-3、E=bits4-7、N=bits8-11、W=bits12-15)。每方向 nibble bit0(0x01)= 實心牆;
+  //   其他值(如 4)= 可穿過結構。ground truth(wall 值 / 對 render):
+  //     (1,1)=0x5004 N→0 通 / W→5 擋;(0,1)=0x0010 E→1 擋;(3,0)=0x1000 S→0 通;
+  //     (3,1)=0x5001 N→0 通(回頭可走,對稱不 soft-lock)/ S→1 擋。
+  //   facing(0=N 1=E 2=S 3=W)→ nibble bit shift:
+  static const int kShift[4] = {8, 4, 0, 12};   // N E S W
+  if (!level.in_bounds(x, y)) return false;
+  if (facing < 0 || facing > 3) return false;
+  std::uint16_t w = level.wall(x, y);
+  return ((w >> kShift[facing]) & 0x01) != 0;
+}
+
 // ===========================================================================
 // Step 2:元件選擇 + 繪製指令序列。
 // ===========================================================================

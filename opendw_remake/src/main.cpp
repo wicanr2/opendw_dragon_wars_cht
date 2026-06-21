@@ -668,7 +668,11 @@ int main(int argc, char** argv) {
     // 事件文字:重跑該關事件腳本(在地化來源已換)。其餘畫面即時重繪自動套用。
   };
   int px = 0, py = 0, dir = 1;     // 玩家位置/朝向(0=N,1=E,2=S,3=W)
-  const int dx4[4] = {0, 1, 0, -1}, dy4[4] = {-1, 0, 1, 0};
+  // 朝向→位移,對齊 oracle adjust_position(engine.c:2915,DIRECTION N=0/E=1/S=2/W=3):
+  //   N→x+1、E→y+1、S→x−1、W→y−1。同時對齊 FOV 取樣深度方向(render byte-identical)。
+  //   修正先前 90° 旋轉錯誤(前進方向與視角差 90° → 看到路卻往旁邊走進海;使用者回報)。
+  const int dx4[4] = {1, 0, -1, 0}, dy4[4] = {0, 1, 0, -1};
+  int bump_notice = 0;            // >0:前進被擋的瞬時提示剩餘幀數(每幀遞減;底部訊息列顯示)。
   const char* dirch = "^>v<";
   std::optional<res::Level> level;
   // 預設 4 人隊伍(Muskels/Theb/Elendil/Cheetah),自包含 bundle 資產;進遊戲即顯示在右側面板。
@@ -810,6 +814,7 @@ int main(int argc, char** argv) {
   };
 
   MsgViewer msg;                  // 一般事件訊息檢視器(下半部分頁;active 時暫停移動)
+  std::vector<std::string> msg_log;   // 訊息歷史(事件/存檔等;M 鍵開捲動視窗回看,比原版友善)。
   ParaViewer para;                // Read Paragraph 長段落捲動檢視器(全螢幕 overlay;active 時暫停移動)
   CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
   std::set<int> import_sel;       // 主選單:已勾選「匯入隊伍」的預設角色 index(建隊時 seed)
@@ -829,6 +834,12 @@ int main(int argc, char** argv) {
   // 本次事件是否為「上鎖寶箱」(在 message_sink 比對英文原文設定,locale 無關;
   // 不可改用翻譯後的 event_msg 比對 "locked chest" —— zh-TW 下會永遠落空)。
   bool event_is_chest = false;
+  // 本次事件是否為「商店 / 酒館」(英文招牌原文比對,locale 無關;對齊原版「走進建築才開」,
+  //   取代舊的全域 P/T 快捷鍵)。grounded:招牌字串來自 dump_event_catalog 全 40 區掃描,
+  //   精選避開非商店招牌(City Council/Temple/Healer/方向牌/a36 Jackpot 掠奪)。
+  bool event_is_shop = false;     // 武器/防具/雜貨買賣店
+  bool event_is_tavern = false;   // 酒館(招募 / 情報)
+  int pending_enter = 0;          // 踩到商店/酒館後待開:1=商店 2=酒館(事件文字關閉後再開 UI)
 
   // ── 遭遇 / 戰鬥畫面狀態(S_COMBAT)──
   // 怪物圖渲染對齊 oracle:畫進 160×136 viewport 區、blit 到 framebuffer (16,8)
@@ -885,6 +896,7 @@ int main(int argc, char** argv) {
   auto run_event = [&](std::uint8_t tv) -> std::string {
     event_para_n = -1;            // 預設:本次非段落事件(命中 op_81 數字 sink 才設)
     event_is_chest = false;       // 預設:本次非寶箱(sink 比對英文原文才設)
+    event_is_shop = false; event_is_tavern = false;   // 預設:本次非商店/酒館(sink 比對英文招牌才設)
     if (!level) return "";
     // ── 世界圖 / 樞紐「踩格進區」(DRAGON.COM 反組譯反推,opendw 未實作)──────
     //   area 0 Dilmun 世界圖的城鎮/地點格事件腳本固定走 op_58→資源8→op_6x<IDX>,
@@ -975,6 +987,18 @@ int main(int argc, char** argv) {
       if (s.rfind("Read paragraph", 0) == 0) read_para_pending = true;
       // 寶箱偵測走英文原文(locale 無關):事件 emit 含 "locked chest" → 本格為上鎖寶箱。
       if (s.find("locked chest") != std::string::npos) event_is_chest = true;
+      // 商店 / 酒館偵測走英文招牌原文(locale 無關;對齊原版「走進建築才開」)。
+      //   grounded:字串來自 dump_event_catalog 全 40 區掃描;精選避開非買賣招牌
+      //   (City Council/Temple/Healer/方向牌/a36「Jackpot」掠奪)。
+      {
+        static const char* kShopMarks[] = {
+            "Marik's Armory", "Weaponsmith", "Ryan's Armor", "Freeport Arms",
+            "Potions and Elixers", "Fine Shields and Armors",
+            "Killing and Maiming Emporium", "selection of arms and armor is available"};
+        static const char* kTavernMarks[] = {"barkeep", "Tavern"};
+        for (auto m : kShopMarks)   if (s.find(m) != std::string::npos) { event_is_shop = true; break; }
+        for (auto m : kTavernMarks) if (s.find(m) != std::string::npos) { event_is_tavern = true; break; }
+      }
       if (!out.empty()) out += ' ';
       out += t;
     });
@@ -1589,6 +1613,7 @@ int main(int argc, char** argv) {
   bool minimap_ok = minimap.load_templates(bundle + "/viewport/minimap.bin",
                                            bundle + "/viewport/data6820.bin");
   bool minimap_dirty = true;   // px/py 或 area 變動後需重畫;進 S_MAP 時觸發一次。
+  int map_view_x = -1, map_view_y = -1;   // 全景地圖視角中心(方向鍵捲動觀察;進 S_MAP 歸位玩家)。
   auto minimap_seed = [&]() {
     return mm_seed == 1 ? render::Minimap::Seed::kPlayer
          : mm_seed == 2 ? render::Minimap::Seed::kNone
@@ -1883,29 +1908,24 @@ int main(int argc, char** argv) {
     //   「頂端襯底條」,提示放「底部襯底條」,中段龍圖 + 原版 logo 完整不被蓋(可讀性優先)。
     const std::string zh_title = tr.tr("Dragon Wars");   // zh-TW→火龍之戰 / ja→ドラゴンウォーズ / en→Dragon Wars
     const std::string prompt = tr.tr("Press any key");
-    // 文字後方襯底框:用**實心黑底**(原本棋盤 dither 疊在 busy 龍圖上會「糊成一團」看不清,
-    //   使用者回報)。實心 + 細白邊 → 文字乾淨可讀,只蓋一小框不擋整圖。
-    auto solid_box = [&](int cx, int y0, int y1, int half_w) {
-      int x0 = cx - half_w, x1 = cx + half_w;
-      for (int y = y0; y < y1 && y < render::kH; ++y)
-        for (int x = x0; x < x1; ++x)
-          if (x >= 0 && x < render::kW) fb.put(x, y, 0);          // 實心黑底
-      for (int x = x0; x < x1; ++x) {                              // 上下細白邊
-        if (x >= 0 && x < render::kW) { fb.put(x, y0, 15); if (y1 - 1 < render::kH) fb.put(x, y1 - 1, 15); }
-      }
+    // 文字背景**透明**(使用者要求):移除實心黑底襯框,改「黑色描邊」(8 向 +1 黑字再
+    //   疊彩色字)→ 龍圖透出、文字在 busy 背景上仍清楚可讀,不再有黑框遮圖。
+    auto outlined = [&](int x, int y, const std::string& s, std::uint8_t col, int px) {
+      for (int dy = -1; dy <= 1; ++dy)
+        for (int dx = -1; dx <= 1; ++dx)
+          if (dx || dy) tl.add(x + dx, y + dy, s, 0, px);          // 黑描邊
+      tl.add(x, y, s, col, px);                                    // 彩色字疊上
     };
     // 頂端在地化標題(火龍之戰;art 已有英文 logo,此處補中文名)。
     int title_px = PX_BODY * 5 / 4;
     int tw = tl.measure_vwidth(zh_title, title_px);
-    solid_box(render::kW / 2, 2, 30, tw / 2 + 10);
-    tl.add((render::kW - tw) / 2, 5, zh_title, 14, title_px);     // 金色在地化標題(頂端置中)
+    outlined((render::kW - tw) / 2, 5, zh_title, 14, title_px);   // 金色在地化標題(頂端置中,黑描邊)
     // 「按任意鍵」提示:放標題正下方(頂部),完全保留底部烤入的 Dragon Wars logo / Copyright。
-    //   實心襯底框,常駐 + 白/灰輕柔脈動(不硬閃、不糊)。
+    //   透明背景 + 白/灰輕柔脈動(不硬閃、不糊)。
     {
       int pw = tl.measure_vwidth(prompt, PX_UI);
-      solid_box(render::kW / 2, 32, 47, pw / 2 + 10);
       std::uint8_t pc = ((title_blink / 45) % 2 == 0) ? 15 : 7;   // 白 ↔ 灰,輕柔交替(不消失)
-      tl.add((render::kW - pw) / 2, 34, prompt, pc, PX_UI);
+      outlined((render::kW - pw) / 2, 34, prompt, pc, PX_UI);
     }
     add_lang_badge();
   };
@@ -1954,6 +1974,12 @@ int main(int argc, char** argv) {
   auto draw_explore_chrome = [&]() {
     if (ui_pieces) {
       ui_pieces->draw_chrome(fb);  // 原版石磚框 + 立繪 logo + pillar(真值)
+      // 方向指南針(原版 update_directional_indicators:右 pillar 下方紅菱形箭頭,
+      //   ui_pieces[game_state[0xBE]+9]=面朝方向;piece 10=北↑ 11=東→ 12=南↓ 13=西←)。
+      //   remake 之前漏畫(oracle E/S/W 為 exit(1) 未實作 + 觸發資料 script 驅動),這裡用
+      //   已知 dir 直接畫原版箭頭 sprite。所有主題(含 Amiga)共用此 chrome → 各版本皆有。
+      if (state == S_GAME && fp_mode && dir >= 0 && dir < 4)
+        ui_pieces->draw_piece(fb, 10 + dir);
       return;
     }
     // 退回近似(無原版資源時)。
@@ -1979,6 +2005,11 @@ int main(int argc, char** argv) {
     if (z.empty()) return;
     msg.max_vw = MB_TEXT_W; msg.body_px = PX_BODY;
     msg.open(tl.wrap(z, MB_TEXT_W, PX_BODY), MB_LINES);
+    // 記入訊息歷史(去掉與上一則完全相同的重複;上限 200 則,留最近的)。
+    if (msg_log.empty() || msg_log.back() != z) {
+      msg_log.push_back(z);
+      if (msg_log.size() > 200) msg_log.erase(msg_log.begin());
+    }
   };
 
   // 隊伍是否已持有某名稱物品(掃全員背包;判重 → quest 物品不重給,亦免存讀檔重複)。
@@ -2160,6 +2191,18 @@ int main(int argc, char** argv) {
   auto open_para = [&](int n, const std::string& full) {
     if (full.empty()) return;
     para.open(n, tl.wrap(full, PB_TEXT_W, PX_BODY), PB_LINES);
+  };
+  // 訊息歷史檢視(M 鍵):把累積的 msg_log 串成一份可捲動文件,用 para 檢視器顯示
+  //   (para_n=-2 當「訊息記錄」標記;↑↓/PgUp/PgDn/滑鼠滾輪捲動,Esc 關)。最新在最下。
+  auto open_log = [&]() {
+    if (msg_log.empty()) { open_msg(tr.tr("(No messages yet.)")); return; }
+    std::string doc;
+    for (std::size_t i = 0; i < msg_log.size(); ++i) {
+      doc += "• " + msg_log[i];
+      if (i + 1 < msg_log.size()) doc += "\n\n";
+    }
+    para.open(-2, tl.wrap(doc, PB_TEXT_W, PX_BODY), PB_LINES);
+    para.scroll_page(1000000);   // 直接捲到最底(顯示最新訊息)
   };
 
   // ── 結局序列(S_ENDING)──────────────────────────────────────────────────
@@ -2369,7 +2412,9 @@ int main(int argc, char** argv) {
     fill_para_box();
     // 標題列:結局序列(para_n<0)顯示結局標題;否則「段落 N」(i18n「段落」+ 數字)。
     char title[64];
-    if (para.para_n < 0) {
+    if (para.para_n == -2) {   // 訊息歷史記錄(M 鍵)
+      std::snprintf(title, sizeof title, "%s", tr.tr("Message Log").c_str());
+    } else if (para.para_n < 0) {
       std::snprintf(title, sizeof title, "%s", tr.tr("The Ending of Dragon Wars").c_str());
     } else {
       std::snprintf(title, sizeof title, "%s %d", tr.tr("Paragraph").c_str(), para.para_n);
@@ -3479,13 +3524,20 @@ int main(int argc, char** argv) {
     if (!para.active) {
       draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/gameplay/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/gameplay/59 #6)
+      { // 文字層:關卡名 + 座標 + 朝向(使用者要求把 terminal 那行放進遊戲內)
+        const char* fc[] = {"N", "E", "S", "W"};
+        std::string hud = area_name_tr(current_area, level->name) + "  (" +
+            std::to_string(px) + "," + std::to_string(py) + ") " +
+            ((dir >= 0 && dir < 4) ? fc[dir] : "?");
+        tl.add(8, 2, hud, 15, PX_UI);
+      }
     }
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框)。訊息列獨立,不擠進原本的提示位置。
     // (docs/gameplay/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit", 7);
+      { if (bump_notice > 0) draw_msg_strip(tr.tr("Blocked! Cannot move forward."), 12);   // 亮紅瞬時提示
+        else draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map M:log V:stats S:save F10:quit"), 7); }
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -3513,12 +3565,19 @@ int main(int argc, char** argv) {
     if (!para.active) {
       draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/gameplay/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/gameplay/59 #6)
+      { // 文字層:關卡名 + 座標 + 朝向(使用者要求把 terminal 那行放進遊戲內)
+        const char* fc[] = {"N", "E", "S", "W"};
+        std::string hud = area_name_tr(current_area, level->name) + "  (" +
+            std::to_string(px) + "," + std::to_string(py) + ") " +
+            ((dir >= 0 && dir < 4) ? fc[dir] : "?");
+        tl.add(8, 2, hud, 15, PX_UI);
+      }
     }
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/gameplay/59 #3)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit", 7);
+      { if (bump_notice > 0) draw_msg_strip(tr.tr("Blocked! Cannot move forward."), 12);   // 亮紅瞬時提示
+        else draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map M:log V:stats S:save F10:quit"), 7); }
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:
@@ -3539,12 +3598,18 @@ int main(int argc, char** argv) {
       } else {
         const std::vector<std::uint8_t>* bm = seen.bitmap(current_area);
         minimap.render_full_with_seen(*level, px, py, comps,
-                                      bm ? bm->data() : nullptr, level->w, level->h);
+                                      bm ? bm->data() : nullptr, level->w, level->h,
+                                      map_view_x, map_view_y);   // 視角中心(捲動)
       }
       minimap_dirty = false;
     }
     if (minimap_ok) minimap.to_framebuffer(fb, /*ox=*/1, /*oy=*/8, /*rows=*/0xC0);
-    if (!para.active) tl.add(8, 2, area_name_tr(current_area, level->name), 14, PX_UI);   // 文字層:關卡名
+    if (!para.active) {
+      tl.add(8, 2, area_name_tr(current_area, level->name), 14, PX_UI);   // 文字層:關卡名
+      // 捲動提示(右上;使用者要求可上下移動觀察)。
+      std::string sh = tr.tr("Arrows:scroll  Esc:back");
+      tl.add(render::kW - tl.measure_vwidth(sh, PX_UI * 3 / 4) - 4, 2, sh, 7, PX_UI * 3 / 4);
+    }
     add_lang_badge();
     // ── 區域攻略提示(《軟體世界》1991):有提示則於下方壓暗面板自動顯示 ──
     auto hint_it = area_hints.find(current_area);
@@ -3815,6 +3880,7 @@ int main(int argc, char** argv) {
     else if (t == "PGDN") in.pgdown = true;
     else if (t.size() == 1 && std::isalpha((unsigned char)t[0])) in.key = t[0];
     else if (t.size() == 1 && std::isdigit((unsigned char)t[0])) in.key = t[0];   // 數字鍵(選單選角色 / 角色表切換)
+    else if (t == "?") in.key = '?';   // 平面地圖切換(測試用)
     else std::fprintf(stderr, "keys: unknown token '%s' (skipped)\n", t.c_str());
     std::fprintf(stderr, "keys: inject [%zu/%zu] %s\n", key_idx, key_tokens.size(), t.c_str());
     return true;
@@ -3851,6 +3917,7 @@ int main(int argc, char** argv) {
     // 動畫相位推進(在 present 後、各輸入分支 continue 前 → 戰鬥怪物每幀皆呼吸/閃白倒數)。
     //   與 frames 同步遞增 → headless --dump-frame N 的動畫相位確定可重現。
     ++anim_tick;
+    if (bump_notice > 0) --bump_notice;   // 前進被擋瞬時提示倒數
     if (enc.hit_flash > 0) --enc.hit_flash;
     // --dump-frame N:迴圈第 N 幀(此時已套用前面幀的輸入,如 F1/F10 覆蓋層)再 dump 一次。
     if (dump_frame >= 0 && frames == dump_frame && !dump.empty()) {
@@ -3866,10 +3933,47 @@ int main(int argc, char** argv) {
     }
     render::Input in = vid.poll();
     synth_input(in);   // headless --keys:有排隊 token 則覆蓋本幀輸入(否則保留 poll 結果)
+    // ── 除錯輸出(使用者要求,方便一起 debug)──
+    //   S_GAME 探索時:任一輸入鍵 → 印「按鍵 + 目前地圖名 + 座標 (x,y) + 朝向」到 terminal。
+    if (state == S_GAME &&
+        (in.key || in.up || in.down || in.left || in.right || in.select || in.back ||
+         in.help || in.cycle_lang || in.cycle_theme || in.request_quit)) {
+      const char* DN4[] = {"N", "E", "S", "W"};
+      char kbuf[32];
+      if (in.key) std::snprintf(kbuf, sizeof kbuf, "'%c'", in.key);
+      else if (in.up) std::snprintf(kbuf, sizeof kbuf, "UP");
+      else if (in.down) std::snprintf(kbuf, sizeof kbuf, "DOWN");
+      else if (in.left) std::snprintf(kbuf, sizeof kbuf, "LEFT");
+      else if (in.right) std::snprintf(kbuf, sizeof kbuf, "RIGHT");
+      else if (in.select) std::snprintf(kbuf, sizeof kbuf, "ENTER/SPACE");
+      else if (in.back) std::snprintf(kbuf, sizeof kbuf, "ESC");
+      else if (in.help) std::snprintf(kbuf, sizeof kbuf, "F1");
+      else if (in.cycle_lang) std::snprintf(kbuf, sizeof kbuf, "F4");
+      else if (in.cycle_theme) std::snprintf(kbuf, sizeof kbuf, "F8");
+      else if (in.request_quit) std::snprintf(kbuf, sizeof kbuf, "F10");
+      else std::snprintf(kbuf, sizeof kbuf, "?");
+      std::fprintf(stderr, "[按鍵] %-12s 地圖=area%d \"%s\" 座標=(%d,%d) 朝向=%s\n",
+                   kbuf, current_area,
+                   level ? area_name_tr(current_area, level->name).c_str() : "?",
+                   px, py, (dir >= 0 && dir < 4) ? DN4[dir] : "?");
+    }
     // grounded quest 物品給予:換區後延一輪、待事件框/子畫面關閉時發放(避免覆蓋進區事件文字)。
     if (state == S_GAME && quest_grant_pending >= 0 && !msg.active && !para.active && !sheet.active) {
       try_grant_area(quest_grant_pending, -1);
       quest_grant_pending = -1;
+    }
+    // 商店 / 酒館(grounded,取代全域 P/T):踩到招牌格後,待事件文字 / 子畫面關閉,
+    //   再開對應 UI(對齊原版「走進建築才開」)。離格再回才會重觸發(last_event_tile gate)。
+    if (state == S_GAME && pending_enter && party.size() > 0 &&
+        !msg.active && !para.active && !sheet.active &&
+        !shop_ui.active && !tavern_ui.active) {
+      if (pending_enter == 1) shop_ui.open();
+      else if (pending_enter == 2) tavern_ui.open();
+      std::fprintf(stderr, "[進入] %s 開啟 @area%d (%d,%d)\n",
+                   pending_enter == 1 ? "商店" : "酒館", current_area, px, py);
+      pending_enter = 0;
+    } else if (pending_enter && party.size() == 0) {
+      pending_enter = 0;   // 無隊伍 → 不開(避免卡 pending)
     }
     // 建角命名階段:'q' 是合法名字字元(如 "Quinn"),不應觸發離開確認。
     //   poll 把 Q 同時設 request_quit 與 text_char='q'/'Q' → 命名時改當文字輸入,吃掉 request_quit。
@@ -4366,13 +4470,28 @@ int main(int argc, char** argv) {
         if (automap_mode) break;        // --automap headless:dump 完即離開
         state = S_GAME;
       }
+      // 方向鍵 / IJKL:捲動視角中心觀察整張地圖(使用者要求;原版可上下移動觀察)。
+      //   oracle automap 在螢幕上旋轉 90°(map-x↔螢幕垂直、map-y↔螢幕水平),故鍵位
+      //   對「螢幕方向」對應:UP=畫面往上看(view 沿 map-x+)、LEFT=往左看(map-y−)…
+      //   實測重心:UP 應移到 view_x+(標記下移)、LEFT 應 view_y−(標記右移)。
+      //   夾在 [0, w-1]×[0, h-1];玩家標記仍在真實位置 → 捲動時偏離畫面中央。
+      else if (level) {
+        int ovx = map_view_x, ovy = map_view_y;
+        if (in.up    || in.key == 'I') map_view_x = (map_view_x < level->w - 1) ? map_view_x + 1 : level->w - 1;
+        if (in.down  || in.key == 'K') map_view_x = (map_view_x > 0) ? map_view_x - 1 : 0;
+        if (in.left  || in.key == 'J') map_view_y = (map_view_y > 0) ? map_view_y - 1 : 0;
+        if (in.right || in.key == 'L') map_view_y = (map_view_y < level->h - 1) ? map_view_y + 1 : level->h - 1;
+        if (map_view_x != ovx || map_view_y != ovy) minimap_dirty = true;   // 視角變了 → 重畫
+      }
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;
     }
     if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
-      if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
-      // `?`:顯示俯視平面地圖(手冊)。進 S_MAP;觸發重畫。
-      else if (in.key == '?') { minimap_dirty = true; state = S_MAP; }
+      // Esc:正常遊戲中**不離開、不退回 b/c 選單**(使用者要求;離開只用 F10)。
+      //   --map/headless 檢視模式(非 menu_mode)維持 Esc 離開。
+      if (in.back) { if (!menu_mode) break; /* menu_mode:no-op */ }
+      // `?`:顯示俯視平面地圖(手冊)。進 S_MAP;視角中心歸位玩家;觸發重畫。
+      else if (in.key == '?') { map_view_x = px; map_view_y = py; minimap_dirty = true; state = S_MAP; }
       // S=儲存遊戲(手冊):寫檔 + 訊息提示(i18n「已儲存」/「存檔失敗」)。
       else if (in.key == 'S') {
         bool ok = do_save();
@@ -4381,22 +4500,31 @@ int main(int argc, char** argv) {
       }
       // V=查看角色屬性表(手冊);數字 1-4 直接選該角色開表(暫停移動)。
       else if (in.key == 'V') { sheet.open((int)party.size(), 0); }
-      // P=進商店買賣、T=進酒館招募(remake 設計入口鍵;原版以踩商店/酒館格觸發,
-      //   remake 地圖事件格資料尚未對映商店/酒館類型,故先以快捷鍵 + headless --shop/--recruit 提供)。
-      else if (in.key == 'P' && party.size() > 0) { shop_ui.open(); }
-      else if (in.key == 'T' && party.size() > 0) { tavern_ui.open(); }
+      // 商店 / 酒館:已改為「走進招牌格才開」(grounded,對齊原版;見 event_is_shop/tavern +
+      //   pending_enter)。移除舊的全域 P/T 快捷鍵(使用者回報「隨處可開」不符原版)。
+      //   headless --shop/--recruit CLI 入口仍保留(供測試)。
       else if (in.key == 'O' && party.size() > 0) { reorder_ui.open(); }  // O:重排隊伍順序(手冊)
       else if (in.key == 'G') { open_quest_guide(); }   // G:主線指引(remake 加值;迷路時看下一步)
+      else if (in.key == 'M') { open_log(); }            // M:訊息歷史(捲動回看先前事件訊息;比原版友善)
       else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
         sheet.open((int)party.size(), in.key - '1');
       else {
-        if (in.left  || in.key == 'J') dir = (dir + 3) % 4;   // 左轉
-        if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // 右轉
-        if (in.up    || in.key == 'I') {                      // 前進
-          int nx = px + dx4[dir], ny = py + dy4[dir];
+        if (in.left  || in.key == 'J') dir = (dir + 3) % 4;   // ← / J:左轉
+        if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // → / L:右轉
+        // 移動:↑/I 前進、↓ 後退(朝反方向走一格,不轉向)。方向鍵為主操作(使用者要求)。
+        int mvdir = -1; const char* mvname = "";
+        if (in.up || in.key == 'I') { mvdir = dir; mvname = "前進"; }
+        else if (in.down)           { mvdir = (dir + 2) % 4; mvname = "後退"; }
+        if (mvdir >= 0) {
+          int nx = px + dx4[mvdir], ny = py + dy4[mvdir];
           // wrap 關卡(flag&2):走出邊緣 → modular 環繞到對邊(opendw exit(1) 未實作,
           // 以標準環繞慣例補上)。非 wrap 關卡 walkable_wrap 退回一般 walkable。
           bool moved = false;
+          // 可走性 = 目標格 tile!=0(在界內)。
+          //   註:曾試「牆向(word_11C6 nibble)阻擋」對齊原版穿牆,但原版牆資料非對稱、且正確
+          //   判定需 move_player_on_map 的多格組合(尚未完整逆向);單格 nibble 會造成單向牆 /
+          //   城鎮 soft-lock。為避免卡死,維持 tile-based(誠實標示:某些牆邊可多走一格,屬已知
+          //   觀感差異,畫面仍為原版真值)。見 [opendw-walkability-wall-model]。
           if (level && level->walkable_wrap(nx, ny)) {
             if (level->wraps()) { nx = level->wrap_x(nx); ny = level->wrap_y(ny); }
             // 探索互動門/密門/石牆閘(remake 設計;見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md):關門/鎖門未開、
@@ -4409,8 +4537,16 @@ int main(int argc, char** argv) {
               trigger_trap_here();  // 踩到陷阱格 → 結算傷害(未解除/未觸發時)
             }
           }
-          // 撞牆:前進被擋(牆/門/石牆閘)→ 撞牆音效(func_5060[3] play_sound_wall_bump)。
-          if (!moved) g_sound.play(audio::SoundId::WallBump);
+          // 撞牆:移動被擋(邊界/門/石牆閘/void 格)→ 撞牆音效 + 瞬時提示(使用者要求)。
+          if (!moved) { g_sound.play(audio::SoundId::WallBump); bump_notice = 45; }   // ~1.5s @30fps
+          else bump_notice = 0;   // 成功移動 → 清除提示
+          // 除錯輸出(使用者要求):移動結果 → 印「移動到 / 被擋(原因)」+ 新座標。
+          std::fprintf(stderr, "[移動] %s %s → %s 座標=(%d,%d)\n", mvname,
+                       moved ? "成功" : "被擋",
+                       moved ? "" :
+                         ((!level || !level->in_bounds(nx, ny)) ? "(地圖邊界)"
+                          : "(門/密門/石牆未開 或 不可走格)"),
+                       px, py);
         }
         // K:寶箱開箱(grounded)優先 —— 站在未開寶箱格按 K → 開鎖檢定 → 成功給真實物品 + 持久。
         if (in.key == 'K' && party.size() > 0 && chest_here && !chest_pool.empty()) {
@@ -4490,11 +4626,22 @@ int main(int argc, char** argv) {
             // 寶箱偵測(grounded):事件 emit「locked chest」且此格未開過 → 標記可 K 開箱。
             chest_here = (event_is_chest) &&
                          !opened_chests.count((long)current_area * 1000000 + (long)px * 1000 + py);
+            // 商店 / 酒館(grounded,取代全域 P/T):踩到招牌格 → 待事件文字關閉後開對應 UI。
+            if (event_is_shop) pending_enter = 1;
+            else if (event_is_tavern) pending_enter = 2;
             // 對拍 load_level_resources:事件可能寫 gs[2]/gs[0..1]/gs[3] → 換 area 或傳送。
             int reloc = sync_relocation();   // 2=換 area(已重載) 1=同區傳送 -1=wrap 跳過
             if (reloc == 2) {
               // 換 area:事件文字仍顯示(若有),但事件格判定改用新區的格子。
               if (level) { int ntv = level->tile(px, py); last_event_tile = (ntv > 1) ? ntv : -1; }
+              // 換地圖提示(使用者要求):顯示進入的新地圖名。若該入口格本身有段落
+              //   (event_para_n>=0,如城鎮歡迎段落)則不疊加(段落即為進入介紹);否則
+              //   把「進入 <地圖名>」放進訊息框(無事件文字)或接在事件文字前。
+              std::string enter_line =
+                  tr.tr("Entering") + " " + area_name_tr(current_area, level ? level->name : "");
+              if (event_para_n < 0) {
+                event_msg = event_msg.empty() ? enter_line : (enter_line + "\n" + event_msg);
+              }
             }
             if (reloc == 1 || reloc == 2) mark_seen_here();   // 傳送/換區後新格也標記 seen
             // Read Paragraph 事件 → 長段落捲動 overlay;一般事件 → 下半部分頁訊息框。

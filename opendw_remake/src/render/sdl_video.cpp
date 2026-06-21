@@ -171,6 +171,12 @@ Input SdlVideo::poll() {
     if (e.type == SDL_QUIT) { in.quit = true; continue; }
     // IME / 軟鍵盤文字(SDL_StartTextInput 啟用後):UTF-8,累積到 in.text_input(中文等)。
     if (e.type == SDL_TEXTINPUT) { in.text_input += e.text.text; continue; }
+    // 滑鼠滾輪 → 翻頁(訊息歷史 / 段落檢視器上下捲動;使用者要求滑鼠可檢查)。
+    if (e.type == SDL_MOUSEWHEEL) {
+      if (e.wheel.y > 0) in.pgup = true;
+      else if (e.wheel.y < 0) in.pgdown = true;
+      continue;
+    }
     if (e.type != SDL_KEYDOWN) continue;
     SDL_Keycode k = e.key.keysym.sym;
     const bool shift = (e.key.keysym.mod & KMOD_SHIFT) != 0;

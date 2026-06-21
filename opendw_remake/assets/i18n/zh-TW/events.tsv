@@ -499,3 +499,9 @@ tried to run away!	試圖逃跑！
 ·View 	·查看 
 ··Male or·Female?	··男 或·女?
 item	物品
+↑↓:move ←→:turn ?:map M:log V:stats S:save F10:quit	↑↓移動 ←→轉向 ?:地圖 M:訊息 V:屬性 S:存檔 F10:離開
+Entering	進入
+Arrows:scroll  Esc:back	方向鍵捲動  Esc返回
+Blocked! Cannot move forward.	⛔ 前方被擋住,無法前進
+Message Log	訊息記錄
+(No messages yet.)	(尚無訊息)
