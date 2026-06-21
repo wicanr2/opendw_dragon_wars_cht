@@ -829,6 +829,12 @@ int main(int argc, char** argv) {
   // 本次事件是否為「上鎖寶箱」(在 message_sink 比對英文原文設定,locale 無關;
   // 不可改用翻譯後的 event_msg 比對 "locked chest" —— zh-TW 下會永遠落空)。
   bool event_is_chest = false;
+  // 本次事件是否為「商店 / 酒館」(英文招牌原文比對,locale 無關;對齊原版「走進建築才開」,
+  //   取代舊的全域 P/T 快捷鍵)。grounded:招牌字串來自 dump_event_catalog 全 40 區掃描,
+  //   精選避開非商店招牌(City Council/Temple/Healer/方向牌/a36 Jackpot 掠奪)。
+  bool event_is_shop = false;     // 武器/防具/雜貨買賣店
+  bool event_is_tavern = false;   // 酒館(招募 / 情報)
+  int pending_enter = 0;          // 踩到商店/酒館後待開:1=商店 2=酒館(事件文字關閉後再開 UI)
 
   // ── 遭遇 / 戰鬥畫面狀態(S_COMBAT)──
   // 怪物圖渲染對齊 oracle:畫進 160×136 viewport 區、blit 到 framebuffer (16,8)
@@ -885,6 +891,7 @@ int main(int argc, char** argv) {
   auto run_event = [&](std::uint8_t tv) -> std::string {
     event_para_n = -1;            // 預設:本次非段落事件(命中 op_81 數字 sink 才設)
     event_is_chest = false;       // 預設:本次非寶箱(sink 比對英文原文才設)
+    event_is_shop = false; event_is_tavern = false;   // 預設:本次非商店/酒館(sink 比對英文招牌才設)
     if (!level) return "";
     // ── 世界圖 / 樞紐「踩格進區」(DRAGON.COM 反組譯反推,opendw 未實作)──────
     //   area 0 Dilmun 世界圖的城鎮/地點格事件腳本固定走 op_58→資源8→op_6x<IDX>,
@@ -975,6 +982,18 @@ int main(int argc, char** argv) {
       if (s.rfind("Read paragraph", 0) == 0) read_para_pending = true;
       // 寶箱偵測走英文原文(locale 無關):事件 emit 含 "locked chest" → 本格為上鎖寶箱。
       if (s.find("locked chest") != std::string::npos) event_is_chest = true;
+      // 商店 / 酒館偵測走英文招牌原文(locale 無關;對齊原版「走進建築才開」)。
+      //   grounded:字串來自 dump_event_catalog 全 40 區掃描;精選避開非買賣招牌
+      //   (City Council/Temple/Healer/方向牌/a36「Jackpot」掠奪)。
+      {
+        static const char* kShopMarks[] = {
+            "Marik's Armory", "Weaponsmith", "Ryan's Armor", "Freeport Arms",
+            "Potions and Elixers", "Fine Shields and Armors",
+            "Killing and Maiming Emporium", "selection of arms and armor is available"};
+        static const char* kTavernMarks[] = {"barkeep", "Tavern"};
+        for (auto m : kShopMarks)   if (s.find(m) != std::string::npos) { event_is_shop = true; break; }
+        for (auto m : kTavernMarks) if (s.find(m) != std::string::npos) { event_is_tavern = true; break; }
+      }
       if (!out.empty()) out += ' ';
       out += t;
     });
@@ -3480,7 +3499,7 @@ int main(int argc, char** argv) {
     // 控制提示移到底部訊息列(原版:viewport 下方白框)。訊息列獨立,不擠進原本的提示位置。
     // (docs/gameplay/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip(tr.tr("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit"), 7);
+      draw_msg_strip(tr.tr("I:fwd J/L:turn V:stats S:save F10:quit"), 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -3513,7 +3532,7 @@ int main(int argc, char** argv) {
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/gameplay/59 #3)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip(tr.tr("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit"), 7);
+      draw_msg_strip(tr.tr("I:fwd J/L:turn V:stats S:save F10:quit"), 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:
@@ -3889,6 +3908,19 @@ int main(int argc, char** argv) {
     if (state == S_GAME && quest_grant_pending >= 0 && !msg.active && !para.active && !sheet.active) {
       try_grant_area(quest_grant_pending, -1);
       quest_grant_pending = -1;
+    }
+    // 商店 / 酒館(grounded,取代全域 P/T):踩到招牌格後,待事件文字 / 子畫面關閉,
+    //   再開對應 UI(對齊原版「走進建築才開」)。離格再回才會重觸發(last_event_tile gate)。
+    if (state == S_GAME && pending_enter && party.size() > 0 &&
+        !msg.active && !para.active && !sheet.active &&
+        !shop_ui.active && !tavern_ui.active) {
+      if (pending_enter == 1) shop_ui.open();
+      else if (pending_enter == 2) tavern_ui.open();
+      std::fprintf(stderr, "[進入] %s 開啟 @area%d (%d,%d)\n",
+                   pending_enter == 1 ? "商店" : "酒館", current_area, px, py);
+      pending_enter = 0;
+    } else if (pending_enter && party.size() == 0) {
+      pending_enter = 0;   // 無隊伍 → 不開(避免卡 pending)
     }
     // 建角命名階段:'q' 是合法名字字元(如 "Quinn"),不應觸發離開確認。
     //   poll 把 Q 同時設 request_quit 與 text_char='q'/'Q' → 命名時改當文字輸入,吃掉 request_quit。
@@ -4400,10 +4432,9 @@ int main(int argc, char** argv) {
       }
       // V=查看角色屬性表(手冊);數字 1-4 直接選該角色開表(暫停移動)。
       else if (in.key == 'V') { sheet.open((int)party.size(), 0); }
-      // P=進商店買賣、T=進酒館招募(remake 設計入口鍵;原版以踩商店/酒館格觸發,
-      //   remake 地圖事件格資料尚未對映商店/酒館類型,故先以快捷鍵 + headless --shop/--recruit 提供)。
-      else if (in.key == 'P' && party.size() > 0) { shop_ui.open(); }
-      else if (in.key == 'T' && party.size() > 0) { tavern_ui.open(); }
+      // 商店 / 酒館:已改為「走進招牌格才開」(grounded,對齊原版;見 event_is_shop/tavern +
+      //   pending_enter)。移除舊的全域 P/T 快捷鍵(使用者回報「隨處可開」不符原版)。
+      //   headless --shop/--recruit CLI 入口仍保留(供測試)。
       else if (in.key == 'O' && party.size() > 0) { reorder_ui.open(); }  // O:重排隊伍順序(手冊)
       else if (in.key == 'G') { open_quest_guide(); }   // G:主線指引(remake 加值;迷路時看下一步)
       else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
@@ -4524,6 +4555,9 @@ int main(int argc, char** argv) {
             // 寶箱偵測(grounded):事件 emit「locked chest」且此格未開過 → 標記可 K 開箱。
             chest_here = (event_is_chest) &&
                          !opened_chests.count((long)current_area * 1000000 + (long)px * 1000 + py);
+            // 商店 / 酒館(grounded,取代全域 P/T):踩到招牌格 → 待事件文字關閉後開對應 UI。
+            if (event_is_shop) pending_enter = 1;
+            else if (event_is_tavern) pending_enter = 2;
             // 對拍 load_level_resources:事件可能寫 gs[2]/gs[0..1]/gs[3] → 換 area 或傳送。
             int reloc = sync_relocation();   // 2=換 area(已重載) 1=同區傳送 -1=wrap 跳過
             if (reloc == 2) {
