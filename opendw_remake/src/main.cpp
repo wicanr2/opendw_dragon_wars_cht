@@ -1883,29 +1883,24 @@ int main(int argc, char** argv) {
     //   「頂端襯底條」,提示放「底部襯底條」,中段龍圖 + 原版 logo 完整不被蓋(可讀性優先)。
     const std::string zh_title = tr.tr("Dragon Wars");   // zh-TW→火龍之戰 / ja→ドラゴンウォーズ / en→Dragon Wars
     const std::string prompt = tr.tr("Press any key");
-    // 文字後方襯底框:用**實心黑底**(原本棋盤 dither 疊在 busy 龍圖上會「糊成一團」看不清,
-    //   使用者回報)。實心 + 細白邊 → 文字乾淨可讀,只蓋一小框不擋整圖。
-    auto solid_box = [&](int cx, int y0, int y1, int half_w) {
-      int x0 = cx - half_w, x1 = cx + half_w;
-      for (int y = y0; y < y1 && y < render::kH; ++y)
-        for (int x = x0; x < x1; ++x)
-          if (x >= 0 && x < render::kW) fb.put(x, y, 0);          // 實心黑底
-      for (int x = x0; x < x1; ++x) {                              // 上下細白邊
-        if (x >= 0 && x < render::kW) { fb.put(x, y0, 15); if (y1 - 1 < render::kH) fb.put(x, y1 - 1, 15); }
-      }
+    // 文字背景**透明**(使用者要求):移除實心黑底襯框,改「黑色描邊」(8 向 +1 黑字再
+    //   疊彩色字)→ 龍圖透出、文字在 busy 背景上仍清楚可讀,不再有黑框遮圖。
+    auto outlined = [&](int x, int y, const std::string& s, std::uint8_t col, int px) {
+      for (int dy = -1; dy <= 1; ++dy)
+        for (int dx = -1; dx <= 1; ++dx)
+          if (dx || dy) tl.add(x + dx, y + dy, s, 0, px);          // 黑描邊
+      tl.add(x, y, s, col, px);                                    // 彩色字疊上
     };
     // 頂端在地化標題(火龍之戰;art 已有英文 logo,此處補中文名)。
     int title_px = PX_BODY * 5 / 4;
     int tw = tl.measure_vwidth(zh_title, title_px);
-    solid_box(render::kW / 2, 2, 30, tw / 2 + 10);
-    tl.add((render::kW - tw) / 2, 5, zh_title, 14, title_px);     // 金色在地化標題(頂端置中)
+    outlined((render::kW - tw) / 2, 5, zh_title, 14, title_px);   // 金色在地化標題(頂端置中,黑描邊)
     // 「按任意鍵」提示:放標題正下方(頂部),完全保留底部烤入的 Dragon Wars logo / Copyright。
-    //   實心襯底框,常駐 + 白/灰輕柔脈動(不硬閃、不糊)。
+    //   透明背景 + 白/灰輕柔脈動(不硬閃、不糊)。
     {
       int pw = tl.measure_vwidth(prompt, PX_UI);
-      solid_box(render::kW / 2, 32, 47, pw / 2 + 10);
       std::uint8_t pc = ((title_blink / 45) % 2 == 0) ? 15 : 7;   // 白 ↔ 灰,輕柔交替(不消失)
-      tl.add((render::kW - pw) / 2, 34, prompt, pc, PX_UI);
+      outlined((render::kW - pw) / 2, 34, prompt, pc, PX_UI);
     }
     add_lang_badge();
   };
@@ -3866,6 +3861,30 @@ int main(int argc, char** argv) {
     }
     render::Input in = vid.poll();
     synth_input(in);   // headless --keys:有排隊 token 則覆蓋本幀輸入(否則保留 poll 結果)
+    // ── 除錯輸出(使用者要求,方便一起 debug)──
+    //   S_GAME 探索時:任一輸入鍵 → 印「按鍵 + 目前地圖名 + 座標 (x,y) + 朝向」到 terminal。
+    if (state == S_GAME &&
+        (in.key || in.up || in.down || in.left || in.right || in.select || in.back ||
+         in.help || in.cycle_lang || in.cycle_theme || in.request_quit)) {
+      const char* DN4[] = {"N", "E", "S", "W"};
+      char kbuf[32];
+      if (in.key) std::snprintf(kbuf, sizeof kbuf, "'%c'", in.key);
+      else if (in.up) std::snprintf(kbuf, sizeof kbuf, "UP");
+      else if (in.down) std::snprintf(kbuf, sizeof kbuf, "DOWN");
+      else if (in.left) std::snprintf(kbuf, sizeof kbuf, "LEFT");
+      else if (in.right) std::snprintf(kbuf, sizeof kbuf, "RIGHT");
+      else if (in.select) std::snprintf(kbuf, sizeof kbuf, "ENTER/SPACE");
+      else if (in.back) std::snprintf(kbuf, sizeof kbuf, "ESC");
+      else if (in.help) std::snprintf(kbuf, sizeof kbuf, "F1");
+      else if (in.cycle_lang) std::snprintf(kbuf, sizeof kbuf, "F4");
+      else if (in.cycle_theme) std::snprintf(kbuf, sizeof kbuf, "F8");
+      else if (in.request_quit) std::snprintf(kbuf, sizeof kbuf, "F10");
+      else std::snprintf(kbuf, sizeof kbuf, "?");
+      std::fprintf(stderr, "[按鍵] %-12s 地圖=area%d \"%s\" 座標=(%d,%d) 朝向=%s\n",
+                   kbuf, current_area,
+                   level ? area_name_tr(current_area, level->name).c_str() : "?",
+                   px, py, (dir >= 0 && dir < 4) ? DN4[dir] : "?");
+    }
     // grounded quest 物品給予:換區後延一輪、待事件框/子畫面關閉時發放(避免覆蓋進區事件文字)。
     if (state == S_GAME && quest_grant_pending >= 0 && !msg.active && !para.active && !sheet.active) {
       try_grant_area(quest_grant_pending, -1);
@@ -4418,6 +4437,14 @@ int main(int argc, char** argv) {
           }
           // 撞牆:前進被擋(牆/門/石牆閘)→ 撞牆音效(func_5060[3] play_sound_wall_bump)。
           if (!moved) g_sound.play(audio::SoundId::WallBump);
+          // 除錯輸出(使用者要求):前進結果 → 印「移動到 / 被擋(原因)」+ 新座標。
+          std::fprintf(stderr, "[移動] 前進 %s → %s 座標=(%d,%d)\n",
+                       moved ? "成功" : "被擋",
+                       moved ? "" :
+                         (solid_wall_ahead ? "(正前方實心牆)"
+                          : (!level || !level->in_bounds(nx, ny)) ? "(地圖邊界)"
+                          : "(門/密門/石牆未開 或 不可走格)"),
+                       px, py);
         }
         // K:寶箱開箱(grounded)優先 —— 站在未開寶箱格按 K → 開鎖檢定 → 成功給真實物品 + 持久。
         if (in.key == 'K' && party.size() > 0 && chest_here && !chest_pool.empty()) {
