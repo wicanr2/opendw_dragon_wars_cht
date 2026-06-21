@@ -499,5 +499,5 @@ tried to run away!	試圖逃跑！
 ·View 	·查看 
 ··Male or·Female?	··男 或·女?
 item	物品
-I:fwd J/L:turn V:stats S:save F10:quit	I:前進 J/L:轉向 V:屬性 S:存檔 F10:離開
+↑↓:move ←→:turn ?:map V:stats S:save F10:quit	↑↓移動 ←→轉向 ?:地圖 V:屬性 S:存檔 F10:離開
 Entering	進入

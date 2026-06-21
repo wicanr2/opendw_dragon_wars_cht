@@ -3499,7 +3499,7 @@ int main(int argc, char** argv) {
     // 控制提示移到底部訊息列(原版:viewport 下方白框)。訊息列獨立,不擠進原本的提示位置。
     // (docs/gameplay/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip(tr.tr("I:fwd J/L:turn V:stats S:save F10:quit"), 7);
+      draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map V:stats S:save F10:quit"), 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -3532,7 +3532,7 @@ int main(int argc, char** argv) {
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/gameplay/59 #3)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip(tr.tr("I:fwd J/L:turn V:stats S:save F10:quit"), 7);
+      draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map V:stats S:save F10:quit"), 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:
@@ -4440,21 +4440,23 @@ int main(int argc, char** argv) {
       else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
         sheet.open((int)party.size(), in.key - '1');
       else {
-        if (in.left  || in.key == 'J') dir = (dir + 3) % 4;   // 左轉
-        if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // 右轉
-        if (in.up    || in.key == 'I') {                      // 前進
-          int nx = px + dx4[dir], ny = py + dy4[dir];
+        if (in.left  || in.key == 'J') dir = (dir + 3) % 4;   // ← / J:左轉
+        if (in.right || in.key == 'L') dir = (dir + 1) % 4;   // → / L:右轉
+        // 移動:↑/I 前進、↓ 後退(朝反方向走一格,不轉向)。方向鍵為主操作(使用者要求)。
+        int mvdir = -1; const char* mvname = "";
+        if (in.up || in.key == 'I') { mvdir = dir; mvname = "前進"; }
+        else if (in.down)           { mvdir = (dir + 2) % 4; mvname = "後退"; }
+        if (mvdir >= 0) {
+          int nx = px + dx4[mvdir], ny = py + dy4[mvdir];
           // wrap 關卡(flag&2):走出邊緣 → modular 環繞到對邊(opendw exit(1) 未實作,
           // 以標準環繞慣例補上)。非 wrap 關卡 walkable_wrap 退回一般 walkable。
           bool moved = false;
-          // 牆向移動模型(對拍原版 move_player_on_map):正前緣為實心牆 → 擋,即使目標格
-          //   tile!=0。修正「tile!=0 可走性忽略牆 → 穿牆進死角 / 走到不該到的水域邊」
-          //   (使用者回報「城牆旁邊很怪」)。門/密門/石牆(terrain 保留段)交給下方
-          //   terrain_walkable,不在此攔(避免誤擋已開門/已破密門)。
-          bool solid_wall_ahead =
-              level && render::wall_blocks_forward(*level, px, py, dir) &&
-              level->in_bounds(nx, ny) && !game::is_terrain_tile(level->tile(nx, ny));
-          if (level && !solid_wall_ahead && level->walkable_wrap(nx, ny)) {
+          // 可走性 = 目標格 tile!=0(在界內)。
+          //   註:曾試「牆向(word_11C6 nibble)阻擋」對齊原版穿牆,但原版牆資料非對稱、且正確
+          //   判定需 move_player_on_map 的多格組合(尚未完整逆向);單格 nibble 會造成單向牆 /
+          //   城鎮 soft-lock。為避免卡死,維持 tile-based(誠實標示:某些牆邊可多走一格,屬已知
+          //   觀感差異,畫面仍為原版真值)。見 [opendw-walkability-wall-model]。
+          if (level && level->walkable_wrap(nx, ny)) {
             if (level->wraps()) { nx = level->wrap_x(nx); ny = level->wrap_y(ny); }
             // 探索互動門/密門/石牆閘(remake 設計;見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md):關門/鎖門未開、
             //   密門未破、石牆未軟化 → 仍擋路(像牆)。陷阱可走(踩格才結算)。
@@ -4466,14 +4468,13 @@ int main(int argc, char** argv) {
               trigger_trap_here();  // 踩到陷阱格 → 結算傷害(未解除/未觸發時)
             }
           }
-          // 撞牆:前進被擋(牆/門/石牆閘)→ 撞牆音效(func_5060[3] play_sound_wall_bump)。
+          // 撞牆:移動被擋(邊界/門/石牆閘/void 格)→ 撞牆音效(func_5060[3])。
           if (!moved) g_sound.play(audio::SoundId::WallBump);
-          // 除錯輸出(使用者要求):前進結果 → 印「移動到 / 被擋(原因)」+ 新座標。
-          std::fprintf(stderr, "[移動] 前進 %s → %s 座標=(%d,%d)\n",
+          // 除錯輸出(使用者要求):移動結果 → 印「移動到 / 被擋(原因)」+ 新座標。
+          std::fprintf(stderr, "[移動] %s %s → %s 座標=(%d,%d)\n", mvname,
                        moved ? "成功" : "被擋",
                        moved ? "" :
-                         (solid_wall_ahead ? "(正前方實心牆)"
-                          : (!level || !level->in_bounds(nx, ny)) ? "(地圖邊界)"
+                         ((!level || !level->in_bounds(nx, ny)) ? "(地圖邊界)"
                           : "(門/密門/石牆未開 或 不可走格)"),
                        px, py);
         }
