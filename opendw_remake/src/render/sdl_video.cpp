@@ -136,6 +136,10 @@ void SdlVideo::present(const Framebuffer& fb) {
   SDL_RenderPresent(ren_);
 }
 
+void SdlVideo::set_title(const std::string& title) {
+  if (win_) SDL_SetWindowTitle(win_, title.c_str());
+}
+
 bool SdlVideo::dump_ppm(const Framebuffer& fb, const std::string& path) {
   if (!ren_ || !tex_) return false;
   int w = out_w(), h = out_h();   // 640 模式 = 640×480(含 letterbox);一般 = kW*scale × kH*scale

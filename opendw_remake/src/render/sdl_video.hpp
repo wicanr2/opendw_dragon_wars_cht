@@ -86,6 +86,7 @@ public:
   }
 
   void present(const Framebuffer& fb);   // 像素層放大 + 文字層合成 → 顯示
+  void set_title(const std::string& title);  // 動態改視窗標題(語言 / tileset 切換時)
   Input poll();                          // 收集本幀事件(in.quit=true 表示要結束)
   void close();
 

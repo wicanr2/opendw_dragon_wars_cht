@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <optional>
@@ -425,11 +426,12 @@ int main(int argc, char** argv) {
   int mm_seed = 0;                // --mm-seed:0=全圖探索 1=只玩家格 2=不 seed(測試/展示)
   bool mm_seed_set = false;       // 是否顯式給 --mm-seed;否則遊戲內用真實 fog of war
   std::string dump, sprite_name, scene_name;
-  std::string save_path = "save/slot0.sav";  // 存/讀檔預設路徑(cwd 可寫處;見 .gitignore)
+  std::string save_path = "save/slot0.sav";  // 存/讀檔路徑;未給 --save-path 時於 main 改解析到「可寫使用者目錄」
+  bool save_path_set = false;   // 是否顯式 --save-path(否則用 resolve_save_dir,避免 AppImage 唯讀 cwd 寫檔失敗)
   std::string load_path;        // --load <path>:啟動即讀檔還原(進遊戲)
   bool selftest_save = false;   // --selftest-save:headless round-trip 自測(印 PASS/FAIL)
   bool viewport_mode = false;   // --viewport:顯示原版第一人稱 viewport 靜態框架
-  bool fp_mode = false;         // --fp:S_GAME 用第一人稱 viewport(取代俯視彩格)
+  bool fp_mode = true;          // 預設第一人稱 3D viewport(火龍之戰本作視角);--map2d 切回俯視彩格
   int encounter_id = -1;        // --encounter N:直接進遭遇畫面(怪物表 index N)
   unsigned combat_seed = 0x1234;// --combat-seed N:結算 RNG 種子(確定性)
   int combat_rounds = 0;        // --combat-rounds N:dump 前自動打 N 回合(headless 驗證戰報)
@@ -494,10 +496,11 @@ int main(int argc, char** argv) {
     else if (eq("--gold") && i + 1 < argc) grant_gold = std::atoi(argv[++i]);        // 設隊伍第 0 名 gold[81]
     else if (eq("--demo-grow")) demo_grow = true;                                    // 注入 AP + 範例物品(成長 UI 出圖)
     else if (eq("--load") && i + 1 < argc) load_path = argv[++i];        // 啟動讀檔還原
-    else if (eq("--save-path") && i + 1 < argc) save_path = argv[++i];   // 覆寫存/讀檔路徑
+    else if (eq("--save-path") && i + 1 < argc) { save_path = argv[++i]; save_path_set = true; }   // 覆寫存/讀檔路徑
     else if (eq("--selftest-save")) selftest_save = true;               // round-trip 自測
     else if (eq("--viewport")) viewport_mode = true;   // 顯示原版 viewport 靜態框架
-    else if (eq("--fp")) fp_mode = true;               // 第一人稱 viewport(透視牆面)
+    else if (eq("--fp")) fp_mode = true;               // 第一人稱 viewport(預設;保留旗標相容)
+    else if (eq("--map2d")) fp_mode = false;           // 切回俯視彩格 overview(除錯/對拍用)
     else if (eq("--encounter") && i + 1 < argc) encounter_id = std::atoi(argv[++i]);  // 進遭遇畫面(怪物 index)
     else if (eq("--combat-seed") && i + 1 < argc) combat_seed = (unsigned)std::strtoul(argv[++i], nullptr, 0);
     else if (eq("--combat-rounds") && i + 1 < argc) combat_rounds = std::atoi(argv[++i]);  // dump 前自動打 N 回合
@@ -524,6 +527,28 @@ int main(int argc, char** argv) {
   if (!dump.empty() && max_frames < 0) {
     max_frames = (dump_frame >= 0 ? dump_frame + 1 : 2);
     std::fprintf(stderr, "note: --dump without --frames → 自動設 max_frames=%d(防無限空轉)\n", max_frames);
+  }
+
+  // 存檔目錄解析:未顯式 --save-path 時,改存到「可寫使用者目錄」,而非 cwd 相對 "save/"。
+  //   AppImage / macOS .app 的 cwd 是唯讀掛載(squashfs / bundle)→ 寫 cwd 會失敗導致「離開不存檔」。
+  //   優先序:DWR_SAVE_DIR → 平台慣例(XDG/APPDATA/App Support)→ HOME/.local/share → cwd "save"。
+  if (!save_path_set) {
+    namespace fs = std::filesystem;
+    std::string base;
+    auto env = [](const char* k) -> const char* { const char* v = std::getenv(k); return (v && *v) ? v : nullptr; };
+    if (const char* d = env("DWR_SAVE_DIR")) base = d;
+#if defined(_WIN32)
+    else if (const char* a = env("APPDATA")) base = std::string(a) + "/opendw-remake";
+#elif defined(__APPLE__)
+    else if (const char* h = env("HOME")) base = std::string(h) + "/Library/Application Support/opendw-remake";
+#else
+    else if (const char* x = env("XDG_DATA_HOME")) base = std::string(x) + "/opendw-remake";
+    else if (const char* h = env("HOME")) base = std::string(h) + "/.local/share/opendw-remake";
+#endif
+    else base = "save";   // 無 HOME(極少數)→ 回退 cwd
+    std::error_code ec; fs::create_directories(base, ec);
+    save_path = base + "/slot0.sav";
+    std::fprintf(stderr, "save path: %s\n", save_path.c_str());
   }
 
   // 音效子系統:RAII 開啟(靜音模式不碰實體裝置)。play() 在任何情況皆安全 no-op,
@@ -554,6 +579,7 @@ int main(int argc, char** argv) {
   i18n::Strings tr;
   std::optional<res::ParagraphBook> book;
   std::string locale_tag;   // 角落指示用(繁中 / EN / 日)
+  std::string lang_label = "繁中";   // 視窗標題用語系短標(無括號)
   // 找起始 locale 在清單中的索引(--locale 指定);找不到視為自訂,從 0 開始循環。
   int locale_idx = 0;
   for (std::size_t i = 0; i < locales.size(); ++i)
@@ -587,11 +613,12 @@ int main(int argc, char** argv) {
     book = res::ParagraphBook::load(bundle + "/paragraphs", loc);
     if (book) std::fprintf(stderr, "paragraphs: loaded %zu (locale=%s)\n", book->size(), loc.c_str());
     else std::fprintf(stderr, "paragraphs: none for locale=%s (fallback to 'Read paragraph N')\n", loc.c_str());
-    // 角落語系指示(可讀短標)。
-    if (loc == "zh-TW") locale_tag = "[繁中]";
-    else if (loc == "en") locale_tag = "[EN]";
-    else if (loc == "ja") locale_tag = "[日]";
-    else locale_tag = "[" + loc + "]";
+    // 語系可讀短標(視窗標題用,無括號)+ 角落指示(相容保留)。
+    if (loc == "zh-TW") lang_label = "繁中";
+    else if (loc == "en") lang_label = "EN";
+    else if (loc == "ja") lang_label = "日";
+    else lang_label = loc;
+    locale_tag = "[" + lang_label + "]";
     std::fprintf(stderr, "locale = %s %s\n", loc.c_str(), locale_tag.c_str());
   };
   load_locale(locales.empty() ? locale : locales[locale_idx]);
@@ -1708,6 +1735,20 @@ int main(int argc, char** argv) {
   }
   render::TextLayer& tl = vid.text();
 
+  // ── 視窗標題:火龍之戰[語言][tileset](tileset = 目前圖形/sprite 集 = 主題)──────
+  //   F4 切語言 / F8 切 tileset 時即時更新。畫面上不再常駐語系角標(移到標題)。
+  auto tileset_label = [](const std::string& tn) -> std::string {
+    if (tn == "dos") return "DOS";
+    if (tn == "amiga") return "Amiga";
+    if (tn == "x68000") return "X68000";
+    if (tn == "vga") return "VGA256";
+    return tn;
+  };
+  auto update_window_title = [&]() {
+    vid.set_title("火龍之戰[" + lang_label + "][" + tileset_label(theme.name) + "]");
+  };
+  update_window_title();
+
   // ── 依當前主題載 title splash art + 套用該主題 palette(per-theme palette 打通點)──
   //   DOS / X68000(kDosScene):bundle/scenes/<title_ref>.pic → decode_fullscreen,套 theme.palette(DOS 盤)。
   //   Amiga(kAmigaPic):themes/<title_ref> → decode_amiga_planar,palette 讀檔頭覆蓋 theme.palette。
@@ -1812,7 +1853,7 @@ int main(int argc, char** argv) {
   auto add_title = [&]() { tl.add(8, 6, tr.tr("Dragon Wars"), 14, PX_TITLE); };
   // 文字層:角落語系指示 + F4 提示(每幀重繪,即時反映當前語系)。
   auto add_lang_badge = [&]() {
-    tl.add(render::kW - 56, 2, locale_tag, 11, PX_UI);   // 右上角:[繁中]/[EN]/[日]
+    // 語系指示([繁中]/[EN]/[日])已移到視窗標題「火龍之戰[語言][tileset]」;畫面只留 F4 提示。
     tl.add(render::kW - 78, 13, "F4:lang", 8, PX_UI * 3 / 4);
   };
 
@@ -3383,9 +3424,7 @@ int main(int argc, char** argv) {
         tl.add(lb.x - tw, lb.y, lb.name, 15, PX_UI * 3 / 4);  // 地點名(較小字,白)
       }
     }
-    // 世界圖模式:只留右上角語系標籤(在地圖框上方);不畫「F4:lang」副提示
-    //   (該提示 y=13 會疊進地圖框內變雜訊)。F4 仍可切語系,提示移到底部訊息列。
-    tl.add(render::kW - 56, 2, locale_tag, 11, PX_UI);
+    // 世界圖模式:語系指示已移到視窗標題;底部留提示列。
     tl.add(8, 190, tr.tr("Map  -  Esc: back  -  F4: lang"), 7, PX_UI);
   };
   auto draw_game = [&]() {
@@ -3793,7 +3832,15 @@ int main(int argc, char** argv) {
         in.text_char) {
       in.quit = false;
     }
-    if (in.quit) break;
+    if (in.quit) {
+      // 關窗(SDL_QUIT)/ Q 離開:遊戲中且有隊伍 → 先自動存檔再退(否則進度全失;
+      //   原本只有 F10/頂層 Esc 會 autosave,直接關窗會不存檔)。
+      if (state == S_GAME && party.size() > 0) {
+        bool saved = do_save();
+        std::fprintf(stderr, "quit(window/Q): autosave=%d\n", (int)saved);
+      }
+      break;
+    }
     if (theme_toast > 0) --theme_toast;   // F8 主題提示倒數(每幀)
 
     // ── 離開確認視窗(最高優先;開啟時接管全部輸入)──
@@ -3834,6 +3881,7 @@ int main(int argc, char** argv) {
       if (state == S_COMBAT && enc.active)
         enc.sprite = sprite_for_monster(enc.mon_name_en, enc.sprite_res);
       theme_toast = 90;                                  // 顯示約 90 幀(toast)
+      update_window_title();                              // tileset 變 → 更新視窗標題
       std::fprintf(stderr, "theme: cycle → [%d] %s (count=%d, partial=%d)\n",
                    theme_idx, theme.name.c_str(), render::theme_count(), (int)theme.partial);
       if (max_frames >= 0 && ++frames >= max_frames) break;
@@ -3868,6 +3916,7 @@ int main(int argc, char** argv) {
       locale_idx = (locale_idx + 1) % (int)locales.size();
       load_locale(locales[locale_idx]);
       relocalize();                                      // 選單/branch 重譯
+      update_window_title();                             // 語言變 → 更新視窗標題
       if (para.active) {
         // 段落 overlay:用新語系全文(含 zh-TW 回退)就地重排,維持捲動位置;標題即時換 i18n。
         std::string full = para_text(para.para_n);
