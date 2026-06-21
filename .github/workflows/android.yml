@@ -70,3 +70,54 @@ jobs:
           name: opendw-remake-android-debug-apk
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
+
+  # ── P0 runtime 自動驗證:x86_64 模擬器裝 APK → 啟動 → 截圖 + logcat ──────────
+  #   不用實機就能看「能否啟動 + 中文主選單是否正常」。APK 含 x86_64 ABI 才裝得上模擬器。
+  emulator-smoke:
+    runs-on: ubuntu-latest
+    needs: android-apk
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: opendw-remake-android-debug-apk
+          path: apk
+
+      - name: Enable KVM(模擬器硬體加速)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: 模擬器啟動 + 裝 APK + 截圖
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          profile: pixel_5
+          disable-animations: true
+          script: |
+            set -x
+            APK=$(find apk -name '*.apk' | head -1)
+            adb install -r "$APK"
+            adb shell am start -n cc.opendw.dragonwars/.MainActivity
+            sleep 30   # 等首次解壓 assets(574 檔)+ SDL 起畫面
+            adb exec-out screencap -p > emulator-screen.png
+            adb logcat -d > emulator-logcat.txt
+            # 簡單健康檢查:程序還活著 = 沒崩
+            adb shell pidof cc.opendw.dragonwars && echo "PROCESS ALIVE" || echo "PROCESS DEAD (crashed?)"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-emulator-smoke
+          path: |
+            emulator-screen.png
+            emulator-logcat.txt
+          if-no-files-found: warn

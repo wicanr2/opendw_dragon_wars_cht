@@ -9,7 +9,7 @@ android {
         versionCode 1
         versionName '0.1.0'
         externalNativeBuild { cmake { arguments '-DANDROID_STL=c++_shared'; cppFlags '-std=c++20' } }
-        ndk { abiFilters 'arm64-v8a' }   // P0:只建 arm64(實機多為此;加速 CI。上架再開 armeabi-v7a)
+        ndk { abiFilters 'arm64-v8a', 'x86_64' }   // arm64=實機;x86_64=CI 模擬器測試(armeabi-v7a 留上架)
     }
     externalNativeBuild { cmake { path 'jni/src/CMakeLists.txt'; version '3.22.1' } }
     // 自包含 assets(bundle / fonts / i18n)打進 APK;首次啟動由 MainActivity 解壓到 internal storage。
