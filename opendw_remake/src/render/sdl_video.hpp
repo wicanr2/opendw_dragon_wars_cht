@@ -40,6 +40,10 @@ struct Input {
   int  text_char = 0;    // 本幀輸入的可列印字元(含小寫 / 空白,保留原始大小寫)
   std::string text_input;// 本幀 IME/鍵盤輸入的 UTF-8 文字(SDL_TEXTINPUT;中文輸入法 / Android 軟鍵盤)
   bool backspace = false;// 退格(刪除一字元)
+  // ── 觸控 / 滑鼠點擊(Android 浮動按鈕;桌面滑鼠走同路徑)。座標已換算成 logical
+  //   (= 視窗 win_w×win_h)空間,對齊 letterbox;呼叫端用此做按鈕命中測試。──
+  bool touch_down = false;  // 本幀有「按下」(finger down / 滑鼠左鍵按下)
+  int  touch_x = -1, touch_y = -1;  // 按下點的 logical 座標(-1 = 無)
 };
 
 class SdlVideo {
@@ -84,6 +88,14 @@ public:
   void set_region_rgb(std::vector<Rgb> rgb, int x, int y, int w, int h) {
     region_rgb_ = std::move(rgb);
     region_x_ = x; region_y_ = y; region_w_ = w; region_h_ = h;
+  }
+
+  // ── 觸控浮動按鈕 overlay(logical 座標 = out_w×out_h)。每幀 present 前由呼叫端 queue,
+  //   compose 在「像素層之上、文字層之下」以 alpha 混合畫出(半透明),畫完清空。──
+  //   座標與 in.touch_x/y 同一空間(logical),命中測試直接比對。
+  void overlay_rect(int x, int y, int w, int h, Rgb fill, std::uint8_t fa,
+                    Rgb border, std::uint8_t ba) {
+    overlay_.push_back({x, y, w, h, fill, fa, border, ba});
   }
 
   void present(const Framebuffer& fb);   // 像素層放大 + 文字層合成 → 顯示
@@ -137,6 +149,9 @@ private:
   // 區域 RGB 覆寫(set_region_rgb;compose 套用後清除)。region_w_==0 = 無覆寫。
   std::vector<Rgb> region_rgb_;
   int region_x_ = 0, region_y_ = 0, region_w_ = 0, region_h_ = 0;
+  // 觸控 overlay 矩形佇列(compose 畫完清空)。
+  struct OverlayRect { int x, y, w, h; Rgb fill; std::uint8_t fa; Rgb border; std::uint8_t ba; };
+  std::vector<OverlayRect> overlay_;
   TextLayer text_;
 };
 

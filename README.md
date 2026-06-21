@@ -155,11 +155,15 @@ tar xzf opendw-remake-*.tar.gz
 
 *踩到事件格 → 跑該關事件 script → 畫面下半彈出**半透明訊息框**（深藍 dither 半透明，底下地圖隱約透出 + 白外框 + 亮藍內框雙線；文字層 24px CJK 恆銳利，自動換行分頁）。配色 theme-aware。*
 
-### 📱 Android 版（GitHub Actions 建置 + 模擬器實機驗證）
+### 📱 Android 版（GitHub Actions 建置 + 模擬器實機驗證 + 觸控浮動按鈕）
 
-<img src="docs/media/remake/screenshots/android_title.png" alt="Android 火龍之戰標題畫面" width="300">
+| Android 標題（系統字型 CJK） | Android 主選單（觸控：建角 / 載入） |
+|:---:|:---:|
+| <img src="docs/media/remake/screenshots/android_title.png" alt="Android 標題畫面" width="240"> | <img src="docs/media/remake/screenshots/android_menu_touch.png" alt="Android 主選單觸控" width="240"> |
 
-*同一份 C++20 + SDL2 引擎跑在 **Android**（標題列 `火龍之戰[繁中][DOS]`，中文以系統字型正確顯示）。APK 由 **GitHub Actions** 建置（NDK 從原始碼編 SDL2 / SDL2_ttf → `libmain.so`），並在 CI 的 **x86_64 模擬器**自動裝 APK → 啟動 → 截圖驗證能跑。誠實標示：目前為 **P0（能建置 + 能跑 + 中文正常）**；觸控浮動按鈕為 P1 進行中（設計見 `opendw_remake/docs/61_ANDROID_TOUCH_UI_DESIGN.md`）。*
+![探索觸控控制](docs/media/remake/screenshots/android_touch_fp.png)
+
+*同一份 C++20 + SDL2 引擎跑在 **Android**（標題列 `火龍之戰[繁中][DOS]`，中文正常）。APK 由 **GitHub Actions** 建置（NDK 從原始碼編 SDL2 / SDL2_ttf → `libmain.so`），並在 CI 的 **x86_64 模擬器**自動裝 APK → 啟動 → 操作 → 截圖驗證。**觸控浮動按鈕**（探索：↑前進 ↓後退 ←→轉向 + 屬/存/圖/訊/開/離 動作鈕；選單、戰鬥、子畫面各有對應鈕）只填既有 `render::Input`、與鍵盤同路徑，**引擎邏輯零改動**。設計見 `opendw_remake/docs/61_ANDROID_TOUCH_UI_DESIGN.md`。*
 
 ---
 
