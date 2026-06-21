@@ -2068,10 +2068,11 @@ int main(int argc, char** argv) {
       {"?", "Overhead map"},
       {"G", "Main quest guide"},
       {"S", "Save game"},
+      {"Esc", "Back / close sub-screen"},
       {"F1", "This help"},
       {"F4", "Cycle language"},
-      {"F8", "Cycle UI theme"},
-      {"F10  /  Esc", "Quit (autosave + confirm)"},
+      {"F8  /  ]", "Cycle tileset"},
+      {"F10", "Quit (autosave + confirm)"},
     };
     int line_h = PX_UI / eff_scale + 4;
     for (const auto& r : rows) {
@@ -3484,7 +3485,7 @@ int main(int argc, char** argv) {
     // 控制提示移到底部訊息列(原版:viewport 下方白框)。訊息列獨立,不擠進原本的提示位置。
     // (docs/gameplay/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7);
+      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit", 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -3517,7 +3518,7 @@ int main(int argc, char** argv) {
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/gameplay/59 #3)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save Esc", 7);
+      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit", 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:
@@ -3932,22 +3933,15 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    // ── 離開請求:F10(任何狀態) 或 S_GAME 探索頂層 ESC(無子畫面)──
-    //   觸發:自動存檔(有隊伍時)→ 開離開確認視窗(Y/N)。
-    //   主選單 ESC **不**觸發離開(使用者要求:選單離開只留 F10;避免誤按 ESC 跳離開框)。
+    // ── 離開請求:**只有 F10**(任何狀態)→ 自動存檔(有隊伍時)→ 開離開確認視窗(Y/N)。
+    //   使用者要求:離開遊戲只用 F10;ESC 一律只用來「返回 / 關子畫面」,絕不觸發離開
+    //   (避免誤按 ESC 跳出遊戲)。關窗(SDL_QUIT)另由 in.quit 直接存檔退出。
     {
-      // S_GAME 是否有子畫面正在用 ESC(訊息/段落/角色表/商店/酒館/施法/重排)→ 該 ESC 歸子畫面。
-      bool game_sub_overlay = state == S_GAME &&
-          (msg.active || para.active || sheet.active || shop_ui.active ||
-           tavern_ui.active || cast_ui.active || reorder_ui.active);
-      //   S_TITLE 的 ESC 維持「進主選單」;S_MENU 的 ESC 不退出(只 F10)。
-      bool top_level_esc = menu_mode && in.back && state == S_GAME && !game_sub_overlay;
-      if (in.request_quit || top_level_esc) {
+      if (in.request_quit) {
         bool saved = false;
-        if (party.size() > 0) saved = do_save();          // 自動存檔(既有 do_save;無隊伍則略過)
+        if (party.size() > 0) saved = do_save();          // 自動存檔(無隊伍則略過)
         confirm_quit_active = true;
-        std::fprintf(stderr, "request-quit (%s): autosaved=%d → confirm window\n",
-                     in.request_quit ? "F10" : "top-ESC", (int)saved);
+        std::fprintf(stderr, "request-quit (F10): autosaved=%d → confirm window\n", (int)saved);
         if (max_frames >= 0 && ++frames >= max_frames) break;
         continue;
       }
