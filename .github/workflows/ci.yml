@@ -77,57 +77,26 @@ jobs:
           path: opendw_remake/dist/*.AppImage
           if-no-files-found: error
 
-  # ── Windows:MSVC + vcpkg(SDL2 + SDL2_ttf)──────────────────────────────────
-  #    CI 設定已備;本地 Linux 環境無法實機驗證 Windows 產物（見檔頭誠實標示）。
+  # ── Windows:ubuntu 上 mingw-w64 交叉編譯(tools/package/build_windows.sh)──────────
+  #    比 windows-latest 的 MSVC/vcpkg 快又穩(本機已 wine 實機 smoke 驗過同一腳本)。
+  #    WIN_SMOKE=1 → CI 內裝 wine64+xvfb 跑 headless 實機 smoke(.exe 真的跑出畫面)。
   windows:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: opendw_remake
-        shell: pwsh
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install SDL2 via vcpkg
-        run: |
-          vcpkg install sdl2 sdl2-ttf --triplet x64-windows
-        # vcpkg 預裝於 GitHub windows-latest runner;VCPKG_ROOT 環境變數已設。
+      - name: Cross-build + package (mingw-w64) + wine smoke
+        run: WIN_SMOKE=1 bash tools/package/build_windows.sh
 
-      - name: Configure (MSVC + vcpkg toolchain)
-        run: >
-          cmake -S . -B build_ci
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-          -DVCPKG_TARGET_TRIPLET=x64-windows
-
-      - name: Build
-        run: cmake --build build_ci --config Release -j
-
-      # 註:Windows 下的字型走 binary 內建回退（C:/Windows/Fonts/msjh.ttc 微軟正黑），
-      #     或以 DWR_FONT 指定;ctest 需 vcpkg 安裝目錄的 DLL 在 PATH 才能跑 SDL target。
-      - name: Test (ctest, 非 SDL 項先行)
-        continue-on-error: true
-        run: ctest --test-dir build_ci -C Release --output-on-failure
-
-      # 組可玩 zip:exe + vcpkg 的 SDL2/SDL2_ttf DLL + 自包含 assets(bundle/fonts/i18n)。
-      #   執行期以 cwd 相對載入 assets,故 zip 解開後在該目錄執行 opendw_remake.exe 即可。
-      - name: Assemble Windows package
-        run: |
-          $pkg = "dist/opendw-remake-windows-x64"
-          New-Item -ItemType Directory -Force -Path $pkg | Out-Null
-          Copy-Item build_ci/Release/opendw_remake.exe $pkg/
-          Get-ChildItem build_ci/Release/*.dll -ErrorAction SilentlyContinue | Copy-Item -Destination $pkg/
-          # vcpkg 安裝目錄的 DLL（SDL2.dll / SDL2_ttf.dll 等）。
-          $vcbin = "$env:VCPKG_ROOT/installed/x64-windows/bin"
-          if (Test-Path $vcbin) { Get-ChildItem "$vcbin/*.dll" | Copy-Item -Destination $pkg/ }
-          Copy-Item -Recurse assets $pkg/assets
-          Copy-Item README.md $pkg/
-      - name: Upload Windows package
+      - name: Upload Windows zip
         uses: actions/upload-artifact@v4
         with:
           name: opendw-remake-windows-x64
-          path: opendw_remake/dist/opendw-remake-windows-x64
-          if-no-files-found: warn
+          path: opendw_remake/dist/opendw-remake-0.1.0-windows-x64.zip
+          if-no-files-found: error
 
   # ── macOS:Homebrew(SDL2 + SDL2_ttf)────────────────────────────────────────
   #    CI 設定已備;本地 Linux 環境無法實機驗證 macOS 產物（見檔頭誠實標示）。

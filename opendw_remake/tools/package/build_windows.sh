@@ -20,12 +20,15 @@ TRIPLET="x86_64-w64-mingw32"
 # 切換工具鏈(win32↔posix)時 CMake cache 會卡舊編譯器 → 每次清 cmake 產物(保留 _dl)。
 rm -rf "$BUILD_DIR"
 
+# 非 root(CI runner)時用 sudo 跑 apt / 寫 /usr/local;docker(root)則為空。
+SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO=sudo
+
 echo "== 0) 工具鏈(mingw-w64)=="
 if ! command -v ${TRIPLET}-g++ >/dev/null; then
-  apt-get update >/dev/null 2>&1
-  apt-get install -y mingw-w64 wget unzip zip ca-certificates file >/dev/null 2>&1
+  $SUDO apt-get update >/dev/null 2>&1
+  $SUDO apt-get install -y mingw-w64 wget unzip zip ca-certificates file >/dev/null 2>&1
 fi
-command -v file >/dev/null || { apt-get update >/dev/null 2>&1; apt-get install -y file >/dev/null 2>&1; }
+command -v file >/dev/null || { $SUDO apt-get update >/dev/null 2>&1; $SUDO apt-get install -y file >/dev/null 2>&1; }
 
 echo "== 1) 下載 SDL2 / SDL2_ttf mingw devel =="
 mkdir -p "$DL"
@@ -37,9 +40,9 @@ tar xzf "$DL/sdl2.tgz" -C "$DL/sdl2" --strip-components=1
 tar xzf "$DL/ttf.tgz"  -C "$DL/ttf"  --strip-components=1
 # mingw .pc 用硬編碼 prefix=/usr/local/${TRIPLET}(非相對)→ 必須裝到該預期位置才能解析。
 SDL_PREFIX="/usr/local/$TRIPLET"
-mkdir -p "$SDL_PREFIX"
-cp -r "$DL/sdl2/$TRIPLET/." "$SDL_PREFIX/"
-cp -r "$DL/ttf/$TRIPLET/."  "$SDL_PREFIX/"
+$SUDO mkdir -p "$SDL_PREFIX"
+$SUDO cp -r "$DL/sdl2/$TRIPLET/." "$SDL_PREFIX/"
+$SUDO cp -r "$DL/ttf/$TRIPLET/."  "$SDL_PREFIX/"
 SDL2_ROOT="$SDL_PREFIX"
 TTF_ROOT="$SDL_PREFIX"
 
@@ -113,8 +116,8 @@ echo "  ✅ 無原始遊戲檔"
 
 echo "== 6) wine smoke(WIN_SMOKE=1 才跑;裝 wine64+xvfb 實機驗證)=="
 if [ "${WIN_SMOKE:-0}" = "1" ]; then
-  dpkg --add-architecture i386 >/dev/null 2>&1 || true
-  apt-get update >/dev/null 2>&1; apt-get install -y wine64 xvfb >/dev/null 2>&1
+  $SUDO dpkg --add-architecture i386 >/dev/null 2>&1 || true
+  $SUDO apt-get update >/dev/null 2>&1; $SUDO apt-get install -y wine64 xvfb >/dev/null 2>&1
   WBIN="$(command -v wine64 || command -v wine || true)"
   if [ -n "$WBIN" ]; then
     export WINEPREFIX=/tmp/dwr_wine WINEDEBUG=-all
