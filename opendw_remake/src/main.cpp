@@ -812,6 +812,7 @@ int main(int argc, char** argv) {
   MsgViewer msg;                  // 一般事件訊息檢視器(下半部分頁;active 時暫停移動)
   ParaViewer para;                // Read Paragraph 長段落捲動檢視器(全螢幕 overlay;active 時暫停移動)
   CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
+  std::set<int> import_sel;       // 主選單:已勾選「匯入隊伍」的預設角色 index(建隊時 seed)
   CharGenUi cg;                   // 新遊戲建角流程(選單 B → S_CREATE;見 CharGenUi)
   ShopUi shop_ui;                 // 商店買賣子狀態(P / 踩商店格 / --shop;active 時暫停移動)
   TavernUi tavern_ui;             // 酒館招募子狀態(T / 踩酒館格 / --recruit;active 時暫停移動)
@@ -1307,6 +1308,14 @@ int main(int argc, char** argv) {
   // 進建角畫面:開新一輪建角(清空已建清單,從第一名命名開始)。
   auto start_chargen = [&]() {
     cg.start();
+    // 把主選單已勾選的「預設角色」匯入(seed 進 done_records),之後可再自建補滿(混搭)。
+    if (!import_sel.empty()) {
+      auto recs = party.raw_records();
+      for (int idx : import_sel)
+        if (idx >= 0 && idx < (int)recs.size() && (int)cg.done_records.size() < CharGenUi::kMaxParty)
+          cg.done_records.push_back(recs[(std::size_t)idx]);
+      std::fprintf(stderr, "chargen: seeded %zu pre-made into party\n", cg.done_records.size());
+    }
     state = S_CREATE;
     std::fprintf(stderr, "chargen: enter S_CREATE (new game / create character)\n");
   };
@@ -2814,13 +2823,19 @@ int main(int argc, char** argv) {
     //   remake 啟動已載入預設 / 已建隊伍(party);在選單同屏疊出隊伍,貼近原版整合樣貌。
     //   空隊(理論上不會發生,預設四人)則略過此區,只顯示選項。
     if (party.size() > 0) {
-      tl.add(16, y, tr.tr("Current party..."), 11, PX_BODY); y += 14;
+      tl.add(16, y, tr.tr("Pre-made characters..."), 11, PX_BODY); y += 14;
       for (std::size_t i = 0; i < party.size(); ++i) {
-        std::string line = std::to_string(i + 1) + ") " + party.at(i).name;
-        if (party.at(i).status & 0x01) line += " (" + tr.tr("unconscious") + ")";  // 昏倒標記
-        tl.add(32, y, line, 15, PX_BODY); y += 13;
+        const auto& c = party.at(i);
+        bool sel = import_sel.count((int)i) > 0;
+        char line[96];
+        std::snprintf(line, sizeof line, "%s %zu) %-9s  S%d D%d I%d Sp%d",
+                      sel ? "[*]" : "[ ]", i + 1, c.name.c_str(),
+                      c.strength, c.dexterity, c.intel, c.spirit);
+        tl.add(28, y, line, sel ? 14 : 15, PX_UI); y += 13;
       }
-      y += 6;  // 隊伍清單與選項間留白
+      // 提示:1-N 勾選匯入。
+      tl.add(28, y, tr.tr("1-4: pick to import into party"), 8, PX_UI * 3 / 4); y += 12;
+      y += 6;  // 與選項間留白
     }
     if (!header.empty()) { tl.add(16, y, header, 7, PX_BODY); y += 14; }
     for (std::size_t i = 0; i < opts.size(); ++i) {
@@ -3588,15 +3603,7 @@ int main(int argc, char** argv) {
       return;
     }
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
-    if (state == S_MENU) {
-      // 主選單按 1-4 開該角色屬性表;開啟時只畫底 + 角色表(不畫選單字,避免文字穿透)。
-      if (sheet.active) {
-        fb.clear(1);
-        if (sheet.show_inventory) draw_inventory(); else draw_char_sheet();
-      } else {
-        draw_menu();
-      }
-    }
+    if (state == S_MENU) draw_menu();
     else draw_branch();
   };
   auto render_now = [&]() {
@@ -4490,12 +4497,15 @@ int main(int argc, char** argv) {
     }
     else if (state == S_MENU) {
       if (in.back) break;                                // 選單按 Esc = 離開
-      // 1-4(或至隊伍人數):開該角色屬性表檢視「目前隊伍」(sheet.active 後由上方 sheet handler 接管)。
+      // 1-N:勾選/取消「匯入隊伍」該預設角色(✓);B 建隊時把已勾選的 seed 進去再自建補滿。
       if (in.key >= '1' && in.key <= '9' && party.size() > 0) {
         int idx = in.key - '1';
         if (idx < (int)party.size()) {
-          sheet.open((int)party.size(), idx);
-          std::fprintf(stderr, "menu: open party sheet [%d] %s\n", idx + 1, party.at((std::size_t)idx).name.c_str());
+          if (import_sel.count(idx)) import_sel.erase(idx);
+          else if ((int)import_sel.size() < CharGenUi::kMaxParty) import_sel.insert(idx);
+          std::fprintf(stderr, "menu: import toggle [%d] %s → %s (selected %zu)\n",
+                       idx + 1, party.at((std::size_t)idx).name.c_str(),
+                       import_sel.count(idx) ? "ON" : "OFF", import_sel.size());
           if (max_frames >= 0 && ++frames >= max_frames) break;
           continue;
         }
