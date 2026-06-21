@@ -672,6 +672,7 @@ int main(int argc, char** argv) {
   //   N→x+1、E→y+1、S→x−1、W→y−1。同時對齊 FOV 取樣深度方向(render byte-identical)。
   //   修正先前 90° 旋轉錯誤(前進方向與視角差 90° → 看到路卻往旁邊走進海;使用者回報)。
   const int dx4[4] = {1, 0, -1, 0}, dy4[4] = {0, 1, 0, -1};
+  int bump_notice = 0;            // >0:前進被擋的瞬時提示剩餘幀數(每幀遞減;底部訊息列顯示)。
   const char* dirch = "^>v<";
   std::optional<res::Level> level;
   // 預設 4 人隊伍(Muskels/Theb/Elendil/Cheetah),自包含 bundle 資產;進遊戲即顯示在右側面板。
@@ -3497,13 +3498,20 @@ int main(int argc, char** argv) {
     if (!para.active) {
       draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/gameplay/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/gameplay/59 #6)
+      { // 文字層:關卡名 + 座標 + 朝向(使用者要求把 terminal 那行放進遊戲內)
+        const char* fc[] = {"N", "E", "S", "W"};
+        std::string hud = area_name_tr(current_area, level->name) + "  (" +
+            std::to_string(px) + "," + std::to_string(py) + ") " +
+            ((dir >= 0 && dir < 4) ? fc[dir] : "?");
+        tl.add(8, 2, hud, 15, PX_UI);
+      }
     }
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框)。訊息列獨立,不擠進原本的提示位置。
     // (docs/gameplay/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map V:stats S:save F10:quit"), 7);
+      { if (bump_notice > 0) draw_msg_strip(tr.tr("Blocked! Cannot move forward."), 12);   // 亮紅瞬時提示
+        else draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map V:stats S:save F10:quit"), 7); }
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -3531,12 +3539,19 @@ int main(int argc, char** argv) {
     if (!para.active) {
       draw_explore_chrome();                              // UI chrome(藍外框 + logo;docs/gameplay/59 #1/#2)
       party.draw_status_panel(fb, tl, PX_UI);
-      tl.add(8, 2, area_name_tr(current_area, level->name), 15, PX_UI);              // 文字層:關卡名(白字,對齊原版 docs/gameplay/59 #6)
+      { // 文字層:關卡名 + 座標 + 朝向(使用者要求把 terminal 那行放進遊戲內)
+        const char* fc[] = {"N", "E", "S", "W"};
+        std::string hud = area_name_tr(current_area, level->name) + "  (" +
+            std::to_string(px) + "," + std::to_string(py) + ") " +
+            ((dir >= 0 && dir < 4) ? fc[dir] : "?");
+        tl.add(8, 2, hud, 15, PX_UI);
+      }
     }
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/gameplay/59 #3)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map V:stats S:save F10:quit"), 7);
+      { if (bump_notice > 0) draw_msg_strip(tr.tr("Blocked! Cannot move forward."), 12);   // 亮紅瞬時提示
+        else draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map V:stats S:save F10:quit"), 7); }
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:
@@ -3876,6 +3891,7 @@ int main(int argc, char** argv) {
     // 動畫相位推進(在 present 後、各輸入分支 continue 前 → 戰鬥怪物每幀皆呼吸/閃白倒數)。
     //   與 frames 同步遞增 → headless --dump-frame N 的動畫相位確定可重現。
     ++anim_tick;
+    if (bump_notice > 0) --bump_notice;   // 前進被擋瞬時提示倒數
     if (enc.hit_flash > 0) --enc.hit_flash;
     // --dump-frame N:迴圈第 N 幀(此時已套用前面幀的輸入,如 F1/F10 覆蓋層)再 dump 一次。
     if (dump_frame >= 0 && frames == dump_frame && !dump.empty()) {
@@ -4445,7 +4461,9 @@ int main(int argc, char** argv) {
       continue;
     }
     if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
-      if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
+      // Esc:正常遊戲中**不離開、不退回 b/c 選單**(使用者要求;離開只用 F10)。
+      //   --map/headless 檢視模式(非 menu_mode)維持 Esc 離開。
+      if (in.back) { if (!menu_mode) break; /* menu_mode:no-op */ }
       // `?`:顯示俯視平面地圖(手冊)。進 S_MAP;視角中心歸位玩家;觸發重畫。
       else if (in.key == '?') { map_view_x = px; map_view_y = py; minimap_dirty = true; state = S_MAP; }
       // S=儲存遊戲(手冊):寫檔 + 訊息提示(i18n「已儲存」/「存檔失敗」)。
@@ -4492,8 +4510,9 @@ int main(int argc, char** argv) {
               trigger_trap_here();  // 踩到陷阱格 → 結算傷害(未解除/未觸發時)
             }
           }
-          // 撞牆:移動被擋(邊界/門/石牆閘/void 格)→ 撞牆音效(func_5060[3])。
-          if (!moved) g_sound.play(audio::SoundId::WallBump);
+          // 撞牆:移動被擋(邊界/門/石牆閘/void 格)→ 撞牆音效 + 瞬時提示(使用者要求)。
+          if (!moved) { g_sound.play(audio::SoundId::WallBump); bump_notice = 45; }   // ~1.5s @30fps
+          else bump_notice = 0;   // 成功移動 → 清除提示
           // 除錯輸出(使用者要求):移動結果 → 印「移動到 / 被擋(原因)」+ 新座標。
           std::fprintf(stderr, "[移動] %s %s → %s 座標=(%d,%d)\n", mvname,
                        moved ? "成功" : "被擋",
