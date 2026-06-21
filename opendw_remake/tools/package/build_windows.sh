@@ -114,23 +114,29 @@ if find "$STAGE" -iname 'DRAGON.COM' -o -iname 'DATA1' -o -iname 'DATA2' | grep 
   echo "FAIL: 含原始遊戲檔"; exit 1; fi
 echo "  ✅ 無原始遊戲檔"
 
-echo "== 6) wine smoke(WIN_SMOKE=1 才跑;裝 wine64+xvfb 實機驗證)=="
+echo "== 6) wine smoke(WIN_SMOKE=1 才跑;裝 wine+xvfb 實機驗證)=="
+# smoke 為 bonus 驗證(結構已在 step 5 驗過,該層才是 gate)。整段 best-effort:
+#   wine/xvfb 在某些環境(套件名變動、無顯示)裝不起或跑不動,絕不因此讓打包失敗。
 if [ "${WIN_SMOKE:-0}" = "1" ]; then
-  $SUDO dpkg --add-architecture i386 >/dev/null 2>&1 || true
-  $SUDO apt-get update >/dev/null 2>&1; $SUDO apt-get install -y wine64 xvfb >/dev/null 2>&1
-  WBIN="$(command -v wine64 || command -v wine || true)"
-  if [ -n "$WBIN" ]; then
-    export WINEPREFIX=/tmp/dwr_wine WINEDEBUG=-all
-    "$WBIN" wineboot --init >/dev/null 2>&1; sleep 2
-    ( cd "$STAGE" && xvfb-run -a "$WBIN" opendw-remake.exe --frames 0 --dump win_smoke.ppm >/tmp/winsmoke.log 2>&1 )
-    if [ -f "$STAGE/win_smoke.ppm" ] && grep -q "quest grants:" /tmp/winsmoke.log; then
-      echo "  ✅ wine+xvfb headless 跑通(i18n/段落/quest 載入 + 畫面 dump)"; rm -f "$STAGE/win_smoke.ppm"
+  ( set +e
+    $SUDO dpkg --add-architecture i386 >/dev/null 2>&1
+    $SUDO apt-get update >/dev/null 2>&1
+    # ubuntu 24.04 套件名為 wine(含 64-bit);舊版 wine64。兩者都試。
+    $SUDO apt-get install -y wine xvfb >/dev/null 2>&1 || $SUDO apt-get install -y wine64 xvfb >/dev/null 2>&1
+    WBIN="$(command -v wine64 || command -v wine)"
+    if [ -n "$WBIN" ]; then
+      export WINEPREFIX=/tmp/dwr_wine WINEDEBUG=-all
+      "$WBIN" wineboot --init >/dev/null 2>&1; sleep 2
+      ( cd "$STAGE" && xvfb-run -a "$WBIN" opendw-remake.exe --frames 0 --dump win_smoke.ppm >/tmp/winsmoke.log 2>&1 )
+      if [ -f "$STAGE/win_smoke.ppm" ] && grep -q "quest grants:" /tmp/winsmoke.log; then
+        echo "  ✅ wine+xvfb headless 跑通(i18n/段落/quest 載入 + 畫面 dump)"; rm -f "$STAGE/win_smoke.ppm"
+      else
+        echo "  ⚠ wine smoke 未產出 dump(exe 結構與相依已驗;見 /tmp/winsmoke.log)"
+      fi
     else
-      echo "  ⚠ wine smoke 未產出 dump(exe 結構與相依已驗;見 /tmp/winsmoke.log)"
+      echo "  ⚠ wine 裝不起來,略過(結構已驗)"
     fi
-  else
-    echo "  ⚠ wine 裝不起來,略過(結構已驗)"
-  fi
+  ) || echo "  ⚠ wine smoke 區段出錯,略過(best-effort;結構已驗)"
 else
   echo "  (WIN_SMOKE!=1,略過 wine 執行;PE32+/DLL 相依/無原始檔已驗。手動:WIN_SMOKE=1 重跑)"
 fi
