@@ -3690,6 +3690,116 @@ int main(int argc, char** argv) {
     if (state == S_MENU) draw_menu();
     else draw_branch();
   };
+  // ════ 觸控浮動按鈕(Android;桌面 DWR_TOUCH=1 可測)═══════════════════════════
+  //   只填既有 render::Input 欄位(與鍵盤同路徑,引擎邏輯零改動;見 docs/61)。按鈕用虛擬
+  //   320×200 座標(配文字層 tl.add);overlay_rect 乘 eff_scale 轉 logical,命中把
+  //   in.touch_x/y(logical)除 eff_scale 還原虛擬。半透明疊遊戲上(機型無黑邊可容納)。
+  const bool touch_ui =
+#ifdef __ANDROID__
+      true;
+#else
+      (std::getenv("DWR_TOUCH") != nullptr);
+#endif
+  enum TAct { TA_KEY, TA_UP, TA_DOWN, TA_LEFT, TA_RIGHT, TA_SEL, TA_BACK, TA_QUIT, TA_PGUP, TA_PGDN };
+  struct TouchBtn { int x, y, w, h; const char* label; TAct act; char key; };
+  auto touch_buttons = [&]() -> std::vector<TouchBtn> {
+    std::vector<TouchBtn> b;
+    if (!touch_ui) return b;
+    if (confirm_quit_active) {   // 離開確認最優先
+      b.push_back({102, 150, 50, 26, "離開", TA_KEY, 'Y'});
+      b.push_back({170, 150, 50, 26, "取消", TA_BACK, 0});
+      return b;
+    }
+    bool overlay = msg.active || para.active || sheet.active || shop_ui.active ||
+                   tavern_ui.active || cast_ui.active || reorder_ui.active;
+    if (state == S_GAME && overlay) {   // 子畫面:返回 + 上下捲動 + 確認
+      b.push_back({2, 2, 36, 20, "返回", TA_BACK, 0});
+      b.push_back({290, 92, 28, 24, "▲", TA_UP, 0});
+      b.push_back({290, 150, 28, 24, "▼", TA_DOWN, 0});
+      b.push_back({126, 178, 68, 20, "確認", TA_SEL, 0});
+      if (para.active) {
+        b.push_back({256, 92, 28, 24, "頁▲", TA_PGUP, 0});
+        b.push_back({256, 150, 28, 24, "頁▼", TA_PGDN, 0});
+      }
+      return b;
+    }
+    switch (state) {
+      case S_MENU:
+        b.push_back({100, 150, 50, 28, "建角", TA_KEY, 'B'});
+        b.push_back({170, 150, 50, 28, "載入", TA_KEY, 'C'});
+        break;
+      case S_TITLE:
+        b.push_back({126, 178, 68, 20, "繼續", TA_SEL, 0});
+        break;
+      case S_GAME:   // FP 探索(↑前進 ↓後退 ←→轉向)
+        b.push_back({28, 118, 26, 22, "↑", TA_UP, 0});      // 前進
+        b.push_back({28, 168, 26, 22, "↓", TA_DOWN, 0});    // 後退
+        b.push_back({2, 143, 24, 22, "←", TA_LEFT, 0});     // 左轉
+        b.push_back({56, 143, 24, 22, "→", TA_RIGHT, 0});   // 右轉
+        b.push_back({226, 118, 28, 18, "屬", TA_KEY, 'V'});
+        b.push_back({258, 118, 28, 18, "存", TA_KEY, 'S'});
+        b.push_back({290, 118, 28, 18, "圖", TA_KEY, '?'});
+        b.push_back({226, 140, 28, 18, "訊", TA_KEY, 'M'});
+        b.push_back({258, 140, 28, 18, "開", TA_KEY, 'K'});
+        b.push_back({290, 140, 28, 18, "離", TA_QUIT, 0});  // F10
+        break;
+      case S_MAP:
+        b.push_back({26, 118, 26, 22, "↑", TA_UP, 0});
+        b.push_back({26, 168, 26, 22, "↓", TA_DOWN, 0});
+        b.push_back({0, 143, 24, 22, "←", TA_LEFT, 0});
+        b.push_back({54, 143, 24, 22, "→", TA_RIGHT, 0});
+        b.push_back({2, 2, 36, 20, "返回", TA_BACK, 0});
+        break;
+      case S_COMBAT:
+        b.push_back({246, 150, 34, 22, "打", TA_KEY, 'F'});
+        b.push_back({284, 150, 34, 22, "逃", TA_KEY, 'R'});
+        b.push_back({126, 178, 68, 20, "繼續", TA_SEL, 0});
+        break;
+      case S_CREATE:
+        b.push_back({26, 118, 26, 22, "↑", TA_UP, 0});
+        b.push_back({26, 168, 26, 22, "↓", TA_DOWN, 0});
+        b.push_back({0, 143, 24, 22, "←", TA_LEFT, 0});
+        b.push_back({54, 143, 24, 22, "→", TA_RIGHT, 0});
+        b.push_back({224, 118, 28, 20, "−", TA_KEY, '-'});
+        b.push_back({256, 118, 28, 20, "＋", TA_KEY, '='});
+        b.push_back({288, 118, 30, 20, "確認", TA_SEL, 0});
+        b.push_back({2, 2, 36, 20, "返回", TA_BACK, 0});
+        break;
+      default: break;
+    }
+    return b;
+  };
+  auto draw_touch = [&]() {
+    if (!touch_ui) return;
+    for (const auto& bt : touch_buttons()) {
+      vid.overlay_rect(bt.x * eff_scale, bt.y * eff_scale, bt.w * eff_scale, bt.h * eff_scale,
+                       render::Rgb{0x3a, 0x2c, 0x1a}, 200,   // 深褐底
+                       render::Rgb{0xca, 0xa4, 0x68}, 235);  // 古金邊
+      int tw = tl.measure_vwidth(bt.label, PX_UI);
+      tl.add(bt.x + (bt.w - tw) / 2, bt.y + (bt.h - PX_UI / eff_scale) / 2, bt.label, 14, PX_UI);
+    }
+  };
+  auto apply_touch = [&](render::Input& in) {
+    if (!touch_ui || !in.touch_down) return;
+    int vx = in.touch_x / eff_scale, vy = in.touch_y / eff_scale;
+    for (const auto& bt : touch_buttons()) {
+      if (vx >= bt.x && vx < bt.x + bt.w && vy >= bt.y && vy < bt.y + bt.h) {
+        switch (bt.act) {
+          case TA_KEY:   in.key = bt.key; break;
+          case TA_UP:    in.up = true; break;
+          case TA_DOWN:  in.down = true; break;
+          case TA_LEFT:  in.left = true; break;
+          case TA_RIGHT: in.right = true; break;
+          case TA_SEL:   in.select = true; break;
+          case TA_BACK:  in.back = true; break;
+          case TA_QUIT:  in.request_quit = true; break;
+          case TA_PGUP:  in.pgup = true; break;
+          case TA_PGDN:  in.pgdown = true; break;
+        }
+        break;
+      }
+    }
+  };
   auto render_now = [&]() {
     // 背景音樂:依當前 state 切曲(idempotent;缺檔 / headless 無裝置時 no-op)。
     //   標題/選單/建角 → Title;探索/地圖 → Game;戰鬥 → Combat;結局 → End。
@@ -3711,6 +3821,7 @@ int main(int argc, char** argv) {
     //   draw_base 內各狀態會呼叫 set_palette(會 reset vga256_),故在此最後一步依當前
     //   theme.vga256 重新設定;DOS/Amiga/X68000 → false(16 色路徑不變,golden 不破)。
     vid.set_vga256(theme.vga256);
+    draw_touch();   // 觸控浮動按鈕(最上層;Android / DWR_TOUCH)
   };
   // headless / 啟動即有訊息(--at 事件格 或 --read-para):進對應檢視器。
   //   段落事件(event_para_n>=0)→ 長段落捲動 overlay(--para-scroll N 先下捲 N 頁)。
@@ -3943,6 +4054,7 @@ int main(int argc, char** argv) {
     }
     render::Input in = vid.poll();
     synth_input(in);   // headless --keys:有排隊 token 則覆蓋本幀輸入(否則保留 poll 結果)
+    apply_touch(in);   // 觸控浮動按鈕命中 → 填對應 in 欄位(與鍵盤同路徑)
     // ── 除錯輸出(使用者要求,方便一起 debug)──
     //   S_GAME 探索時:任一輸入鍵 → 印「按鍵 + 目前地圖名 + 座標 (x,y) + 朝向」到 terminal。
     if (state == S_GAME &&

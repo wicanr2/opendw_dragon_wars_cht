@@ -90,7 +90,10 @@ jobs:
             adb install -r "$APK_PATH"
             adb shell am start -n cc.opendw.dragonwars/.MainActivity
             sleep 30   # 等首次解壓 assets(574 檔)+ SDL 起畫面
-            adb exec-out screencap -p > "$GITHUB_WORKSPACE/emulator-screen.png"
+            adb exec-out screencap -p > "$GITHUB_WORKSPACE/emulator-screen.png"   # 標題畫面
+            adb shell input keyevent 66   # ENTER → 標題進主選單(顯示觸控按鈕)
+            sleep 4
+            adb exec-out screencap -p > "$GITHUB_WORKSPACE/emulator-menu.png"     # 主選單(觸控)
             adb logcat -d > "$GITHUB_WORKSPACE/emulator-logcat.txt"
             adb shell pidof cc.opendw.dragonwars && echo "PROCESS ALIVE" || echo "PROCESS DEAD (crashed?)"
 
@@ -100,5 +103,6 @@ jobs:
           name: android-emulator-smoke
           path: |
             emulator-screen.png
+            emulator-menu.png
             emulator-logcat.txt
           if-no-files-found: warn

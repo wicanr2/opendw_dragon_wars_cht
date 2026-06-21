@@ -126,6 +126,22 @@ void SdlVideo::compose(const Framebuffer& fb) {
   } else {
     SDL_RenderCopy(ren_, tex_, nullptr, nullptr);   // 放大到 kW*scale × kH*scale
   }
+  // 1.5) 觸控浮動按鈕 overlay(logical 座標;像素層之上、文字層之下,半透明 alpha 混合)。
+  if (!overlay_.empty()) {
+    SDL_SetRenderDrawBlendMode(ren_, SDL_BLENDMODE_BLEND);
+    for (const auto& r : overlay_) {
+      SDL_Rect rc{r.x, r.y, r.w, r.h};
+      if (r.fa) {
+        SDL_SetRenderDrawColor(ren_, r.fill.r, r.fill.g, r.fill.b, r.fa);
+        SDL_RenderFillRect(ren_, &rc);
+      }
+      if (r.ba) {
+        SDL_SetRenderDrawColor(ren_, r.border.r, r.border.g, r.border.b, r.ba);
+        SDL_RenderDrawRect(ren_, &rc);
+      }
+    }
+    overlay_.clear();
+  }
   // 2) 文字層:TextLayer 在視窗高解析原生繪製,疊在像素層之上(永不縮放)。
   text_.flush();
 }
@@ -175,6 +191,25 @@ Input SdlVideo::poll() {
     if (e.type == SDL_MOUSEWHEEL) {
       if (e.wheel.y > 0) in.pgup = true;
       else if (e.wheel.y < 0) in.pgdown = true;
+      continue;
+    }
+    // 觸控 / 滑鼠左鍵按下 → 換算成 logical 座標(對齊 letterbox),供呼叫端命中浮動按鈕。
+    //   finger.x/y 為相對視窗 0..1;滑鼠為視窗像素。SDL_RenderWindowToLogical 套用 letterbox 偏移。
+    if (e.type == SDL_FINGERDOWN || e.type == SDL_MOUSEBUTTONDOWN) {
+      int wx, wy;
+      if (e.type == SDL_FINGERDOWN) {
+        int ww = 1, wh = 1; SDL_GetWindowSize(win_, &ww, &wh);
+        wx = static_cast<int>(e.tfinger.x * ww);
+        wy = static_cast<int>(e.tfinger.y * wh);
+      } else {
+        if (e.button.button != SDL_BUTTON_LEFT) continue;
+        wx = e.button.x; wy = e.button.y;
+      }
+      float lx = 0, ly = 0;
+      SDL_RenderWindowToLogical(ren_, wx, wy, &lx, &ly);
+      in.touch_down = true;
+      in.touch_x = static_cast<int>(lx);
+      in.touch_y = static_cast<int>(ly);
       continue;
     }
     if (e.type != SDL_KEYDOWN) continue;
