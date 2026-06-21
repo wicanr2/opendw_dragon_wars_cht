@@ -101,16 +101,14 @@ jobs:
   # ── macOS:Homebrew(SDL2 + SDL2_ttf)────────────────────────────────────────
   #    CI 設定已備;本地 Linux 環境無法實機驗證 macOS 產物（見檔頭誠實標示）。
   # macOS 原生建置(GitHub Actions macOS runner)→ proper .app bundle + 原生 headless smoke。
-  #   Intel(macos-13 / x86_64)與 Apple Silicon(macos-14 / arm64)雙架構各產一份 .app。
-  #   原生 runner 可直接執行 → 真正的 runtime smoke(Linux 交叉編譯給不了)。
+  #   只建 Apple Silicon(macos-14 / arm64,涵蓋 2020 年後所有 Mac)。Intel(macos-13)
+  #   因 GitHub Intel runner 供給緊、長期排不到而放棄(同碼曾在 arm64 驗證通過)。
   macos:
     name: macos-${{ matrix.arch }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-13
-            arch: x86_64
           - runner: macos-14
             arch: arm64
     runs-on: ${{ matrix.runner }}
