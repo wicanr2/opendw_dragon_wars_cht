@@ -15,3 +15,4 @@ save/
 _verify_save_tmp/
 bw/
 dist_tar/
+dist_gametest/
