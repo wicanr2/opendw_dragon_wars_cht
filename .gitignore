@@ -49,3 +49,4 @@ DRAGON.X
 opendw_remake/assets/bundle/audio/music/*.wav
 __pycache__/
 *.pyc
+dist-all/

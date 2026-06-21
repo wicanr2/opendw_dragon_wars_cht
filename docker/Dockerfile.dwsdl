@@ -1,0 +1,12 @@
+# dwsdl — 主建置/測試/打包環境(與 CI linux job 一致)。
+#   build: docker build -t dwsdl -f docker/Dockerfile.dwsdl .
+#   用途:cmake build + ctest + build_package.sh / build_appimage.sh / build_windows.sh(mingw)
+FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y \
+      g++ cmake make git \
+      libsdl2-dev libsdl2-ttf-dev \
+      fonts-wqy-zenhei \
+    && rm -rf /var/lib/apt/lists/*
+# 註:Windows 交叉編譯(build_windows.sh)會自行 apt 裝 mingw-w64 + 下載 SDL2 mingw;
+#     AppImage(build_appimage.sh)會自行裝 wget/file/fuse + 下載 appimagetool。
+WORKDIR /app

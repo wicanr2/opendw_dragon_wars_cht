@@ -1,0 +1,5 @@
+# dwpil — Python + Pillow(素材處理 / 編目工具 / YAML 驗證等)。
+#   build: docker build -t dwpil -f docker/Dockerfile.dwpil .
+FROM python:3.12-slim
+RUN pip install --no-cache-dir pillow pyyaml
+WORKDIR /app
