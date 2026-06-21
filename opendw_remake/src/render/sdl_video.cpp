@@ -178,7 +178,8 @@ Input SdlVideo::poll() {
       in.text_char = ' ';
     if (k == SDLK_BACKSPACE) in.backspace = true;
     switch (k) {
-      case SDLK_q:      in.quit = true; break;     // Q = 離開遊戲(手冊)
+      // Q 不再有離開作用(使用者要求:只留 F10 離開)。Q 落到下方一般字母 → in.key='Q'
+      //   (戰鬥「速攻」等字母快捷仍可用),不觸發任何 quit。
       case SDLK_ESCAPE: in.back = true; break;     // Esc = 離開子畫面 / 繼續訊息
       case SDLK_UP:     in.up = true; break;
       case SDLK_DOWN:   in.down = true; break;
@@ -189,7 +190,9 @@ Input SdlVideo::poll() {
       case SDLK_PAGEDOWN: in.pgdown = true; break;   // PgDn = 段落下翻一頁
       case SDLK_F4:     in.cycle_lang = true; break;  // F4 = 循環切換語系
       case SDLK_F1:     in.help = true; break;        // F1 = Help 覆蓋層
-      case SDLK_F8:     in.cycle_theme = true; break; // F8 = 循環切換 UI 主題
+      case SDLK_F8:                                   // F8 = 循環切換 tileset/主題…
+      case SDLK_RIGHTBRACKET:                          // …`]` 替代鍵(部分 WM/筆電 Fn 會攔 F8 → 提供不被攔的鍵)
+                        in.cycle_theme = true; break;
       case SDLK_F10:    in.request_quit = true; break;// F10 = 請求離開(確認流程)
       default:
         // `?`(Shift+/ 或 SDLK_QUESTION)= 顯示俯視平面地圖(對齊原版手冊)。

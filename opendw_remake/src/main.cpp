@@ -3848,18 +3848,18 @@ int main(int argc, char** argv) {
       try_grant_area(quest_grant_pending, -1);
       quest_grant_pending = -1;
     }
-    // 建角命名階段:'q' 是合法名字字元(如 "Quinn"),不應觸發離開。
-    //   poll 把 Q 同時設 quit 與 text_char='q'/'Q' → 命名時改當文字輸入,吃掉 quit。
-    if (in.quit && state == S_CREATE && cg.active && cg.phase == CharGenUi::PhName &&
+    // 建角命名階段:'q' 是合法名字字元(如 "Quinn"),不應觸發離開確認。
+    //   poll 把 Q 同時設 request_quit 與 text_char='q'/'Q' → 命名時改當文字輸入,吃掉 request_quit。
+    if (in.request_quit && state == S_CREATE && cg.active && cg.phase == CharGenUi::PhName &&
         in.text_char) {
-      in.quit = false;
+      in.request_quit = false;
     }
+    // in.quit 現在只剩「關窗(SDL_QUIT)」會設(Q 改走 request_quit 確認流程,見下方)。
     if (in.quit) {
-      // 關窗(SDL_QUIT)/ Q 離開:遊戲中且有隊伍 → 先自動存檔再退(否則進度全失;
-      //   原本只有 F10/頂層 Esc 會 autosave,直接關窗會不存檔)。
+      // 關窗:遊戲中且有隊伍 → 先自動存檔再退(進度不失)。
       if (state == S_GAME && party.size() > 0) {
         bool saved = do_save();
-        std::fprintf(stderr, "quit(window/Q): autosave=%d\n", (int)saved);
+        std::fprintf(stderr, "quit(window): autosave=%d\n", (int)saved);
       }
       break;
     }
