@@ -16,3 +16,4 @@ _verify_save_tmp/
 bw/
 dist_tar/
 dist_gametest/
+_appimg_out/

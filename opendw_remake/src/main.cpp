@@ -3485,7 +3485,7 @@ int main(int argc, char** argv) {
     // 控制提示移到底部訊息列(原版:viewport 下方白框)。訊息列獨立,不擠進原本的提示位置。
     // (docs/gameplay/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit", 7);
+      draw_msg_strip(tr.tr("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit"), 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -3518,7 +3518,7 @@ int main(int argc, char** argv) {
     add_lang_badge();
     // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/gameplay/59 #3)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
-      draw_msg_strip("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit", 7);
+      draw_msg_strip(tr.tr("I:fwd J/L:turn V:stats P:shop T:tavern S:save F10:quit"), 7);
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:
@@ -4397,7 +4397,14 @@ int main(int argc, char** argv) {
           // wrap 關卡(flag&2):走出邊緣 → modular 環繞到對邊(opendw exit(1) 未實作,
           // 以標準環繞慣例補上)。非 wrap 關卡 walkable_wrap 退回一般 walkable。
           bool moved = false;
-          if (level && level->walkable_wrap(nx, ny)) {
+          // 牆向移動模型(對拍原版 move_player_on_map):正前緣為實心牆 → 擋,即使目標格
+          //   tile!=0。修正「tile!=0 可走性忽略牆 → 穿牆進死角 / 走到不該到的水域邊」
+          //   (使用者回報「城牆旁邊很怪」)。門/密門/石牆(terrain 保留段)交給下方
+          //   terrain_walkable,不在此攔(避免誤擋已開門/已破密門)。
+          bool solid_wall_ahead =
+              level && render::wall_blocks_forward(*level, px, py, dir) &&
+              level->in_bounds(nx, ny) && !game::is_terrain_tile(level->tile(nx, ny));
+          if (level && !solid_wall_ahead && level->walkable_wrap(nx, ny)) {
             if (level->wraps()) { nx = level->wrap_x(nx); ny = level->wrap_y(ny); }
             // 探索互動門/密門/石牆閘(remake 設計;見 docs/gameplay/57_DOORS_TRAPS_TERRAIN.md):關門/鎖門未開、
             //   密門未破、石牆未軟化 → 仍擋路(像牆)。陷阱可走(踩格才結算)。

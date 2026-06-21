@@ -273,6 +273,14 @@ FovSample sample_fov(const res::Level& level, int x, int y, int facing) {
   return out;
 }
 
+bool wall_blocks_forward(const res::Level& level, int x, int y, int facing) {
+  FovSample fov = sample_fov(level, x, y, facing);
+  for (int i = 0; i < 12; ++i)
+    if (fov.sx[i] == x && fov.sy[i] == y)
+      return (fov.wall[i] & 0x03) == 1;   // 前緣低 2 bit==1 = 實心牆
+  return true;  // 找不到自身槽(理論上不會)→ 保守視為擋
+}
+
 // ===========================================================================
 // Step 2:元件選擇 + 繪製指令序列。
 // ===========================================================================
