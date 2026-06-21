@@ -87,6 +87,7 @@ public:
 
   void present(const Framebuffer& fb);   // 像素層放大 + 文字層合成 → 顯示
   void set_title(const std::string& title);  // 動態改視窗標題(語言 / tileset 切換時)
+  void delay(int ms);                        // SDL_Delay 包裝(互動模式 frame cap,避免 busy-loop 吃滿 CPU)
   Input poll();                          // 收集本幀事件(in.quit=true 表示要結束)
   void close();
 

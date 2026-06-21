@@ -1885,11 +1885,13 @@ int main(int argc, char** argv) {
     int tw = tl.measure_vwidth(zh_title, title_px);
     dim_box(render::kW / 2, 3, 28, tw / 2 + 8);
     tl.add((render::kW - tw) / 2, 5, zh_title, 14, title_px);     // 金色在地化標題(頂端置中)
-    // 底部閃爍「按任意鍵」(約 36 幀週期):只壓暗提示字後方小框,不蓋 logo。
-    if ((title_blink / 18) % 2 == 0) {
+    // 底部「按任意鍵」提示:常駐顯示(不硬閃,避免刺眼)。以亮/次亮兩色做極輕柔脈動,
+    //   永不消失(週期約 1.5 秒;原本 18 幀全亮/全暗的硬閃會閃爍不舒服)。
+    {
       int pw = tl.measure_vwidth(prompt, PX_UI);
       dim_box(render::kW / 2, 184, 198, pw / 2 + 8);
-      tl.add((render::kW - pw) / 2, 186, prompt, 15, PX_UI);
+      std::uint8_t pc = ((title_blink / 45) % 2 == 0) ? 15 : 7;   // 白 ↔ 灰,輕柔交替(不消失)
+      tl.add((render::kW - pw) / 2, 186, prompt, pc, PX_UI);
     }
     add_lang_badge();
   };
@@ -3578,7 +3580,15 @@ int main(int argc, char** argv) {
       return;
     }
     if (!menu_mode) { draw_static_text(); return; }  // sprite/scene/viewport:像素層靜態,只補文字
-    if (state == S_MENU) draw_menu();
+    if (state == S_MENU) {
+      // 主選單按 1-4 開該角色屬性表;開啟時只畫底 + 角色表(不畫選單字,避免文字穿透)。
+      if (sheet.active) {
+        fb.clear(1);
+        if (sheet.show_inventory) draw_inventory(); else draw_char_sheet();
+      } else {
+        draw_menu();
+      }
+    }
     else draw_branch();
   };
   auto render_now = [&]() {
@@ -3780,6 +3790,7 @@ int main(int argc, char** argv) {
     else if (t == "PGUP") in.pgup = true;
     else if (t == "PGDN") in.pgdown = true;
     else if (t.size() == 1 && std::isalpha((unsigned char)t[0])) in.key = t[0];
+    else if (t.size() == 1 && std::isdigit((unsigned char)t[0])) in.key = t[0];   // 數字鍵(選單選角色 / 角色表切換)
     else std::fprintf(stderr, "keys: unknown token '%s' (skipped)\n", t.c_str());
     std::fprintf(stderr, "keys: inject [%zu/%zu] %s\n", key_idx, key_tokens.size(), t.c_str());
     return true;
@@ -3810,6 +3821,9 @@ int main(int argc, char** argv) {
     }
     render_now();
     vid.present(fb);
+    // 互動模式 frame cap(~60fps):軟體 renderer 無 vsync,無此 delay 迴圈會 busy-loop 吃滿 CPU
+    //   → 視窗卡頓 / 輸入延遲(使用者回報「按鍵要比手速、F1/F8 時靈時不靈」的主因)。headless 不延遲。
+    if (!headless) vid.delay(12);
     // 動畫相位推進(在 present 後、各輸入分支 continue 前 → 戰鬥怪物每幀皆呼吸/閃白倒數)。
     //   與 frames 同步遞增 → headless --dump-frame N 的動畫相位確定可重現。
     ++anim_tick;
@@ -4468,6 +4482,16 @@ int main(int argc, char** argv) {
     }
     else if (state == S_MENU) {
       if (in.back) break;                                // 選單按 Esc = 離開
+      // 1-4(或至隊伍人數):開該角色屬性表檢視「目前隊伍」(sheet.active 後由上方 sheet handler 接管)。
+      if (in.key >= '1' && in.key <= '9' && party.size() > 0) {
+        int idx = in.key - '1';
+        if (idx < (int)party.size()) {
+          sheet.open((int)party.size(), idx);
+          std::fprintf(stderr, "menu: open party sheet [%d] %s\n", idx + 1, party.at((std::size_t)idx).name.c_str());
+          if (max_frames >= 0 && ++frames >= max_frames) break;
+          continue;
+        }
+      }
       int n = (int)opts.size();
       if (n) {
         if (in.up) sel = (sel - 1 + n) % n;
