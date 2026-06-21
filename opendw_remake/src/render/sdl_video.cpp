@@ -142,6 +142,10 @@ void SdlVideo::set_title(const std::string& title) {
 
 void SdlVideo::delay(int ms) { if (ms > 0) SDL_Delay((Uint32)ms); }
 
+void SdlVideo::start_text_input() { if (!SDL_IsTextInputActive()) SDL_StartTextInput(); }
+void SdlVideo::stop_text_input()  { if (SDL_IsTextInputActive()) SDL_StopTextInput(); }
+bool SdlVideo::text_input_active() const { return SDL_IsTextInputActive() == SDL_TRUE; }
+
 bool SdlVideo::dump_ppm(const Framebuffer& fb, const std::string& path) {
   if (!ren_ || !tex_) return false;
   int w = out_w(), h = out_h();   // 640 模式 = 640×480(含 letterbox);一般 = kW*scale × kH*scale
@@ -165,6 +169,8 @@ Input SdlVideo::poll() {
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
     if (e.type == SDL_QUIT) { in.quit = true; continue; }
+    // IME / 軟鍵盤文字(SDL_StartTextInput 啟用後):UTF-8,累積到 in.text_input(中文等)。
+    if (e.type == SDL_TEXTINPUT) { in.text_input += e.text.text; continue; }
     if (e.type != SDL_KEYDOWN) continue;
     SDL_Keycode k = e.key.keysym.sym;
     const bool shift = (e.key.keysym.mod & KMOD_SHIFT) != 0;

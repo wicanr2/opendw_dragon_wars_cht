@@ -15,6 +15,16 @@ std::uint16_t rd16(const std::uint8_t* p, int off) {
 // (opendw write_character_name 0x1A40:每位元組 OR 0x80 後輸出,末位元組高位元為 0 即止。)
 std::string read_name(const std::uint8_t* p) {
   std::string s;
+  // remake UTF-8 名(中文等):p[0]==0x00 旗標 + p[1..11] 原始 UTF-8(null 終止)。
+  //   7-bit 名第一 byte 必 ≥0x80,故 p[0]==0x00 唯一對應 UTF-8 名(見 chargen write_name)。
+  if (p[0] == 0x00 && p[1] != 0x00) {
+    for (int i = 1; i < 12; ++i) {
+      if (p[i] == 0x00) break;
+      s.push_back(static_cast<char>(p[i]));   // 原始 UTF-8 byte(文字層直接渲染 CJK)
+    }
+    return s;
+  }
+  // 原版 / 預設角色:7-bit 高位元終止。
   for (int i = 0; i < 16; ++i) {
     std::uint8_t b = p[i];
     char c = static_cast<char>(b & 0x7F);

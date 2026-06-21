@@ -3848,6 +3848,13 @@ int main(int argc, char** argv) {
       if (vid.dump_ppm(fb, dump))
         std::fprintf(stderr, "dumped loop frame %d to %s\n", frames, dump.c_str());
     }
+    // 文字輸入(中文名 IME / Android 軟鍵盤):僅建角命名階段啟用,平時關閉
+    //   (否則 SDL_TEXTINPUT 會吃掉一般字母快捷鍵)。poll 前設定,使本幀文字事件可收到。
+    {
+      bool want_text = (state == S_CREATE && cg.active && cg.phase == CharGenUi::PhName);
+      if (want_text && !vid.text_input_active()) vid.start_text_input();
+      else if (!want_text && vid.text_input_active()) vid.stop_text_input();
+    }
     render::Input in = vid.poll();
     synth_input(in);   // headless --keys:有排隊 token 則覆蓋本幀輸入(否則保留 poll 結果)
     // grounded quest 物品給予:換區後延一輪、待事件框/子畫面關閉時發放(避免覆蓋進區事件文字)。
@@ -3966,9 +3973,21 @@ int main(int argc, char** argv) {
           cg.close();
           if (menu_mode) state = S_MENU; else break;
         } else if (in.backspace) {
-          if (!cg.draft.name.empty()) cg.draft.name.pop_back();
-        } else if (in.text_char && (int)cg.draft.name.size() < game::chargen::kNameMaxLen) {
-          cg.draft.name.push_back((char)in.text_char);
+          // UTF-8 退格:刪整個字元(先刪續位元組 0x80-0xBF,再刪首位元組)。
+          if (!cg.draft.name.empty()) {
+            cg.draft.name.pop_back();
+            while (!cg.draft.name.empty() &&
+                   ((unsigned char)cg.draft.name.back() & 0xC0) == 0x80)
+              cg.draft.name.pop_back();
+          }
+        } else if (!in.text_input.empty()) {             // IME/鍵盤 UTF-8(中文輸入法 / Android 軟鍵盤)
+          cg.draft.name += in.text_input;
+          // 名字存進 512B 名欄上限 11 bytes(UTF-8)→ 截到字元邊界。
+          if (cg.draft.name.size() > 11) {
+            std::size_t n = 11;
+            while (n > 0 && ((unsigned char)cg.draft.name[n] & 0xC0) == 0x80) --n;
+            cg.draft.name.resize(n);
+          }
         } else if (in.select) {                          // Enter:名字確認 → 配點
           if (cg.draft.name_valid()) cg.phase = CharGenUi::PhAttr;
         }

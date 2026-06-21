@@ -38,6 +38,7 @@ struct Input {
   int  key = 0;          // 本幀按下的字母鍵(大寫 ASCII,如 'B'/'C'/'I'/'U'…),供快捷字母
   // ── 文字輸入(建角命名等)。一般狀態不讀這兩欄,行為不變。──
   int  text_char = 0;    // 本幀輸入的可列印字元(含小寫 / 空白,保留原始大小寫)
+  std::string text_input;// 本幀 IME/鍵盤輸入的 UTF-8 文字(SDL_TEXTINPUT;中文輸入法 / Android 軟鍵盤)
   bool backspace = false;// 退格(刪除一字元)
 };
 
@@ -88,6 +89,11 @@ public:
   void present(const Framebuffer& fb);   // 像素層放大 + 文字層合成 → 顯示
   void set_title(const std::string& title);  // 動態改視窗標題(語言 / tileset 切換時)
   void delay(int ms);                        // SDL_Delay 包裝(互動模式 frame cap,避免 busy-loop 吃滿 CPU)
+  // 文字輸入(建角命名):啟用後 poll 會回傳 in.text_input(UTF-8);桌面啟動中文輸入法組字、
+  //   Android 自動跳出軟鍵盤。命名階段才開,平時關(避免吃掉一般快捷鍵)。
+  void start_text_input();
+  void stop_text_input();
+  bool text_input_active() const;
   Input poll();                          // 收集本幀事件(in.quit=true 表示要結束)
   void close();
 
