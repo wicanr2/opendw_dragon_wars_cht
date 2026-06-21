@@ -4502,6 +4502,14 @@ int main(int argc, char** argv) {
             if (reloc == 2) {
               // 換 area:事件文字仍顯示(若有),但事件格判定改用新區的格子。
               if (level) { int ntv = level->tile(px, py); last_event_tile = (ntv > 1) ? ntv : -1; }
+              // 換地圖提示(使用者要求):顯示進入的新地圖名。若該入口格本身有段落
+              //   (event_para_n>=0,如城鎮歡迎段落)則不疊加(段落即為進入介紹);否則
+              //   把「進入 <地圖名>」放進訊息框(無事件文字)或接在事件文字前。
+              std::string enter_line =
+                  tr.tr("Entering") + " " + area_name_tr(current_area, level ? level->name : "");
+              if (event_para_n < 0) {
+                event_msg = event_msg.empty() ? enter_line : (enter_line + "\n" + event_msg);
+              }
             }
             if (reloc == 1 || reloc == 2) mark_seen_here();   // 傳送/換區後新格也標記 seen
             // Read Paragraph 事件 → 長段落捲動 overlay;一般事件 → 下半部分頁訊息框。
