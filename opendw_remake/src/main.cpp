@@ -1608,6 +1608,7 @@ int main(int argc, char** argv) {
   bool minimap_ok = minimap.load_templates(bundle + "/viewport/minimap.bin",
                                            bundle + "/viewport/data6820.bin");
   bool minimap_dirty = true;   // px/py 或 area 變動後需重畫;進 S_MAP 時觸發一次。
+  int map_view_x = -1, map_view_y = -1;   // 全景地圖視角中心(方向鍵捲動觀察;進 S_MAP 歸位玩家)。
   auto minimap_seed = [&]() {
     return mm_seed == 1 ? render::Minimap::Seed::kPlayer
          : mm_seed == 2 ? render::Minimap::Seed::kNone
@@ -3553,12 +3554,18 @@ int main(int argc, char** argv) {
       } else {
         const std::vector<std::uint8_t>* bm = seen.bitmap(current_area);
         minimap.render_full_with_seen(*level, px, py, comps,
-                                      bm ? bm->data() : nullptr, level->w, level->h);
+                                      bm ? bm->data() : nullptr, level->w, level->h,
+                                      map_view_x, map_view_y);   // 視角中心(捲動)
       }
       minimap_dirty = false;
     }
     if (minimap_ok) minimap.to_framebuffer(fb, /*ox=*/1, /*oy=*/8, /*rows=*/0xC0);
-    if (!para.active) tl.add(8, 2, area_name_tr(current_area, level->name), 14, PX_UI);   // 文字層:關卡名
+    if (!para.active) {
+      tl.add(8, 2, area_name_tr(current_area, level->name), 14, PX_UI);   // 文字層:關卡名
+      // 捲動提示(右上;使用者要求可上下移動觀察)。
+      std::string sh = tr.tr("Arrows:scroll  Esc:back");
+      tl.add(render::kW - tl.measure_vwidth(sh, PX_UI * 3 / 4) - 4, 2, sh, 7, PX_UI * 3 / 4);
+    }
     add_lang_badge();
     // ── 區域攻略提示(《軟體世界》1991):有提示則於下方壓暗面板自動顯示 ──
     auto hint_it = area_hints.find(current_area);
@@ -3829,6 +3836,7 @@ int main(int argc, char** argv) {
     else if (t == "PGDN") in.pgdown = true;
     else if (t.size() == 1 && std::isalpha((unsigned char)t[0])) in.key = t[0];
     else if (t.size() == 1 && std::isdigit((unsigned char)t[0])) in.key = t[0];   // 數字鍵(選單選角色 / 角色表切換)
+    else if (t == "?") in.key = '?';   // 平面地圖切換(測試用)
     else std::fprintf(stderr, "keys: unknown token '%s' (skipped)\n", t.c_str());
     std::fprintf(stderr, "keys: inject [%zu/%zu] %s\n", key_idx, key_tokens.size(), t.c_str());
     return true;
@@ -4417,13 +4425,26 @@ int main(int argc, char** argv) {
         if (automap_mode) break;        // --automap headless:dump 完即離開
         state = S_GAME;
       }
+      // 方向鍵 / IJKL:捲動視角中心觀察整張地圖(使用者要求;原版可上下移動觀察)。
+      //   oracle automap 在螢幕上旋轉 90°(map-x↔螢幕垂直、map-y↔螢幕水平),故鍵位
+      //   對「螢幕方向」對應:UP=畫面往上看(view 沿 map-x+)、LEFT=往左看(map-y−)…
+      //   實測重心:UP 應移到 view_x+(標記下移)、LEFT 應 view_y−(標記右移)。
+      //   夾在 [0, w-1]×[0, h-1];玩家標記仍在真實位置 → 捲動時偏離畫面中央。
+      else if (level) {
+        int ovx = map_view_x, ovy = map_view_y;
+        if (in.up    || in.key == 'I') map_view_x = (map_view_x < level->w - 1) ? map_view_x + 1 : level->w - 1;
+        if (in.down  || in.key == 'K') map_view_x = (map_view_x > 0) ? map_view_x - 1 : 0;
+        if (in.left  || in.key == 'J') map_view_y = (map_view_y > 0) ? map_view_y - 1 : 0;
+        if (in.right || in.key == 'L') map_view_y = (map_view_y < level->h - 1) ? map_view_y + 1 : level->h - 1;
+        if (map_view_x != ovx || map_view_y != ovy) minimap_dirty = true;   // 視角變了 → 重畫
+      }
       if (max_frames >= 0 && ++frames >= max_frames) break;
       continue;
     }
     if (state == S_GAME) {                               // F:真實地圖移動(對齊說明書)
       if (in.back) { if (menu_mode) state = S_MENU; else break; }   // Esc:選單進入→返回;--map→離開
-      // `?`:顯示俯視平面地圖(手冊)。進 S_MAP;觸發重畫。
-      else if (in.key == '?') { minimap_dirty = true; state = S_MAP; }
+      // `?`:顯示俯視平面地圖(手冊)。進 S_MAP;視角中心歸位玩家;觸發重畫。
+      else if (in.key == '?') { map_view_x = px; map_view_y = py; minimap_dirty = true; state = S_MAP; }
       // S=儲存遊戲(手冊):寫檔 + 訊息提示(i18n「已儲存」/「存檔失敗」)。
       else if (in.key == 'S') {
         bool ok = do_save();

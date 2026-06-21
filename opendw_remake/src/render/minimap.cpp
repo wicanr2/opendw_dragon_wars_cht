@@ -523,7 +523,8 @@ void Minimap::render_full(const res::Level& level, int px, int py,
 
 void Minimap::render_full_with_seen(const res::Level& level, int px, int py,
                                     const ComponentStore& comps,
-                                    const std::uint8_t* seen, int seen_w, int seen_h) {
+                                    const std::uint8_t* seen, int seen_w, int seen_h,
+                                    int view_cx, int view_cy) {
   reset();
   LevelComponents lc = parse_level_components(level);
   std::vector<std::uint8_t> scratch((std::size_t)kMemSize, 0);
@@ -533,6 +534,9 @@ void Minimap::render_full_with_seen(const res::Level& level, int px, int py,
   ctx.byte_104E = 0;
   MinimapComposer mc =
       make_composer(level, px, py, lc, comps, ctx, minimap_template_, player_template_);
+  // 視角中心(捲動)= byte_1960/1961;玩家標記仍走 gx/gy=(px,py)(make_composer 已設)。
+  if (view_cx >= 0) mc.byte_1960 = static_cast<std::uint8_t>(view_cx);
+  if (view_cy >= 0) mc.byte_1961 = static_cast<std::uint8_t>(view_cy);
   mc.seed_from_bitmap(seen, seen_w, seen_h);
   for (std::uint8_t pass = 0; pass < 8; ++pass) blit_pass(mc, ctx, pass, mem);
 }
