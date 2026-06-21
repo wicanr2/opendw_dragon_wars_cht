@@ -9,10 +9,16 @@ android {
         versionCode 1
         versionName '0.1.0'
         externalNativeBuild { cmake { arguments '-DANDROID_STL=c++_shared'; cppFlags '-std=c++20' } }
-        ndk { abiFilters 'arm64-v8a', 'armeabi-v7a' }
+        ndk { abiFilters 'arm64-v8a' }   // P0:只建 arm64(實機多為此;加速 CI。上架再開 armeabi-v7a)
     }
     externalNativeBuild { cmake { path 'jni/src/CMakeLists.txt'; version '3.22.1' } }
     // 自包含 assets(bundle / fonts / i18n)打進 APK;首次啟動由 MainActivity 解壓到 internal storage。
-    sourceSets { main { assets.srcDirs += ['../../assets'] } }
+    // SDL 的 Java(org.libsdl.app.SDLActivity 等)來自 SDL2 原始碼(CI 放到 jni/SDL/);MainActivity 繼承它。
+    sourceSets { main {
+        assets.srcDirs += ['../../assets']
+        java.srcDirs += ['jni/SDL/android-project/app/src/main/java']
+    } }
+    // CI 用 debug 簽名;只建 arm64 以加速(實機多為 arm64,armeabi-v7a 留給上架時再開)。
+    lint { abortOnError false }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }

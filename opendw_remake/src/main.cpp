@@ -53,6 +53,12 @@
 #include "render/ui_pieces.hpp"
 #include "render/ui_theme.hpp"
 #include "render/sdl_video.hpp"
+#ifdef __ANDROID__
+// Android:SDLActivity 載入 libmain.so 後以 JNI 呼叫 SDL runtime 的 SDL_main 進入點;
+//   此 include 把本檔的 main 重導成 SDL_main(對接進入點;見 docs/60_ANDROID_FEASIBILITY §4.1)。
+//   桌面直接執行 ELF main、不需重導,故以 __ANDROID__ 守住(不影響其他平台)。
+#include <SDL_main.h>
+#endif
 #include "audio/sound.hpp"
 #include "resource/level.hpp"
 #include "resource/paragraphs.hpp"
@@ -1748,6 +1754,10 @@ int main(int argc, char** argv) {
         "/System/Library/Fonts/STHeiti Light.ttc",
         "C:/Windows/Fonts/msjh.ttc",                           // Windows 微軟正黑
         "C:/Windows/Fonts/msyh.ttc",                           // Windows 微軟雅黑
+        "/system/fonts/NotoSansCJK-Regular.ttc",               // Android(現代;含 CJK)
+        "/system/fonts/NotoSerifCJK-Regular.ttc",
+        "/system/fonts/DroidSansFallbackFull.ttf",             // Android(較舊;CJK fallback)
+        "/system/fonts/DroidSansFallback.ttf",
       };
       for (const char* c : kFontCandidates) {
         if (readable(c)) { font_ttf = c; break; }
