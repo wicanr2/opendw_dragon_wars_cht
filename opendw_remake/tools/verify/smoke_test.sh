@@ -107,8 +107,13 @@ expect "F10 自動存檔"     "request-quit (F10): autosaved=1" --map 1 --fp --f
 # 確認 Y → 離開;N → 取消回遊戲。
 expect "確認 Y 離開"      "confirm-quit: Y → quit"          --map 1 --fp --frames 4 --keys F10,Y
 expect "確認 N 取消"      "confirm-quit: N → cancel"        --map 1 --fp --frames 4 --keys F10,N
-# 頂層(menu_mode 主選單)ESC → 離開確認(非直接退出)。
-expect "頂層 ESC 確認"    "request-quit (top-ESC)"          --no-splash --frames 4 --keys ESC
+# 主選單 ESC **不**觸發離開(使用者要求:選單離開只留 F10;ESC 在選單為 no-op)。
+"$BIN" --no-splash --frames 4 --keys ESC >/dev/null 2>"$TMP/e"
+if grep -qF "request-quit" "$TMP/e"; then
+  echo "  ❌ [主選單 ESC 不離開] 不應觸發離開確認"; fail=1
+else echo "  ✅ [主選單 ESC 不離開]"; fi
+# F10 在主選單 → 離開確認(選單離開鍵)。
+expect "主選單 F10 離開"   "request-quit (F10)"              --no-splash --frames 4 --keys F10
 # 子畫面 ESC 隔離:menu_mode S_GAME 且角色表開啟(--char-sheet 自動進 S_GAME),
 #   ESC 應關角色表、不觸發頂層離開確認(stderr 不應有 request-quit)。
 "$BIN" --scale 1 --char-sheet 1 --frames 4 --keys ESC >/dev/null 2>"$TMP/e"

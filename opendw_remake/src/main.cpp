@@ -1883,24 +1883,29 @@ int main(int argc, char** argv) {
     //   「頂端襯底條」,提示放「底部襯底條」,中段龍圖 + 原版 logo 完整不被蓋(可讀性優先)。
     const std::string zh_title = tr.tr("Dragon Wars");   // zh-TW→火龍之戰 / ja→ドラゴンウォーズ / en→Dragon Wars
     const std::string prompt = tr.tr("Press any key");
-    // 只壓暗「文字後方的小框」(棋盤式 dither,置中),避免整條 band 蓋住原版底部金色 logo。
-    auto dim_box = [&](int cx, int y0, int y1, int half_w) {
+    // 文字後方襯底框:用**實心黑底**(原本棋盤 dither 疊在 busy 龍圖上會「糊成一團」看不清,
+    //   使用者回報)。實心 + 細白邊 → 文字乾淨可讀,只蓋一小框不擋整圖。
+    auto solid_box = [&](int cx, int y0, int y1, int half_w) {
+      int x0 = cx - half_w, x1 = cx + half_w;
       for (int y = y0; y < y1 && y < render::kH; ++y)
-        for (int x = cx - half_w; x < cx + half_w; ++x)
-          if (x >= 0 && x < render::kW && ((x + y) & 1) == 0) fb.put(x, y, 0);
+        for (int x = x0; x < x1; ++x)
+          if (x >= 0 && x < render::kW) fb.put(x, y, 0);          // 實心黑底
+      for (int x = x0; x < x1; ++x) {                              // 上下細白邊
+        if (x >= 0 && x < render::kW) { fb.put(x, y0, 15); if (y1 - 1 < render::kH) fb.put(x, y1 - 1, 15); }
+      }
     };
-    // 頂端在地化標題(zh/ja;en 主題 art 已有英文 logo):只壓暗標題字後方小框。
+    // 頂端在地化標題(火龍之戰;art 已有英文 logo,此處補中文名)。
     int title_px = PX_BODY * 5 / 4;
     int tw = tl.measure_vwidth(zh_title, title_px);
-    dim_box(render::kW / 2, 3, 28, tw / 2 + 8);
+    solid_box(render::kW / 2, 2, 30, tw / 2 + 10);
     tl.add((render::kW - tw) / 2, 5, zh_title, 14, title_px);     // 金色在地化標題(頂端置中)
-    // 底部「按任意鍵」提示:常駐顯示(不硬閃,避免刺眼)。以亮/次亮兩色做極輕柔脈動,
-    //   永不消失(週期約 1.5 秒;原本 18 幀全亮/全暗的硬閃會閃爍不舒服)。
+    // 「按任意鍵」提示:放標題正下方(頂部),完全保留底部烤入的 Dragon Wars logo / Copyright。
+    //   實心襯底框,常駐 + 白/灰輕柔脈動(不硬閃、不糊)。
     {
       int pw = tl.measure_vwidth(prompt, PX_UI);
-      dim_box(render::kW / 2, 184, 198, pw / 2 + 8);
+      solid_box(render::kW / 2, 32, 47, pw / 2 + 10);
       std::uint8_t pc = ((title_blink / 45) % 2 == 0) ? 15 : 7;   // 白 ↔ 灰,輕柔交替(不消失)
-      tl.add((render::kW - pw) / 2, 186, prompt, pc, PX_UI);
+      tl.add((render::kW - pw) / 2, 34, prompt, pc, PX_UI);
     }
     add_lang_badge();
   };
@@ -2737,7 +2742,7 @@ int main(int argc, char** argv) {
     fb.clear(1);
     // ── 邊框面板版面(往 Amiga「米色雙線框對話框」靠攏,取代純藍底裸字)──────────────
     //   左面板:建角內容(名字/屬性/衍生值);右面板:已建隊伍。實心優雅雙線框 + 柔角。
-    render::OverlayStyle ps = theme.overlay; ps.dither = false;   // 實心(背後無遊戲畫面)
+    render::OverlayStyle ps; ps.dither = false;   // DOS 預設色(實心面板;UI 畫面強制 DOS 盤,見 render dispatch)
     draw_overlay_box(6, 22, 196, 150, ps);     // 左:建角面板
     draw_overlay_box(206, 22, 108, 150, ps);   // 右:隊伍面板
     add_title();
@@ -2854,8 +2859,7 @@ int main(int argc, char** argv) {
     add_title();
     add_lang_badge();
     tl.add(16, 60, branch_label, 14, PX_BODY);
-    tl.add(16, 110, "(game screen - to be implemented)", 7, PX_UI);
-    tl.add(16, 140, "Esc: back   Q: quit", 8, PX_UI);
+    tl.add(16, 140, tr.tr("Esc: back   F10: quit"), 8, PX_UI);
   };
   // ── 遭遇畫面:怪物 index → 可用 bundle sprite。──
   // 誠實揭露:res31 record byte[0x0B] 推出的 sprite 編號與實際 sprite 資源有偏差
@@ -3574,6 +3578,10 @@ int main(int argc, char** argv) {
     // 探索 / 地圖 / 選單 / 建角:一律套當前 theme 預設盤。
     //   (避免上一幀 combat 套了 Amiga sprite 自帶盤後殘留到探索畫面;art 狀態各自於下方套盤。)
     vid.set_palette(theme.palette);
+    // 文字 UI 畫面(選單/建角/分支)強制 DOS 可讀調色盤:Amiga 等主題盤會把面板底色洗白
+    //   → 文字看不見(使用者回報 Amiga 建角「完全看不到」)。UI 文字畫面與主題美術無關。
+    if (state == S_MENU || state == S_CREATE || state == S_BRANCH)
+      vid.set_palette(render::kDosPalette);
     if (state == S_ENDING) {                              // 結局序列
       if (ending_phase == 1 && para.active) {
         // phase 1:bundled 段落捲動(黑底 + 捲動 overlay,沿用既有 ParaViewer 呈現)。
@@ -3924,17 +3932,16 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    // ── 離開請求:F10(任何狀態) 或 頂層 ESC(主選單 / S_GAME 探索無子畫面)──
-    //   觸發:自動存檔(有隊伍時)→ 開離開確認視窗(Y/N)。避免不小心按 ESC 直接掉出遊戲。
+    // ── 離開請求:F10(任何狀態) 或 S_GAME 探索頂層 ESC(無子畫面)──
+    //   觸發:自動存檔(有隊伍時)→ 開離開確認視窗(Y/N)。
+    //   主選單 ESC **不**觸發離開(使用者要求:選單離開只留 F10;避免誤按 ESC 跳離開框)。
     {
       // S_GAME 是否有子畫面正在用 ESC(訊息/段落/角色表/商店/酒館/施法/重排)→ 該 ESC 歸子畫面。
       bool game_sub_overlay = state == S_GAME &&
           (msg.active || para.active || sheet.active || shop_ui.active ||
            tavern_ui.active || cast_ui.active || reorder_ui.active);
-      //   S_TITLE 的 ESC 維持「進主選單」(由下方 S_TITLE handler 處理),不觸發離開確認。
-      //   !menu_mode(sprite/scene/viewport/--map 直開 等 headless viewer)維持 ESC 直接離開。
-      bool top_level_esc = menu_mode && in.back && !game_sub_overlay &&
-          (state == S_MENU || (state == S_GAME && !game_sub_overlay));
+      //   S_TITLE 的 ESC 維持「進主選單」;S_MENU 的 ESC 不退出(只 F10)。
+      bool top_level_esc = menu_mode && in.back && state == S_GAME && !game_sub_overlay;
       if (in.request_quit || top_level_esc) {
         bool saved = false;
         if (party.size() > 0) saved = do_save();          // 自動存檔(既有 do_save;無隊伍則略過)
@@ -4515,7 +4522,7 @@ int main(int argc, char** argv) {
       // in.quit(Q / 關窗)由迴圈尾端 in.quit 統一處理(離開遊戲)。
     }
     else if (state == S_MENU) {
-      if (in.back) break;                                // 選單按 Esc = 離開
+      // 主選單 ESC 不離開(只 F10 / 關窗離開;使用者要求)。
       // 1-N:勾選/取消「匯入隊伍」該預設角色(✓);B 建隊時把已勾選的 seed 進去再自建補滿。
       if (in.key >= '1' && in.key <= '9' && party.size() > 0) {
         int idx = in.key - '1';
