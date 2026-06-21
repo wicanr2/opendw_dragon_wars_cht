@@ -668,7 +668,10 @@ int main(int argc, char** argv) {
     // 事件文字:重跑該關事件腳本(在地化來源已換)。其餘畫面即時重繪自動套用。
   };
   int px = 0, py = 0, dir = 1;     // 玩家位置/朝向(0=N,1=E,2=S,3=W)
-  const int dx4[4] = {0, 1, 0, -1}, dy4[4] = {-1, 0, 1, 0};
+  // 朝向→位移,對齊 oracle adjust_position(engine.c:2915,DIRECTION N=0/E=1/S=2/W=3):
+  //   N→x+1、E→y+1、S→x−1、W→y−1。同時對齊 FOV 取樣深度方向(render byte-identical)。
+  //   修正先前 90° 旋轉錯誤(前進方向與視角差 90° → 看到路卻往旁邊走進海;使用者回報)。
+  const int dx4[4] = {1, 0, -1, 0}, dy4[4] = {0, 1, 0, -1};
   const char* dirch = "^>v<";
   std::optional<res::Level> level;
   // 預設 4 人隊伍(Muskels/Theb/Elendil/Cheetah),自包含 bundle 資產;進遊戲即顯示在右側面板。
