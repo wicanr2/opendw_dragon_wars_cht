@@ -2726,14 +2726,19 @@ int main(int argc, char** argv) {
   // PhName:名字輸入列(游標 _)。PhAttr:四屬性配點 + 衍生值 + 剩餘點數 + 性別 + 已建隊員。
   auto draw_chargen = [&]() {
     fb.clear(1);
+    // ── 邊框面板版面(往 Amiga「米色雙線框對話框」靠攏,取代純藍底裸字)──────────────
+    //   左面板:建角內容(名字/屬性/衍生值);右面板:已建隊伍。實心優雅雙線框 + 柔角。
+    render::OverlayStyle ps = theme.overlay; ps.dither = false;   // 實心(背後無遊戲畫面)
+    draw_overlay_box(6, 22, 196, 150, ps);     // 左:建角面板
+    draw_overlay_box(206, 22, 108, 150, ps);   // 右:隊伍面板
     add_title();
     add_lang_badge();
-    int x = 16, y = 36;
-    // 標題:「建立人物  (已建 N/4)」。
+    int x = 16, y = 30;
+    // 標題:「建立人物  (已建 N/4)」(面板內頂端,黃強調)。
     char head[80];
     std::snprintf(head, sizeof head, "%s  (%d/%d)", tr.tr("Create Character").c_str(),
                   (int)cg.done_records.size(), CharGenUi::kMaxParty);
-    tl.add(x, y, head, 14, PX_BODY); y += 18;
+    tl.add(x, y, head, ps.accent, PX_BODY); y += 18;
 
     if (cg.phase == CharGenUi::PhName) {
       tl.add(x, y, tr.tr("Enter name:"), 7, PX_BODY); y += 16;
@@ -2773,15 +2778,18 @@ int main(int argc, char** argv) {
       char dv2[64];
       std::snprintf(dv2, sizeof dv2, "%s %d   %s %d", tr.tr("AV").c_str(),
                     cg.draft.base_av(), tr.tr("DV").c_str(), cg.draft.base_dv());
-      tl.add(x, y, dv2, 11, PX_UI); y += 18;
-      tl.add(x, y, tr.tr("Up/Down select  +/- adjust  G gender  Enter done"), 8, PX_UI);
-      y += 12;
-      tl.add(x, y, tr.tr("B: begin  N: add member  Esc: back"), 8, PX_UI);
+      tl.add(x, y, dv2, 11, PX_UI);
+      // 操作提示移到面板下方(全寬,不擠進面板)。
+      tl.add(8, 178, tr.tr("Up/Down select  +/- adjust  G gender  Enter done"), 8, PX_UI);
+      tl.add(8, 189, tr.tr("B: begin  N: add member  Esc: back"), 8, PX_UI);
     }
 
-    // 右側:已建隊員清單(名 + STR/DEX/INT/SPI)。
-    int rx = render::kW - 130, ry = 36;
-    tl.add(rx, ry, tr.tr("Party"), 14, PX_UI); ry += 14;
+    // 右面板:已建隊員清單。
+    int rx = 214, ry = 30;
+    tl.add(rx, ry, tr.tr("Party"), ps.accent, PX_UI); ry += 16;
+    if (cg.done_records.empty()) {
+      tl.add(rx, ry, tr.tr("(none yet)"), 7, PX_UI);
+    }
     for (std::size_t i = 0; i < cg.done_records.size(); ++i) {
       // 直接解析名字(高位元終止)供顯示。
       std::string nm;
@@ -2793,7 +2801,7 @@ int main(int argc, char** argv) {
       }
       char line[48];
       std::snprintf(line, sizeof line, "%d. %s", (int)i + 1, nm.c_str());
-      tl.add(rx, ry, line, 15, PX_UI); ry += 12;
+      tl.add(rx, ry, line, 15, PX_UI); ry += 13;
     }
   };
 
@@ -3821,9 +3829,9 @@ int main(int argc, char** argv) {
     }
     render_now();
     vid.present(fb);
-    // 互動模式 frame cap(~60fps):軟體 renderer 無 vsync,無此 delay 迴圈會 busy-loop 吃滿 CPU
-    //   → 視窗卡頓 / 輸入延遲(使用者回報「按鍵要比手速、F1/F8 時靈時不靈」的主因)。headless 不延遲。
-    if (!headless) vid.delay(12);
+    // 互動模式 frame cap ~30fps(老遊戲節奏;軟體 renderer 無 vsync,無此 delay 會 busy-loop
+    //   吃滿 CPU → 卡頓 / 輸入延遲)。33ms ≈ 30fps,符合 1990 老遊戲手感且省 CPU。headless 不延遲。
+    if (!headless) vid.delay(33);
     // 動畫相位推進(在 present 後、各輸入分支 continue 前 → 戰鬥怪物每幀皆呼吸/閃白倒數)。
     //   與 frames 同步遞增 → headless --dump-frame N 的動畫相位確定可重現。
     ++anim_tick;
