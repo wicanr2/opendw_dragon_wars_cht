@@ -814,6 +814,7 @@ int main(int argc, char** argv) {
   };
 
   MsgViewer msg;                  // 一般事件訊息檢視器(下半部分頁;active 時暫停移動)
+  std::vector<std::string> msg_log;   // 訊息歷史(事件/存檔等;M 鍵開捲動視窗回看,比原版友善)。
   ParaViewer para;                // Read Paragraph 長段落捲動檢視器(全螢幕 overlay;active 時暫停移動)
   CharSheet sheet;                // 角色屬性表檢視子狀態(V / 數字 1-4 進;active 時暫停移動)
   std::set<int> import_sel;       // 主選單:已勾選「匯入隊伍」的預設角色 index(建隊時 seed)
@@ -1998,6 +1999,11 @@ int main(int argc, char** argv) {
     if (z.empty()) return;
     msg.max_vw = MB_TEXT_W; msg.body_px = PX_BODY;
     msg.open(tl.wrap(z, MB_TEXT_W, PX_BODY), MB_LINES);
+    // 記入訊息歷史(去掉與上一則完全相同的重複;上限 200 則,留最近的)。
+    if (msg_log.empty() || msg_log.back() != z) {
+      msg_log.push_back(z);
+      if (msg_log.size() > 200) msg_log.erase(msg_log.begin());
+    }
   };
 
   // 隊伍是否已持有某名稱物品(掃全員背包;判重 → quest 物品不重給,亦免存讀檔重複)。
@@ -2179,6 +2185,18 @@ int main(int argc, char** argv) {
   auto open_para = [&](int n, const std::string& full) {
     if (full.empty()) return;
     para.open(n, tl.wrap(full, PB_TEXT_W, PX_BODY), PB_LINES);
+  };
+  // 訊息歷史檢視(M 鍵):把累積的 msg_log 串成一份可捲動文件,用 para 檢視器顯示
+  //   (para_n=-2 當「訊息記錄」標記;↑↓/PgUp/PgDn/滑鼠滾輪捲動,Esc 關)。最新在最下。
+  auto open_log = [&]() {
+    if (msg_log.empty()) { open_msg(tr.tr("(No messages yet.)")); return; }
+    std::string doc;
+    for (std::size_t i = 0; i < msg_log.size(); ++i) {
+      doc += "• " + msg_log[i];
+      if (i + 1 < msg_log.size()) doc += "\n\n";
+    }
+    para.open(-2, tl.wrap(doc, PB_TEXT_W, PX_BODY), PB_LINES);
+    para.scroll_page(1000000);   // 直接捲到最底(顯示最新訊息)
   };
 
   // ── 結局序列(S_ENDING)──────────────────────────────────────────────────
@@ -2388,7 +2406,9 @@ int main(int argc, char** argv) {
     fill_para_box();
     // 標題列:結局序列(para_n<0)顯示結局標題;否則「段落 N」(i18n「段落」+ 數字)。
     char title[64];
-    if (para.para_n < 0) {
+    if (para.para_n == -2) {   // 訊息歷史記錄(M 鍵)
+      std::snprintf(title, sizeof title, "%s", tr.tr("Message Log").c_str());
+    } else if (para.para_n < 0) {
       std::snprintf(title, sizeof title, "%s", tr.tr("The Ending of Dragon Wars").c_str());
     } else {
       std::snprintf(title, sizeof title, "%s %d", tr.tr("Paragraph").c_str(), para.para_n);
@@ -3511,7 +3531,7 @@ int main(int argc, char** argv) {
     // (docs/gameplay/59 #3:訊息框獨立,控制提示移到不擋訊息處。)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
       { if (bump_notice > 0) draw_msg_strip(tr.tr("Blocked! Cannot move forward."), 12);   // 亮紅瞬時提示
-        else draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map V:stats S:save F10:quit"), 7); }
+        else draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map M:log V:stats S:save F10:quit"), 7); }
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // F+:第一人稱 viewport(透視牆面,像素層)。port 自 opendw refresh_viewport →
@@ -3551,7 +3571,7 @@ int main(int argc, char** argv) {
     // 控制提示移到底部訊息列(原版:viewport 下方白框);訊息列獨立。(docs/gameplay/59 #3)
     if (!para.active && !msg.active && !sheet.active)    // 子畫面期間隱藏(避免穿透框)
       { if (bump_notice > 0) draw_msg_strip(tr.tr("Blocked! Cannot move forward."), 12);   // 亮紅瞬時提示
-        else draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map V:stats S:save F10:quit"), 7); }
+        else draw_msg_strip(tr.tr("↑↓:move ←→:turn ?:map M:log V:stats S:save F10:quit"), 7); }
     // 事件/段落文字改走訊息檢視器(draw_msg_overlay,疊在最上層;見 render_now)。
   };
   // 俯視平面地圖(`?` 鍵)。port 自 opendw process_minimap_commands:
@@ -4479,6 +4499,7 @@ int main(int argc, char** argv) {
       //   headless --shop/--recruit CLI 入口仍保留(供測試)。
       else if (in.key == 'O' && party.size() > 0) { reorder_ui.open(); }  // O:重排隊伍順序(手冊)
       else if (in.key == 'G') { open_quest_guide(); }   // G:主線指引(remake 加值;迷路時看下一步)
+      else if (in.key == 'M') { open_log(); }            // M:訊息歷史(捲動回看先前事件訊息;比原版友善)
       else if (in.key >= '1' && in.key <= '9' && party.size() > 0)
         sheet.open((int)party.size(), in.key - '1');
       else {
