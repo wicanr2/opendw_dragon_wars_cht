@@ -1974,6 +1974,12 @@ int main(int argc, char** argv) {
   auto draw_explore_chrome = [&]() {
     if (ui_pieces) {
       ui_pieces->draw_chrome(fb);  // 原版石磚框 + 立繪 logo + pillar(真值)
+      // 方向指南針(原版 update_directional_indicators:右 pillar 下方紅菱形箭頭,
+      //   ui_pieces[game_state[0xBE]+9]=面朝方向;piece 10=北↑ 11=東→ 12=南↓ 13=西←)。
+      //   remake 之前漏畫(oracle E/S/W 為 exit(1) 未實作 + 觸發資料 script 驅動),這裡用
+      //   已知 dir 直接畫原版箭頭 sprite。所有主題(含 Amiga)共用此 chrome → 各版本皆有。
+      if (state == S_GAME && fp_mode && dir >= 0 && dir < 4)
+        ui_pieces->draw_piece(fb, 10 + dir);
       return;
     }
     // 退回近似(無原版資源時)。
